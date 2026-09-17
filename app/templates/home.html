@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="hero">
+  <div class="container hero-grid">
+    <div class="hero-copy reveal">
+      <p class="eyebrow">REAL ESTATE SYSTEMS · CUSTOM WEB APPLICATIONS</p>
+      <h1>Custom systems for <span>real estate operations.</span></h1>
+      <p class="hero-lead">I build web applications that help property businesses organize listings, rental operations, maintenance, records, and team workflows in one clear system.</p>
+      <div class="hero-actions">
+        <a class="button primary" href="{{ url_for('site.projects') }}">See my work</a>
+        <a class="button secondary" href="{{ url_for('site.contact') }}">Discuss a project</a>
+      </div>
+      <div class="hero-proof">
+        <strong>KEY CASTRO</strong>
+        <span>Custom Real Estate Systems Developer</span>
+      </div>
+    </div>
+
+    <a class="hero-project reveal delay-1" href="{{ url_for('site.project_detail', slug='nexus-properties') }}" aria-label="View Nexus Properties case study">
+      <div class="browser-frame">
+        <div class="browser-bar"><span></span><span></span><span></span><small>Featured project</small></div>
+        <img src="{{ url_for('static', filename='images/projects/nexus-dashboard.png') }}" alt="Nexus Properties system dashboard preview">
+      </div>
+      <div class="hero-project-caption">
+        <div><small>FEATURED CASE STUDY</small><strong>Nexus Properties</strong><span>Internal Off-Market Property Marketplace</span></div>
+        <b aria-hidden="true">↗</b>
+      </div>
+    </a>
+  </div>
+</section>
+
+<section class="proof-strip" aria-label="Areas of focus">
+  <div class="container proof-strip-inner reveal">
+    <span>Property operations</span><i></i><span>Rental workflows</span><i></i><span>Listing systems</span><i></i><span>Dashboards</span><i></i><span>Workflow automation</span>
+  </div>
+</section>
+
+<section class="section" id="intro">
+  <div class="container intro-grid">
+    <div class="section-kicker reveal">WHAT I DO</div>
+    <div class="intro-content reveal delay-1">
+      <h2>I turn a real business workflow into a clear, working web application.</h2>
+      <p class="large-copy">I start with the way the business already works: what needs to be tracked, who needs access, what gets delayed, and what the owner or manager needs to see.</p>
+      <p>Then I build the system around that process—so the team has one practical place to manage the work.</p>
+      <a class="text-link" href="{{ url_for('site.about') }}">How I approach a project <span>→</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="section section-soft" id="services-preview">
+  <div class="container">
+    <div class="section-head reveal">
+      <div><p class="eyebrow">WHAT I BUILD</p><h2>Systems that make property operations easier to run.</h2></div>
+      <a class="text-link desktop-link" href="{{ url_for('site.services') }}">View all services <span>→</span></a>
+    </div>
+
+    <div class="service-grid home-services">
+      {% for service in services[:4] %}
+      <article class="service-card reveal delay-{{ loop.index0 % 3 }}">
+        <span class="card-index">0{{ loop.index }}</span>
+        <h3>{{ service.title }}</h3>
+        <p>{{ service.text }}</p>
+      </article>
+      {% endfor %}
+    </div>
+    <a class="text-link mobile-link" href="{{ url_for('site.services') }}">View all services <span>→</span></a>
+  </div>
+</section>
+
+<section class="section" id="featured-work">
+  <div class="container">
+    <div class="section-head reveal">
+      <div><p class="eyebrow">FEATURED WORK</p><h2>See the system, not just a list of skills.</h2></div>
+      <p class="section-summary">Projects are presented as case studies so you can see the business need, the workflow, the screens, and what was built.</p>
+    </div>
+
+    <article class="featured-work reveal">
+      <button class="featured-image" type="button" data-lightbox="{{ url_for('static', filename='images/projects/nexus-dashboard.png') }}" data-caption="Nexus Properties — operations dashboard preview">
+        <img src="{{ url_for('static', filename='images/projects/nexus-dashboard.png') }}" alt="Nexus Properties dashboard preview">
+        <span>View larger</span>
+      </button>
+      <div class="featured-copy">
+        <div class="badge-row"><span>REAL ESTATE SYSTEM</span><span>PORTFOLIO CASE STUDY</span></div>
+        <h3>Nexus Properties</h3>
+        <p class="featured-subtitle">Internal Off-Market Property Marketplace</p>
+        <p>A custom system concept for an internal real estate team to add, search, update, reconfirm, and manage off-market property listings.</p>
+        <ul class="clean-list">
+          <li>Private team access</li>
+          <li>Listing search and filters</li>
+          <li>Status and freshness tracking</li>
+          <li>Reconfirmation and expiry workflow</li>
+        </ul>
+        <a class="button primary" href="{{ url_for('site.project_detail', slug='nexus-properties') }}">View case study</a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="section section-soft" id="process">
+  <div class="container">
+    <div class="section-head compact-head reveal">
+      <div><p class="eyebrow">HOW I WORK</p><h2>A simple path from problem to working system.</h2></div>
+    </div>
+    <div class="process-grid">
+      {% for number, title, text in [
+        ('01','Understand','Learn how the operation works, who uses it, and what needs to improve.'),
+        ('02','Plan','Define the records, screens, roles, workflow, and clear project scope.'),
+        ('03','Build','Create the working web application around the agreed process.'),
+        ('04','Test & hand over','Test the full workflow, document the system, and prepare support or deployment.')
+      ] %}
+      <article class="process-card reveal delay-{{ loop.index0 % 3 }}"><span>{{ number }}</span><h3>{{ title }}</h3><p>{{ text }}</p></article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section" id="technology-preview">
+  <div class="container tech-preview">
+    <div class="section-head reveal">
+      <div><p class="eyebrow">UNDER THE HOOD</p><h2>Built with practical web technology.</h2><p>I keep the client conversation simple. The technology underneath is there to support a reliable, maintainable system.</p></div>
+      <a class="text-link" href="{{ url_for('site.skills') }}">Skills & technology <span>→</span></a>
+    </div>
+    <div class="tech-chips reveal delay-1">
+      {% for tech, desc in technologies[:6] %}<span><strong>{{ tech }}</strong><small>{{ desc }}</small></span>{% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section cta-wrap">
+  <div class="container">
+    <div class="cta-panel reveal">
+      <div><p class="eyebrow">HAVE A WORKFLOW THAT FEELS SCATTERED?</p><h2>Tell me how the work happens today.</h2><p>I can help turn it into a clearer custom system for your real estate operation.</p></div>
+      <a class="button light" href="{{ url_for('site.contact') }}">Discuss your project</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

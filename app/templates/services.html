@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-hero">
+  <div class="container page-hero-grid">
+    <div class="reveal"><p class="eyebrow">SERVICES</p><h1>Custom web applications for <span>real estate operations.</span></h1></div>
+    <div class="page-hero-copy reveal delay-1"><p>Bring me the business problem or workflow. I build a system around what the operation actually needs to manage.</p><a class="button primary" href="{{ url_for('site.contact') }}">Discuss a project</a></div>
+  </div>
+</section>
+
+<section class="section section-soft">
+  <div class="container service-grid">
+    {% for service in services %}
+    <article class="service-card detailed reveal delay-{{ loop.index0 % 3 }}">
+      <span class="card-index">{{ '%02d'|format(loop.index) }}</span>
+      <h2>{{ service.title }}</h2>
+      <p>{{ service.text }}</p>
+      <small>{{ service.example }}</small>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="container intro-grid">
+    <div class="section-kicker reveal">A TYPICAL SYSTEM</div>
+    <div class="intro-content reveal delay-1">
+      <h2>One place to store the work, track what is happening, and show what needs attention.</h2>
+      <div class="workflow-steps">
+        <div><span>01</span><strong>Store the right records</strong><p>Properties, listings, tenants, leases, requests, vendors, tasks, or other business data.</p></div>
+        <div><span>02</span><strong>Track status</strong><p>Know what is active, pending, due, late, complete, or archived.</p></div>
+        <div><span>03</span><strong>Guide the next action</strong><p>Use clear handoffs, reminders, assignments, or simple rules where they help.</p></div>
+        <div><span>04</span><strong>Give the owner visibility</strong><p>Use dashboards and reports to make important information easier to see.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-soft">
+  <div class="container plain-callout reveal">
+    <p class="eyebrow">YOU DO NOT NEED A TECHNICAL SPEC</p>
+    <h2>Start by explaining what feels slow, scattered, or hard to track.</h2>
+    <p>I can help map the workflow first. The system structure comes after we understand the real problem.</p>
+  </div>
+</section>
+
+<section class="section cta-wrap"><div class="container"><div class="cta-panel reveal"><div><p class="eyebrow">START WITH THE BUSINESS</p><h2>What part of your operation needs a better system?</h2><p>Send a short description of the current process and what you want to improve.</p></div><a class="button light" href="{{ url_for('site.contact') }}">Tell me about it</a></div></div></section>
+{% endblock %}

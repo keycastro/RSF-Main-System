@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{ meta_description }}">
+  <meta name="theme-color" content="#0b0d0c">
+  {% if environment_label != 'Production' %}<meta name="robots" content="noindex,nofollow">{% endif %}
+  {% if canonical_url %}<link rel="canonical" href="{{ canonical_url }}">{% endif %}
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Key Castro">
+  <meta property="og:title" content="{{ title }} · Key Castro">
+  <meta property="og:description" content="{{ meta_description }}">
+  {% if canonical_url %}<meta property="og:url" content="{{ canonical_url }}">{% endif %}
+  {% if public_base_url %}<meta property="og:image" content="{{ public_base_url }}{{ url_for('static', filename='images/projects/nexus-dashboard.png') }}">{% endif %}
+
+  <title>{{ title }} · Key Castro</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/brand/KEY_CASTRO.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <header class="site-header" data-header>
+    <div class="container nav-shell">
+      <a class="brand" href="{{ url_for('site.home') }}" aria-label="Key Castro home">
+        <span class="brand-mark" aria-hidden="true">KC</span>
+        <span class="brand-copy">
+          <strong>KEY CASTRO</strong>
+          <small>Custom Real Estate Systems Developer</small>
+        </span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" data-nav-toggle>
+        <span></span><span></span>
+      </button>
+
+      <nav class="site-nav" data-nav aria-label="Main navigation">
+        <a class="{{ 'active' if request.endpoint in ['site.projects','site.project_detail'] else '' }}" href="{{ url_for('site.projects') }}">Work</a>
+        <a class="{{ 'active' if request.endpoint == 'site.services' else '' }}" href="{{ url_for('site.services') }}">Services</a>
+        <a class="{{ 'active' if request.endpoint in ['site.about','site.skills','site.experience'] else '' }}" href="{{ url_for('site.about') }}">About</a>
+        <a class="nav-contact {{ 'active' if request.endpoint == 'site.contact' else '' }}" href="{{ url_for('site.contact') }}">Discuss a project</a>
+      </nav>
+    </div>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="toast-stack" aria-live="polite">
+        {% for category, message in messages %}<div class="toast {{ category }}">{{ message }}</div>{% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <main id="main-content">{% block content %}{% endblock %}</main>
+
+  <footer class="site-footer">
+    <div class="container footer-main">
+      <div class="footer-brand-block">
+        <a class="brand" href="{{ url_for('site.home') }}">
+          <span class="brand-mark" aria-hidden="true">KC</span>
+          <span class="brand-copy"><strong>KEY CASTRO</strong><small>Custom Real Estate Systems Developer</small></span>
+        </a>
+        <p>Custom web applications and business systems for real estate and rental-property operations.</p>
+      </div>
+
+      <div class="footer-nav">
+        <div>
+          <strong>Explore</strong>
+          <a href="{{ url_for('site.projects') }}">Work</a>
+          <a href="{{ url_for('site.services') }}">Services</a>
+          <a href="{{ url_for('site.about') }}">About</a>
+          <a href="{{ url_for('site.contact') }}">Contact</a>
+        </div>
+        <div>
+          <strong>More</strong>
+          <a href="{{ url_for('site.skills') }}">Skills & technology</a>
+          <a href="{{ url_for('site.experience') }}">Experience</a>
+          {% if socials.linkedin %}<a href="{{ socials.linkedin }}" rel="noopener noreferrer" target="_blank">LinkedIn</a>{% endif %}
+          {% if socials.github %}<a href="{{ socials.github }}" rel="noopener noreferrer" target="_blank">GitHub</a>{% endif %}
+          {% if socials.youtube %}<a href="{{ socials.youtube }}" rel="noopener noreferrer" target="_blank">YouTube</a>{% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span>© <span data-year></span> Key Castro. All rights reserved.</span>
+      {% if environment_label == 'Local' %}<span class="local-pill">LOCAL PREVIEW · 127.0.0.1</span>{% endif %}
+    </div>
+  </footer>
+
+  <div class="lightbox" data-lightbox-overlay aria-hidden="true">
+    <button class="lightbox-close" type="button" aria-label="Close image" data-lightbox-close>×</button>
+    <img src="" alt="" data-lightbox-image>
+    <p data-lightbox-caption></p>
+  </div>
+</body>
+</html>

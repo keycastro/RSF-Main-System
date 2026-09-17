@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-hero">
+  <div class="container page-hero-grid">
+    <div class="reveal"><p class="eyebrow">SKILLS & TECHNOLOGY</p><h1>The tools behind the <span>working system.</span></h1></div>
+    <div class="page-hero-copy reveal delay-1"><p>I keep the client conversation focused on the business. These are the technologies I use to build the application underneath.</p></div>
+  </div>
+</section>
+
+<section class="section section-soft">
+  <div class="container tech-grid">
+    {% for tech, desc in technologies %}<article class="tech-card reveal delay-{{ loop.index0 % 3 }}"><span>{{ '%02d'|format(loop.index) }}</span><h2>{{ tech }}</h2><p>{{ desc }}</p></article>{% endfor %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="container intro-grid">
+    <div class="section-kicker reveal">SYSTEM DEVELOPMENT</div>
+    <div class="intro-content reveal delay-1">
+      <h2>More than writing code.</h2>
+      <div class="skill-list">
+        <div><strong>Workflow mapping</strong><p>Turn real business steps into clear screens, records, status, and actions.</p></div>
+        <div><strong>Database structure</strong><p>Organize the information the system needs to store and relate.</p></div>
+        <div><strong>Business logic</strong><p>Build rules, validation, permissions, and workflow behavior.</p></div>
+        <div><strong>Responsive interfaces</strong><p>Build dashboards, forms, tables, and detail views that work across devices.</p></div>
+        <div><strong>Testing</strong><p>Check important workflows before treating a build as ready.</p></div>
+        <div><strong>Deployment readiness</strong><p>Keep local tools, secrets, and production settings separated cleanly.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section cta-wrap"><div class="container"><div class="cta-panel reveal"><div><p class="eyebrow">THE WORK MATTERS MORE THAN THE TOOL LIST</p><h2>See these skills inside a real system.</h2><p>The project pages show how the technology supports the business workflow.</p></div><a class="button light" href="{{ url_for('site.projects') }}">View projects</a></div></div></section>
+{% endblock %}

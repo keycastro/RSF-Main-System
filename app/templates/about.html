@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-hero">
+  <div class="container page-hero-grid">
+    <div class="reveal"><p class="eyebrow">ABOUT</p><h1>I build systems that make property operations <span>clearer and easier to manage.</span></h1></div>
+    <div class="page-hero-copy reveal delay-1"><p>I am Key Castro, a Custom Real Estate Systems Developer focused on web applications for real estate and long-term rental-property operations.</p><a class="button secondary" href="{{ url_for('site.projects') }}">See my work</a></div>
+  </div>
+</section>
+
+<section class="section section-soft">
+  <div class="container value-grid">
+    <article class="value-card reveal"><span>01</span><h2>Understand the work first.</h2><p>I begin with the real process: the people, records, handoffs, delays, and decisions that happen every day.</p></article>
+    <article class="value-card reveal delay-1"><span>02</span><h2>Build around the workflow.</h2><p>The system is shaped around what the business needs to do—not around a generic template.</p></article>
+    <article class="value-card reveal delay-2"><span>03</span><h2>Make it easy to use.</h2><p>Clear screens, simple actions, useful status, and a workflow the team can understand.</p></article>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container intro-grid">
+    <div class="section-kicker reveal">SPECIALIZATION</div>
+    <div class="intro-content reveal delay-1">
+      <h2>Focused on real estate and rental-property operations.</h2>
+      <p class="large-copy">I build for landlords, property managers, apartment operators, rental-property companies, and multifamily teams that need a better way to organize work.</p>
+      <div class="pill-row"><span>Landlords</span><span>Property managers</span><span>Apartment operators</span><span>Rental companies</span><span>Multifamily teams</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-soft">
+  <div class="container trust-panel reveal">
+    <div><p class="eyebrow">WHAT MATTERS TO ME</p><h2>Clear scope. Working software. Responsible delivery.</h2></div>
+    <div class="trust-list">
+      <div><strong>Clarity</strong><p>Clients should understand what the system does without needing technical language.</p></div>
+      <div><strong>Useful proof</strong><p>I prefer working systems and real screens over vague claims.</p></div>
+      <div><strong>Testing</strong><p>The full workflow should be checked before it is treated as ready.</p></div>
+      <div><strong>Handoff</strong><p>Documentation, deployment, access, and support should be clear before the project closes.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section mini-links-section">
+  <div class="container mini-links reveal">
+    <a href="{{ url_for('site.skills') }}"><span>Skills & technology</span><b>See the tools I use →</b></a>
+    <a href="{{ url_for('site.experience') }}"><span>Experience</span><b>See my development focus →</b></a>
+  </div>
+</section>
+
+<section class="section cta-wrap"><div class="container"><div class="cta-panel reveal"><div><p class="eyebrow">SEE THE PROOF</p><h2>My projects show how I think and build.</h2><p>Open a case study to see the problem, workflow, screens, and system behind the work.</p></div><a class="button light" href="{{ url_for('site.projects') }}">View projects</a></div></div></section>
+{% endblock %}

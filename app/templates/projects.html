@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-hero">
+  <div class="container page-hero-grid">
+    <div class="reveal"><p class="eyebrow">WORK / CASE STUDIES</p><h1>See the systems I have <span>designed and built.</span></h1></div>
+    <div class="page-hero-copy reveal delay-1"><p>Each project explains the business need, the system, the main workflow, the screens, and what I actually built.</p></div>
+  </div>
+</section>
+
+<section class="section section-soft">
+  <div class="container projects-stack">
+    {% for project in projects %}
+    <article class="project-card reveal">
+      <a class="project-image-link" href="{{ url_for('site.project_detail', slug=project.slug) }}">
+        <img src="{{ url_for('static', filename=project.image) }}" alt="{{ project.name }} dashboard preview">
+        <span>Open case study ↗</span>
+      </a>
+      <div class="project-info">
+        <div class="badge-row"><span>{{ project.category|upper }}</span><span>{{ project.status|upper }}</span></div>
+        <h2>{{ project.name }}</h2>
+        <h3>{{ project.subtitle }}</h3>
+        <p>{{ project.summary }}</p>
+        <div class="pill-row compact-pills">{% for tag in project.tags %}<span>{{ tag }}</span>{% endfor %}</div>
+        <a class="button primary" href="{{ url_for('site.project_detail', slug=project.slug) }}">View case study</a>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="container plain-callout reveal">
+    <p class="eyebrow">PORTFOLIO GROWTH</p>
+    <h2>More systems will be added when they are ready to show.</h2>
+    <p>I would rather present complete, useful work clearly than fill the site with unfinished project cards.</p>
+  </div>
+</section>
+
+<section class="section cta-wrap"><div class="container"><div class="cta-panel reveal"><div><p class="eyebrow">NEED SOMETHING SIMILAR?</p><h2>Your workflow does not need to look exactly like mine.</h2><p>Tell me what your team needs to track, manage, or automate.</p></div><a class="button light" href="{{ url_for('site.contact') }}">Discuss your project</a></div></div></section>
+{% endblock %}
