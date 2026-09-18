@@ -28,3 +28,15 @@ The inbox is not linked or advertised anywhere on the public website. It does no
 ## Production
 
 Flask + Gunicorn on the existing Render service. Render auto-deploy is off; use the documented explicit push + deploy workflow.
+
+## Visual design system
+
+Version 2.5.0 refreshes the interface with a lighter premium visual system:
+
+- warm neutral backgrounds
+- deep blue primary accents
+- muted green supporting accents
+- softer borders and cleaner card surfaces
+- improved readability across the public site and private owner inbox
+
+The site structure, routes, inbox privacy, and deployment architecture remain unchanged.

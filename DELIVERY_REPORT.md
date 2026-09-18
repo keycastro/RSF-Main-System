@@ -1,17 +1,25 @@
-# Delivery Report — 2.4.0
+# KEY CASTRO WEBSITE — VISUAL REDESIGN 2.5.0
 
-## Change
+## Goal
+Redesign the visual language of the existing KEY CASTRO website without rebuilding the project from scratch.
 
-Consolidated the Key Castro website and owner inquiry inbox into one Flask project/codebase while preserving two desktop launchers.
+## What changed
+- Replaced the heavy dark/orange visual treatment with a lighter premium palette.
+- Introduced a calm real-estate + technology color system using:
+  - warm neutrals / cream backgrounds
+  - deep blue / navy accents
+  - muted green support accents
+  - soft gray borders and text tones
+- Improved readability, spacing clarity, button visibility, and card contrast.
+- Updated the private owner inbox to match the public website style while preserving privacy and authentication behavior.
 
-## Public visitor experience
+## Files updated
+- `app/static/css/style.css`
+- `app/static/css/owner_inbox.css`
+- `VERSION.txt`
+- `README.md`
+- `DELIVERY_REPORT.md`
 
-Unchanged: public pages remain open without login. No owner/admin/inbox/login link is added to visitor-facing navigation, footer, homepage, sitemap, projects, or case studies.
-
-## Private owner experience
-
-`KEY CASTRO INBOX` securely opens the deployed online inbox through a short-lived access ticket and authenticated Flask session. The inbox uses the existing contact inquiry database and supports New, Read, Replied, Archived, and Reply by Email.
-
-## Folder result
-
-After the migration installer verifies the live website and private inbox, the old separate `KEY_CASTRO_INBOX` folder is backed up and removed. The active project remains only `KEY_CASTRO_WEBSITE`.
+## Safety
+- No routes, functionality, project structure, public/private separation, or deployment architecture were rebuilt.
+- This is a visual-system refresh only.
