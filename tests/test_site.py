@@ -16,7 +16,7 @@ class PortfolioSiteTests(unittest.TestCase):
         data = response.get_json()
         self.assertEqual(data["status"], "ok")
         self.assertEqual(data["app"], "Key Castro Portfolio")
-        self.assertEqual(data["version"], "2.3.0")
+        self.assertEqual(data["version"], "2.4.0")
 
     def test_main_pages_render(self):
         routes = ["/", "/about", "/services", "/projects", "/skills", "/experience", "/contact"]
@@ -43,6 +43,10 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b">Contact</a>", response.data)
         self.assertIn(b"COMPLETED PROJECT", response.data)
         self.assertEqual(response.data.count(b"<h3>Nexus Properties</h3>"), 1)
+        public_shell = response.data.lower()
+        self.assertNotIn(b"key castro inbox", public_shell)
+        self.assertNotIn(b"owner dashboard", public_shell)
+        self.assertNotIn(b">admin<", public_shell)
 
     def test_nexus_case_study_has_breadcrumb_and_simplified_section_nav(self):
         response = self.client.get("/projects/nexus-properties")
@@ -111,7 +115,9 @@ class PortfolioSiteTests(unittest.TestCase):
             self.assertIn("Sample Prospect", path.read_text(encoding="utf-8"))
 
 
-    def test_database_contact_and_private_owner_api(self):
+    def test_database_contact_and_private_online_owner_inbox(self):
+        from urllib.parse import urlparse
+
         with tempfile.TemporaryDirectory() as tmp:
             db_path = Path(tmp) / "inbox.sqlite3"
             self.app.config.update(
@@ -122,6 +128,7 @@ class PortfolioSiteTests(unittest.TestCase):
                 SMTP_FROM_EMAIL="",
             )
 
+            # Public contact form remains open and stores the inquiry.
             self.client.get("/contact")
             with self.client.session_transaction() as sess:
                 token = sess["contact_csrf"]
@@ -140,35 +147,53 @@ class PortfolioSiteTests(unittest.TestCase):
             self.assertEqual(response.status_code, 302)
             self.assertTrue(db_path.exists())
 
-            hidden = self.client.get("/__owner_api/inquiries")
+            # The online owner inbox is not publicly accessible.
+            hidden = self.client.get("/owner/inbox")
             self.assertEqual(hidden.status_code, 404)
+            self.assertIn("noindex", hidden.headers.get("X-Robots-Tag", ""))
+
+            # The desktop launcher exchanges its private bearer token for a short-lived access ticket.
+            bad_ticket = self.client.post("/__owner_api/session-ticket")
+            self.assertEqual(bad_ticket.status_code, 404)
 
             headers = {"Authorization": "Bearer owner-test-token"}
-            inbox = self.client.get("/__owner_api/inquiries", headers=headers)
-            self.assertEqual(inbox.status_code, 200)
-            data = inbox.get_json()
-            self.assertEqual(len(data["items"]), 1)
-            self.assertEqual(data["items"][0]["status"], "new")
+            owner_health = self.client.get("/__owner_api/health", headers=headers)
+            self.assertEqual(owner_health.status_code, 200)
+            self.assertEqual(owner_health.get_json()["counts"]["new"], 1)
 
-            inquiry_id = data["items"][0]["id"]
-            detail = self.client.get(f"/__owner_api/inquiries/{inquiry_id}", headers=headers)
+            ticket_response = self.client.post("/__owner_api/session-ticket", headers=headers)
+            self.assertEqual(ticket_response.status_code, 200)
+            access_path = urlparse(ticket_response.get_json()["url"]).path
+            access = self.client.get(access_path, follow_redirects=False)
+            self.assertEqual(access.status_code, 302)
+            self.assertEqual(access.headers["Location"], "/owner/inbox")
+
+            inbox = self.client.get("/owner/inbox")
+            self.assertEqual(inbox.status_code, 200)
+            self.assertIn(b"Real Prospect", inbox.data)
+            self.assertIn(b"KEY CASTRO INBOX", inbox.data)
+            self.assertIn("noindex", inbox.headers.get("X-Robots-Tag", ""))
+
+            detail = self.client.get("/owner/inbox/1")
             self.assertEqual(detail.status_code, 200)
-            self.assertEqual(detail.get_json()["item"]["status"], "read")
+            self.assertIn(b"Reply by Email", detail.data)
+            with self.client.session_transaction() as sess:
+                owner_csrf = sess["key_castro_owner_csrf"]
 
             updated = self.client.post(
-                f"/__owner_api/inquiries/{inquiry_id}/status",
-                headers=headers,
-                json={"status": "replied"},
+                "/owner/inbox/1/status",
+                data={"csrf_token": owner_csrf, "status": "replied"},
+                follow_redirects=True,
             )
             self.assertEqual(updated.status_code, 200)
-            self.assertEqual(updated.get_json()["item"]["status"], "replied")
-
-            self.assertIn("noindex", inbox.headers.get("X-Robots-Tag", ""))
+            self.assertIn(b"replied", updated.data.lower())
 
     def test_sitemap_and_robots(self):
         sitemap = self.client.get("/sitemap.xml")
         self.assertEqual(sitemap.status_code, 200)
         self.assertIn(b"/projects/nexus-properties", sitemap.data)
+        self.assertNotIn(b"/owner/", sitemap.data)
+        self.assertNotIn(b"/__owner", sitemap.data)
         robots = self.client.get("/robots.txt")
         self.assertEqual(robots.status_code, 200)
         self.assertIn(b"Disallow: /", robots.data)

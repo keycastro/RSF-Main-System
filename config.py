@@ -31,6 +31,7 @@ class BaseConfig:
     CONTACT_DELIVERY_MODE = os.getenv("CONTACT_DELIVERY_MODE", "local").strip().lower()
     DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
     OWNER_INBOX_TOKEN = os.getenv("OWNER_INBOX_TOKEN", "").strip()
+    OWNER_TIMEZONE = os.getenv("OWNER_TIMEZONE", "Asia/Manila").strip() or "Asia/Manila"
     ENABLE_LOCAL_CONTACT_STORAGE = _env_bool("ENABLE_LOCAL_CONTACT_STORAGE", "1")
     CONTACT_STORAGE_PATH = os.getenv(
         "CONTACT_STORAGE_PATH", str(BASE_DIR / "instance" / "contact_messages.jsonl")

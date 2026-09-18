@@ -1,0 +1,38 @@
+{% extends 'owner/base.html' %}
+{% block content %}
+<section class="owner-counts" aria-label="Inquiry counts">
+  <div><strong>{{ counts.get('new', 0) }}</strong><span>New</span></div>
+  <div><strong>{{ counts.get('read', 0) }}</strong><span>Read</span></div>
+  <div><strong>{{ counts.get('replied', 0) }}</strong><span>Replied</span></div>
+  <div><strong>{{ counts.get('archived', 0) }}</strong><span>Archived</span></div>
+</section>
+
+<div class="owner-layout">
+  <nav class="owner-filters" aria-label="Inbox filters">
+    <a class="{{ 'active' if not current_status else '' }}" href="{{ url_for('owner.owner_inbox') }}">All inquiries</a>
+    {% for status in ['new', 'read', 'replied', 'archived'] %}
+      <a class="{{ 'active' if current_status == status else '' }}" href="{{ url_for('owner.owner_inbox', status=status) }}">{{ status|title }}</a>
+    {% endfor %}
+  </nav>
+
+  <section class="owner-panel">
+    <div class="owner-panel-head">
+      <div><h1>Client inquiries</h1><p>Open a message to review it and manage its status.</p></div>
+    </div>
+    {% if not items %}
+      <div class="owner-empty">No inquiries in this view yet.</div>
+    {% else %}
+      <div class="owner-list">
+      {% for item in items %}
+        <a class="owner-item" href="{{ url_for('owner.owner_inquiry', inquiry_id=item.id) }}">
+          <span class="owner-status {{ item.status }}">{{ item.status }}</span>
+          <div><strong>{{ item.name }}</strong><small>{{ item.email }}{% if item.company %} · {{ item.company }}{% endif %}</small></div>
+          <p>{{ item.preview }}</p>
+          <time>{{ item.date_label }}</time>
+        </a>
+      {% endfor %}
+      </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

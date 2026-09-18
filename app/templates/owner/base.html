@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <title>{{ title }} · Key Castro Owner Inbox</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/brand/KEY_CASTRO.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/owner_inbox.css') }}">
+</head>
+<body>
+  <main class="owner-shell">
+    <header class="owner-header">
+      <div>
+        <p class="owner-eyebrow">PRIVATE OWNER VIEW</p>
+        <strong>KEY CASTRO INBOX</strong>
+        <span>Client inquiries from the live portfolio contact form.</span>
+      </div>
+      <div class="owner-header-actions">
+        <span class="owner-badge">OWNER ONLY</span>
+        {% if csrf_token %}
+        <form method="post" action="{{ url_for('owner.owner_logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button type="submit">End session</button>
+        </form>
+        {% endif %}
+      </div>
+    </header>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

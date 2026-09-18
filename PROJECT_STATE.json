@@ -1,0 +1,59 @@
+{
+  "project": "KEY_CASTRO_WEBSITE",
+  "handoff_date": "2026-09-18",
+  "version": "2.4.0",
+  "owner_public_name": "Key Castro",
+  "positioning": "Custom Real Estate Systems Developer",
+  "framework": "Flask",
+  "production_entrypoint": "wsgi:app",
+  "official_live_url": "https://keycastro.onrender.com",
+  "health_path": "/system/health",
+  "local_project_path": "C:\\Users\\Admin\\Documents\\KEY_CASTRO_WEBSITE",
+  "render": {
+    "workspace": "Key Castro",
+    "service_name": "keycastro",
+    "service_id": "srv-dam749e1egvs738cppq0",
+    "region_selected": "singapore",
+    "branch": "main",
+    "auto_deploy": false,
+    "repository": "https://github.com/keycastro/key-castro-render-deploy"
+  },
+  "github": {
+    "primary_private_repo": "https://github.com/keycastro/key-castro-website",
+    "deployment_public_mirror": "https://github.com/keycastro/key-castro-render-deploy",
+    "local_primary_remote": "origin",
+    "local_deploy_remote": "renderdeploy"
+  },
+  "public_pages_require_login": false,
+  "private_owner_inbox": {
+    "deployed_online": true,
+    "listed_on_public_site": false,
+    "listed_in_sitemap": false,
+    "authentication": "desktop launcher exchanges a private bearer token for a short-lived signed access ticket; browser then uses a secure Flask session",
+    "database": "Render PostgreSQL via DATABASE_URL",
+    "statuses": ["new", "read", "replied", "archived"],
+    "local_secret_config": ".owner_inbox.json",
+    "desktop_launcher": "KEY CASTRO INBOX",
+    "localhost_required": false
+  },
+  "desktop_launchers": {
+    "KEY CASTRO": "https://keycastro.onrender.com/",
+    "KEY CASTRO INBOX": "private authenticated online owner inbox"
+  },
+  "separate_inbox_project_folder_required": false,
+  "retired_host": {
+    "provider": "PythonAnywhere",
+    "old_url": "https://keycastro.pythonanywhere.com",
+    "webapp_deleted": true,
+    "delete_http_status": 204,
+    "deleted_on": "2026-09-18"
+  },
+  "public_contact_email": "keycastro509@gmail.com",
+  "contact_form": {
+    "mode": "database",
+    "inquiry_database_active": true,
+    "smtp_notification_optional": true,
+    "smtp_auth_configured_and_verified": false
+  },
+  "secrets_included_in_repository": false
+}

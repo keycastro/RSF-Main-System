@@ -9,3 +9,4 @@ instance/*
 .DS_Store
 Thumbs.db
 _backups/
+.owner_inbox.json

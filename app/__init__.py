@@ -30,7 +30,9 @@ def create_app(config_name: str | None = None):
             raise RuntimeError("Production requires OWNER_INBOX_TOKEN for the private owner API.")
 
     from .routes import site
+    from .owner import owner
     app.register_blueprint(site)
+    app.register_blueprint(owner)
 
     @app.after_request
     def security_headers(response):
@@ -47,8 +49,9 @@ def create_app(config_name: str | None = None):
             "script-src 'self'; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; "
             "base-uri 'self'; form-action 'self'",
         )
-        if request.path.startswith("/__owner_api/"):
+        if request.path.startswith(("/__owner_api/", "/__owner_access/", "/owner/")):
             response.headers["Cache-Control"] = "no-store, max-age=0"
+            response.headers["Pragma"] = "no-cache"
             response.headers["X-Robots-Tag"] = "noindex, nofollow, noarchive"
         return response
 

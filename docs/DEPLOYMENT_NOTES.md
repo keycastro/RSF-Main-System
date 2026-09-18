@@ -73,3 +73,7 @@ instance/contact_messages.jsonl
 ```
 
 Production uses SMTP and does not depend on that local file.
+
+## 2.4.0 owner inbox
+
+The private owner inbox now runs inside the existing Render service. It uses the existing `DATABASE_URL` and `OWNER_INBOX_TOKEN` production secrets. No second Render web service is required. The desktop inbox launcher exchanges the local private token for a short-lived signed access URL, then the browser uses a secure Flask session.

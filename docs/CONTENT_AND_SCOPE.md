@@ -58,3 +58,7 @@ Home → Projects → Project Detail → Contact
 Primary navigation: **Projects · Services · About · Contact**.
 
 The homepage summarizes the offer and one completed project. Detailed project explanation belongs on the individual case-study page. Technical detail remains available under Skills & Technology, while broader development practice remains under Experience.
+
+## 2.4.0 private inbox boundary
+
+The public site remains a normal public portfolio. Owner inbox functionality is part of the same Flask codebase but is not linked or described in visitor-facing navigation, footer, homepage, sitemap, project pages, or case studies. Unauthenticated owner-route access returns 404.

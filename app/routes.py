@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from email.message import EmailMessage
 from pathlib import Path
 
-from .inquiries import ALLOWED_STATUSES, counts, create_inquiry, get_inquiry, list_inquiries, update_status
+from .inquiries import create_inquiry
 
 from flask import (
     Blueprint,
@@ -281,56 +281,6 @@ def contact():
     return render_template("contact.html", title="Contact", **context)
 
 
-def _owner_api_allowed() -> bool:
-    expected = current_app.config.get("OWNER_INBOX_TOKEN", "")
-    header = request.headers.get("Authorization", "")
-    supplied = header[7:] if header.startswith("Bearer ") else ""
-    return bool(expected and supplied and hmac.compare_digest(expected, supplied))
-
-
-def _owner_api_guard() -> None:
-    if not _owner_api_allowed():
-        abort(404)
-
-
-@site.get("/__owner_api/health")
-def owner_api_health():
-    _owner_api_guard()
-    return jsonify(status="ok", counts=counts())
-
-
-@site.get("/__owner_api/inquiries")
-def owner_api_inquiries():
-    _owner_api_guard()
-    status = request.args.get("status", "").strip().lower() or None
-    if status and status not in ALLOWED_STATUSES:
-        abort(400)
-    return jsonify(items=list_inquiries(status=status), counts=counts())
-
-
-@site.get("/__owner_api/inquiries/<int:inquiry_id>")
-def owner_api_inquiry_detail(inquiry_id: int):
-    _owner_api_guard()
-    item = get_inquiry(inquiry_id)
-    if item is None:
-        abort(404)
-    if item.get("status") == "new":
-        item = update_status(inquiry_id, "read") or item
-    return jsonify(item=item)
-
-
-@site.post("/__owner_api/inquiries/<int:inquiry_id>/status")
-def owner_api_inquiry_status(inquiry_id: int):
-    _owner_api_guard()
-    payload = request.get_json(silent=True) or {}
-    status = str(payload.get("status", "")).strip().lower()
-    if status not in ALLOWED_STATUSES:
-        return jsonify(error="invalid_status"), 400
-    item = update_status(inquiry_id, status)
-    if item is None:
-        abort(404)
-    return jsonify(item=item)
-
 
 @site.get("/system/health")
 def health():
@@ -338,7 +288,7 @@ def health():
         status="ok",
         app=current_app.config.get("APP_NAME", "Key Castro Portfolio"),
         environment=current_app.config.get("ENVIRONMENT_LABEL", "unknown"),
-        version="2.3.0",
+        version="2.4.0",
     )
 
 
