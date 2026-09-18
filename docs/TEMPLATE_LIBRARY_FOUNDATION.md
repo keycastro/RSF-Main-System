@@ -1,4 +1,4 @@
-# KEY CASTRO — Template Library Architecture (2.8.0)
+# KEY CASTRO — Template Library Architecture (2.9.0 current state)
 
 ## Purpose
 
@@ -68,10 +68,18 @@ The system library must never expose Admin, Inbox, Owner Dashboard, Login, owner
 
 Any future live demo must use sample data and a separate runtime/database/secrets from the production KEY CASTRO inquiry/owner environment. Never connect a public demo to the production inquiry database or owner authentication.
 
-The current 2.8.0 media are source-derived interface previews using sample/demo data. They must not be described as live client-data screenshots.
+The current system media are source-derived interface previews using sample/demo data. They must not be described as live client-data screenshots.
 
 ## Adding another system safely
 
 Before changing status to `published`, confirm the actual system exists and has been inspected; the content is useful and source-grounded; the slug is stable; screenshots/video are real or accurately disclosed; standard/free scope and paid-customization boundary are clear; Contact attribution works; SEO metadata is complete; private/public separation still passes; tests pass; and production verification succeeds.
 
 Do not create thin pages merely for search traffic. Write useful pages around actual business problems and working systems.
+
+## 2.9.0 public naming / information architecture
+
+The stable route contract remains `/system-templates` and `/system-templates/<stable-slug>` for SEO and backward compatibility, but the visible public navigation label is now simply **Systems**.
+
+The former `/projects` index duplicated the same published system registry and now permanently redirects to `/system-templates`. Do not create a second catalog for the same items. One published system should have one canonical detail page and one clear browse destination.
+
+System detail pages follow the shared hierarchy documented in `docs/UX_INFORMATION_ARCHITECTURE.md`, with technical/build details progressively disclosed rather than competing with the business explanation.

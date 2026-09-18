@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="page-hero">
+<section class="page-hero secondary-page-hero">
+  <div class="container"><nav class="breadcrumb reveal" aria-label="Breadcrumb"><a href="{{ url_for('site.about') }}">About</a><span aria-hidden="true">/</span><strong aria-current="page">Skills & technology</strong></nav></div>
   <div class="container page-hero-grid">
     <div class="reveal"><p class="eyebrow">SKILLS & TECHNOLOGY</p><h1>The technical stack behind the <span>working systems.</span></h1></div>
-    <div class="page-hero-copy reveal delay-1"><p>This page is the technical detail. Client-facing project pages stay focused on the business problem and the system itself.</p></div>
+    <div class="page-hero-copy reveal delay-1"><p>This secondary page shows the tools used to build and deliver the systems. The main public pages stay focused on business needs and outcomes.</p></div>
   </div>
 </section>
 
@@ -13,5 +14,5 @@
   </div>
 </section>
 
-<section class="section cta-wrap"><div class="container"><div class="cta-panel reveal"><div><p class="eyebrow">SEE THE TECHNOLOGY IN CONTEXT</p><h2>Open a project to see how the stack supports a real workflow.</h2></div><a class="button light" href="{{ url_for('site.projects') }}">View projects</a></div></div></section>
+<section class="section cta-wrap"><div class="container"><div class="cta-panel reveal"><div><p class="eyebrow">SEE THE TECHNOLOGY IN CONTEXT</p><h2>Review the systems it supports.</h2></div><a class="button light" href="{{ url_for('site.system_templates') }}">View Systems</a></div></div></section>
 {% endblock %}

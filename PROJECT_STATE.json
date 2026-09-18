@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-19",
-  "version": "2.8.0",
+  "version": "2.9.0",
   "owner_public_name": "Key Castro",
   "positioning": "Custom Real Estate Systems Developer",
   "framework": "Flask",
@@ -62,7 +62,7 @@
     "template_request_type_active": true
   },
   "secrets_included_in_repository": false,
-  "visual_design": "Premium architectural ivory + navy + sage system; readability-first; public site and private inbox aligned",
+  "visual_design": "Premium architectural ivory + navy + sage system; readability-first; 2.9.0 adds IA/readability cleanup without a visual rebuild",
   "template_library_foundation": {
     "prepared": true,
     "published_templates": 2,
@@ -114,5 +114,22 @@
       }
     ],
     "truth_boundary": "Built by Key Castro; no client commission, adoption, or paid engagement is claimed without evidence."
+  },
+  "information_architecture": {
+    "primary_navigation": [
+      "Home",
+      "Systems",
+      "Services",
+      "About",
+      "Contact"
+    ],
+    "systems_primary_route": "/system-templates",
+    "legacy_projects_route": "301 redirect to /system-templates",
+    "secondary_pages": [
+      "/skills",
+      "/experience"
+    ],
+    "ux_contract": "docs/UX_INFORMATION_ARCHITECTURE.md",
+    "visitor_flow": "Home -> Systems -> System -> Free Access or Customization -> Contact"
   }
 }

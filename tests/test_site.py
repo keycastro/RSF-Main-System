@@ -26,7 +26,6 @@ class PortfolioSiteTests(unittest.TestCase):
             "/",
             "/about",
             "/services",
-            "/projects",
             "/skills",
             "/experience",
             "/contact",
@@ -42,13 +41,16 @@ class PortfolioSiteTests(unittest.TestCase):
 
     def test_two_systems_are_published_separately_and_nexus_is_removed(self):
         home = self.client.get("/")
-        projects = self.client.get("/projects")
         library = self.client.get("/system-templates")
 
-        for response in (home, projects, library):
+        for response in (home, library):
             self.assertIn(b"Property Operations Command Center", response.data)
             self.assertIn(b"Property Inventory Hub", response.data)
             self.assertNotIn(b"Nexus Properties", response.data)
+
+        legacy_projects = self.client.get("/projects", follow_redirects=False)
+        self.assertEqual(legacy_projects.status_code, 301)
+        self.assertEqual(legacy_projects.headers["Location"], "/system-templates")
 
         pocc = self.client.get("/system-templates/property-operations-command-center")
         pih = self.client.get("/system-templates/property-inventory-hub")
@@ -63,12 +65,16 @@ class PortfolioSiteTests(unittest.TestCase):
     def test_navigation_and_home_hierarchy(self):
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b">Projects</a>", response.data)
-        self.assertIn(b">System Templates</a>", response.data)
+        self.assertIn(b">Home</a>", response.data)
+        self.assertIn(b">Systems</a>", response.data)
         self.assertIn(b">Services</a>", response.data)
         self.assertIn(b">About</a>", response.data)
         self.assertIn(b">Contact</a>", response.data)
-        self.assertIn(b"COMPLETED SYSTEMS", response.data)
+        self.assertNotIn(b">Projects</a>", response.data)
+        self.assertNotIn(b">System Templates</a>", response.data)
+        self.assertIn(b"SYSTEMS BUILT BY KEY CASTRO", response.data)
+        self.assertIn(b"View Systems", response.data)
+        self.assertIn(b"Discuss a Custom System", response.data)
         self.assertEqual(response.data.count(b"Property Operations Command Center</h3>"), 1)
         self.assertEqual(response.data.count(b"Property Inventory Hub</h3>"), 1)
         public_shell = response.data.lower()
@@ -76,17 +82,45 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertNotIn(b"owner dashboard", public_shell)
         self.assertNotIn(b">admin<", public_shell)
 
+    def test_information_architecture_uses_one_systems_mental_model(self):
+        home = self.client.get("/")
+        systems = self.client.get("/system-templates")
+        services = self.client.get("/services")
+        about = self.client.get("/about")
+
+        # One primary place to browse systems; Projects remains a legacy redirect only.
+        self.assertIn(b">Systems</a>", home.data)
+        self.assertNotIn(b">Projects</a>", home.data)
+        self.assertNotIn(b">System Templates</a>", home.data)
+        self.assertIn(b"Completed systems for", systems.data)
+        self.assertNotIn(b"Free access by request</strong>", systems.data)
+
+        # Skills and Experience remain useful secondary pages, but not primary navigation items.
+        header = home.data.split(b"</header>", 1)[0]
+        self.assertNotIn(b">Skills & technology</a>", header)
+        self.assertNotIn(b">Experience</a>", header)
+        self.assertIn(b"Skills & technology", about.data)
+        self.assertIn(b"Experience", about.data)
+
+        # Services is about paid work, not another copy of the systems catalog.
+        self.assertIn(b"Paid development", services.data)
+        self.assertIn(b"Custom System Development", services.data)
+        self.assertIn(b"Customize an Existing KEY CASTRO System", services.data)
+
     def test_system_detail_has_truthful_status_boundary_and_dual_ctas(self):
         for slug in ("property-operations-command-center", "property-inventory-hub"):
             with self.subTest(slug=slug):
                 response = self.client.get(f"/system-templates/{slug}")
                 self.assertEqual(response.status_code, 200)
                 self.assertIn(b'aria-label="Breadcrumb"', response.data)
-                self.assertIn(b"COMPLETED SYSTEM", response.data)
-                self.assertIn(b"FREE STANDARD TEMPLATE", response.data)
+                self.assertIn(b"FREE STANDARD SYSTEM", response.data)
                 self.assertIn(b"Request Free Template Access", response.data)
                 self.assertIn(b"Customize This System", response.data)
+                self.assertEqual(response.data.count(b"Request Free Template Access"), 2)
+                self.assertEqual(response.data.count(b"Customize This System"), 2)
                 self.assertIn(b"sample/demo data", response.data)
+                self.assertIn(b"Technical details about this build", response.data)
+                self.assertNotIn(b"Request the existing system", response.data)
                 self.assertNotIn(b"client hired", response.data.lower())
                 self.assertNotIn(b"official client", response.data.lower())
 
@@ -225,6 +259,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"/system-templates/property-inventory-hub", sitemap.data)
         self.assertIn(b"/system-templates", sitemap.data)
         self.assertNotIn(b"/projects/nexus-properties", sitemap.data)
+        self.assertNotIn(b"<loc>http://localhost/projects</loc>", sitemap.data)
         self.assertNotIn(b"/owner/", sitemap.data)
         self.assertNotIn(b"/__owner", sitemap.data)
         robots = self.client.get("/robots.txt")
@@ -320,19 +355,19 @@ class PortfolioSiteTests(unittest.TestCase):
         )
         self.assertEqual(free_access.status_code, 200)
         self.assertIn(b"Property Operations Command Center", free_access.data)
-        self.assertIn(b"Request type: Free Template Access", free_access.data)
+        self.assertIn(b"Free Template Access", free_access.data)
         self.assertIn(b'name="source_slug" value="property-operations-command-center"', free_access.data)
         self.assertIn(b'name="source_intent" value="free-access"', free_access.data)
-        self.assertIn(b"Request free template access", free_access.data)
+        self.assertIn(b"Request Free Template Access", free_access.data)
 
         customize = self.client.get(
             "/contact?template=property-inventory-hub&intent=customize"
         )
         self.assertEqual(customize.status_code, 200)
         self.assertIn(b"Property Inventory Hub", customize.data)
-        self.assertIn(b"Request type: Custom System / Customization", customize.data)
+        self.assertIn(b"Custom System / Customization", customize.data)
         self.assertIn(b'name="source_intent" value="customize"', customize.data)
-        self.assertIn(b"Send customization request", customize.data)
+        self.assertIn(b"Send Customization Request", customize.data)
 
         generic = self.client.get("/contact")
         self.assertEqual(generic.status_code, 200)

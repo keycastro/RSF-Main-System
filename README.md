@@ -12,8 +12,8 @@ C:\Users\Admin\Documents\KEY_CASTRO_WEBSITE
 
 This single codebase contains:
 
-- Public portfolio website
-- Completed-project case studies
+- Public portfolio and systems website
+- Completed-system detail pages
 - Contact form
 - Inquiry database integration
 - Private online owner inbox
@@ -41,7 +41,11 @@ Version 2.6.0 delivers the high-end commercial visual system:
 - intentionally readable metadata and supporting text instead of ultra-small low-contrast labels
 - a premium business-tool treatment for the private owner inbox
 
-The site structure, routes, inbox privacy, and deployment architecture remain unchanged.
+The core visual identity, inbox privacy, and deployment architecture remain unchanged.
+
+## Public information architecture
+
+Version 2.9.0 simplifies the public journey to **Home · Systems · Services · About · Contact**. The previous Projects index duplicated the same published systems, so `/projects` now permanently redirects to the single Systems library at `/system-templates`. Skills and Experience remain public/indexable secondary pages reached through About/footer. See `docs/UX_INFORMATION_ARCHITECTURE.md`.
 
 ## Future system-template foundation
 

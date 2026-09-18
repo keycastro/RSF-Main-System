@@ -124,3 +124,12 @@ This content update does not claim that Nexus Properties officially hired, paid,
 - Removed Nexus Properties from the current public homepage/project/sitemap presentation while retaining historical source/documentation as non-public history.
 - Added truthful, source-grounded system metadata and sample-data interface previews; no client commission/adoption claim is made.
 - Existing Flask, GitHub, Render, PostgreSQL, private owner authentication, and desktop-launcher architecture remain unchanged.
+
+## 2.9.0 — Information architecture and UX organization cleanup
+
+- Consolidated the duplicated Projects/System Templates public model into one visible **Systems** destination while preserving stable `/system-templates` URLs.
+- Added explicit Home navigation and kept primary navigation to Home, Systems, Services, About, Contact.
+- `/projects` now permanently redirects to `/system-templates`; duplicate Projects index content is removed from the sitemap/public hierarchy.
+- Simplified homepage, system library, system detail, Services, About, Contact, and secondary Skills/Experience navigation.
+- Preserved both independent published systems, Contact → PostgreSQL → private Inbox attribution, SEO, security, GitHub/Render architecture, and desktop launchers.
+- Deployment should use the exact release commit SHA per the existing safe workflow to avoid serving an older branch snapshot.

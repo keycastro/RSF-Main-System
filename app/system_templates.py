@@ -40,6 +40,7 @@ class SystemTemplate:
     name: str
     category: str
     short_description: str
+    card_audience: str
     full_description: str
     business_problem: str
     target_users: tuple[str, ...]
@@ -68,6 +69,7 @@ class SystemTemplate:
                 "name": self.name,
                 "category": self.category,
                 "short_description": self.short_description,
+                "card_audience": self.card_audience,
                 "full_description": self.full_description,
                 "business_problem": self.business_problem,
                 "seo_title": self.seo_title,
@@ -89,10 +91,11 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             "An action-first operations system for property teams to track work, deadlines, "
             "follow-ups, approvals, guest readiness, tenant placement, and repeatable SOPs."
         ),
+        card_audience="Property managers, rental operators, and property-operations teams.",
         full_description=(
             "A completed property-operations application built around one practical goal: know what "
-            "needs attention before something gets missed. The standard version is available as a "
-            "free template by request, while business-specific changes are handled as paid custom development."
+            "needs attention before something gets missed. It brings day-to-day operational work, "
+            "follow-ups, approvals, readiness, and repeatable processes into one structured workspace."
         ),
         business_problem=(
             "Property operations can scatter deadlines, follow-ups, guest-readiness tasks, contractor "
@@ -183,10 +186,10 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             "A private property-inventory workspace where authorized real-estate teams can add, search, "
             "maintain, reconfirm, and retire shared off-market listings."
         ),
+        card_audience="Brokerages and real-estate teams managing shared private inventory.",
         full_description=(
             "A completed, brand-neutral internal real-estate inventory system for teams that need one private "
-            "place to keep shared property listings searchable and current. The standard version is available "
-            "as a free template by request, with paid customization available for company-specific requirements."
+            "place to keep shared property listings searchable, owned, reconfirmed, and current."
         ),
         business_problem=(
             "Shared property inventory becomes difficult to trust when listings live in chats, spreadsheets, or "

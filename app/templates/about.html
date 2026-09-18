@@ -2,42 +2,38 @@
 {% block content %}
 <section class="page-hero">
   <div class="container page-hero-grid">
-    <div class="reveal"><p class="eyebrow">ABOUT</p><h1>I build real estate systems around <span>how the operation actually works.</span></h1></div>
-    <div class="page-hero-copy reveal delay-1"><p>I am Key Castro, a Custom Real Estate Systems Developer focused on web applications for real estate and long-term rental-property operations.</p><a class="button secondary" href="{{ url_for('site.projects') }}">View projects</a></div>
+    <div class="reveal"><p class="eyebrow">ABOUT</p><h1>I am Key Castro, a developer focused on <span>real estate business systems.</span></h1></div>
+    <div class="page-hero-copy reveal delay-1"><p>I build web applications around how property and real-estate teams actually work: the records they manage, the actions they take, and the information they need to see clearly.</p></div>
   </div>
 </section>
 
 <section class="section section-soft">
-  <div class="container value-grid">
-    <article class="value-card reveal"><span>01</span><h2>Understand first.</h2><p>I map the people, records, handoffs, delays, and decisions before deciding how the system should work.</p></article>
-    <article class="value-card reveal delay-1"><span>02</span><h2>Build for the workflow.</h2><p>The screens, database, permissions, and actions are shaped around the real operating process.</p></article>
-    <article class="value-card reveal delay-2"><span>03</span><h2>Keep it usable.</h2><p>Clear navigation, simple actions, useful status, testing, and a handoff people can understand.</p></article>
+  <div class="container">
+    <div class="section-head compact-head reveal"><div><p class="eyebrow">HOW I APPROACH A BUILD</p><h2>Understand the operation before designing the system.</h2></div></div>
+    <div class="value-grid">
+      <article class="value-card reveal"><span>01</span><h2>Understand</h2><p>Map the people, records, handoffs, delays, and decisions that shape the workflow.</p></article>
+      <article class="value-card reveal delay-1"><span>02</span><h2>Build</h2><p>Shape the screens, database, permissions, and actions around the agreed business process.</p></article>
+      <article class="value-card reveal delay-2"><span>03</span><h2>Make it usable</h2><p>Keep navigation, status, actions, testing, documentation, and handoff understandable.</p></article>
+    </div>
   </div>
 </section>
 
 <section class="section">
-  <div class="container about-focus-grid">
+  <div class="container about-simple-grid">
     <div class="reveal">
       <p class="eyebrow">SPECIALIZATION</p>
-      <h2>Real estate and rental-property operations.</h2>
-      <p class="large-copy">I focus on landlords, property managers, apartment operators, rental-property companies, brokerages, and multifamily teams that need a clearer system for day-to-day work.</p>
-      <div class="pill-row"><span>Property operations</span><span>Listings</span><span>Rental workflows</span><span>Maintenance</span><span>Dashboards</span></div>
+      <h2>Real estate and property operations.</h2>
+      <p class="large-copy">My current focus includes brokerages, property managers, rental operators, and real-estate teams that need clearer systems for inventory, operations, maintenance, follow-ups, and day-to-day coordination.</p>
     </div>
-    <div class="capability-list reveal delay-1">
-      <div><strong>Workflow & scope</strong><p>Translate the business process into a clear, buildable system.</p></div>
-      <div><strong>Full-stack development</strong><p>Build the interface, backend logic, database, validation, and permissions.</p></div>
-      <div><strong>Testing & delivery</strong><p>Check important workflows and prepare documentation, deployment, or handoff.</p></div>
-      <div><strong>Clear communication</strong><p>Explain the system in business language instead of unnecessary technical jargon.</p></div>
+    <div class="about-secondary reveal delay-1">
+      <p>For more detail about the development tools and delivery practice behind the systems, use the secondary pages below.</p>
+      <div class="secondary-link-list">
+        <a href="{{ url_for('site.skills') }}"><strong>Skills & technology</strong><span>Technical stack and capabilities →</span></a>
+        <a href="{{ url_for('site.experience') }}"><strong>Experience</strong><span>Development and delivery practice →</span></a>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="section mini-links-section">
-  <div class="container mini-links reveal">
-    <a href="{{ url_for('site.skills') }}"><span>Technical details</span><b>Skills & technology →</b></a>
-    <a href="{{ url_for('site.experience') }}"><span>Development practice</span><b>Experience →</b></a>
-  </div>
-</section>
-
-<section class="section cta-wrap"><div class="container"><div class="cta-panel reveal"><div><p class="eyebrow">SEE THE WORK</p><h2>Review a completed system before starting a conversation.</h2><p>The case study shows the problem, workflow, screens, and build behind the project.</p></div><a class="button light" href="{{ url_for('site.projects') }}">View projects</a></div></div></section>
+<section class="section cta-wrap"><div class="container"><div class="cta-panel reveal"><div><p class="eyebrow">SEE THE SYSTEMS</p><h2>Review the completed work directly.</h2><p>Start with the systems themselves to see the workflows, screens, standard scope, and customization options.</p></div><a class="button light" href="{{ url_for('site.system_templates') }}">View Systems</a></div></div></section>
 {% endblock %}

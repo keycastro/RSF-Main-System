@@ -35,24 +35,24 @@ site = Blueprint("site", __name__)
 
 SERVICES = [
     {
-        "title": "Property & Listing Operations",
-        "text": "Centralize property records, internal listings, ownership, status, search, and day-to-day operational work.",
-        "example": "Useful for property managers, brokerages, apartment operators, and teams managing shared inventory.",
+        "title": "Custom System Development",
+        "text": "Build a new web application around a real estate or property-operation workflow that existing tools do not fit well.",
+        "example": "Typical work: workflow design, interface, database, permissions, business rules, testing, and delivery preparation.",
     },
     {
-        "title": "Rental & Tenant Workflows",
-        "text": "Track tenants, leases, rent status, due dates, follow-ups, and repeatable long-term rental processes.",
-        "example": "Useful for landlords and rental-property businesses that need a clearer operating system.",
+        "title": "Customize an Existing KEY CASTRO System",
+        "text": "Start from one of the completed standard systems and adapt it to the way your company actually operates.",
+        "example": "Typical changes: branding, roles, statuses, fields, dashboards, reports, workflow stages, and additional modules.",
     },
     {
-        "title": "Maintenance & Team Coordination",
-        "text": "Move requests from report to assignment, update, completion, vendor coordination, and history.",
-        "example": "Useful when maintenance and team actions are spread across messages or separate trackers.",
+        "title": "Workflow & Data Configuration",
+        "text": "Reshape the information, actions, permissions, and status logic so the system matches the people and process using it.",
+        "example": "Useful when the standard workflow is close, but your team needs different data, approvals, views, or operating rules.",
     },
     {
-        "title": "Dashboards & Workflow Automation",
-        "text": "Show what needs attention and add practical reminders, status rules, and follow-up automation where it saves manual work.",
-        "example": "Useful when owners and managers need faster visibility and more consistent follow-through.",
+        "title": "Integrations, Automation & Deployment",
+        "text": "Add practical integrations, automation, notifications, or deployment changes when they are appropriate for the project.",
+        "example": "Scope depends on the approved external service, security requirements, hosting needs, and the business workflow.",
     },
 ]
 
@@ -70,7 +70,7 @@ TECHNOLOGIES = [
 PAGE_SEO = {
     "home": {
         "title": "Custom Real Estate Systems Developer | Key Castro",
-        "description": "Key Castro builds custom real estate systems and offers completed standard templates for property operations, inventory, rental, maintenance, and team workflows.",
+        "description": "Key Castro builds custom real estate systems and offers completed standard systems for property operations, inventory, rental, maintenance, and team workflows.",
     },
     "about": {
         "title": "About Key Castro | Custom Real Estate Systems Developer",
@@ -78,11 +78,7 @@ PAGE_SEO = {
     },
     "services": {
         "title": "Custom Real Estate Software Services | Key Castro",
-        "description": "Custom property operations systems, listing management, rental workflows, maintenance tracking, dashboards, and workflow automation.",
-    },
-    "projects": {
-        "title": "Real Estate Software Projects & Case Studies | Key Castro",
-        "description": "Explore completed real estate systems built by Key Castro, including free standard templates for property operations and private property inventory.",
+        "description": "Paid custom development and system customization for real estate workflows, roles, data, dashboards, integrations, automation, and deployment.",
     },
     "skills": {
         "title": "Skills & Technology | Key Castro",
@@ -93,12 +89,12 @@ PAGE_SEO = {
         "description": "Development experience focused on complete real estate systems, testing, documentation, and reliable delivery.",
     },
     "contact": {
-        "title": "Contact Key Castro | Discuss a Custom Real Estate System",
-        "description": "Contact Key Castro to request a free standard system template or discuss paid customization and custom real estate software development.",
+        "title": "Contact Key Castro | Free System Access or Custom Development",
+        "description": "Contact Key Castro to request a free standard system or discuss paid customization and custom real estate software development.",
     },
     "system_templates": {
-        "title": "Real Estate System Templates | Key Castro",
-        "description": "Explore reusable real estate system templates built by Key Castro, with workflows, demonstrations, screenshots, and customization options.",
+        "title": "Real Estate Systems | Key Castro",
+        "description": "Browse completed real estate systems built by Key Castro. Request a standard system for free or discuss paid business-specific customization.",
     },
 }
 
@@ -129,7 +125,6 @@ def _common_context(
         structured_data.extend(item for item in extra_structured_data if item)
 
     return {
-        "projects": published_templates(),
         "services": SERVICES,
         "technologies": TECHNOLOGIES,
         "published_system_templates": published_templates(),
@@ -167,7 +162,9 @@ def services():
 
 @site.get("/projects")
 def projects():
-    return render_template("projects.html", title="Projects", **_common_context("projects"))
+    # Projects and System Templates described the same two completed systems in 2.8.0.
+    # Keep the legacy URL for inbound links, but use one public mental model: Systems.
+    return redirect(url_for("site.system_templates"), code=301)
 
 
 @site.get("/projects/<slug>")
@@ -187,7 +184,7 @@ def system_templates():
         abort(404)
     return render_template(
         "system_templates.html",
-        title="System Templates",
+        title="Systems",
         templates=templates,
         **_common_context("system_templates"),
     )
@@ -204,7 +201,7 @@ def system_template_detail(slug: str):
         base_url,
         [
             ("Home", "/"),
-            ("System Templates", "/system-templates"),
+            ("Systems", "/system-templates"),
             (item.name, f"/system-templates/{item.slug}"),
         ],
     )
@@ -259,7 +256,7 @@ def _send_smtp_message(record: dict) -> None:
     recipient = current_app.config["CONTACT_EMAIL"]
     sender = current_app.config["SMTP_FROM_EMAIL"]
     message = EmailMessage()
-    message["Subject"] = f"Website project inquiry from {record['name']}"
+    message["Subject"] = f"Website inquiry from {record['name']}"
     message["From"] = sender
     message["To"] = recipient
     message["Reply-To"] = record["email"]
@@ -273,7 +270,7 @@ def _send_smtp_message(record: dict) -> None:
         f"Company: {company}\n"
         f"Interested in: {interest}\n"
         f"Request type: {request_type}\n\n"
-        "Project details:\n"
+        "Message:\n"
         f"{record['message']}\n"
     )
 
@@ -377,7 +374,7 @@ def contact():
                         _send_smtp_message(record)
                     except Exception:
                         current_app.logger.exception("Optional SMTP notification failed for inquiry %s", inquiry_id)
-                flash("Project details received. I’ll review your message and reply using the email address you provided.", "success")
+                flash("Message received. I’ll review it and reply using the email address you provided.", "success")
             elif mode == "smtp":
                 _send_smtp_message(record)
                 flash("Thanks. Your project details were sent successfully.", "success")
@@ -425,21 +422,22 @@ def robots():
 
 @site.get("/sitemap.xml")
 def sitemap():
-    pages = [
-        url_for("site.home", _external=True),
-        url_for("site.about", _external=True),
-        url_for("site.services", _external=True),
-        url_for("site.projects", _external=True),
-        url_for("site.skills", _external=True),
-        url_for("site.experience", _external=True),
-        url_for("site.contact", _external=True),
-    ]
+    pages = [url_for("site.home", _external=True)]
     templates = published_templates()
     if templates:
         pages.append(url_for("site.system_templates", _external=True))
         pages.extend(
             url_for("site.system_template_detail", slug=item.slug, _external=True) for item in templates
         )
+    pages.extend(
+        [
+            url_for("site.services", _external=True),
+            url_for("site.about", _external=True),
+            url_for("site.skills", _external=True),
+            url_for("site.experience", _external=True),
+            url_for("site.contact", _external=True),
+        ]
+    )
 
     body = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     body += "\n".join(f"  <url><loc>{page}</loc></url>" for page in pages)

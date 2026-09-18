@@ -5,84 +5,64 @@
     <div class="hero-copy reveal">
       <div class="hero-identity"><strong>KEY CASTRO</strong><span aria-hidden="true"></span></div>
       <p class="hero-role">Custom Real Estate Systems Developer</p>
-      <h1>Web applications built around <span>real estate operations.</span></h1>
-      <p class="hero-lead">I build real estate business systems for property, listing, rental, maintenance, and team workflows. You can review completed standard systems, request template access, or discuss a custom build.</p>
+      <h1>Clear business systems for <span>real estate operations.</span></h1>
+      <p class="hero-lead">I build practical web systems for property operations, inventory, rental, maintenance, and team workflows. Browse systems I have built, request a standard version for free, or discuss paid customization.</p>
       <div class="hero-actions">
-        <a class="button primary" href="{{ url_for('site.projects') }}">View projects</a>
-        <a class="button secondary" href="{{ url_for('site.contact') }}">Discuss a project</a>
-      </div>
-      <div class="hero-proof">
-        <strong>BUILT FOR</strong>
-        <span>Brokerages, property operators, rental teams, and businesses that need clearer day-to-day systems—standard templates or custom development.</span>
+        <a class="button primary" href="{{ url_for('site.system_templates') }}">View Systems</a>
+        <a class="button secondary" href="{{ url_for('site.contact') }}">Discuss a Custom System</a>
       </div>
     </div>
 
-    <div class="hero-system-map reveal delay-1" aria-label="Custom real estate system workflow">
-      <div class="system-map-top"><small>HOW I STRUCTURE A SYSTEM</small><span>Custom web application</span></div>
+    <div class="hero-system-map reveal delay-1" aria-label="What Key Castro systems organize">
+      <div class="system-map-top"><small>BUILT FOR REAL ESTATE TEAMS</small><span>Practical business software</span></div>
       <div class="system-map-grid">
         <div><small>01</small><strong>Records</strong><span>Properties, listings, tenants, requests</span></div>
-        <div><small>02</small><strong>Workflow</strong><span>Assignments, actions, handoffs</span></div>
+        <div><small>02</small><strong>Work</strong><span>Assignments, follow-ups, approvals</span></div>
         <div><small>03</small><strong>Status</strong><span>Current, due, pending, complete</span></div>
         <div><small>04</small><strong>Visibility</strong><span>Dashboards, queues, reports</span></div>
       </div>
-      <p>Built around the operation—not forced into a generic template.</p>
+      <p>One clear place to see the information and actions that matter.</p>
     </div>
   </div>
 </section>
 
-<section class="section section-soft" id="what-i-build">
+<section class="section" id="featured-systems">
   <div class="container">
     <div class="section-head reveal">
-      <div><p class="eyebrow">WHAT I BUILD</p><h2>Clear systems for the work property teams do every day.</h2></div>
-      <a class="text-link desktop-link" href="{{ url_for('site.services') }}">View services <span>→</span></a>
-    </div>
-    <div class="service-grid home-services">
-      <article class="service-card reveal"><span class="card-index">01</span><h3>Property & listing operations</h3><p>Centralize records, inventory, ownership, search, and status.</p></article>
-      <article class="service-card reveal delay-1"><span class="card-index">02</span><h3>Rental & maintenance workflows</h3><p>Track tenants, leases, due dates, requests, vendors, and follow-ups.</p></article>
-      <article class="service-card reveal delay-2"><span class="card-index">03</span><h3>Dashboards & automation</h3><p>Show what needs attention and reduce repetitive manual steps.</p></article>
-    </div>
-    <a class="text-link mobile-link" href="{{ url_for('site.services') }}">View services <span>→</span></a>
-  </div>
-</section>
-
-<section class="section" id="featured-work">
-  <div class="container">
-    <div class="section-head reveal">
-      <div><p class="eyebrow">COMPLETED SYSTEMS</p><h2>See working systems before you ask for something custom.</h2></div>
-      <a class="text-link desktop-link" href="{{ url_for('site.system_templates') }}">System templates <span>→</span></a>
+      <div><p class="eyebrow">SYSTEMS BUILT BY KEY CASTRO</p><h2>Start by seeing what already exists.</h2><p>Each system below is a separate completed build with a standard version available free by request.</p></div>
+      <a class="text-link desktop-link" href="{{ url_for('site.system_templates') }}">Browse all systems <span>→</span></a>
     </div>
 
     <div class="system-showcase-grid">
       {% for item in published_system_templates %}
       <article class="system-showcase-card reveal delay-{{ loop.index0 % 2 }}">
         {% if item.screenshots %}
-        <a class="system-showcase-image" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">
+        <a class="system-showcase-image" href="{{ url_for('site.system_template_detail', slug=item.slug) }}" aria-label="View {{ item.name }}">
           <img src="{{ url_for('static', filename=item.screenshots[0].src) }}" alt="{{ item.screenshots[0].alt }}" width="1600" height="1000" loading="lazy" decoding="async">
         </a>
         {% endif %}
         <div class="system-showcase-copy">
-          <div class="badge-row"><span>{{ item.category|upper }}</span><span>FREE STANDARD TEMPLATE</span></div>
+          <div class="badge-row"><span>FREE STANDARD SYSTEM</span></div>
           <h3>{{ item.name }}</h3>
           <p>{{ item.short_description }}</p>
+          <p class="system-audience"><strong>For:</strong> {{ item.card_audience }}</p>
           <div class="system-showcase-actions">
-            <a class="button primary" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">View system</a>
-            <a class="text-link" href="{{ url_for('site.contact', template=item.slug, intent='free-access') }}">Request free access <span>→</span></a>
+            <a class="button primary" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">View System</a>
           </div>
         </div>
       </article>
       {% endfor %}
     </div>
-    <a class="text-link mobile-link" href="{{ url_for('site.system_templates') }}">System templates <span>→</span></a>
+    <a class="text-link mobile-link" href="{{ url_for('site.system_templates') }}">Browse all systems <span>→</span></a>
   </div>
 </section>
 
-<section class="section section-soft" id="process">
+<section class="section section-soft" id="access-or-customize">
   <div class="container">
-    <div class="section-head compact-head reveal"><div><p class="eyebrow">HOW I WORK</p><h2>From workflow problem to working system.</h2></div></div>
-    <div class="process-grid process-grid-three">
-      <article class="process-card reveal"><span>01</span><h3>Understand</h3><p>Map the people, records, pain points, and actions that matter.</p></article>
-      <article class="process-card reveal delay-1"><span>02</span><h3>Build</h3><p>Create the screens, database, rules, and workflow around the agreed scope.</p></article>
-      <article class="process-card reveal delay-2"><span>03</span><h3>Test & deliver</h3><p>Verify the full workflow, document the system, and prepare handoff or deployment.</p></article>
+    <div class="section-head compact-head reveal"><div><p class="eyebrow">TWO SIMPLE OPTIONS</p><h2>Use the standard system, or make it fit your business.</h2></div></div>
+    <div class="template-model-grid home-choice-grid">
+      <article class="reveal"><span>STANDARD SYSTEM</span><strong>Free by request</strong><p>Request access to the existing version as it is currently built.</p><a class="text-link" href="{{ url_for('site.system_templates') }}">Choose a system <span>→</span></a></article>
+      <article class="reveal delay-1"><span>CUSTOM DEVELOPMENT</span><strong>Paid business-specific work</strong><p>Change the workflow, branding, roles, data, features, integrations, or deployment for your operation.</p><a class="text-link" href="{{ url_for('site.services') }}">See paid services <span>→</span></a></article>
     </div>
   </div>
 </section>
@@ -90,8 +70,8 @@
 <section class="section cta-wrap">
   <div class="container">
     <div class="cta-panel reveal">
-      <div><p class="eyebrow">HAVE A WORKFLOW THAT FEELS SCATTERED?</p><h2>Tell me how the work happens today.</h2><p>I can help turn it into a clearer custom system for your real estate operation.</p></div>
-      <a class="button light" href="{{ url_for('site.contact') }}">Discuss a project</a>
+      <div><p class="eyebrow">NEED SOMETHING DIFFERENT?</p><h2>Tell me what your business needs the system to do.</h2><p>Start with the workflow, the people using it, and what is difficult to manage today.</p></div>
+      <a class="button light" href="{{ url_for('site.contact') }}">Discuss a Custom System</a>
     </div>
   </div>
 </section>

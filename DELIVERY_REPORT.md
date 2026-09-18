@@ -1,32 +1,29 @@
-# KEY CASTRO WEBSITE — TWO-SYSTEM SHOWCASE RELEASE 2.8.0
+# KEY CASTRO WEBSITE — INFORMATION ARCHITECTURE CLEANUP 2.9.0
 
-This release publishes the first two real systems through the reusable 2.7.0 template-library foundation and removes Nexus Properties from the current public portfolio presentation.
+Version 2.9.0 reorganizes the existing production website without rebuilding or changing its Flask/PostgreSQL/Render architecture.
 
-## Published separately
+## Main UX changes
 
-- **Property Operations Command Center** — completed independent property-operations system and free standard template.
-- **Property Inventory Hub** — completed reusable private real-estate inventory system and free standard template.
+- Replaced the competing `Projects` + `System Templates` top-level choices with one public destination: **Systems**.
+- Added explicit **Home** navigation for first-time/non-technical visitors.
+- `/projects` now permanently redirects to `/system-templates`; the duplicate Projects index template is removed.
+- Simplified the homepage to identity → systems → free-vs-custom rule → final contact CTA.
+- Simplified system cards to purpose, audience, free-standard status, and obvious actions.
+- Standardized system detail pages and removed the immediate duplicate access/customization block.
+- Moved technical build information into progressive disclosure so business information remains dominant.
+- Reframed Services around paid work rather than repeating system categories.
+- Simplified About and moved Skills/Experience to secondary navigation through About/footer.
+- Simplified Contact while preserving trusted template/request context through PostgreSQL into the private inbox.
+- Increased navigation/action readability and simplified small-screen presentation.
 
-They remain independent applications. Their screenshots, features, workflows, and technical claims are not merged.
+## Preserved
 
-## Free template vs paid customization
+- Both independent published systems and their stable URLs.
+- Free standard access vs paid customization behavior.
+- Contact → PostgreSQL → private KEY CASTRO INBOX.
+- Owner authentication and private/public separation.
+- SEO metadata, canonical URLs, structured data, robots, and sitemap behavior.
+- Flask server-rendered architecture, GitHub repositories, Render service, and desktop launchers.
+- Nexus remains removed from current public presentation.
 
-The existing standard version is available free by request. There is no public automatic download. Visitors can choose either **Request Free Template Access** or **Customize This System for My Business**.
-
-The Contact → PostgreSQL → private KEY CASTRO INBOX flow now records the trusted system context plus a readable request type while the generic Contact flow remains unchanged.
-
-## Public portfolio change
-
-Nexus Properties is no longer publicly presented as the featured/project case study and is excluded from the current sitemap. Its historical source/template may remain in the repository as non-public history.
-
-## Search/discoverability
-
-Both real system pages use stable `/system-templates/<slug>` URLs, unique metadata, canonical URLs, Open Graph data, truthful SoftwareApplication/Breadcrumb structured data, descriptive preview alt text, and sitemap entries.
-
-## Media boundary
-
-The published visuals are source-derived interface previews built from the supplied applications' actual UI/workflow structure using sample/demo data. They are not presented as live client-data screenshots or proof of a client deployment.
-
-## Security preserved
-
-The private owner inbox remains unlinked, excluded from the sitemap, protected by the existing token/ticket/session architecture, and no secrets are part of this release.
+See `docs/UX_INFORMATION_ARCHITECTURE.md` for the ongoing information-architecture contract.
