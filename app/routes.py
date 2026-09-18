@@ -9,6 +9,8 @@ from datetime import datetime, timezone
 from email.message import EmailMessage
 from pathlib import Path
 
+from .inquiries import ALLOWED_STATUSES, counts, create_inquiry, get_inquiry, list_inquiries, update_status
+
 from flask import (
     Blueprint,
     abort,
@@ -248,13 +250,23 @@ def contact():
 
         mode = current_app.config.get("CONTACT_DELIVERY_MODE", "local")
         try:
-            if mode == "smtp":
+            if mode == "database":
+                inquiry_id = create_inquiry(record)
+                current_app.logger.info("Website inquiry %s stored for %s", inquiry_id, email)
+                # Email notification is optional. A failure here must never lose the stored inquiry.
+                if current_app.config.get("SMTP_HOST") and current_app.config.get("SMTP_FROM_EMAIL"):
+                    try:
+                        _send_smtp_message(record)
+                    except Exception:
+                        current_app.logger.exception("Optional SMTP notification failed for inquiry %s", inquiry_id)
+                flash("Project details received. I’ll review your message and reply using the email address you provided.", "success")
+            elif mode == "smtp":
                 _send_smtp_message(record)
                 flash("Thanks. Your project details were sent successfully.", "success")
             elif current_app.config.get("ENABLE_LOCAL_CONTACT_STORAGE"):
                 _store_local_message(record)
                 current_app.logger.info("Local contact message stored for %s", email)
-                flash("Saved locally for testing. Public delivery will use the configured business email.", "success")
+                flash("Saved locally for testing. Public delivery will use the configured business inbox.", "success")
             else:
                 raise RuntimeError("Contact delivery is not configured.")
         except Exception:
@@ -269,13 +281,64 @@ def contact():
     return render_template("contact.html", title="Contact", **context)
 
 
+def _owner_api_allowed() -> bool:
+    expected = current_app.config.get("OWNER_INBOX_TOKEN", "")
+    header = request.headers.get("Authorization", "")
+    supplied = header[7:] if header.startswith("Bearer ") else ""
+    return bool(expected and supplied and hmac.compare_digest(expected, supplied))
+
+
+def _owner_api_guard() -> None:
+    if not _owner_api_allowed():
+        abort(404)
+
+
+@site.get("/__owner_api/health")
+def owner_api_health():
+    _owner_api_guard()
+    return jsonify(status="ok", counts=counts())
+
+
+@site.get("/__owner_api/inquiries")
+def owner_api_inquiries():
+    _owner_api_guard()
+    status = request.args.get("status", "").strip().lower() or None
+    if status and status not in ALLOWED_STATUSES:
+        abort(400)
+    return jsonify(items=list_inquiries(status=status), counts=counts())
+
+
+@site.get("/__owner_api/inquiries/<int:inquiry_id>")
+def owner_api_inquiry_detail(inquiry_id: int):
+    _owner_api_guard()
+    item = get_inquiry(inquiry_id)
+    if item is None:
+        abort(404)
+    if item.get("status") == "new":
+        item = update_status(inquiry_id, "read") or item
+    return jsonify(item=item)
+
+
+@site.post("/__owner_api/inquiries/<int:inquiry_id>/status")
+def owner_api_inquiry_status(inquiry_id: int):
+    _owner_api_guard()
+    payload = request.get_json(silent=True) or {}
+    status = str(payload.get("status", "")).strip().lower()
+    if status not in ALLOWED_STATUSES:
+        return jsonify(error="invalid_status"), 400
+    item = update_status(inquiry_id, status)
+    if item is None:
+        abort(404)
+    return jsonify(item=item)
+
+
 @site.get("/system/health")
 def health():
     return jsonify(
         status="ok",
         app=current_app.config.get("APP_NAME", "Key Castro Portfolio"),
         environment=current_app.config.get("ENVIRONMENT_LABEL", "unknown"),
-        version="2.2.0",
+        version="2.3.0",
     )
 
 

@@ -16,7 +16,7 @@ class PortfolioSiteTests(unittest.TestCase):
         data = response.get_json()
         self.assertEqual(data["status"], "ok")
         self.assertEqual(data["app"], "Key Castro Portfolio")
-        self.assertEqual(data["version"], "2.2.0")
+        self.assertEqual(data["version"], "2.3.0")
 
     def test_main_pages_render(self):
         routes = ["/", "/about", "/services", "/projects", "/skills", "/experience", "/contact"]
@@ -109,6 +109,61 @@ class PortfolioSiteTests(unittest.TestCase):
             self.assertEqual(response.status_code, 302)
             self.assertTrue(path.exists())
             self.assertIn("Sample Prospect", path.read_text(encoding="utf-8"))
+
+
+    def test_database_contact_and_private_owner_api(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "inbox.sqlite3"
+            self.app.config.update(
+                CONTACT_DELIVERY_MODE="database",
+                DATABASE_URL=f"sqlite:///{db_path}",
+                OWNER_INBOX_TOKEN="owner-test-token",
+                SMTP_HOST="",
+                SMTP_FROM_EMAIL="",
+            )
+
+            self.client.get("/contact")
+            with self.client.session_transaction() as sess:
+                token = sess["contact_csrf"]
+            response = self.client.post(
+                "/contact",
+                data={
+                    "csrf_token": token,
+                    "name": "Real Prospect",
+                    "email": "real@example.com",
+                    "company": "Rental Ops",
+                    "message": "We need a simple system to organize property inquiries and follow-ups.",
+                    "website": "",
+                },
+                follow_redirects=False,
+            )
+            self.assertEqual(response.status_code, 302)
+            self.assertTrue(db_path.exists())
+
+            hidden = self.client.get("/__owner_api/inquiries")
+            self.assertEqual(hidden.status_code, 404)
+
+            headers = {"Authorization": "Bearer owner-test-token"}
+            inbox = self.client.get("/__owner_api/inquiries", headers=headers)
+            self.assertEqual(inbox.status_code, 200)
+            data = inbox.get_json()
+            self.assertEqual(len(data["items"]), 1)
+            self.assertEqual(data["items"][0]["status"], "new")
+
+            inquiry_id = data["items"][0]["id"]
+            detail = self.client.get(f"/__owner_api/inquiries/{inquiry_id}", headers=headers)
+            self.assertEqual(detail.status_code, 200)
+            self.assertEqual(detail.get_json()["item"]["status"], "read")
+
+            updated = self.client.post(
+                f"/__owner_api/inquiries/{inquiry_id}/status",
+                headers=headers,
+                json={"status": "replied"},
+            )
+            self.assertEqual(updated.status_code, 200)
+            self.assertEqual(updated.get_json()["item"]["status"], "replied")
+
+            self.assertIn("noindex", inbox.headers.get("X-Robots-Tag", ""))
 
     def test_sitemap_and_robots(self):
         sitemap = self.client.get("/sitemap.xml")

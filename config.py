@@ -29,6 +29,8 @@ class BaseConfig:
     FACEBOOK_URL = os.getenv("FACEBOOK_URL", "").strip()
 
     CONTACT_DELIVERY_MODE = os.getenv("CONTACT_DELIVERY_MODE", "local").strip().lower()
+    DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+    OWNER_INBOX_TOKEN = os.getenv("OWNER_INBOX_TOKEN", "").strip()
     ENABLE_LOCAL_CONTACT_STORAGE = _env_bool("ENABLE_LOCAL_CONTACT_STORAGE", "1")
     CONTACT_STORAGE_PATH = os.getenv(
         "CONTACT_STORAGE_PATH", str(BASE_DIR / "instance" / "contact_messages.jsonl")
@@ -59,6 +61,8 @@ class TestingConfig(BaseConfig):
     SERVER_NAME = "localhost"
     ENABLE_LOCAL_CONTACT_STORAGE = False
     CONTACT_DELIVERY_MODE = "local"
+    DATABASE_URL = ""
+    OWNER_INBOX_TOKEN = "test-owner-token"
 
 
 class ProductionConfig(BaseConfig):

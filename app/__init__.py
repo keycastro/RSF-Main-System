@@ -2,7 +2,7 @@ import os
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
-from flask import Flask
+from flask import Flask, request
 
 from config import CONFIG_MAP
 
@@ -24,12 +24,10 @@ def create_app(config_name: str | None = None):
             raise RuntimeError("Production requires PUBLIC_BASE_URL to be configured.")
         if not app.config.get("CONTACT_EMAIL"):
             raise RuntimeError("Production requires CONTACT_EMAIL to be configured.")
-        if app.config.get("CONTACT_DELIVERY_MODE") != "smtp":
-            raise RuntimeError("Production requires CONTACT_DELIVERY_MODE=smtp.")
-        required_smtp = ["SMTP_HOST", "SMTP_FROM_EMAIL"]
-        missing = [name for name in required_smtp if not app.config.get(name)]
-        if missing:
-            raise RuntimeError("Production contact delivery is missing: " + ", ".join(missing))
+        if not app.config.get("DATABASE_URL"):
+            raise RuntimeError("Production requires DATABASE_URL for the private inquiry inbox.")
+        if not app.config.get("OWNER_INBOX_TOKEN"):
+            raise RuntimeError("Production requires OWNER_INBOX_TOKEN for the private owner API.")
 
     from .routes import site
     app.register_blueprint(site)
@@ -49,6 +47,9 @@ def create_app(config_name: str | None = None):
             "script-src 'self'; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; "
             "base-uri 'self'; form-action 'self'",
         )
+        if request.path.startswith("/__owner_api/"):
+            response.headers["Cache-Control"] = "no-store, max-age=0"
+            response.headers["X-Robots-Tag"] = "noindex, nofollow, noarchive"
         return response
 
     configure_logging(app)
