@@ -6,14 +6,14 @@
       <div class="hero-identity"><strong>KEY CASTRO</strong><span aria-hidden="true"></span></div>
       <p class="hero-role">Custom Real Estate Systems Developer</p>
       <h1>Web applications built around <span>real estate operations.</span></h1>
-      <p class="hero-lead">I build custom systems for property, listing, rental, maintenance, and team workflows—so important work is easier to track, manage, and act on.</p>
+      <p class="hero-lead">I build real estate business systems for property, listing, rental, maintenance, and team workflows. You can review completed standard systems, request template access, or discuss a custom build.</p>
       <div class="hero-actions">
         <a class="button primary" href="{{ url_for('site.projects') }}">View projects</a>
         <a class="button secondary" href="{{ url_for('site.contact') }}">Discuss a project</a>
       </div>
       <div class="hero-proof">
         <strong>BUILT FOR</strong>
-        <span>Brokerages, property operators, rental teams, and businesses that need clearer day-to-day systems.</span>
+        <span>Brokerages, property operators, rental teams, and businesses that need clearer day-to-day systems—standard templates or custom development.</span>
       </div>
     </div>
 
@@ -48,25 +48,31 @@
 <section class="section" id="featured-work">
   <div class="container">
     <div class="section-head reveal">
-      <div><p class="eyebrow">COMPLETED PROJECT</p><h2>See a working system and the business problem behind it.</h2></div>
-      <a class="text-link desktop-link" href="{{ url_for('site.projects') }}">All projects <span>→</span></a>
+      <div><p class="eyebrow">COMPLETED SYSTEMS</p><h2>See working systems before you ask for something custom.</h2></div>
+      <a class="text-link desktop-link" href="{{ url_for('site.system_templates') }}">System templates <span>→</span></a>
     </div>
 
-    <article class="featured-work reveal">
-      <button class="featured-image" type="button" data-lightbox="{{ url_for('static', filename='images/projects/nexus-dashboard.png') }}" data-caption="Nexus Properties — operations dashboard preview">
-        <img src="{{ url_for('static', filename='images/projects/nexus-dashboard.png') }}" alt="Nexus Properties internal off-market property marketplace dashboard" width="1200" height="750" loading="lazy" decoding="async">
-        <span>View larger</span>
-      </button>
-      <div class="featured-copy">
-        <div class="badge-row"><span>REAL ESTATE SYSTEM</span><span>COMPLETED PROJECT</span></div>
-        <h3>Nexus Properties</h3>
-        <p class="featured-subtitle">Internal Off-Market Property Marketplace</p>
-        <p>A completed custom system for a real estate team to keep private property inventory searchable, current, and clearly owned.</p>
-        <div class="pill-row compact-pills"><span>Search & filters</span><span>Freshness rules</span><span>Status history</span></div>
-        <a class="button primary" href="{{ url_for('site.project_detail', slug='nexus-properties') }}">View case study</a>
-      </div>
-    </article>
-    <a class="text-link mobile-link" href="{{ url_for('site.projects') }}">All projects <span>→</span></a>
+    <div class="system-showcase-grid">
+      {% for item in published_system_templates %}
+      <article class="system-showcase-card reveal delay-{{ loop.index0 % 2 }}">
+        {% if item.screenshots %}
+        <a class="system-showcase-image" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">
+          <img src="{{ url_for('static', filename=item.screenshots[0].src) }}" alt="{{ item.screenshots[0].alt }}" width="1600" height="1000" loading="lazy" decoding="async">
+        </a>
+        {% endif %}
+        <div class="system-showcase-copy">
+          <div class="badge-row"><span>{{ item.category|upper }}</span><span>FREE STANDARD TEMPLATE</span></div>
+          <h3>{{ item.name }}</h3>
+          <p>{{ item.short_description }}</p>
+          <div class="system-showcase-actions">
+            <a class="button primary" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">View system</a>
+            <a class="text-link" href="{{ url_for('site.contact', template=item.slug, intent='free-access') }}">Request free access <span>→</span></a>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    <a class="text-link mobile-link" href="{{ url_for('site.system_templates') }}">System templates <span>→</span></a>
   </div>
 </section>
 

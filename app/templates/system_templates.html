@@ -2,8 +2,15 @@
 {% block content %}
 <section class="page-hero">
   <div class="container page-hero-grid">
-    <div class="reveal"><p class="eyebrow">SYSTEM TEMPLATES</p><h1>Reusable systems for <span>real estate operations.</span></h1></div>
-    <div class="page-hero-copy reveal delay-1"><p>A curated library of working standard systems built to demonstrate real workflows. Use the standard version where appropriate, or ask Key Castro to adapt one to your business.</p></div>
+    <div class="reveal"><p class="eyebrow">FREE SYSTEM LIBRARY</p><h1>Ready-to-use systems for <span>real estate operations.</span></h1></div>
+    <div class="page-hero-copy reveal delay-1"><p>These are completed standard systems built by Key Castro. Request access to the existing template for free. If your business needs different workflows, branding, roles, integrations, reports, or logic, request a customized version.</p></div>
+  </div>
+</section>
+
+<section class="section template-model-section">
+  <div class="container template-model-grid">
+    <article><span>STANDARD TEMPLATE</span><strong>Free access by request</strong><p>Use the existing standard system as it is designed today. There is no public download; contact Key Castro to request access.</p></article>
+    <article><span>CUSTOM DEVELOPMENT</span><strong>Paid business-specific work</strong><p>Change the workflow, branding, data structure, roles, automation, integrations, reports, deployment, or other requirements for your operation.</p></article>
   </div>
 </section>
 
@@ -11,12 +18,13 @@
   <div class="container template-library-grid">
     {% for item in templates %}
     <article class="template-library-card reveal delay-{{ loop.index0 % 3 }}">
-      <div class="badge-row"><span>{{ item.category|upper }}</span><span>STANDARD TEMPLATE</span></div>
+      {% if item.screenshots %}<a class="template-card-image" href="{{ url_for('site.system_template_detail', slug=item.slug) }}"><img src="{{ url_for('static', filename=item.screenshots[0].src) }}" alt="{{ item.screenshots[0].alt }}" width="1600" height="1000" loading="lazy" decoding="async"></a>{% endif %}
+      <div class="badge-row"><span>{{ item.category|upper }}</span><span>FREE STANDARD TEMPLATE</span></div>
       <h2>{{ item.name }}</h2>
       <p>{{ item.short_description }}</p>
       <div class="template-card-actions">
         <a class="button primary" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">View system</a>
-        <a class="text-link" href="{{ url_for('site.contact', template=item.slug) }}">Customize for my business <span>→</span></a>
+        <a class="text-link" href="{{ url_for('site.contact', template=item.slug, intent='free-access') }}">Request free access <span>→</span></a>
       </div>
     </article>
     {% endfor %}

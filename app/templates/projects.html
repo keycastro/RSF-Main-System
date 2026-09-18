@@ -2,8 +2,8 @@
 {% block content %}
 <section class="page-hero">
   <div class="container page-hero-grid">
-    <div class="reveal"><p class="eyebrow">PROJECTS / CASE STUDIES</p><h1>Completed systems I have <span>designed and built.</span></h1></div>
-    <div class="page-hero-copy reveal delay-1"><p>Start with the project summary, then open the case study for the business problem, workflow, screens, features, and build details.</p></div>
+    <div class="reveal"><p class="eyebrow">BUILT SYSTEMS</p><h1>Completed systems I have <span>designed and built.</span></h1></div>
+    <div class="page-hero-copy reveal delay-1"><p>These are working business-system implementations built by Key Castro. Each one is also available as a standard/free template by request, with paid customization for business-specific requirements.</p></div>
   </div>
 </section>
 
@@ -11,22 +11,26 @@
   <div class="container projects-stack">
     {% for project in projects %}
     <article class="project-card reveal">
-      <a class="project-image-link" href="{{ url_for('site.project_detail', slug=project.slug) }}" aria-label="View {{ project.name }} case study">
-        <img src="{{ url_for('static', filename=project.image) }}" alt="{{ project.image_alt }}" width="{{ project.image_width }}" height="{{ project.image_height }}" loading="lazy" decoding="async">
-        <span>View case study ↗</span>
+      {% if project.screenshots %}
+      <a class="project-image-link" href="{{ url_for('site.system_template_detail', slug=project.slug) }}" aria-label="View {{ project.name }} system details">
+        <img src="{{ url_for('static', filename=project.screenshots[0].src) }}" alt="{{ project.screenshots[0].alt }}" width="1600" height="1000" loading="lazy" decoding="async">
+        <span>View system ↗</span>
       </a>
+      {% endif %}
       <div class="project-info">
-        <div class="badge-row"><span>{{ project.category|upper }}</span><span>{{ project.status|upper }}</span></div>
+        <div class="badge-row"><span>{{ project.category|upper }}</span><span>COMPLETED SYSTEM</span><span>FREE STANDARD TEMPLATE</span></div>
         <h2>{{ project.name }}</h2>
-        <h3>{{ project.subtitle }}</h3>
-        <p>{{ project.summary }}</p>
-        <div class="pill-row compact-pills">{% for tag in project.tags[:3] %}<span>{{ tag }}</span>{% endfor %}</div>
-        <a class="button primary" href="{{ url_for('site.project_detail', slug=project.slug) }}">View case study</a>
+        <h3>{{ project.short_description }}</h3>
+        <p>{{ project.project_note }}</p>
+        <div class="project-card-actions">
+          <a class="button primary" href="{{ url_for('site.system_template_detail', slug=project.slug) }}">View system</a>
+          <a class="text-link" href="{{ url_for('site.contact', template=project.slug, intent='free-access') }}">Request free access <span>→</span></a>
+        </div>
       </div>
     </article>
     {% endfor %}
   </div>
 </section>
 
-<section class="section cta-wrap"><div class="container"><div class="cta-panel reveal"><div><p class="eyebrow">NEED A SYSTEM FOR YOUR OPERATION?</p><h2>Start with the workflow that needs to improve.</h2><p>Tell me what your team needs to track, manage, or automate.</p></div><a class="button light" href="{{ url_for('site.contact') }}">Discuss a project</a></div></div></section>
+<section class="section cta-wrap"><div class="container"><div class="cta-panel reveal"><div><p class="eyebrow">STANDARD TEMPLATE OR CUSTOM BUILD?</p><h2>Start with a working system.</h2><p>Request the standard template for free, or tell me what your business needs changed and I can scope a customized version.</p></div><a class="button light" href="{{ url_for('site.system_templates') }}">Browse system templates</a></div></div></section>
 {% endblock %}

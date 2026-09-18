@@ -114,3 +114,13 @@ This content update does not claim that Nexus Properties officially hired, paid,
 - Added optional, backward-compatible inquiry source fields for future template-to-contact attribution.
 - Added richer per-page SEO/social metadata, truthful structured data, and optional search-engine verification tags.
 - Preserved the existing Flask architecture, public routes, private owner inbox, two GitHub remotes, and manual Render deployment workflow.
+
+### 2026-09-19 — Two completed systems published through template architecture 2.8.0
+
+- Published Property Operations Command Center and Property Inventory Hub as two independent completed systems/free standard templates.
+- Reused the 2.7.0 source-controlled system-template registry and generic index/detail architecture; no competing framework or CMS was introduced.
+- Added separate free-template-access and paid-customization CTAs through the existing Contact → PostgreSQL → private Inbox flow.
+- Added backward-compatible `source_action` inquiry attribution so the owner can see the request type.
+- Removed Nexus Properties from the current public homepage/project/sitemap presentation while retaining historical source/documentation as non-public history.
+- Added truthful, source-grounded system metadata and sample-data interface previews; no client commission/adoption claim is made.
+- Existing Flask, GitHub, Render, PostgreSQL, private owner authentication, and desktop-launcher architecture remain unchanged.

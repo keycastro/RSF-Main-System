@@ -14,4 +14,4 @@ Read in order:
 
 Do not split the owner inbox back into a separate project folder. Do not expose owner-only routes or secrets in public UI, GitHub, logs, screenshots, or documentation.
 
-The 2.7.0 template-library foundation is intentionally dormant until a real, complete system template is ready. Do not publish placeholder or thin template pages merely to activate the library.
+The 2.7.0 template-library foundation is active in 2.8.0 with two published real systems: Property Operations Command Center and Property Inventory Hub. They are separate applications and must stay separate in claims, screenshots, workflow, and metadata. Do not publish placeholder/thin systems. Read `docs/PUBLISHED_SYSTEM_TEMPLATES.md` before changing their public positioning.

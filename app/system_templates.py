@@ -51,6 +51,7 @@ class SystemTemplate:
     status: TemplateStatus = "draft"
     screenshots: tuple[TemplateScreenshot, ...] = field(default_factory=tuple)
     video: VideoDemo = field(default_factory=VideoDemo)
+    project_note: str = ""
     seo_title: str = ""
     meta_description: str = ""
     og_image: str = ""
@@ -79,9 +80,197 @@ class SystemTemplate:
                 )
 
 
-# Intentionally empty in the 2.7.0 foundation release.
-# Do not publish placeholder/thin templates merely to populate the library.
-SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = ()
+SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
+    SystemTemplate(
+        slug="property-operations-command-center",
+        name="Property Operations Command Center",
+        category="Property Operations",
+        short_description=(
+            "An action-first operations system for property teams to track work, deadlines, "
+            "follow-ups, approvals, guest readiness, tenant placement, and repeatable SOPs."
+        ),
+        full_description=(
+            "A completed property-operations application built around one practical goal: know what "
+            "needs attention before something gets missed. The standard version is available as a "
+            "free template by request, while business-specific changes are handled as paid custom development."
+        ),
+        business_problem=(
+            "Property operations can scatter deadlines, follow-ups, guest-readiness tasks, contractor "
+            "coordination, owner decisions, tenant-placement stages, and checklists across messages and "
+            "separate tools. This system brings those operational attention points into one structured workspace."
+        ),
+        target_users=(
+            "Property operations owners and managers",
+            "Short-term rental operations teams",
+            "Rental and tenant-placement teams",
+            "Operations coordinators managing deadlines, contractors, and approvals",
+        ),
+        workflow=(
+            "Record the properties, contacts, and operational records the team is responsible for.",
+            "Create work items with a type, priority, due date, follow-up date, assignment, and status.",
+            "Use the operations dashboard to surface overdue, urgent, waiting-owner, and follow-up work.",
+            "Coordinate short-term-rental bookings, guest readiness, tenant-placement stages, and reusable checklists.",
+            "Route decisions through the owner-approval queue when work is blocked by an owner decision.",
+            "Run rule-based automation for overdue work, same-day readiness alerts, and post-checkout turnover work.",
+            "Use activity history and operational reports to keep actions and completed work visible.",
+        ),
+        features=(
+            "Role-based access for Owner/Admin, Operations, and Team Member users",
+            "Action-oriented dashboard with due today, overdue, follow-up, owner-waiting, issue, and arrival counts",
+            "Work items with priority, deadlines, follow-ups, blockers, assignments, and completion tracking",
+            "Owner approval requests with auditable decisions and escalation behavior",
+            "Short-term-rental booking, arrival-readiness, cleaner/contractor coordination, and turnover tracking",
+            "Tenant-placement pipeline from inquiry through placement stages",
+            "Reusable checklist and SOP templates with checklist instances",
+            "Rule-based automation for overdue items, guest-readiness alerts, and turnover tasks/checklists",
+            "Property and external-contact records, activity history, reports, and external document links",
+        ),
+        technologies=(
+            "Python",
+            "Flask",
+            "SQLAlchemy",
+            "SQLite",
+            "Server-rendered HTML/CSS/JavaScript",
+            "Waitress for local Windows runtime",
+        ),
+        standard_scope=(
+            "The complete standard workflow shown on this page",
+            "Owner/Admin, Operations, and Team Member role model",
+            "Properties, contacts, work tracking, approvals, short-term-rental operations, tenant placement, and checklists",
+            "Rule-based attention and turnover automation included in the standard build",
+            "Local business-app setup with a private SQLite database and Windows launcher workflow",
+            "No payment processing, accounting, external property-platform integrations, AI assistant, e-signing, or native mobile app in the standard version",
+        ),
+        customization_opportunities=(
+            "Company branding and terminology",
+            "Different roles, permissions, approval rules, and operational statuses",
+            "Business-specific dashboards, reports, fields, and workflow stages",
+            "Custom automation and notification rules",
+            "Database, hosting, deployment, or multi-user environment changes",
+            "Integrations with approved external systems or APIs",
+            "Additional modules built around the company’s actual property-operation process",
+        ),
+        status="published",
+        screenshots=(
+            TemplateScreenshot(
+                src="images/templates/property-operations-command-center/dashboard.png",
+                alt="Property Operations Command Center dashboard interface preview using sample data",
+                caption="Operations dashboard interface preview using sample data — attention queue, due work, arrivals, and owner decisions.",
+            ),
+            TemplateScreenshot(
+                src="images/templates/property-operations-command-center/work.png",
+                alt="Property Operations Command Center work queue interface preview using sample data",
+                caption="Work queue interface preview using sample data — priority, status, due date, follow-up, and assignment tracking.",
+            ),
+        ),
+        project_note=(
+            "Completed independent implementation developed by Key Castro. It is presented as a working "
+            "portfolio system and free standard template, not as commissioned or adopted client software."
+        ),
+        seo_title="Property Operations Command Center Template | Key Castro",
+        meta_description=(
+            "Explore Key Castro's Property Operations Command Center: a free standard property-operations template for work, deadlines, approvals, guest readiness, tenant placement, SOPs, and automation."
+        ),
+        og_image="images/templates/property-operations-command-center/dashboard.png",
+        published_date="2026-09-19",
+        updated_date="2026-09-19",
+    ),
+    SystemTemplate(
+        slug="property-inventory-hub",
+        name="Property Inventory Hub",
+        category="Real Estate Inventory",
+        short_description=(
+            "A private property-inventory workspace where authorized real-estate teams can add, search, "
+            "maintain, reconfirm, and retire shared off-market listings."
+        ),
+        full_description=(
+            "A completed, brand-neutral internal real-estate inventory system for teams that need one private "
+            "place to keep shared property listings searchable and current. The standard version is available "
+            "as a free template by request, with paid customization available for company-specific requirements."
+        ),
+        business_problem=(
+            "Shared property inventory becomes difficult to trust when listings live in chats, spreadsheets, or "
+            "separate agent files. Availability gets stale, ownership is unclear, and useful older records are "
+            "hard to find. Property Inventory Hub centralizes the private marketplace and adds a freshness lifecycle."
+        ),
+        target_users=(
+            "Real-estate brokerages managing shared private inventory",
+            "Sales and leasing teams working with off-market properties",
+            "Property teams that need searchable internal inventory",
+            "Administrators who need control over authorized users, freshness rules, and client branding",
+        ),
+        workflow=(
+            "Authorized users sign in with a private access code.",
+            "Agents add property records with location, type, sale/rent purpose, price, and relevant property details.",
+            "The team searches and filters the shared Marketplace to find current inventory.",
+            "Each agent maintains the current listings they are responsible for in My Listings.",
+            "Freshness rules calculate reconfirmation and expiry dates so availability is reviewed before listings become stale.",
+            "Expired, unavailable, or archived records move into History instead of disappearing.",
+            "Administrators manage users, access codes, freshness rules, and deployment branding from Management.",
+        ),
+        features=(
+            "Secure access-code sign-in with Administrator and Agent roles",
+            "Shared Marketplace with text search, property type, sale/rent, availability, price, bedroom, and sorting filters",
+            "Property records for location, type, purpose, price, bedrooms, bathrooms, size, furnishing, parking, and agent notes",
+            "My Listings view for current properties owned by the signed-in agent",
+            "Freshness engine with reconfirmation dates, expiry dates, automatic due state, and automatic expiry",
+            "Manual reconfirmation, withdrawal, archive, and restore workflows",
+            "Listing status history and reconfirmation history",
+            "History view for expired, unavailable, and historical records",
+            "Management tools for authorized users, access codes, freshness rules, and client branding",
+            "Configurable company name, app title, logo, colors, business email, and phone without rebuilding the app",
+        ),
+        technologies=(
+            "Python",
+            "Flask",
+            "SQLAlchemy",
+            "SQLite",
+            "Flask-Login and Flask-WTF",
+            "Server-rendered HTML/CSS/JavaScript",
+        ),
+        standard_scope=(
+            "Brand-neutral Property Inventory Hub workspace",
+            "Administrator and Agent access model",
+            "Dashboard, Marketplace, My Listings, History, and Management areas",
+            "Standard property fields, search/filter tools, and listing ownership workflow",
+            "Freshness, reconfirmation, expiry, withdrawal, archive, and restore lifecycle",
+            "Configurable client branding in the standard application",
+            "Local SQLite database and existing safe backup/update workflow",
+        ),
+        customization_opportunities=(
+            "Company-specific property fields, listing types, statuses, and business rules",
+            "Different user roles, permissions, teams, branches, or approval processes",
+            "Custom dashboards, reports, analytics, exports, or notifications",
+            "Alternative database and hosted deployment architecture",
+            "Integrations with approved CRM, listing, messaging, or property systems",
+            "Additional modules around the brokerage’s own inventory and agent workflow",
+        ),
+        status="published",
+        screenshots=(
+            TemplateScreenshot(
+                src="images/templates/property-inventory-hub/dashboard.png",
+                alt="Property Inventory Hub dashboard interface preview using sample data",
+                caption="Dashboard interface preview using sample data — current inventory, personal inventory, and listings needing attention.",
+            ),
+            TemplateScreenshot(
+                src="images/templates/property-inventory-hub/marketplace.png",
+                alt="Property Inventory Hub marketplace interface preview using sample data",
+                caption="Marketplace interface preview using sample data — searchable inventory, filters, availability, and reconfirmation status.",
+            ),
+        ),
+        project_note=(
+            "Completed reusable system and free standard template developed by Key Castro. Client branding is "
+            "configurable; no claim is made that a specific company commissioned or adopted this template."
+        ),
+        seo_title="Property Inventory Hub Free Real Estate Template | Key Castro",
+        meta_description=(
+            "Explore Property Inventory Hub by Key Castro: a free standard private real-estate inventory template with search, listing ownership, reconfirmation, expiry, history, and configurable branding."
+        ),
+        og_image="images/templates/property-inventory-hub/dashboard.png",
+        published_date="2026-09-19",
+        updated_date="2026-09-19",
+    ),
+)
 
 
 def published_templates() -> tuple[SystemTemplate, ...]:

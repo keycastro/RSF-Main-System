@@ -14,6 +14,7 @@
     <span>Interested in</span>
     <strong>{{ item.source_title }}</strong>
     {% if item.source_slug %}<small>System template · {{ item.source_slug }}</small>{% endif %}
+    {% if item.source_action %}<small class="owner-request-detail">Request type · {{ item.source_action }}</small>{% endif %}
   </div>
   {% endif %}
   <span class="owner-message-label">Inquiry message</span>

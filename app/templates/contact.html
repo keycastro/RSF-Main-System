@@ -24,10 +24,18 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       {% if template_interest %}
       <input type="hidden" name="source_slug" value="{{ template_interest.slug }}">
+      {% if source_intent %}<input type="hidden" name="source_intent" value="{{ source_intent }}">{% endif %}
       <div class="contact-interest" role="note">
         <span>System template</span>
         <strong>{{ template_interest.name }}</strong>
-        <p>You are asking about adapting this standard system to your business. Add the workflow changes or requirements you have in mind.</p>
+        {% if source_action_label %}<small>Request type: {{ source_action_label }}</small>{% endif %}
+        {% if source_intent == 'free-access' %}
+        <p>You are requesting access to the existing standard/free template. Tell me a little about your business and how you plan to use the system.</p>
+        {% elif source_intent == 'customize' %}
+        <p>You are asking about adapting this system to your business. Add the workflow changes, branding, roles, integrations, or features you have in mind.</p>
+        {% else %}
+        <p>You are asking about this system template. Tell me whether you want the standard version or need something customized.</p>
+        {% endif %}
       </div>
       {% endif %}
       <div class="honeypot" aria-hidden="true"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
@@ -37,7 +45,7 @@
       </div>
       <label><span>Company / operation <small>optional</small></span><input maxlength="140" name="company" value="{{ form_data.company if form_data else '' }}" placeholder="Property company or rental operation"></label>
       <label><span>What do you need help with?</span><textarea required minlength="20" maxlength="3000" name="message" rows="8" placeholder="Example: We manage several rental properties and need one place to track tenants, rent status, maintenance requests, and follow-ups.">{{ form_data.message if form_data else '' }}</textarea></label>
-      <button class="button primary full-button" type="submit">Send project details</button>
+      <button class="button primary full-button" type="submit">{% if source_intent == 'free-access' %}Request free template access{% elif source_intent == 'customize' %}Send customization request{% else %}Send project details{% endif %}</button>
       <p class="form-privacy">Please do not send passwords, private client records, API keys, or other sensitive information through this form.</p>
       {% if environment_label == 'Local' %}<p class="local-form-note">Local preview mode: test messages are stored only on this computer. Public email delivery is configured separately for production.</p>{% endif %}
     </form>

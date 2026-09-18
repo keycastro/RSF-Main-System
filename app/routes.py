@@ -33,30 +33,6 @@ from .system_templates import get_system_template, published_templates, template
 
 site = Blueprint("site", __name__)
 
-PROJECTS = [
-    {
-        "slug": "nexus-properties",
-        "name": "Nexus Properties",
-        "category": "Real Estate Operations System",
-        "subtitle": "Internal Off-Market Property Marketplace",
-        "status": "Completed project",
-        "summary": (
-            "A completed internal marketplace for off-market inventory, search, ownership, "
-            "reconfirmation, expiry, and listing history."
-        ),
-        "image": "images/projects/nexus-dashboard.png",
-        "image_alt": "Nexus Properties internal off-market property marketplace dashboard",
-        "image_width": 1200,
-        "image_height": 750,
-        "seo_title": "Nexus Properties Real Estate System Case Study | Key Castro",
-        "meta_description": (
-            "See how Key Castro built a completed internal off-market property marketplace "
-            "with listing search, ownership, freshness checks, reconfirmation, expiry, and history."
-        ),
-        "tags": ["Property listings", "Search & filters", "Status tracking", "Freshness rules"],
-    }
-]
-
 SERVICES = [
     {
         "title": "Property & Listing Operations",
@@ -94,7 +70,7 @@ TECHNOLOGIES = [
 PAGE_SEO = {
     "home": {
         "title": "Custom Real Estate Systems Developer | Key Castro",
-        "description": "Key Castro builds custom real estate systems and web applications for property, listing, rental, maintenance, and team operations.",
+        "description": "Key Castro builds custom real estate systems and offers completed standard templates for property operations, inventory, rental, maintenance, and team workflows.",
     },
     "about": {
         "title": "About Key Castro | Custom Real Estate Systems Developer",
@@ -106,7 +82,7 @@ PAGE_SEO = {
     },
     "projects": {
         "title": "Real Estate Software Projects & Case Studies | Key Castro",
-        "description": "Browse completed custom real estate systems and case studies built by Key Castro.",
+        "description": "Explore completed real estate systems built by Key Castro, including free standard templates for property operations and private property inventory.",
     },
     "skills": {
         "title": "Skills & Technology | Key Castro",
@@ -118,7 +94,7 @@ PAGE_SEO = {
     },
     "contact": {
         "title": "Contact Key Castro | Discuss a Custom Real Estate System",
-        "description": "Contact Key Castro to discuss a custom real estate, property-operations, or rental-property system.",
+        "description": "Contact Key Castro to request a free standard system template or discuss paid customization and custom real estate software development.",
     },
     "system_templates": {
         "title": "Real Estate System Templates | Key Castro",
@@ -146,14 +122,14 @@ def _common_context(
         "facebook": current_app.config.get("FACEBOOK_URL"),
     }
     page_meta = PAGE_SEO.get(page_key, PAGE_SEO["home"])
-    og_image_path = og_image or "images/projects/nexus-dashboard.png"
+    og_image_path = og_image or "images/templates/property-operations-command-center/dashboard.png"
     og_image_url = absolute_url(base_url, url_for("static", filename=og_image_path)) if base_url else ""
     structured_data = core_structured_data(base_url, socials)
     if extra_structured_data:
         structured_data.extend(item for item in extra_structured_data if item)
 
     return {
-        "projects": PROJECTS,
+        "projects": published_templates(),
         "services": SERVICES,
         "technologies": TECHNOLOGIES,
         "published_system_templates": published_templates(),
@@ -196,27 +172,12 @@ def projects():
 
 @site.get("/projects/<slug>")
 def project_detail(slug: str):
-    project = next((item for item in PROJECTS if item["slug"] == slug), None)
-    if project is None:
+    # Completed reusable systems use their system-template page as the canonical public detail URL.
+    # Nexus Properties has intentionally been removed from the public portfolio.
+    item = get_system_template(slug)
+    if item is None:
         abort(404)
-    template_name = f"projects/{slug.replace('-', '_')}.html"
-    breadcrumb = breadcrumb_structured_data(
-        current_app.config.get("PUBLIC_BASE_URL", "").rstrip("/"),
-        [("Home", "/"), ("Projects", "/projects"), (project["name"], f"/projects/{project['slug']}")],
-    )
-    return render_template(
-        template_name,
-        title=project["name"],
-        project=project,
-        **_common_context(
-            "projects",
-            seo_title=project["seo_title"],
-            meta_description=project["meta_description"],
-            og_image=project["image"],
-            og_image_alt=project["image_alt"],
-            extra_structured_data=[breadcrumb] if breadcrumb else [],
-        ),
-    )
+    return redirect(url_for("site.system_template_detail", slug=item.slug), code=301)
 
 
 @site.get("/system-templates")
@@ -304,12 +265,14 @@ def _send_smtp_message(record: dict) -> None:
     message["Reply-To"] = record["email"]
     company = record.get("company") or "Not provided"
     interest = record.get("source_title") or "General custom-system inquiry"
+    request_type = record.get("source_action") or "General inquiry"
     message.set_content(
         "New website inquiry\n\n"
         f"Name: {record['name']}\n"
         f"Email: {record['email']}\n"
         f"Company: {company}\n"
-        f"Interested in: {interest}\n\n"
+        f"Interested in: {interest}\n"
+        f"Request type: {request_type}\n\n"
         "Project details:\n"
         f"{record['message']}\n"
     )
@@ -330,10 +293,25 @@ def _send_smtp_message(record: dict) -> None:
         smtp.send_message(message)
 
 
+_TEMPLATE_INTENTS = {
+    "free-access": "Free Template Access",
+    "customize": "Custom System / Customization",
+}
+
+
 def _requested_system_template() -> object | None:
     slug = (request.form.get("source_slug") if request.method == "POST" else request.args.get("template")) or ""
     slug = slug.strip().lower()
     return get_system_template(slug) if slug else None
+
+
+def _requested_template_intent(template_interest) -> tuple[str, str, str]:
+    if template_interest is None:
+        return "", "", ""
+    raw = (request.form.get("source_intent") if request.method == "POST" else request.args.get("intent")) or ""
+    raw = raw.strip().lower()
+    label = _TEMPLATE_INTENTS.get(raw, "System Template Inquiry")
+    return raw if raw in _TEMPLATE_INTENTS else "", label, label
 
 
 @site.route("/contact", methods=["GET", "POST"])
@@ -341,7 +319,10 @@ def contact():
     context = _common_context("contact")
     context["csrf_token"] = _csrf_token()
     template_interest = _requested_system_template()
+    source_intent, source_action, source_action_label = _requested_template_intent(template_interest)
     context["template_interest"] = template_interest
+    context["source_intent"] = source_intent
+    context["source_action_label"] = source_action_label
 
     if request.method == "POST":
         sent = request.form.get("csrf_token", "")
@@ -382,6 +363,7 @@ def contact():
             "source_type": "system_template" if template_interest else "",
             "source_slug": template_interest.slug if template_interest else "",
             "source_title": template_interest.name if template_interest else "",
+            "source_action": source_action if template_interest else "",
         }
 
         mode = current_app.config.get("CONTACT_DELIVERY_MODE", "local")
@@ -452,8 +434,6 @@ def sitemap():
         url_for("site.experience", _external=True),
         url_for("site.contact", _external=True),
     ]
-    pages.extend(url_for("site.project_detail", slug=item["slug"], _external=True) for item in PROJECTS)
-
     templates = published_templates()
     if templates:
         pages.append(url_for("site.system_templates", _external=True))

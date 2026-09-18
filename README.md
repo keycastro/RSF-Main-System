@@ -45,4 +45,4 @@ The site structure, routes, inbox privacy, and deployment architecture remain un
 
 ## Future system-template foundation
 
-Version 2.7.0 prepares a reusable, dormant foundation for the future curated real-estate system-template library. No placeholder templates are published. The library becomes public only when a real template is marked published. See `docs/TEMPLATE_LIBRARY_FOUNDATION.md`.
+Version 2.7.0 prepared the reusable template foundation. Version 2.8.0 activates that architecture with two real systems: **Property Operations Command Center** and **Property Inventory Hub**. Each remains an independent completed system and free standard template by request; business-specific customization is paid development. See `docs/TEMPLATE_LIBRARY_FOUNDATION.md` and `docs/PUBLISHED_SYSTEM_TEMPLATES.md`.

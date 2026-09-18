@@ -1,241 +1,77 @@
-# KEY CASTRO — Template Library Foundation (2.7.0)
+# KEY CASTRO — Template Library Architecture (2.8.0)
 
-## Why this foundation exists
+## Purpose
 
-The website is evolving from a portfolio into a three-part platform:
+The website now serves three connected roles: professional portfolio, curated free/standard real-estate system library, and client-acquisition path for paid customization/custom development.
 
-1. professional portfolio and completed case studies;
-2. curated free/standard real-estate system templates and demonstrations; and
-3. a client-acquisition path for paid customization and custom development.
+The architecture was prepared in 2.7.0 and activated in 2.8.0 with two real systems. It remains part of the existing Flask application; no CMS, SPA framework, or separate marketplace was introduced.
 
-Release 2.7.0 prepares the existing Flask application for that model **without publishing an empty template library and without changing the existing public/private architecture**.
+## Published systems
 
-## Current-source audit
+The source-controlled registry in `app/system_templates.py` currently publishes:
 
-### Already strong
+- `property-operations-command-center`
+- `property-inventory-hub`
 
-- Server-rendered Flask pages are directly indexable and do not depend on a JavaScript framework.
-- Public routes are stable and simple.
-- The Nexus case study already demonstrates a real workflow with screenshots and a clear portfolio-status boundary.
-- The Contact form already has CSRF protection, validation, a honeypot, and PostgreSQL delivery.
-- The private owner inbox is already part of the same Flask codebase, authenticated through a token-to-short-lived-ticket flow, absent from public navigation, and excluded from the sitemap.
-- `robots.txt`, `sitemap.xml`, canonical tags, Open Graph basics, responsive CSS, visible focus states, reduced-motion handling, and custom 404 behavior already exist.
-- Project screenshots are reasonably sized and do not require a new media platform yet.
+Read `docs/PUBLISHED_SYSTEM_TEMPLATES.md` for exact source-grounded product claims and truth boundaries. They are separate applications and must not have their screenshots, features, workflows, or databases mixed.
 
-### Gaps that matter before the first template
-
-- There was no reusable system-template content model or stable route contract.
-- Publishing a future library would otherwise encourage duplicated route/template code.
-- SEO metadata was page-level but not yet structured for project/template-specific titles, social metadata, breadcrumbs, or truthful structured data.
-- Search Console/Bing verification had no environment-driven integration point.
-- The inquiry table did not have optional source context, so future template conversions could not be attributed cleanly.
-- The sitemap was hard-coded with no safe way to include only published templates.
-- Error pages had no explicit noindex metadata.
-- The developer handoff version had fallen behind the actual production version, showing why foundation state must be documented alongside code.
-
-## What 2.7.0 prepares now
-
-### 1. Reusable template registry
-
-`app/system_templates.py` defines a source-controlled `SystemTemplate` structure containing:
-
-- stable slug
-- name / category
-- short and full descriptions
-- business problem
-- target users
-- workflow
-- features
-- screenshots
-- video metadata and written summary/transcript field
-- technology
-- standard/free scope
-- customization opportunities
-- draft/published status
-- SEO title / meta description / OG image
-- publication/update dates
-
-The registry is intentionally empty in 2.7.0.
-
-**Draft or absent content is not public.** `/system-templates` and template-detail routes return 404 until at least one real template is deliberately marked published.
-
-### 2. Generic future routes and templates
-
-The stable route contract is now reserved:
+## Route contract
 
 ```text
 /system-templates
 /system-templates/<stable-slug>
 ```
 
-Generic server-rendered index/detail templates are ready for the first real template. Public navigation/footer links only appear when at least one published template exists.
+Published entries automatically appear in the library, public navigation, and sitemap. Draft entries remain non-public. Legacy `/projects/<published-template-slug>` paths redirect permanently to the canonical system-template detail URL; Nexus Properties is no longer a public current project and `/projects/nexus-properties` returns 404.
 
-### 3. Search foundation
+## Reusable metadata
 
-The base layout now supports:
+`SystemTemplate` stores stable slug, name/category, descriptions, business problem, target users, workflow, features, technology, standard/free scope, customization opportunities, status, screenshots, optional real video data, project truth-boundary note, SEO metadata, and dates.
 
-- stronger unique SEO titles
-- per-page meta descriptions
-- canonical URLs
-- Open Graph title/description/image/image-alt
-- Twitter summary-card metadata
-- optional Google Search Console verification
-- optional Bing Webmaster Tools verification
-- truthful Person + WebSite JSON-LD
-- BreadcrumbList JSON-LD on the Nexus case study
-- future SoftwareApplication / VideoObject JSON-LD only for real published template content
-- explicit noindex metadata on error pages
+Do not create a dedicated route/template for each future system unless the generic architecture genuinely cannot represent it.
 
-No fake rating, review, pricing, award, client, or result schema is used.
+## Free-template / paid-customization conversion
 
-### 4. Sitemap behavior
+The existing standard system is available **free by request**; there is no automatic public download in the current model. Business-specific changes are paid custom development.
 
-The sitemap continues to contain only public/indexable pages. The system-template index and detail URLs are added automatically only when real published template content exists.
+Supported CTA patterns:
 
-Private owner routes remain excluded.
+```text
+/contact?template=<slug>&intent=free-access
+/contact?template=<slug>&intent=customize
+```
 
-### 5. Lead-source foundation
+The server resolves the submitted slug against the published registry instead of trusting a visitor-supplied title.
 
-The inquiry database adds three optional, backward-compatible fields:
+The inquiry schema now supports backward-compatible optional context:
 
 ```text
 source_type
 source_slug
 source_title
+source_action
 ```
 
-Existing generic inquiries remain valid with empty values.
+`source_action` stores a readable request type such as `Free Template Access` or `Custom System / Customization`. Generic Contact submissions continue to work with empty source fields.
 
-A future template CTA can link to:
+## SEO/search behavior
 
-```text
-/contact?template=<stable-slug>
-```
+The architecture supports unique titles/descriptions, canonical URLs, Open Graph/Twitter metadata, descriptive media alt text, Person/WebSite structured data, and truthful SoftwareApplication + BreadcrumbList data for published systems. VideoObject is emitted only when real required video metadata exists.
 
-The server resolves the slug against the published template registry. It does **not** trust arbitrary client-supplied source titles. When the template exists, the Contact page carries the source slug and stores trusted source context with the inquiry.
+The sitemap includes only public/indexable pages and published system templates. Private owner routes remain excluded. No fake reviews, ratings, clients, awards, pricing, or result claims belong in schema or copy.
 
-The owner inbox displays the source only when it exists.
+## Public/private boundary
 
-## What is deliberately NOT built yet
-
-- No fake/placeholder system templates.
-- No public Template Library navigation while the registry is empty.
-- No CMS or template-content database.
-- No template search/filter engine.
-- No download/licensing system.
-- No analytics platform.
-- No demo environment.
-- No pricing table.
-- No many-keyword SEO landing-page farm.
-- No migration away from Flask/server-rendered HTML.
-
-These should be added only when a real flagship template creates a genuine need.
-
-## Architecture decision locked for the first template
-
-Start source-controlled.
-
-```text
-SystemTemplate metadata (Python)
-        ↓
-Generic Flask index/detail routes
-        ↓
-Generic Jinja templates
-        ↓
-Real screenshots/video/transcript
-        ↓
-/contact?template=<slug>
-        ↓
-Existing inquiry database + source context
-        ↓
-Existing private owner inbox
-```
-
-Only consider a CMS/database for template content after source editing becomes a real operational burden.
+The system library must never expose Admin, Inbox, Owner Dashboard, Login, owner tokens, database credentials, inquiry data, or owner-session details. `/owner/*`, `/__owner_api/*`, and `/__owner_access/*` remain private/noindex and absent from public navigation/sitemap.
 
 ## Demo isolation rule
 
-A public system demo must never reuse the production website inquiry database, owner token, owner session secret, private client data, or production credentials.
+Any future live demo must use sample data and a separate runtime/database/secrets from the production KEY CASTRO inquiry/owner environment. Never connect a public demo to the production inquiry database or owner authentication.
 
-Recommended future model:
+The current 2.8.0 media are source-derived interface previews using sample/demo data. They must not be described as live client-data screenshots.
 
-```text
-KEY CASTRO production portfolio
-  - portfolio database / inquiry database
-  - owner authentication
-  - production secrets
+## Adding another system safely
 
-SEPARATE public demo environment
-  - sample data only
-  - separate database
-  - separate secret key
-  - separate environment variables
-  - no owner inbox blueprint/data
-  - resettable demo records where practical
-```
+Before changing status to `published`, confirm the actual system exists and has been inspected; the content is useful and source-grounded; the slug is stable; screenshots/video are real or accurately disclosed; standard/free scope and paid-customization boundary are clear; Contact attribution works; SEO metadata is complete; private/public separation still passes; tests pass; and production verification succeeds.
 
-Do not clone production data into a demo. Do not expose source packages containing `.env`, `.owner_inbox.json`, credentials, tokens, or real inquiries.
-
-## First flagship template recommendation
-
-**Property Maintenance Management System**
-
-Why this should be first:
-
-- It is strongly aligned with property operations and the current niche.
-- Its workflow is easy for a business owner to understand visually: report → triage → assign → update → complete → history.
-- It supports a clear demonstration video and meaningful screenshots.
-- It has obvious customization opportunities: roles, vendors, priorities, SLA rules, notifications, property/unit fields, approval steps, dashboards, and reporting.
-- It does not duplicate the existing Nexus off-market listing case study.
-- It is narrower and safer to standardize than a full rental-management platform involving payments, leases, accounting, and tenant data.
-
-The first template should prove the full pattern before a second template is started.
-
-## Definition of done for the first public template
-
-A template is not ready merely because its page renders. It must have:
-
-- working standard system/demo
-- realistic sample data only
-- complete metadata
-- useful written explanation
-- workflow
-- real screenshots
-- video demonstration plus written summary/transcript
-- explicit standard/free scope
-- explicit customization opportunities
-- stable slug
-- unique title / description / canonical
-- accurate structured data
-- sitemap inclusion
-- responsive/accessibility checks
-- CTA to Contact carrying source context
-- source visible in private Inbox
-- production verification
-
-## Search-engine onboarding when content is ready
-
-The code now supports verification-token meta tags through environment variables:
-
-```text
-GOOGLE_SITE_VERIFICATION
-BING_SITE_VERIFICATION
-```
-
-When the owner creates those accounts:
-
-1. verify `https://keycastro.onrender.com`;
-2. submit `/sitemap.xml`;
-3. monitor indexing/crawl issues;
-4. monitor real search queries and page impressions;
-5. improve pages from actual data rather than keyword stuffing.
-
-## Technical debt to avoid
-
-- Duplicating a new Jinja file and route for every template instead of using the registry/generic page.
-- Changing an indexed template slug without a redirect.
-- Trusting URL/form values for inquiry source titles instead of resolving server-side metadata.
-- Mixing template demo databases with production inquiry data.
-- Creating dozens of thin pages before one complete flagship template is proven.
-- Turning Projects and System Templates into the same concept; they serve different credibility purposes.
-- Introducing a CMS, SPA framework, or marketplace architecture before there is enough content to justify it.
+Do not create thin pages merely for search traffic. Write useful pages around actual business problems and working systems.

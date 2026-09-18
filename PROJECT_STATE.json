@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
-  "handoff_date": "2026-09-18",
-  "version": "2.7.0",
+  "handoff_date": "2026-09-19",
+  "version": "2.8.0",
   "owner_public_name": "Key Castro",
   "positioning": "Custom Real Estate Systems Developer",
   "framework": "Flask",
@@ -58,14 +58,15 @@
     "mode": "database",
     "inquiry_database_active": true,
     "smtp_notification_optional": true,
-    "smtp_auth_configured_and_verified": false
+    "smtp_auth_configured_and_verified": false,
+    "template_request_type_active": true
   },
   "secrets_included_in_repository": false,
   "visual_design": "Premium architectural ivory + navy + sage system; readability-first; public site and private inbox aligned",
   "template_library_foundation": {
     "prepared": true,
-    "published_templates": 0,
-    "public_index_active": false,
+    "published_templates": 2,
+    "public_index_active": true,
     "routes": [
       "/system-templates",
       "/system-templates/<slug>"
@@ -76,9 +77,14 @@
     "inquiry_source_fields": [
       "source_type",
       "source_slug",
-      "source_title"
+      "source_title",
+      "source_action"
     ],
-    "first_flagship_recommendation": "Property Maintenance Management System"
+    "first_flagship_recommendation": "Completed: Property Operations Command Center and Property Inventory Hub are the first published systems",
+    "published_slugs": [
+      "property-operations-command-center",
+      "property-inventory-hub"
+    ]
   },
   "seo_foundation": {
     "canonical_urls": true,
@@ -89,6 +95,24 @@
     "project_breadcrumb_structured_data": true,
     "future_template_structured_data_ready": true,
     "search_console_verification_env_ready": true,
-    "sitemap_publishes_only_real_templates": true
+    "sitemap_publishes_only_real_templates": true,
+    "published_template_sitemap_entries": true,
+    "software_application_structured_data_active": true
+  },
+  "public_portfolio": {
+    "nexus_properties_publicly_removed": true,
+    "completed_systems": [
+      {
+        "name": "Property Operations Command Center",
+        "slug": "property-operations-command-center",
+        "free_standard_template": true
+      },
+      {
+        "name": "Property Inventory Hub",
+        "slug": "property-inventory-hub",
+        "free_standard_template": true
+      }
+    ],
+    "truth_boundary": "Built by Key Castro; no client commission, adoption, or paid engagement is claimed without evidence."
   }
 }

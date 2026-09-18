@@ -1,8 +1,8 @@
 import sqlite3
 import tempfile
 import unittest
-from unittest.mock import patch
 from pathlib import Path
+from urllib.parse import urlparse
 
 from app import create_app
 
@@ -21,53 +21,86 @@ class PortfolioSiteTests(unittest.TestCase):
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
 
-    def test_main_pages_render(self):
-        routes = ["/", "/about", "/services", "/projects", "/skills", "/experience", "/contact"]
+    def test_main_pages_and_template_library_render(self):
+        routes = [
+            "/",
+            "/about",
+            "/services",
+            "/projects",
+            "/skills",
+            "/experience",
+            "/contact",
+            "/system-templates",
+            "/system-templates/property-operations-command-center",
+            "/system-templates/property-inventory-hub",
+        ]
         for route in routes:
             with self.subTest(route=route):
                 response = self.client.get(route)
                 self.assertEqual(response.status_code, 200)
                 self.assertIn(b"KEY CASTRO", response.data)
 
-    def test_nexus_completed_project_has_clear_status_boundary(self):
-        response = self.client.get("/projects/nexus-properties")
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b"Nexus Properties", response.data)
-        self.assertIn(b"Completed working portfolio implementation", response.data)
-        self.assertIn(b"not presented as an official Nexus production deployment", response.data)
+    def test_two_systems_are_published_separately_and_nexus_is_removed(self):
+        home = self.client.get("/")
+        projects = self.client.get("/projects")
+        library = self.client.get("/system-templates")
 
+        for response in (home, projects, library):
+            self.assertIn(b"Property Operations Command Center", response.data)
+            self.assertIn(b"Property Inventory Hub", response.data)
+            self.assertNotIn(b"Nexus Properties", response.data)
+
+        pocc = self.client.get("/system-templates/property-operations-command-center")
+        pih = self.client.get("/system-templates/property-inventory-hub")
+        self.assertIn(b"Work items with priority", pocc.data)
+        self.assertNotIn(b"Freshness engine with reconfirmation", pocc.data)
+        self.assertIn(b"Freshness engine with reconfirmation", pih.data)
+        self.assertNotIn(b"Owner approval requests", pih.data)
+
+        old_nexus = self.client.get("/projects/nexus-properties")
+        self.assertEqual(old_nexus.status_code, 404)
 
     def test_navigation_and_home_hierarchy(self):
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
         self.assertIn(b">Projects</a>", response.data)
+        self.assertIn(b">System Templates</a>", response.data)
         self.assertIn(b">Services</a>", response.data)
         self.assertIn(b">About</a>", response.data)
         self.assertIn(b">Contact</a>", response.data)
-        self.assertIn(b"COMPLETED PROJECT", response.data)
-        self.assertEqual(response.data.count(b"<h3>Nexus Properties</h3>"), 1)
+        self.assertIn(b"COMPLETED SYSTEMS", response.data)
+        self.assertEqual(response.data.count(b"Property Operations Command Center</h3>"), 1)
+        self.assertEqual(response.data.count(b"Property Inventory Hub</h3>"), 1)
         public_shell = response.data.lower()
         self.assertNotIn(b"key castro inbox", public_shell)
         self.assertNotIn(b"owner dashboard", public_shell)
         self.assertNotIn(b">admin<", public_shell)
 
-    def test_nexus_case_study_has_breadcrumb_and_simplified_section_nav(self):
-        response = self.client.get("/projects/nexus-properties")
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b'aria-label="Breadcrumb"', response.data)
-        self.assertIn(b' href="#overview">Overview</a>', response.data)
-        self.assertIn(b' href="#features">Features</a>', response.data)
-        self.assertNotIn(b' href="#problem">Problem</a>', response.data)
-        self.assertNotIn(b' href="#solution">Solution</a>', response.data)
+    def test_system_detail_has_truthful_status_boundary_and_dual_ctas(self):
+        for slug in ("property-operations-command-center", "property-inventory-hub"):
+            with self.subTest(slug=slug):
+                response = self.client.get(f"/system-templates/{slug}")
+                self.assertEqual(response.status_code, 200)
+                self.assertIn(b'aria-label="Breadcrumb"', response.data)
+                self.assertIn(b"COMPLETED SYSTEM", response.data)
+                self.assertIn(b"FREE STANDARD TEMPLATE", response.data)
+                self.assertIn(b"Request Free Template Access", response.data)
+                self.assertIn(b"Customize This System", response.data)
+                self.assertIn(b"sample/demo data", response.data)
+                self.assertNotIn(b"client hired", response.data.lower())
+                self.assertNotIn(b"official client", response.data.lower())
 
-    def test_unknown_project_uses_custom_404(self):
-        response = self.client.get("/projects/not-real")
-        self.assertEqual(response.status_code, 404)
+    def test_legacy_project_urls_for_published_systems_redirect_to_canonical(self):
+        response = self.client.get("/projects/property-inventory-hub", follow_redirects=False)
+        self.assertEqual(response.status_code, 301)
+        self.assertEqual(response.headers["Location"], "/system-templates/property-inventory-hub")
 
-    def test_unknown_page_uses_custom_404(self):
-        response = self.client.get("/does-not-exist")
-        self.assertEqual(response.status_code, 404)
-        self.assertIn(b"The page you requested does not exist", response.data)
+    def test_unknown_project_and_page_use_custom_404(self):
+        project = self.client.get("/projects/not-real")
+        self.assertEqual(project.status_code, 404)
+        page = self.client.get("/does-not-exist")
+        self.assertEqual(page.status_code, 404)
+        self.assertIn(b"The page you requested does not exist", page.data)
 
     def test_contact_rejects_bad_csrf(self):
         response = self.client.post("/contact", data={"csrf_token": "bad"})
@@ -117,10 +150,7 @@ class PortfolioSiteTests(unittest.TestCase):
             self.assertTrue(path.exists())
             self.assertIn("Sample Prospect", path.read_text(encoding="utf-8"))
 
-
     def test_database_contact_and_private_online_owner_inbox(self):
-        from urllib.parse import urlparse
-
         with tempfile.TemporaryDirectory() as tmp:
             db_path = Path(tmp) / "inbox.sqlite3"
             self.app.config.update(
@@ -131,7 +161,6 @@ class PortfolioSiteTests(unittest.TestCase):
                 SMTP_FROM_EMAIL="",
             )
 
-            # Public contact form remains open and stores the inquiry.
             self.client.get("/contact")
             with self.client.session_transaction() as sess:
                 token = sess["contact_csrf"]
@@ -150,12 +179,10 @@ class PortfolioSiteTests(unittest.TestCase):
             self.assertEqual(response.status_code, 302)
             self.assertTrue(db_path.exists())
 
-            # The online owner inbox is not publicly accessible.
             hidden = self.client.get("/owner/inbox")
             self.assertEqual(hidden.status_code, 404)
             self.assertIn("noindex", hidden.headers.get("X-Robots-Tag", ""))
 
-            # The desktop launcher exchanges its private bearer token for a short-lived access ticket.
             bad_ticket = self.client.post("/__owner_api/session-ticket")
             self.assertEqual(bad_ticket.status_code, 404)
 
@@ -191,16 +218,18 @@ class PortfolioSiteTests(unittest.TestCase):
             self.assertEqual(updated.status_code, 200)
             self.assertIn(b"replied", updated.data.lower())
 
-    def test_sitemap_and_robots(self):
+    def test_sitemap_and_robots_include_two_systems_but_no_nexus_or_owner(self):
         sitemap = self.client.get("/sitemap.xml")
         self.assertEqual(sitemap.status_code, 200)
-        self.assertIn(b"/projects/nexus-properties", sitemap.data)
+        self.assertIn(b"/system-templates/property-operations-command-center", sitemap.data)
+        self.assertIn(b"/system-templates/property-inventory-hub", sitemap.data)
+        self.assertIn(b"/system-templates", sitemap.data)
+        self.assertNotIn(b"/projects/nexus-properties", sitemap.data)
         self.assertNotIn(b"/owner/", sitemap.data)
         self.assertNotIn(b"/__owner", sitemap.data)
         robots = self.client.get("/robots.txt")
         self.assertEqual(robots.status_code, 200)
         self.assertIn(b"Disallow: /", robots.data)
-
 
     def test_seo_foundation_and_structured_data(self):
         self.app.config.update(
@@ -218,27 +247,30 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b'"@type": "Person"', home.data)
         self.assertIn(b'"@type": "WebSite"', home.data)
 
-        case = self.client.get("/projects/nexus-properties")
-        self.assertIn(b"Nexus Properties Real Estate System Case Study | Key Castro", case.data)
-        self.assertIn(b'"@type": "BreadcrumbList"', case.data)
-        self.assertIn(b'og:image:alt', case.data)
+        for slug, expected_title in (
+            (
+                "property-operations-command-center",
+                b"Property Operations Command Center Template | Key Castro",
+            ),
+            (
+                "property-inventory-hub",
+                b"Property Inventory Hub Free Real Estate Template | Key Castro",
+            ),
+        ):
+            case = self.client.get(f"/system-templates/{slug}")
+            self.assertEqual(case.status_code, 200)
+            self.assertIn(expected_title, case.data)
+            self.assertIn(b'"@type": "BreadcrumbList"', case.data)
+            self.assertIn(b'"@type": "SoftwareApplication"', case.data)
+            self.assertIn(b"og:image:alt", case.data)
+            self.assertNotIn(b'"@type": "Review"', case.data)
+            self.assertNotIn(b'"aggregateRating"', case.data)
 
         missing = self.client.get("/does-not-exist")
         self.assertEqual(missing.status_code, 404)
         self.assertIn(b'name="robots" content="noindex,nofollow"', missing.data)
 
-    def test_template_library_stays_unpublished_until_real_content_exists(self):
-        index = self.client.get("/system-templates")
-        self.assertEqual(index.status_code, 404)
-        detail = self.client.get("/system-templates/property-maintenance-system")
-        self.assertEqual(detail.status_code, 404)
-
-        home = self.client.get("/")
-        self.assertNotIn(b">System Templates</a>", home.data)
-        sitemap = self.client.get("/sitemap.xml")
-        self.assertNotIn(b"/system-templates", sitemap.data)
-
-    def test_backward_compatible_inquiry_source_migration(self):
+    def test_backward_compatible_inquiry_source_action_migration(self):
         from app.inquiries import create_inquiry, get_inquiry
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -268,48 +300,133 @@ class PortfolioSiteTests(unittest.TestCase):
                         "name": "Template Prospect",
                         "email": "template@example.com",
                         "company": "Example Property Group",
-                        "message": "We want this property maintenance workflow adapted for our team.",
+                        "message": "We want this system adapted for our team.",
                         "source_type": "system_template",
-                        "source_slug": "property-maintenance-system",
-                        "source_title": "Property Maintenance Management System",
+                        "source_slug": "property-inventory-hub",
+                        "source_title": "Property Inventory Hub",
+                        "source_action": "Custom System / Customization",
                     }
                 )
                 item = get_inquiry(inquiry_id)
 
             self.assertEqual(item["source_type"], "system_template")
-            self.assertEqual(item["source_slug"], "property-maintenance-system")
-            self.assertEqual(item["source_title"], "Property Maintenance Management System")
+            self.assertEqual(item["source_slug"], "property-inventory-hub")
+            self.assertEqual(item["source_title"], "Property Inventory Hub")
+            self.assertEqual(item["source_action"], "Custom System / Customization")
 
-    def test_template_context_can_flow_to_contact_without_breaking_generic_contact(self):
-        from app.system_templates import SystemTemplate
-
-        sample = SystemTemplate(
-            slug="property-maintenance-system",
-            name="Property Maintenance Management System",
-            category="Property Operations",
-            short_description="Track maintenance requests from report to completion.",
-            full_description="A standard property maintenance workflow for requests, assignments, status, and completion.",
-            business_problem="Maintenance work is difficult to coordinate when requests and updates are scattered.",
-            target_users=("Property managers",),
-            workflow=("Report request", "Assign work", "Track status", "Complete request"),
-            features=("Request records", "Assignment", "Status history"),
-            technologies=("Flask", "SQL"),
-            standard_scope=("Standard request workflow",),
-            customization_opportunities=("Custom roles", "Notifications"),
-            status="published",
-            seo_title="Property Maintenance Management System | Key Castro",
-            meta_description="A property maintenance management system template for requests, assignments, status, and completion.",
+    def test_free_access_and_customization_context_flow_without_breaking_generic_contact(self):
+        free_access = self.client.get(
+            "/contact?template=property-operations-command-center&intent=free-access"
         )
+        self.assertEqual(free_access.status_code, 200)
+        self.assertIn(b"Property Operations Command Center", free_access.data)
+        self.assertIn(b"Request type: Free Template Access", free_access.data)
+        self.assertIn(b'name="source_slug" value="property-operations-command-center"', free_access.data)
+        self.assertIn(b'name="source_intent" value="free-access"', free_access.data)
+        self.assertIn(b"Request free template access", free_access.data)
 
-        with patch("app.routes.get_system_template", return_value=sample):
-            response = self.client.get("/contact?template=property-maintenance-system")
-            self.assertEqual(response.status_code, 200)
-            self.assertIn(b"Property Maintenance Management System", response.data)
-            self.assertIn(b'name="source_slug" value="property-maintenance-system"', response.data)
+        customize = self.client.get(
+            "/contact?template=property-inventory-hub&intent=customize"
+        )
+        self.assertEqual(customize.status_code, 200)
+        self.assertIn(b"Property Inventory Hub", customize.data)
+        self.assertIn(b"Request type: Custom System / Customization", customize.data)
+        self.assertIn(b'name="source_intent" value="customize"', customize.data)
+        self.assertIn(b"Send customization request", customize.data)
 
         generic = self.client.get("/contact")
         self.assertEqual(generic.status_code, 200)
         self.assertNotIn(b'name="source_slug"', generic.data)
+        self.assertNotIn(b'name="source_intent"', generic.data)
+
+    def test_template_contact_submission_records_source_and_request_type_in_private_inbox(self):
+        from app.inquiries import get_inquiry
+
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "template-lead.sqlite3"
+            self.app.config.update(
+                CONTACT_DELIVERY_MODE="database",
+                DATABASE_URL=f"sqlite:///{db_path}",
+                OWNER_INBOX_TOKEN="owner-template-token",
+                SMTP_HOST="",
+                SMTP_FROM_EMAIL="",
+            )
+
+            page = self.client.get(
+                "/contact?template=property-inventory-hub&intent=free-access"
+            )
+            self.assertEqual(page.status_code, 200)
+            with self.client.session_transaction() as sess:
+                token = sess["contact_csrf"]
+
+            sent = self.client.post(
+                "/contact",
+                data={
+                    "csrf_token": token,
+                    "source_slug": "property-inventory-hub",
+                    "source_intent": "free-access",
+                    "name": "Template User",
+                    "email": "template.user@example.com",
+                    "company": "Example Brokerage",
+                    "message": "I would like access to the standard template for our internal property inventory.",
+                    "website": "",
+                },
+                follow_redirects=False,
+            )
+            self.assertEqual(sent.status_code, 302)
+
+            with self.app.app_context():
+                item = get_inquiry(1)
+            self.assertEqual(item["source_type"], "system_template")
+            self.assertEqual(item["source_slug"], "property-inventory-hub")
+            self.assertEqual(item["source_title"], "Property Inventory Hub")
+            self.assertEqual(item["source_action"], "Free Template Access")
+
+            headers = {"Authorization": "Bearer owner-template-token"}
+            ticket_response = self.client.post("/__owner_api/session-ticket", headers=headers)
+            access_path = urlparse(ticket_response.get_json()["url"]).path
+            self.client.get(access_path, follow_redirects=False)
+            inbox = self.client.get("/owner/inbox")
+            self.assertIn(b"Interested in: Property Inventory Hub", inbox.data)
+            self.assertIn(b"Request: Free Template Access", inbox.data)
+            detail = self.client.get("/owner/inbox/1")
+            self.assertIn(b"Request type", detail.data)
+            self.assertIn(b"Free Template Access", detail.data)
+
+    def test_template_source_title_cannot_be_spoofed_by_form(self):
+        from app.inquiries import get_inquiry
+
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "trusted-source.sqlite3"
+            self.app.config.update(
+                CONTACT_DELIVERY_MODE="database",
+                DATABASE_URL=f"sqlite:///{db_path}",
+                SMTP_HOST="",
+                SMTP_FROM_EMAIL="",
+            )
+            self.client.get("/contact?template=property-operations-command-center&intent=customize")
+            with self.client.session_transaction() as sess:
+                token = sess["contact_csrf"]
+            response = self.client.post(
+                "/contact",
+                data={
+                    "csrf_token": token,
+                    "source_slug": "property-operations-command-center",
+                    "source_intent": "customize",
+                    "source_title": "FAKE TITLE FROM VISITOR",
+                    "name": "Custom Prospect",
+                    "email": "custom@example.com",
+                    "company": "Example Ops",
+                    "message": "We need the workflow adapted with our roles and operational approval process.",
+                    "website": "",
+                },
+                follow_redirects=False,
+            )
+            self.assertEqual(response.status_code, 302)
+            with self.app.app_context():
+                item = get_inquiry(1)
+            self.assertEqual(item["source_title"], "Property Operations Command Center")
+            self.assertEqual(item["source_action"], "Custom System / Customization")
 
 
 if __name__ == "__main__":

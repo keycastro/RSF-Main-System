@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Current version:** 2.7.0
+**Current version:** 2.8.0
 **Official site:** https://keycastro.onrender.com
 **Positioning:** KEY CASTRO — Custom Real Estate Systems Developer
 
@@ -26,22 +26,18 @@ C:\Users\Admin\Documents\KEY_CASTRO_WEBSITE
 
 It contains the public portfolio/contact flow and the private owner inbox. Do not split them into separate active projects.
 
-## 2.7.0 future-product foundation
+## 2.8.0 published-system state
 
-The codebase now contains a dormant reusable foundation for future real-estate system templates:
+The reusable 2.7.0 foundation is now active with two real, independently inspected systems:
 
-- `app/system_templates.py` — source-controlled metadata registry
-- `/system-templates` and `/system-templates/<slug>` — reserved stable routes
-- generic Jinja index/detail templates
-- conditional navigation/footer visibility only when a real template is published
-- future template URLs excluded from sitemap while no published template exists
-- optional inquiry source fields (`source_type`, `source_slug`, `source_title`)
-- trusted `/contact?template=<slug>` conversion context
-- owner-inbox display for template interest when present
-- expanded SEO/social metadata and truthful structured data
-- optional Search Console/Bing verification meta tags
+- `Property Operations Command Center` → `/system-templates/property-operations-command-center`
+- `Property Inventory Hub` → `/system-templates/property-inventory-hub`
 
-**There are intentionally no published templates in the 2.7.0 foundation release. Do not create placeholder content merely to activate the library.**
+Both are completed systems built by Key Castro and are offered as free standard templates **by request**. Business-specific customization is paid development. They are separate applications: never mix their screenshots, features, workflows, databases, or product names.
+
+`app/system_templates.py` remains the source-controlled registry and the generic index/detail Jinja templates remain the reusable rendering architecture. Contact attribution now includes `source_type`, `source_slug`, `source_title`, and `source_action`, allowing the private Inbox to distinguish free-template access from customization requests.
+
+Nexus Properties was removed from the current **public** portfolio presentation in 2.8.0. Historical source/documentation may remain in the repository, but do not re-expose it publicly unless the owner explicitly changes that decision. Read `docs/PUBLISHED_SYSTEM_TEMPLATES.md` before editing current system claims.
 
 ## Public website rule
 
@@ -77,6 +73,6 @@ Public Render mirror: https://github.com/keycastro/key-castro-render-deploy
 
 Push both remotes explicitly, then trigger the existing Render service manually. PythonAnywhere remains retired.
 
-## First flagship strategy
+## Current template strategy
 
-The recommended first template is a **Property Maintenance Management System**. Build only one flagship first and prove the complete path from useful content/demo to Contact source context to private Inbox before starting a second template.
+The first live pattern is now proven with two real systems. Future additions must reuse the same metadata/detail/contact architecture and should be published only when the actual system, truthful content, media, SEO metadata, security review, and conversion path are ready.

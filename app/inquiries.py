@@ -13,6 +13,7 @@ _SOURCE_COLUMNS = {
     "source_type": "TEXT NOT NULL DEFAULT ''",
     "source_slug": "TEXT NOT NULL DEFAULT ''",
     "source_title": "TEXT NOT NULL DEFAULT ''",
+    "source_action": "TEXT NOT NULL DEFAULT ''",
 }
 
 
@@ -79,6 +80,9 @@ def _ensure_source_columns(conn: Any, url: str) -> None:
     conn.execute(
         "ALTER TABLE contact_inquiries ADD COLUMN IF NOT EXISTS source_title VARCHAR(200) NOT NULL DEFAULT ''"
     )
+    conn.execute(
+        "ALTER TABLE contact_inquiries ADD COLUMN IF NOT EXISTS source_action VARCHAR(80) NOT NULL DEFAULT ''"
+    )
 
 
 def ensure_schema() -> None:
@@ -99,7 +103,8 @@ def ensure_schema() -> None:
             status TEXT NOT NULL DEFAULT 'new',
             source_type TEXT NOT NULL DEFAULT '',
             source_slug TEXT NOT NULL DEFAULT '',
-            source_title TEXT NOT NULL DEFAULT ''
+            source_title TEXT NOT NULL DEFAULT '',
+            source_action TEXT NOT NULL DEFAULT ''
         )
         """
     else:
@@ -115,7 +120,8 @@ def ensure_schema() -> None:
             status VARCHAR(20) NOT NULL DEFAULT 'new',
             source_type VARCHAR(40) NOT NULL DEFAULT '',
             source_slug VARCHAR(160) NOT NULL DEFAULT '',
-            source_title VARCHAR(200) NOT NULL DEFAULT ''
+            source_title VARCHAR(200) NOT NULL DEFAULT '',
+            source_action VARCHAR(80) NOT NULL DEFAULT ''
         )
         """
 
@@ -136,6 +142,7 @@ def create_inquiry(record: dict[str, str]) -> int:
         record.get("source_type", ""),
         record.get("source_slug", ""),
         record.get("source_title", ""),
+        record.get("source_action", ""),
     )
     with _connection() as conn:
         if _is_sqlite(url):
@@ -143,8 +150,8 @@ def create_inquiry(record: dict[str, str]) -> int:
                 """
                 INSERT INTO contact_inquiries
                     (created_at, updated_at, name, email, company, message, status,
-                     source_type, source_slug, source_title)
-                VALUES (?, ?, ?, ?, ?, ?, 'new', ?, ?, ?)
+                     source_type, source_slug, source_title, source_action)
+                VALUES (?, ?, ?, ?, ?, ?, 'new', ?, ?, ?, ?)
                 """,
                 (now, now, *values),
             )
@@ -153,8 +160,8 @@ def create_inquiry(record: dict[str, str]) -> int:
         row = conn.execute(
             """
             INSERT INTO contact_inquiries
-                (name, email, company, message, status, source_type, source_slug, source_title)
-            VALUES (%s, %s, %s, %s, 'new', %s, %s, %s)
+                (name, email, company, message, status, source_type, source_slug, source_title, source_action)
+            VALUES (%s, %s, %s, %s, 'new', %s, %s, %s, %s)
             RETURNING id
             """,
             values,
@@ -177,7 +184,7 @@ def list_inquiries(status: str | None = None, limit: int = 100) -> list[dict[str
     url = _database_url()
     fields = (
         "id, created_at, updated_at, name, email, company, message, status, "
-        "source_type, source_slug, source_title"
+        "source_type, source_slug, source_title, source_action"
     )
     with _connection() as conn:
         if status in ALLOWED_STATUSES:
