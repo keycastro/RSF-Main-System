@@ -49,6 +49,7 @@ class SystemTemplate:
     technologies: tuple[str, ...]
     standard_scope: tuple[str, ...]
     customization_opportunities: tuple[str, ...]
+    search_terms: tuple[str, ...] = field(default_factory=tuple)
     status: TemplateStatus = "draft"
     screenshots: tuple[TemplateScreenshot, ...] = field(default_factory=tuple)
     video: VideoDemo = field(default_factory=VideoDemo)
@@ -58,6 +59,25 @@ class SystemTemplate:
     og_image: str = ""
     published_date: str = ""
     updated_date: str = ""
+
+    @property
+    def search_text(self) -> str:
+        """Plain-text search document used by the client-side Systems filter.
+
+        Keep search behavior metadata-driven: future published systems become
+        searchable automatically when their normal metadata and optional
+        ``search_terms`` are added to this registry.
+        """
+        parts = (
+            self.name,
+            self.category,
+            self.short_description,
+            self.card_audience,
+            self.business_problem,
+            *self.target_users,
+            *self.search_terms,
+        )
+        return " ".join(part.strip() for part in parts if part and part.strip())
 
     def __post_init__(self) -> None:
         if not _SLUG_PATTERN.fullmatch(self.slug):
@@ -153,6 +173,22 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             "Integrations with approved external systems or APIs",
             "Additional modules built around the company’s actual property-operation process",
         ),
+        search_terms=(
+            "property management",
+            "property operations",
+            "operations",
+            "rental",
+            "maintenance",
+            "tenant",
+            "workflow",
+            "approvals",
+            "guest readiness",
+            "short-term rental",
+            "SOP",
+            "checklist",
+            "follow-up",
+            "contractor",
+        ),
         status="published",
         screenshots=(
             TemplateScreenshot(
@@ -247,6 +283,20 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             "Alternative database and hosted deployment architecture",
             "Integrations with approved CRM, listing, messaging, or property systems",
             "Additional modules around the brokerage’s own inventory and agent workflow",
+        ),
+        search_terms=(
+            "inventory",
+            "property inventory",
+            "brokerage",
+            "listings",
+            "off-market listings",
+            "marketplace",
+            "agents",
+            "reconfirmation",
+            "property search",
+            "sales",
+            "leasing",
+            "listing management",
         ),
         status="published",
         screenshots=(

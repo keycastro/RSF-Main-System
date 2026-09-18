@@ -1,12 +1,14 @@
-# PUBLISHED SYSTEM TEMPLATES — 2.8.0
+# PUBLISHED SYSTEM TEMPLATES — CURRENT PUBLIC POSITIONING
 
 This file records the source-of-truth public positioning for the first two systems published through the reusable template-library architecture.
 
 ## Business model
 
-The existing standard system is **free by request**. There is no automatic public source/download link. A business requests access through the existing Contact flow.
+The existing standard system is **free by request in its current form**. There is no automatic public source/download link. A business requests access through the existing Contact flow. Free access covers the published system as it already exists: its current interface, workflow, structure, features, and functionality.
 
-Business-specific changes are **paid custom development**. Customization may include branding, roles, workflow, database design, dashboards, automation, integrations, reports, deployment, or additional modules.
+Business-specific changes and additional development are **paid custom development**. Customization may include branding, roles, workflow, database design, dashboards, automation, integrations, reports, deployment, additional modules, or other changes needed to fit a specific business.
+
+Do not imply that free access includes unlimited customization, and do not describe the standard system as intentionally incomplete or inferior.
 
 Every template-origin inquiry carries trusted server-side context into the existing PostgreSQL inquiry flow and private KEY CASTRO INBOX, including the system name and request type.
 

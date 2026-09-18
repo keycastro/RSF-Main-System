@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-19",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "owner_public_name": "Key Castro",
   "positioning": "Custom Real Estate Systems Developer",
   "framework": "Flask",
@@ -62,7 +62,7 @@
     "template_request_type_active": true
   },
   "secrets_included_in_repository": false,
-  "visual_design": "Premium architectural ivory + navy + sage system; 3.0.0 rebalances screenshot scale, section density, header/hero proportions, and system presentation while preserving the 2.9.0 information architecture.",
+  "visual_design": "Premium architectural ivory + navy + sage system; 3.0.0 compact presentation preserved. 3.1.0 adds a compact metadata-driven Systems search and clarifies free standard access versus paid business-specific customization.",
   "template_library_foundation": {
     "prepared": true,
     "published_templates": 2,
@@ -132,5 +132,22 @@
     "ux_contract": "docs/UX_INFORMATION_ARCHITECTURE.md",
     "visitor_flow": "Home -> Systems -> System -> Free Access or Customization -> Contact",
     "presentation_contract": "Compact premium presentation: screenshots support system information, system catalog uses controlled previews, detail pages use compact preview + lightbox gallery, and core navigation remains Home -> Systems -> System -> Free Access or Customization -> Contact."
+  },
+  "system_search": {
+    "active": true,
+    "route": "/system-templates",
+    "implementation": "client-side progressive enhancement over server-rendered system cards",
+    "metadata_source": "app/system_templates.py",
+    "search_fields": [
+      "name",
+      "category",
+      "short_description",
+      "card_audience",
+      "business_problem",
+      "target_users",
+      "search_terms"
+    ],
+    "no_match_conversion": "Discuss a Custom System -> generic Contact",
+    "javascript_required_for_content": false
   }
 }

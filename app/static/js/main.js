@@ -59,6 +59,110 @@
   });
 
 
+  const systemSearch = document.querySelector('[data-system-search]');
+  const systemSearchInput = document.querySelector('[data-system-search-input]');
+  const systemSearchClear = document.querySelector('[data-system-search-clear]');
+  const systemSearchStatus = document.querySelector('[data-system-search-status]');
+  const systemSearchEmpty = document.querySelector('[data-system-search-empty]');
+  const systemCards = [...document.querySelectorAll('[data-system-card]')];
+
+  if (systemSearch && systemSearchInput && systemCards.length) {
+    systemSearch.hidden = false;
+
+    const normalizeSearchText = (value) => (value || '')
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const cardSearchText = new Map(
+      systemCards.map((card) => [card, normalizeSearchText(card.dataset.search)])
+    );
+    const filterTimers = new Map();
+
+    const setCardVisible = (card, visible) => {
+      if (filterTimers.has(card)) {
+        window.clearTimeout(filterTimers.get(card));
+        filterTimers.delete(card);
+      }
+
+      card.dataset.searchVisible = visible ? 'true' : 'false';
+      if (visible) {
+        if (card.hidden) {
+          card.hidden = false;
+          if (!reducedMotion && card.animate) {
+            card.animate(
+              [{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'translateY(0)' }],
+              { duration: 150, easing: 'ease-out' }
+            );
+          }
+        }
+        return;
+      }
+
+      if (card.hidden) return;
+      if (reducedMotion || !card.animate) {
+        card.hidden = true;
+        return;
+      }
+
+      card.animate(
+        [{ opacity: 1 }, { opacity: 0 }],
+        { duration: 120, easing: 'ease-in' }
+      );
+      const timer = window.setTimeout(() => {
+        if (card.dataset.searchVisible === 'false') card.hidden = true;
+        filterTimers.delete(card);
+      }, 125);
+      filterTimers.set(card, timer);
+    };
+
+    const updateSystemSearch = () => {
+      const query = normalizeSearchText(systemSearchInput.value);
+      const tokens = query.split(' ').filter(Boolean);
+      let matches = 0;
+
+      systemCards.forEach((card) => {
+        const haystack = cardSearchText.get(card) || '';
+        const visible = tokens.length === 0 || tokens.every((token) => haystack.includes(token));
+        if (visible) matches += 1;
+        setCardVisible(card, visible);
+      });
+
+      if (systemSearchClear) systemSearchClear.hidden = query.length === 0;
+      if (systemSearchEmpty) systemSearchEmpty.hidden = matches !== 0;
+
+      if (systemSearchStatus) {
+        if (!query) {
+          systemSearchStatus.textContent = `${systemCards.length} ${systemCards.length === 1 ? 'system' : 'systems'} available`;
+        } else if (matches === 0) {
+          systemSearchStatus.textContent = 'No matching systems';
+        } else {
+          systemSearchStatus.textContent = `${matches} matching ${matches === 1 ? 'system' : 'systems'}`;
+        }
+      }
+    };
+
+    systemSearchInput.addEventListener('input', updateSystemSearch);
+    systemSearchInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && systemSearchInput.value) {
+        event.stopPropagation();
+        systemSearchInput.value = '';
+        updateSystemSearch();
+        systemSearchInput.focus();
+      }
+    });
+    systemSearchClear?.addEventListener('click', () => {
+      systemSearchInput.value = '';
+      updateSystemSearch();
+      systemSearchInput.focus();
+    });
+
+    updateSystemSearch();
+  }
+
+
   const caseJump = document.querySelector('[data-case-jump]');
   const caseSections = [...document.querySelectorAll('[data-case-section]')];
   if (caseJump && caseSections.length) {

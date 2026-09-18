@@ -144,3 +144,12 @@ This content update does not claim that Nexus Properties officially hired, paid,
 - Improves desktop, tablet, and mobile content density without reducing core body readability or tap-target clarity.
 - Keeps Property Operations Command Center and Property Inventory Hub fully separate.
 - Keeps free standard access, paid customization, trusted contact attribution, SEO, sitemap, robots, and private Inbox behavior unchanged.
+
+
+## 3.1.0 — System search + free-standard / paid-customization clarification
+
+- Added metadata-driven, client-side filtering to the existing server-rendered Systems catalog.
+- Added accessible search label, clear/reset behavior, live result status, and helpful no-match custom-development path.
+- Added `search_terms` metadata while keeping search independent of system slugs in JavaScript.
+- Clarified that the published standard system is free in its current form and business-specific changes are paid development.
+- Preserved Contact attribution, PostgreSQL, private owner inbox, SEO, exact system URLs, 3.0.0 compact presentation, GitHub/Render architecture, and desktop launchers.

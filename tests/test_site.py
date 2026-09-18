@@ -128,6 +128,56 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn('height:215px', css)
         self.assertIn('height:160px', css)
 
+    def test_system_search_is_metadata_driven_accessible_and_progressive(self):
+        from app.system_templates import published_templates
+
+        systems = self.client.get("/system-templates")
+        self.assertEqual(systems.status_code, 200)
+        self.assertIn(b'data-system-search', systems.data)
+        self.assertIn(b'role="search"', systems.data)
+        self.assertIn(b'Search by business need...', systems.data)
+        self.assertIn(b'aria-controls="system-results"', systems.data)
+        self.assertIn(b'aria-live="polite"', systems.data)
+        self.assertIn(b'Clear search', systems.data)
+        self.assertIn(b'No matching system yet.', systems.data)
+        self.assertIn(b'Discuss a Custom System', systems.data)
+        self.assertEqual(systems.data.count(b'data-system-card'), 2)
+
+        templates = {item.slug: item for item in published_templates()}
+        pocc_search = templates["property-operations-command-center"].search_text.lower()
+        pih_search = templates["property-inventory-hub"].search_text.lower()
+        for term in ("operations", "maintenance", "rental", "tenant", "approvals"):
+            self.assertIn(term, pocc_search)
+        for term in ("inventory", "brokerage", "listings", "marketplace"):
+            self.assertIn(term, pih_search)
+        self.assertNotIn("crm", pih_search)
+
+        js_path = Path(__file__).resolve().parents[1] / "app" / "static" / "js" / "main.js"
+        js = js_path.read_text(encoding="utf-8")
+        self.assertIn("[data-system-search]", js)
+        self.assertIn("card.dataset.search", js)
+        self.assertIn("No matching systems", js)
+        self.assertNotIn("property-operations-command-center", js)
+        self.assertNotIn("property-inventory-hub", js)
+
+    def test_free_standard_and_paid_customization_are_clear_without_changing_contact_flow(self):
+        systems = self.client.get("/system-templates")
+        detail = self.client.get("/system-templates/property-operations-command-center")
+        free_contact = self.client.get("/contact?template=property-operations-command-center&intent=free-access")
+        custom_contact = self.client.get("/contact?template=property-operations-command-center&intent=customize")
+
+        self.assertIn(b'existing standard version is free by request', systems.data)
+        self.assertIn(b'business-specific changes are paid development', systems.data)
+        self.assertIn(b'Use the existing version for free.', detail.data)
+        self.assertIn(b'current form', detail.data)
+        self.assertIn(b'PAID CUSTOM DEVELOPMENT', detail.data)
+        self.assertIn(b'additional development is a paid service', detail.data)
+        self.assertIn(b'current standard Property Operations Command Center for free', free_contact.data)
+        self.assertIn(b'customization is a paid development service', free_contact.data)
+        self.assertIn(b'paid customization for Property Operations Command Center', custom_contact.data)
+        self.assertIn(b'name="source_intent" value="free-access"', free_contact.data)
+        self.assertIn(b'name="source_intent" value="customize"', custom_contact.data)
+
     def test_system_detail_has_truthful_status_boundary_and_dual_ctas(self):
         for slug in ("property-operations-command-center", "property-inventory-hub"):
             with self.subTest(slug=slug):

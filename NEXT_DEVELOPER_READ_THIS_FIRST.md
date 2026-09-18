@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Current version:** 3.0.0
+**Current version:** 3.1.0
 **Official site:** https://keycastro.onrender.com
 **Positioning:** KEY CASTRO — Custom Real Estate Systems Developer
 
@@ -77,3 +77,18 @@ The 2.9.0 information architecture remains authoritative. Version 3.0.0 changes 
 - Do not revert to giant 16:10 screenshots at full card width or full-viewport hero height.
 
 See `docs/VISUAL_PRESENTATION_3_0.md`.
+
+## 3.1.0 system search + commercial rule
+
+The Systems page includes a lightweight client-side search. It is **progressive enhancement**: all published systems are rendered in normal server HTML first, and JavaScript only filters those existing cards. Do not replace it with a database/search service until the library is large enough to justify that complexity.
+
+Search indexing is metadata-driven through `SystemTemplate.search_text` and `search_terms` in `app/system_templates.py`. A new published system becomes searchable through its normal metadata; do not add slug-specific `if` statements to JavaScript.
+
+Business rule:
+
+- **Free standard system** = the existing published version in its current form.
+- **Paid custom development** = business-specific changes, additional features, branding, integrations, workflow/data changes, deployment changes, or other additional development.
+
+Do not imply that free access includes unlimited customization. Do not imply that the standard system is intentionally incomplete.
+
+See `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md`.

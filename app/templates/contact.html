@@ -5,9 +5,9 @@
     <div class="reveal"><p class="eyebrow">CONTACT</p><h1>Contact Key Castro about a <span>system or customization.</span></h1></div>
     <div class="page-hero-copy reveal delay-1">
       {% if template_interest and source_intent == 'free-access' %}
-      <p>You are requesting free access to the standard {{ template_interest.name }}. Complete the form below and tell me how you plan to use it.</p>
+      <p>You are requesting the current standard {{ template_interest.name }} for free. If you later need business-specific changes, customization is a paid development service.</p>
       {% elif template_interest and source_intent == 'customize' %}
-      <p>You are asking about a customized {{ template_interest.name }}. Tell me what should change for your business.</p>
+      <p>You are asking about paid customization for {{ template_interest.name }}. Tell me what should change for your business.</p>
       {% else %}
       <p>Use this form to request a free standard system or discuss paid custom development for a real estate workflow.</p>
       {% endif %}

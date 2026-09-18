@@ -78,10 +78,20 @@
 
 <section class="section section-soft compact-detail-section">
   <div class="container">
-    <div class="section-head compact-head"><div><p class="eyebrow">FREE OR CUSTOMIZED</p><h2>Choose the version that fits your business.</h2></div></div>
+    <div class="section-head compact-head"><div><p class="eyebrow">FREE OR CUSTOMIZED</p><h2>Start with the standard system. Customize only when needed.</h2></div></div>
     <div class="template-two-column template-choice-panels compact-choice-panels">
-      <div class="template-scope-panel"><p class="eyebrow">FREE STANDARD SYSTEM</p><h2>Use the existing version.</h2><ul class="template-list compact-list">{% for item in system_template.standard_scope %}<li>{{ item }}</li>{% endfor %}</ul></div>
-      <div class="template-scope-panel accent"><p class="eyebrow">PAID CUSTOM DEVELOPMENT</p><h2>Adapt it to your operation.</h2><ul class="template-list compact-list">{% for item in system_template.customization_opportunities %}<li>{{ item }}</li>{% endfor %}</ul></div>
+      <div class="template-scope-panel">
+        <p class="eyebrow">FREE STANDARD SYSTEM</p>
+        <h2>Use the existing version for free.</h2>
+        <p class="template-choice-summary">The standard system is available by request in its current form, with the existing features, workflow, interface, and structure shown here.</p>
+        <ul class="template-list compact-list">{% for item in system_template.standard_scope %}<li>{{ item }}</li>{% endfor %}</ul>
+      </div>
+      <div class="template-scope-panel accent">
+        <p class="eyebrow">PAID CUSTOM DEVELOPMENT</p>
+        <h2>Adapt it when your business needs changes.</h2>
+        <p class="template-choice-summary">If your company needs different workflows, features, branding, data, integrations, or other changes, additional development is a paid service.</p>
+        <ul class="template-list compact-list">{% for item in system_template.customization_opportunities %}<li>{{ item }}</li>{% endfor %}</ul>
+      </div>
     </div>
 
     <details class="technical-disclosure compact-technical-disclosure">
@@ -94,5 +104,5 @@
   </div>
 </section>
 
-<section class="section cta-wrap compact-cta-wrap"><div class="container"><div class="cta-panel"><div><p class="eyebrow">NEXT STEP</p><h2>Request the standard system or ask for a custom version.</h2><p>Free access is for the existing standard build. Business-specific changes are paid development.</p></div><div class="cta-action-stack"><a class="button light" href="{{ url_for('site.contact', template=system_template.slug, intent='free-access') }}">Request Free Template Access</a><a class="button outline-light" href="{{ url_for('site.contact', template=system_template.slug, intent='customize') }}">Customize This System</a></div></div></div></section>
+<section class="section cta-wrap compact-cta-wrap"><div class="container"><div class="cta-panel"><div><p class="eyebrow">NEXT STEP</p><h2>Request the standard system or ask for a custom version.</h2><p>Use the standard system for free as it is. Business-specific changes are available through paid custom development.</p></div><div class="cta-action-stack"><a class="button light" href="{{ url_for('site.contact', template=system_template.slug, intent='free-access') }}">Request Free Template Access</a><a class="button outline-light" href="{{ url_for('site.contact', template=system_template.slug, intent='customize') }}">Customize This System</a></div></div></div></section>
 {% endblock %}

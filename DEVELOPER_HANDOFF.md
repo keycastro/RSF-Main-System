@@ -9,10 +9,11 @@ Read in order:
 3. `NEXT_DEVELOPER_READ_THIS_FIRST.md`
 4. `docs/UX_INFORMATION_ARCHITECTURE.md`
 5. `docs/VISUAL_PRESENTATION_3_0.md`
-6. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
-7. `PROJECT_STATE.json`
-8. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
-9. `SECURITY_AND_SHARING_NOTES.md`
+6. `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md`
+7. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
+8. `PROJECT_STATE.json`
+9. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
+10. `SECURITY_AND_SHARING_NOTES.md`
 
 Do not split the owner inbox back into a separate project folder. Do not expose owner-only routes or secrets in public UI, GitHub, logs, screenshots, or documentation.
 
@@ -30,3 +31,10 @@ The two published systems remain separate applications and must stay separate in
 ## Presentation contract from 3.0.0
 
 Keep the premium KEY CASTRO identity, but do not return to screenshot-led pages with natural-ratio images consuming most of the viewport. Catalog and homepage previews must remain controlled and compact; system detail screenshots remain expandable through the lightbox. Preserve readable type and obvious actions while keeping vertical travel intentional. See `docs/VISUAL_PRESENTATION_3_0.md`.
+
+
+## Search and access contract from 3.1.0
+
+Systems search is a compact progressive enhancement over the server-rendered catalog. Search terms come from reusable system metadata, not JavaScript slug branches. Preserve keyboard use, visible focus, result status, clear/reset behavior, and the helpful no-match path to `Discuss a Custom System`.
+
+The standard published system is free by request in its current form. Business-specific changes are paid custom development. Keep that distinction concise on the Systems index, explicit on detail pages, and context-aware on Contact.

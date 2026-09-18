@@ -1,31 +1,25 @@
-# KEY CASTRO WEBSITE — COMPACT PREMIUM PRESENTATION REDESIGN 3.0.0
+# KEY CASTRO WEBSITE — SYSTEM SEARCH + ACCESS MODEL 3.1.0
 
-Version 3.0.0 significantly rebalances the existing production website presentation without rebuilding or changing its Flask/PostgreSQL/Render architecture.
+Version 3.1.0 extends the existing 3.0.0 compact premium production site without rebuilding or changing its Flask/PostgreSQL/Render architecture.
 
-## Why this release exists
+## Main changes
 
-The 2.9.0 information architecture is correct, but the live layout still inherited oversized screenshot and spacing rules from older portfolio designs. System previews were visually dominant, pages traveled too far vertically, the sticky header/hero/page heroes were taller than necessary, and supporting cards/CTAs retained more mass than the simplified content required.
-
-## Main presentation changes
-
-- Reduced sticky-header height while keeping navigation readable and obvious.
-- Replaced the near-full-viewport homepage hero with a shorter editorial hero and compact business-system brief.
-- Reduced default section/page-hero/CTA/footer vertical mass.
-- Rebuilt homepage system cards as balanced text + compact preview compositions.
-- Rebuilt the Systems catalog cards so information and action are primary and the screenshot is supporting evidence.
-- Reworked system detail heroes around a compact preview with existing click-to-expand lightbox access.
-- Reworked additional system screenshots into a controlled-height gallery.
-- Tightened workflow, feature, scope, Services, About, Contact, and footer spacing without shrinking essential text.
-- Added explicit mobile ordering and image-height controls so system pages do not become giant screenshot stacks.
+- Added a compact **Find a system** control to the Systems page.
+- Search filters the existing server-rendered system cards instantly without a page reload.
+- Search is metadata-driven through `SystemTemplate.search_text` and optional `search_terms`, so future systems inherit the behavior without slug-specific JavaScript.
+- Added accessible label, keyboard behavior, Escape/clear reset, visible focus, polite result-count status, and progressive enhancement.
+- Added a commercially useful no-match state that links to the existing generic custom-system Contact path instead of ending at “no results.”
+- Clarified that **free** means the existing standard system in its current form.
+- Clarified that business-specific modifications and additional development are **paid custom development**.
+- Updated system detail and contextual Contact wording without repeating the same sales explanation across every card.
 
 ## Preserved
 
-- 2.9.0 information architecture: Home · Systems · Services · About · Contact.
-- Property Operations Command Center and Property Inventory Hub as two separate systems.
-- Free standard system access and paid customization behavior.
-- Contact → PostgreSQL → private KEY CASTRO INBOX attribution.
-- Owner authentication/private routes.
-- SEO, canonical URLs, structured data, sitemap, robots, stable system URLs.
-- Flask server-rendered architecture, GitHub repositories, exact-commit Render deployment, and desktop launchers.
+- Compact 3.0.0 presentation and screenshot controls.
+- Home · Systems · Services · About · Contact information architecture.
+- Property Operations Command Center and Property Inventory Hub as separate systems.
+- Free-access, customization, and generic Contact flows.
+- Trusted server-side system attribution, PostgreSQL inquiry storage, and private KEY CASTRO INBOX.
+- SEO, canonical routes, sitemap, robots, structured data, Flask architecture, GitHub repositories, Render service, and desktop launchers.
 
-See `docs/VISUAL_PRESENTATION_3_0.md` for the presentation contract and non-regression rules.
+See `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md`.
