@@ -16,7 +16,7 @@ class PortfolioSiteTests(unittest.TestCase):
         data = response.get_json()
         self.assertEqual(data["status"], "ok")
         self.assertEqual(data["app"], "Key Castro Portfolio")
-        self.assertEqual(data["version"], "2.0.0")
+        self.assertEqual(data["version"], "2.1.0")
 
     def test_main_pages_render(self):
         routes = ["/", "/about", "/services", "/projects", "/skills", "/experience", "/contact"]
@@ -26,11 +26,12 @@ class PortfolioSiteTests(unittest.TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertIn(b"KEY CASTRO", response.data)
 
-    def test_nexus_case_study_has_clear_status_boundary(self):
+    def test_nexus_completed_project_has_clear_status_boundary(self):
         response = self.client.get("/projects/nexus-properties")
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Nexus Properties", response.data)
-        self.assertIn(b"not presented as an official deployed Nexus system", response.data)
+        self.assertIn(b"Completed working portfolio implementation", response.data)
+        self.assertIn(b"not presented as an official Nexus deployment", response.data)
 
     def test_unknown_project_uses_custom_404(self):
         response = self.client.get("/projects/not-real")

@@ -1,6 +1,6 @@
 # Key Castro Website — Deployment Notes
 
-Version 2.0.0 is designed so the same Flask website can run locally on Windows now and later be deployed publicly.
+Version 2.1.0 is designed so the same Flask website can run locally on Windows now and later be deployed publicly.
 
 ## Local vs production
 

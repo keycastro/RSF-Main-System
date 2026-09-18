@@ -1,6 +1,9 @@
 # KEY CASTRO — Professional Website
 
-**Version:** 2.0.0 — Public Launch Edition  
+> **Developer handoff:** New maintainers should read [`NEXT_DEVELOPER_READ_THIS_FIRST.md`](NEXT_DEVELOPER_READ_THIS_FIRST.md), [`PROJECT_STATE.json`](PROJECT_STATE.json), and [`SECURITY_AND_SHARING_NOTES.md`](SECURITY_AND_SHARING_NOTES.md) before changing code, deployment, domains, or hosting.
+
+
+**Version:** 2.1.0 — Completed Nexus Portfolio Project Update  
 **Local URL:** `http://127.0.0.1:5050`  
 **Health endpoint:** `http://127.0.0.1:5050/system/health`
 
@@ -83,4 +86,4 @@ The deployable entry point is:
 wsgi:app
 ```
 
-Read `docs/DEPLOYMENT_NOTES.md` before publishing. Version 2.0.0 intentionally requires the public URL, trusted hosts, verified contact email, and production mail delivery to be configured before a Production start succeeds.
+Read `docs/DEPLOYMENT_NOTES.md` before publishing. Version 2.1.0 continues to require the public URL, trusted hosts, verified contact email, and production mail delivery to be configured before a Production start succeeds.

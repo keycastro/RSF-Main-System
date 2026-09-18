@@ -7,11 +7,12 @@
       <p class="eyebrow">REAL ESTATE OPERATIONS SYSTEM</p>
       <h1>Nexus Properties</h1>
       <h2>Internal Off-Market Property Marketplace</h2>
-      <p class="page-lead">A custom web application concept for a real estate team to add, find, update, reconfirm, and manage private off-market property listings.</p>
+      <p class="page-lead">A completed custom web application that centralizes private off-market property inventory, search, listing ownership, freshness checks, reconfirmation, status history, and management controls.</p>
       <div class="case-meta">
-        <div><small>TYPE</small><strong>Portfolio case study</strong></div>
+        <div><small>TYPE</small><strong>Completed portfolio project</strong></div>
         <div><small>FOCUS</small><strong>Internal listing operations</strong></div>
         <div><small>BUILD</small><strong>Custom Flask web application</strong></div>
+        <div><small>ROLE</small><strong>Key Castro · Developer</strong></div>
       </div>
     </div>
     <button class="case-cover reveal delay-1" type="button" data-lightbox="{{ url_for('static', filename='images/projects/nexus-dashboard.png') }}" data-caption="Nexus Properties — dashboard preview">
@@ -22,7 +23,7 @@
 </section>
 
 <section class="case-note">
-  <div class="container reveal"><strong>Project note</strong><p>This is a portfolio implementation inspired by a public Nexus project brief. It is not presented as an official deployed Nexus system or as proof that Nexus approved this custom build.</p></div>
+  <div class="container reveal"><strong>Project note</strong><p>A completed custom real estate system developed by Key Castro as a portfolio implementation based on real-world property brokerage workflow requirements. It demonstrates the working system I built; it is not presented as an official Nexus deployment or as evidence that Nexus hired, paid, or approved this implementation.</p></div>
 </section>
 
 <nav class="case-jump" aria-label="Case study sections">
@@ -46,23 +47,23 @@
 <section class="section" id="solution">
   <div class="container case-section">
     <div class="section-kicker reveal">03 · SOLUTION</div>
-    <div class="case-copy reveal delay-1"><h2>One custom application for the listing lifecycle.</h2><p>The portfolio build brings access, listing records, marketplace search, status, reconfirmation, expiry, history, and administration into one web application.</p><div class="solution-flow"><span>Private access</span><b>→</b><span>Add listing</span><b>→</b><span>Search</span><b>→</b><span>Update / reconfirm</span><b>→</b><span>Expire / history</span></div></div>
+    <div class="case-copy reveal delay-1"><h2>One custom application for the listing lifecycle.</h2><p>The completed build brings private access, listing records, marketplace search, ownership controls, configurable freshness rules, reconfirmation, automatic expiry, history, and management tools into one web application.</p><div class="solution-flow"><span>Private access</span><b>→</b><span>Add listing</span><b>→</b><span>Search</span><b>→</b><span>Update / reconfirm</span><b>→</b><span>Expire / history</span></div></div>
   </div>
 </section>
 
 <section class="section section-soft" id="features">
   <div class="container">
-    <div class="section-head reveal"><div><p class="eyebrow">04 · MAIN FEATURES</p><h2>What the portfolio build demonstrates.</h2></div></div>
+    <div class="section-head reveal"><div><p class="eyebrow">04 · MAIN FEATURES</p><h2>What I built into the working system.</h2></div></div>
     <div class="feature-grid">
       {% for title, text in [
-        ('Private team access','Protected access for internal users.'),
-        ('Operations dashboard','A quick view of inventory and items that need attention.'),
-        ('Listing management','Create, view, and update structured property records.'),
-        ('Marketplace search','Search, filters, sorting, and current listing results.'),
-        ('Status tracking','Track the stage and condition of each listing.'),
-        ('Freshness rules','Reconfirmation and automatic expiry behavior.'),
-        ('History','Keep status and activity history instead of losing context.'),
-        ('Administration','Manage users and selected system settings in the portfolio build.')
+        ('Private team access','Secure access-code sign-in for internal users.'),
+        ('Operations dashboard','Current inventory, personal responsibility, and attention queues.'),
+        ('Listing management','Create, view, edit, and manage structured property records.'),
+        ('Marketplace search','Search, practical filters, sorting, and current inventory results.'),
+        ('Status tracking','Current, reconfirmation, expired, unavailable, and historical states.'),
+        ('Freshness rules','Configurable reconfirmation windows and automatic expiry.'),
+        ('History','Status, reconfirmation, and activity history are preserved.'),
+        ('Management','Authorized users can manage team access and freshness settings.')
       ] %}
       <article class="feature-card reveal delay-{{ loop.index0 % 3 }}"><span>{{ '%02d'|format(loop.index) }}</span><h3>{{ title }}</h3><p>{{ text }}</p></article>
       {% endfor %}
@@ -85,19 +86,19 @@
 
 <section class="section section-soft" id="screens">
   <div class="container">
-    <div class="section-head reveal"><div><p class="eyebrow">06 · SCREENS</p><h2>See the local portfolio build.</h2></div><p class="section-summary">Click a screen to view it larger.</p></div>
+    <div class="section-head reveal"><div><p class="eyebrow">06 · SCREENS</p><h2>Screens from the working Nexus build.</h2></div><p class="section-summary">Working interface shown with demonstration property records. Click a screen to view it larger.</p></div>
     <div class="gallery-grid">
-      <button class="gallery-item gallery-main reveal" type="button" data-lightbox="{{ url_for('static', filename='images/projects/nexus-dashboard.png') }}" data-caption="Dashboard — inventory and freshness overview"><img src="{{ url_for('static', filename='images/projects/nexus-dashboard.png') }}" alt="Nexus dashboard preview"><span>Dashboard</span></button>
-      <button class="gallery-item reveal delay-1" type="button" data-lightbox="{{ url_for('static', filename='images/projects/nexus-marketplace.png') }}" data-caption="Marketplace — search, filters, and current inventory"><img src="{{ url_for('static', filename='images/projects/nexus-marketplace.png') }}" alt="Nexus marketplace preview"><span>Marketplace</span></button>
-      <button class="gallery-item reveal delay-2" type="button" data-lightbox="{{ url_for('static', filename='images/projects/nexus-detail.png') }}" data-caption="Listing detail — record details and lifecycle history"><img src="{{ url_for('static', filename='images/projects/nexus-detail.png') }}" alt="Nexus listing detail preview"><span>Listing detail</span></button>
+      <button class="gallery-item gallery-main reveal" type="button" data-lightbox="{{ url_for('static', filename='images/projects/nexus-dashboard.png') }}" data-caption="Dashboard — current inventory and attention queue"><img src="{{ url_for('static', filename='images/projects/nexus-dashboard.png') }}" alt="Nexus dashboard preview"><span>Dashboard</span></button>
+      <button class="gallery-item reveal delay-1" type="button" data-lightbox="{{ url_for('static', filename='images/projects/nexus-marketplace.png') }}" data-caption="Marketplace — property search and current inventory"><img src="{{ url_for('static', filename='images/projects/nexus-marketplace.png') }}" alt="Nexus marketplace preview"><span>Marketplace</span></button>
+      <button class="gallery-item reveal delay-2" type="button" data-lightbox="{{ url_for('static', filename='images/projects/nexus-detail.png') }}" data-caption="Listing detail — property information and freshness lifecycle"><img src="{{ url_for('static', filename='images/projects/nexus-detail.png') }}" alt="Nexus listing detail preview"><span>Listing detail</span></button>
     </div>
   </div>
 </section>
 
 <section class="section" id="build">
   <div class="container case-section">
-    <div class="section-kicker reveal">07 · WHAT I BUILT</div>
-    <div class="case-copy reveal delay-1"><h2>A complete local custom web application.</h2><p>I built the application structure, access flow, dashboard, listing records, search, lifecycle actions, history, administration, testing, documentation, and Windows one-click local launcher.</p><div class="build-spec"><div><strong>Backend</strong><span>Python · Flask</span></div><div><strong>Data</strong><span>SQLAlchemy · SQLite</span></div><div><strong>Interface</strong><span>HTML · CSS · JavaScript</span></div><div><strong>Local workflow</strong><span>PowerShell launcher · health check · logs</span></div></div><div class="status-box"><small>PROJECT STATUS</small><strong>Working local portfolio implementation</strong><span>Not presented as an official Nexus production deployment.</span></div></div>
+    <div class="section-kicker reveal">07 · BUILD & TECHNOLOGY</div>
+    <div class="case-copy reveal delay-1"><h2>A complete working custom web application.</h2><p>I designed and built the application structure, secure access flow, database model, dashboard, property records, search experience, listing lifecycle, management controls, validation, testing, documentation, and one-click Windows launcher.</p><div class="build-spec"><div><strong>Backend</strong><span>Python · Flask · Flask-Login · Flask-WTF</span></div><div><strong>Data</strong><span>SQLAlchemy · SQLite · lifecycle history</span></div><div><strong>Interface</strong><span>HTML · CSS · JavaScript progressive enhancement</span></div><div><strong>Security</strong><span>Access-code hashing · CSRF protection · validation · authorization · security headers</span></div><div><strong>Local workflow</strong><span>PowerShell launcher · health check · logs · automated tests</span></div></div><div class="status-box"><small>PROJECT STATUS</small><strong>Completed working portfolio implementation</strong><span>Built and tested as a real custom system. Not presented as an official Nexus production deployment.</span></div></div>
   </div>
 </section>
 

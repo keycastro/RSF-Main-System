@@ -1,43 +1,43 @@
-# KEY CASTRO WEBSITE — VERSION 2.0.0 DELIVERY REPORT
+# KEY CASTRO WEBSITE — VERSION 2.1.0 DELIVERY REPORT
 
 ## Release goal
 
-A complete public-launch redesign focused on clarity, trust, simple navigation, stronger project presentation, and a premium real-estate systems identity.
+Update the existing live portfolio so Nexus Properties is presented accurately as a **completed working portfolio project built by Key Castro**, while keeping a clear boundary that it is not an official Nexus production deployment or proof of a paid/approved client engagement.
 
-## Main changes
+## Nexus project update
 
-- Simplified top navigation to Work, Services, About, and Discuss a Project
-- Rebuilt homepage around a clear client-facing message and actual project proof
-- Replaced abstract technical language with shorter plain-English copy
-- Strengthened the Nexus Properties case study and screenshot presentation
-- Added click-to-enlarge project screenshots
-- Reworked Services, About, Skills, Experience, and Contact pages
-- Improved desktop, tablet, and mobile layout rules
-- Added stronger accessibility/focus states and reduced-motion support
-- Added page metadata, local no-index behavior, and `sitemap.xml`
-- Added production SMTP contact-form support through environment variables
-- Added production startup checks to prevent launch with missing public/contact configuration
-- Kept the Windows desktop launcher, health check, local port, logs, and one-click workflow compatible
+- Changed the public project status from concept/case-study wording to **Completed Project**.
+- Rewrote the homepage featured-work copy around the finished working system.
+- Expanded the Nexus case study with the business problem, actual working workflow, main features, technologies, security work, and Key Castro's developer role.
+- Added the current Nexus dashboard visual generated from the latest `1.4.2-clarity-refinement` source/UI and local project data.
+- Preserved honest relationship wording: completed development work, but no unsupported claim that Nexus hired, paid, approved, or deployed the implementation.
+- Updated portfolio/project documentation and automated assertions to the new positioning.
 
-## Preserved local behavior
+## Preserved website architecture
+
+No hosting or deployment architecture was changed:
 
 ```text
-Desktop icon
-→ hidden Flask server
-→ health check
-→ browser opens
-→ http://127.0.0.1:5050
+Official host: Render
+Official URL: https://keycastro.onrender.com
+Private source repo: keycastro/key-castro-website
+Public Render mirror: keycastro/key-castro-render-deploy
+Render auto-deploy: off
 ```
 
-The website remains a web application. The Desktop icon is only a local convenience launcher.
+The Windows local launcher, local port `5050`, contact form architecture, health endpoint, deployment workflow, and retired PythonAnywhere status remain unchanged.
 
-## Verification performed in the build environment
+## Verification performed in this build environment
 
-- Python source compilation
-- Jinja template parsing
-- JavaScript syntax check
-- Static asset reference checks
-- Responsive CSS/layout rule review for desktop, tablet, and mobile breakpoints
-- Update-package structure review
+- Inspected the supplied website handoff and current source before editing.
+- Inspected the supplied Nexus `1.4.2-clarity-refinement` source, templates, models, routes, services, SQLite schema/data shape, and documentation before writing public copy.
+- Python source compilation check.
+- Jinja template parse check.
+- JavaScript syntax check where runtime tooling is available.
+- Static asset reference and update-package review.
 
-The actual Windows PowerShell launcher/update execution must run on the user's Windows installation, where the existing `.venv`, Flask installation, and Desktop shortcut are available.
+Full Flask runtime tests could not be executed in this sandbox because the required Flask packages are not installed and external package download is unavailable. The supplied Windows installation already has its project-specific `.venv`; the update/deploy package runs the existing test suite there before committing or deploying.
+
+## Unfinished production item retained
+
+Gmail SMTP authentication/contact-form delivery remains **unverified** until valid production SMTP credentials are configured securely and a real delivery test succeeds.

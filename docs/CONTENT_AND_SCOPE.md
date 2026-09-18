@@ -32,7 +32,7 @@ It also does not invent clients, testimonials, employment history, certification
 
 ## Nexus project wording
 
-Nexus Properties is one portfolio case study. The custom Flask build is described as a portfolio implementation inspired by the publicly described business workflow. It is not presented as an official deployed Nexus production system and does not claim that Nexus approved the custom stack.
+Nexus Properties is one completed portfolio project. The custom Flask system is presented as completed working development by Key Castro based on real-world property-brokerage workflow requirements. It must not be presented as an official Nexus production deployment or as evidence that Nexus hired, paid, or approved the custom implementation.
 
 ## Future content
 

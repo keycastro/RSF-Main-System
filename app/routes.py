@@ -30,10 +30,10 @@ PROJECTS = [
         "name": "Nexus Properties",
         "category": "Real Estate Operations System",
         "subtitle": "Internal Off-Market Property Marketplace",
-        "status": "Portfolio case study",
+        "status": "Completed project",
         "summary": (
-            "A private marketplace concept that helps a real estate team add, find, "
-            "update, reconfirm, and manage off-market property listings in one system."
+            "A completed custom internal marketplace for a real estate team to add, search, "
+            "update, reconfirm, and manage off-market property inventory in one system."
         ),
         "image": "images/projects/nexus-dashboard.png",
         "tags": ["Property listings", "Search & filters", "Status tracking", "Freshness rules"],
@@ -285,7 +285,7 @@ def health():
         status="ok",
         app=current_app.config.get("APP_NAME", "Key Castro Portfolio"),
         environment=current_app.config.get("ENVIRONMENT_LABEL", "unknown"),
-        version="2.0.0",
+        version="2.1.0",
     )
 
 
