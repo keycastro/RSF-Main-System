@@ -16,7 +16,8 @@ class PortfolioSiteTests(unittest.TestCase):
         data = response.get_json()
         self.assertEqual(data["status"], "ok")
         self.assertEqual(data["app"], "Key Castro Portfolio")
-        self.assertEqual(data["version"], "2.4.0")
+        version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
+        self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
 
     def test_main_pages_render(self):
         routes = ["/", "/about", "/services", "/projects", "/skills", "/experience", "/contact"]

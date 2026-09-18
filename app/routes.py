@@ -284,11 +284,16 @@ def contact():
 
 @site.get("/system/health")
 def health():
+    version_file = Path(current_app.root_path).parent / "VERSION.txt"
+    try:
+        version = version_file.read_text(encoding="utf-8").strip() or "unknown"
+    except OSError:
+        version = "unknown"
     return jsonify(
         status="ok",
         app=current_app.config.get("APP_NAME", "Key Castro Portfolio"),
         environment=current_app.config.get("ENVIRONMENT_LABEL", "unknown"),
-        version="2.4.0",
+        version=version,
     )
 
 
