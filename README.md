@@ -3,7 +3,7 @@
 > **Developer handoff:** New maintainers should read [`NEXT_DEVELOPER_READ_THIS_FIRST.md`](NEXT_DEVELOPER_READ_THIS_FIRST.md), [`PROJECT_STATE.json`](PROJECT_STATE.json), and [`SECURITY_AND_SHARING_NOTES.md`](SECURITY_AND_SHARING_NOTES.md) before changing code, deployment, domains, or hosting.
 
 
-**Version:** 2.1.0 — Completed Nexus Portfolio Project Update  
+**Version:** 2.2.0 — Navigation & Content Clarity Update  
 **Local URL:** `http://127.0.0.1:5050`  
 **Health endpoint:** `http://127.0.0.1:5050/system/health`
 
@@ -26,7 +26,7 @@ This is a real Flask website that runs locally on Windows first and is structure
 - Experience
 - Contact
 
-The top navigation intentionally stays simple: **Work · Services · About · Discuss a Project**.
+The top navigation intentionally stays simple and direct: **Projects · Services · About · Contact**.
 
 ## Daily local use
 
@@ -86,4 +86,4 @@ The deployable entry point is:
 wsgi:app
 ```
 
-Read `docs/DEPLOYMENT_NOTES.md` before publishing. Version 2.1.0 continues to require the public URL, trusted hosts, verified contact email, and production mail delivery to be configured before a Production start succeeds.
+Read `docs/DEPLOYMENT_NOTES.md` before publishing. Version 2.2.0 continues to require the public URL, trusted hosts, verified contact email, and production mail delivery to be configured before a Production start succeeds.

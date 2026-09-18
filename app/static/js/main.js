@@ -12,12 +12,14 @@
   const closeNav = () => {
     if (!toggle || !nav) return;
     nav.classList.remove('open');
+    document.body.classList.remove('nav-open');
     toggle.setAttribute('aria-expanded', 'false');
     toggle.setAttribute('aria-label', 'Open navigation');
   };
   if (toggle && nav) {
     toggle.addEventListener('click', () => {
       const open = nav.classList.toggle('open');
+      document.body.classList.toggle('nav-open', open);
       toggle.setAttribute('aria-expanded', String(open));
       toggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
     });
@@ -55,6 +57,29 @@
       history.replaceState(null, '', id);
     });
   });
+
+
+  const caseJump = document.querySelector('[data-case-jump]');
+  const caseSections = [...document.querySelectorAll('[data-case-section]')];
+  if (caseJump && caseSections.length) {
+    const jumpLinks = [...caseJump.querySelectorAll('a[href^="#"]')];
+    const setActiveSection = (id) => {
+      jumpLinks.forEach((link) => {
+        const active = link.getAttribute('href') === `#${id}`;
+        link.classList.toggle('active-section', active);
+        if (active) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      });
+    };
+    setActiveSection(caseSections[0].id);
+    if ('IntersectionObserver' in window) {
+      const sectionObserver = new IntersectionObserver((entries) => {
+        const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) setActiveSection(visible[0].target.id);
+      }, { rootMargin: '-34% 0px -58% 0px', threshold: 0 });
+      caseSections.forEach((section) => sectionObserver.observe(section));
+    }
+  }
 
   const overlay = document.querySelector('[data-lightbox-overlay]');
   const lightboxImage = document.querySelector('[data-lightbox-image]');

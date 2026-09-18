@@ -32,8 +32,8 @@ PROJECTS = [
         "subtitle": "Internal Off-Market Property Marketplace",
         "status": "Completed project",
         "summary": (
-            "A completed custom internal marketplace for a real estate team to add, search, "
-            "update, reconfirm, and manage off-market property inventory in one system."
+            "A completed internal marketplace for off-market inventory, search, ownership, "
+            "reconfirmation, expiry, and listing history."
         ),
         "image": "images/projects/nexus-dashboard.png",
         "tags": ["Property listings", "Search & filters", "Status tracking", "Freshness rules"],
@@ -42,34 +42,24 @@ PROJECTS = [
 
 SERVICES = [
     {
-        "title": "Property Operations Systems",
-        "text": "One clear place to manage property records, daily work, team actions, and operational status.",
-        "example": "Useful for property managers, apartment operators, and rental teams.",
+        "title": "Property & Listing Operations",
+        "text": "Centralize property records, internal listings, ownership, status, search, and day-to-day operational work.",
+        "example": "Useful for property managers, brokerages, apartment operators, and teams managing shared inventory.",
     },
     {
-        "title": "Listing & Inventory Systems",
-        "text": "Organize property listings, search and filters, ownership, status, updates, and internal inventory.",
-        "example": "Useful when listings are spread across messages, sheets, or separate tools.",
+        "title": "Rental & Tenant Workflows",
+        "text": "Track tenants, leases, rent status, due dates, follow-ups, and repeatable long-term rental processes.",
+        "example": "Useful for landlords and rental-property businesses that need a clearer operating system.",
     },
     {
-        "title": "Rental Management Workflows",
-        "text": "Track tenants, rent status, leases, due dates, follow-ups, and other repeatable rental operations.",
-        "example": "Useful for landlords and long-term rental-property businesses.",
+        "title": "Maintenance & Team Coordination",
+        "text": "Move requests from report to assignment, update, completion, vendor coordination, and history.",
+        "example": "Useful when maintenance and team actions are spread across messages or separate trackers.",
     },
     {
-        "title": "Maintenance & Vendor Workflows",
-        "text": "Move maintenance requests from report to assignment, update, completion, and history.",
-        "example": "Useful when requests and vendor work are hard to track from start to finish.",
-    },
-    {
-        "title": "Dashboards & Business Visibility",
-        "text": "Bring important records, pending work, deadlines, and status into simple owner and manager views.",
-        "example": "Useful when the business needs quick answers without checking several places.",
-    },
-    {
-        "title": "Workflow Automation",
-        "text": "Add reminders, status rules, follow-up steps, and other practical automation where it saves manual work.",
-        "example": "Useful for repetitive actions that should happen consistently.",
+        "title": "Dashboards & Workflow Automation",
+        "text": "Show what needs attention and add practical reminders, status rules, and follow-up automation where it saves manual work.",
+        "example": "Useful when owners and managers need faster visibility and more consistent follow-through.",
     },
 ]
 
@@ -85,10 +75,10 @@ TECHNOLOGIES = [
 ]
 
 PAGE_META = {
-    "home": "Key Castro builds custom real estate systems and web applications for rental-property operations.",
+    "home": "Key Castro builds custom real estate systems and web applications for property, listing, and rental operations.",
     "about": "Learn how Key Castro approaches custom real estate systems: understand the workflow, build the right tool, test it, and hand it over clearly.",
     "services": "Custom property operations systems, listing management, rental workflows, maintenance tracking, dashboards, and workflow automation.",
-    "projects": "See custom real estate systems and project case studies built by Key Castro.",
+    "projects": "Browse completed custom real estate systems and case studies built by Key Castro.",
     "skills": "Technologies and development skills used to build custom real estate web applications.",
     "experience": "Development experience focused on complete real estate systems, testing, documentation, and reliable delivery.",
     "contact": "Contact Key Castro to discuss a custom real estate or rental-property system.",
@@ -285,7 +275,7 @@ def health():
         status="ok",
         app=current_app.config.get("APP_NAME", "Key Castro Portfolio"),
         environment=current_app.config.get("ENVIRONMENT_LABEL", "unknown"),
-        version="2.1.0",
+        version="2.2.0",
     )
 
 

@@ -45,3 +45,16 @@ Add only verified information for:
 - education and certifications
 - measurable project results
 - live demo links
+
+
+## Navigation and content hierarchy
+
+Version 2.2.0 keeps the public path intentionally simple:
+
+```text
+Home → Projects → Project Detail → Contact
+```
+
+Primary navigation: **Projects · Services · About · Contact**.
+
+The homepage summarizes the offer and one completed project. Detailed project explanation belongs on the individual case-study page. Technical detail remains available under Skills & Technology, while broader development practice remains under Experience.

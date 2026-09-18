@@ -16,7 +16,7 @@ class PortfolioSiteTests(unittest.TestCase):
         data = response.get_json()
         self.assertEqual(data["status"], "ok")
         self.assertEqual(data["app"], "Key Castro Portfolio")
-        self.assertEqual(data["version"], "2.1.0")
+        self.assertEqual(data["version"], "2.2.0")
 
     def test_main_pages_render(self):
         routes = ["/", "/about", "/services", "/projects", "/skills", "/experience", "/contact"]
@@ -31,7 +31,27 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Nexus Properties", response.data)
         self.assertIn(b"Completed working portfolio implementation", response.data)
-        self.assertIn(b"not presented as an official Nexus deployment", response.data)
+        self.assertIn(b"not presented as an official Nexus production deployment", response.data)
+
+
+    def test_navigation_and_home_hierarchy(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b">Projects</a>", response.data)
+        self.assertIn(b">Services</a>", response.data)
+        self.assertIn(b">About</a>", response.data)
+        self.assertIn(b">Contact</a>", response.data)
+        self.assertIn(b"COMPLETED PROJECT", response.data)
+        self.assertEqual(response.data.count(b"<h3>Nexus Properties</h3>"), 1)
+
+    def test_nexus_case_study_has_breadcrumb_and_simplified_section_nav(self):
+        response = self.client.get("/projects/nexus-properties")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'aria-label="Breadcrumb"', response.data)
+        self.assertIn(b' href="#overview">Overview</a>', response.data)
+        self.assertIn(b' href="#features">Features</a>', response.data)
+        self.assertNotIn(b' href="#problem">Problem</a>', response.data)
+        self.assertNotIn(b' href="#solution">Solution</a>', response.data)
 
     def test_unknown_project_uses_custom_404(self):
         response = self.client.get("/projects/not-real")
