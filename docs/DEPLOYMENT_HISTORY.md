@@ -153,3 +153,12 @@ This content update does not claim that Nexus Properties officially hired, paid,
 - Added `search_terms` metadata while keeping search independent of system slugs in JavaScript.
 - Clarified that the published standard system is free in its current form and business-specific changes are paid development.
 - Preserved Contact attribution, PostgreSQL, private owner inbox, SEO, exact system URLs, 3.0.0 compact presentation, GitHub/Render architecture, and desktop launchers.
+
+## 3.2.0 — Managed subscription + paid customization commercial model
+
+- Retired the public free-standard-system / Free Template Access model.
+- Published systems now use **Managed System Subscription** messaging and `System Subscription` inquiry attribution.
+- Paid business-specific changes now use **Paid Customization**. Requirements and development price are agreed separately; the normal subscription continues while the managed system remains in use.
+- No public prices, source-code ownership, unlimited-resource promises, or lifetime-access claims were added.
+- Legacy `free-access` inquiry URLs are normalized server-side to the new subscription intent for backward compatibility.
+- Flask architecture, real-time Systems search, canonical URLs, PostgreSQL inquiry schema, private owner Inbox, GitHub/Render architecture, and compact presentation remain unchanged.

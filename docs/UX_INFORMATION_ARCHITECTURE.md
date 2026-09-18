@@ -50,7 +50,7 @@ Use the word **Systems** in public navigation and visible page hierarchy.
 Each published system is:
 
 - a completed system built by Key Castro;
-- available in its current standard form free by request;
+- available through managed system subscription access;
 - customizable as paid business-specific development.
 
 Avoid making visitors distinguish between “project,” “portfolio piece,” “system template,” and “system” as separate product categories when they refer to the same published build.
@@ -61,7 +61,7 @@ Stable SEO URLs remain `/system-templates/...`; visible labels can simply say �
 
 1. Identity + positioning + two clear actions.
 2. Published systems.
-3. One concise explanation of free standard access vs paid customization.
+3. One concise explanation of managed subscription access vs separately priced paid customization.
 4. One final custom-system CTA.
 
 The homepage no longer repeats the Services page with service cards or the About page with a development-process section.
@@ -75,7 +75,7 @@ The Systems page is the single browse destination. Each card shows only:
 - one-sentence purpose;
 - plain-language audience;
 - View System;
-- Request Free Access.
+- Request Subscription Details.
 
 The previous standalone free-vs-custom model block was removed from the Systems index because the page hero already explains the rule and the detail pages handle the decision in depth.
 
@@ -88,7 +88,7 @@ All systems use the same predictable sequence:
 3. System screen(s) using sample/demo data.
 4. Business problem + target users.
 5. Standard workflow + main features.
-6. Free standard scope + paid customization scope.
+6. Managed subscription scope + paid customization scope.
 7. Technical/build information behind a disclosure control.
 8. Final two-option CTA.
 
@@ -121,7 +121,7 @@ Skills and Experience are secondary links from About rather than primary navigat
 
 The form remains the dominant action.
 
-Generic visitors see one explanation: request a free standard system or discuss paid custom development.
+Generic visitors see one explanation: ask about a managed system subscription, paid customization, or a custom system.
 
 Template-origin visitors see trusted server-side system context and request type. The page does not re-explain the entire template business model. Free-access and customization attribution continue through PostgreSQL into the private KEY CASTRO INBOX.
 

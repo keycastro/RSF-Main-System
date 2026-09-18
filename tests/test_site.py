@@ -102,10 +102,10 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"Skills & technology", about.data)
         self.assertIn(b"Experience", about.data)
 
-        # Services is about paid work, not another copy of the systems catalog.
-        self.assertIn(b"Paid development", services.data)
-        self.assertIn(b"Custom System Development", services.data)
-        self.assertIn(b"Customize an Existing KEY CASTRO System", services.data)
+        # Services explains the two commercial paths without duplicating the catalog.
+        self.assertIn(b"Managed System Subscriptions", services.data)
+        self.assertIn(b"Paid Customization &amp; Custom Development", services.data)
+        self.assertNotIn(b"FREE STANDARD SYSTEM", services.data)
 
     def test_compact_presentation_keeps_screenshots_supporting_content(self):
         home = self.client.get("/")
@@ -160,23 +160,50 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertNotIn("property-operations-command-center", js)
         self.assertNotIn("property-inventory-hub", js)
 
-    def test_free_standard_and_paid_customization_are_clear_without_changing_contact_flow(self):
+    def test_subscription_and_paid_customization_are_clear_without_changing_contact_flow(self):
         systems = self.client.get("/system-templates")
         detail = self.client.get("/system-templates/property-operations-command-center")
-        free_contact = self.client.get("/contact?template=property-operations-command-center&intent=free-access")
+        subscription_contact = self.client.get("/contact?template=property-operations-command-center&intent=subscribe")
         custom_contact = self.client.get("/contact?template=property-operations-command-center&intent=customize")
 
-        self.assertIn(b'existing standard version is free by request', systems.data)
-        self.assertIn(b'business-specific changes are paid development', systems.data)
-        self.assertIn(b'Use the existing version for free.', detail.data)
-        self.assertIn(b'current form', detail.data)
-        self.assertIn(b'PAID CUSTOM DEVELOPMENT', detail.data)
-        self.assertIn(b'additional development is a paid service', detail.data)
-        self.assertIn(b'current standard Property Operations Command Center for free', free_contact.data)
-        self.assertIn(b'customization is a paid development service', free_contact.data)
+        self.assertIn(b'managed subscription access', systems.data)
+        self.assertIn(b'paid customization', systems.data)
+        self.assertIn(b'Subscribe to use the ready-made system.', detail.data)
+        self.assertIn(b'ongoing managed access', detail.data)
+        self.assertIn(b'PAID CUSTOMIZATION', detail.data)
+        self.assertIn(b'development price are discussed separately', detail.data)
+        self.assertIn(b'managed subscription access to Property Operations Command Center', subscription_contact.data)
+        self.assertIn(b'monthly or yearly terms and pricing', subscription_contact.data.lower())
         self.assertIn(b'paid customization for Property Operations Command Center', custom_contact.data)
-        self.assertIn(b'name="source_intent" value="free-access"', free_contact.data)
+        self.assertIn(b'name="source_intent" value="subscribe"', subscription_contact.data)
         self.assertIn(b'name="source_intent" value="customize"', custom_contact.data)
+
+    def test_public_commercial_model_is_subscription_plus_paid_customization(self):
+        public_paths = [
+            "/",
+            "/system-templates",
+            "/system-templates/property-operations-command-center",
+            "/system-templates/property-inventory-hub",
+            "/services",
+            "/contact",
+        ]
+        retired = [b"FREE STANDARD SYSTEM", b"Free Template Access", b"Request Free Access", b"free by request"]
+        for path in public_paths:
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 200)
+                for phrase in retired:
+                    self.assertNotIn(phrase, response.data)
+
+        systems = self.client.get("/system-templates")
+        self.assertIn(b"MANAGED SYSTEM SUBSCRIPTION", systems.data)
+        self.assertIn(b"Request Subscription Details", systems.data)
+
+        detail = self.client.get("/system-templates/property-operations-command-center")
+        self.assertIn(b"PAID CUSTOMIZATION", detail.data)
+        self.assertIn(b"normal subscription continues", detail.data)
+        self.assertNotIn(b"lifetime", detail.data.lower())
+        self.assertNotIn(b"own the source", detail.data.lower())
 
     def test_system_detail_has_truthful_status_boundary_and_dual_ctas(self):
         for slug in ("property-operations-command-center", "property-inventory-hub"):
@@ -184,11 +211,11 @@ class PortfolioSiteTests(unittest.TestCase):
                 response = self.client.get(f"/system-templates/{slug}")
                 self.assertEqual(response.status_code, 200)
                 self.assertIn(b'aria-label="Breadcrumb"', response.data)
-                self.assertIn(b"FREE STANDARD SYSTEM", response.data)
-                self.assertIn(b"Request Free Template Access", response.data)
-                self.assertIn(b"Customize This System", response.data)
-                self.assertEqual(response.data.count(b"Request Free Template Access"), 2)
-                self.assertEqual(response.data.count(b"Customize This System"), 2)
+                self.assertIn(b"MANAGED SYSTEM SUBSCRIPTION", response.data)
+                self.assertIn(b"Request Subscription Details", response.data)
+                self.assertIn(b"Request Paid Customization", response.data)
+                self.assertEqual(response.data.count(b"Request Subscription Details"), 2)
+                self.assertEqual(response.data.count(b"Request Paid Customization"), 2)
                 self.assertIn(b"sample/demo data", response.data)
                 self.assertIn(b"Technical details about this build", response.data)
                 self.assertNotIn(b"Request the existing system", response.data)
@@ -356,11 +383,11 @@ class PortfolioSiteTests(unittest.TestCase):
         for slug, expected_title in (
             (
                 "property-operations-command-center",
-                b"Property Operations Command Center Template | Key Castro",
+                b"Property Operations Command Center | Key Castro",
             ),
             (
                 "property-inventory-hub",
-                b"Property Inventory Hub Free Real Estate Template | Key Castro",
+                b"Property Inventory Hub | Key Castro",
             ),
         ):
             case = self.client.get(f"/system-templates/{slug}")
@@ -410,7 +437,7 @@ class PortfolioSiteTests(unittest.TestCase):
                         "source_type": "system_template",
                         "source_slug": "property-inventory-hub",
                         "source_title": "Property Inventory Hub",
-                        "source_action": "Custom System / Customization",
+                        "source_action": "Paid Customization",
                     }
                 )
                 item = get_inquiry(inquiry_id)
@@ -418,25 +445,25 @@ class PortfolioSiteTests(unittest.TestCase):
             self.assertEqual(item["source_type"], "system_template")
             self.assertEqual(item["source_slug"], "property-inventory-hub")
             self.assertEqual(item["source_title"], "Property Inventory Hub")
-            self.assertEqual(item["source_action"], "Custom System / Customization")
+            self.assertEqual(item["source_action"], "Paid Customization")
 
-    def test_free_access_and_customization_context_flow_without_breaking_generic_contact(self):
-        free_access = self.client.get(
-            "/contact?template=property-operations-command-center&intent=free-access"
+    def test_subscription_and_customization_context_flow_without_breaking_generic_contact(self):
+        subscription = self.client.get(
+            "/contact?template=property-operations-command-center&intent=subscribe"
         )
-        self.assertEqual(free_access.status_code, 200)
-        self.assertIn(b"Property Operations Command Center", free_access.data)
-        self.assertIn(b"Free Template Access", free_access.data)
-        self.assertIn(b'name="source_slug" value="property-operations-command-center"', free_access.data)
-        self.assertIn(b'name="source_intent" value="free-access"', free_access.data)
-        self.assertIn(b"Request Free Template Access", free_access.data)
+        self.assertEqual(subscription.status_code, 200)
+        self.assertIn(b"Property Operations Command Center", subscription.data)
+        self.assertIn(b"System Subscription", subscription.data)
+        self.assertIn(b'name="source_slug" value="property-operations-command-center"', subscription.data)
+        self.assertIn(b'name="source_intent" value="subscribe"', subscription.data)
+        self.assertIn(b"Request Subscription Details", subscription.data)
 
         customize = self.client.get(
             "/contact?template=property-inventory-hub&intent=customize"
         )
         self.assertEqual(customize.status_code, 200)
         self.assertIn(b"Property Inventory Hub", customize.data)
-        self.assertIn(b"Custom System / Customization", customize.data)
+        self.assertIn(b"Paid Customization", customize.data)
         self.assertIn(b'name="source_intent" value="customize"', customize.data)
         self.assertIn(b"Send Customization Request", customize.data)
 
@@ -459,7 +486,7 @@ class PortfolioSiteTests(unittest.TestCase):
             )
 
             page = self.client.get(
-                "/contact?template=property-inventory-hub&intent=free-access"
+                "/contact?template=property-inventory-hub&intent=subscribe"
             )
             self.assertEqual(page.status_code, 200)
             with self.client.session_transaction() as sess:
@@ -470,7 +497,7 @@ class PortfolioSiteTests(unittest.TestCase):
                 data={
                     "csrf_token": token,
                     "source_slug": "property-inventory-hub",
-                    "source_intent": "free-access",
+                    "source_intent": "subscribe",
                     "name": "Template User",
                     "email": "template.user@example.com",
                     "company": "Example Brokerage",
@@ -486,7 +513,7 @@ class PortfolioSiteTests(unittest.TestCase):
             self.assertEqual(item["source_type"], "system_template")
             self.assertEqual(item["source_slug"], "property-inventory-hub")
             self.assertEqual(item["source_title"], "Property Inventory Hub")
-            self.assertEqual(item["source_action"], "Free Template Access")
+            self.assertEqual(item["source_action"], "System Subscription")
 
             headers = {"Authorization": "Bearer owner-template-token"}
             ticket_response = self.client.post("/__owner_api/session-ticket", headers=headers)
@@ -494,10 +521,20 @@ class PortfolioSiteTests(unittest.TestCase):
             self.client.get(access_path, follow_redirects=False)
             inbox = self.client.get("/owner/inbox")
             self.assertIn(b"Interested in: Property Inventory Hub", inbox.data)
-            self.assertIn(b"Request: Free Template Access", inbox.data)
+            self.assertIn(b"Request: System Subscription", inbox.data)
             detail = self.client.get("/owner/inbox/1")
             self.assertIn(b"Request type", detail.data)
-            self.assertIn(b"Free Template Access", detail.data)
+            self.assertIn(b"System Subscription", detail.data)
+
+    def test_legacy_free_access_intent_normalizes_to_subscription_without_free_wording(self):
+        response = self.client.get(
+            "/contact?template=property-inventory-hub&intent=free-access"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"System Subscription", response.data)
+        self.assertIn(b'name="source_intent" value="subscribe"', response.data)
+        self.assertNotIn(b"Free Template Access", response.data)
+        self.assertNotIn(b"Request Free Access", response.data)
 
     def test_template_source_title_cannot_be_spoofed_by_form(self):
         from app.inquiries import get_inquiry
@@ -532,7 +569,7 @@ class PortfolioSiteTests(unittest.TestCase):
             with self.app.app_context():
                 item = get_inquiry(1)
             self.assertEqual(item["source_title"], "Property Operations Command Center")
-            self.assertEqual(item["source_action"], "Custom System / Customization")
+            self.assertEqual(item["source_action"], "Paid Customization")
 
 
 if __name__ == "__main__":

@@ -52,11 +52,11 @@ Version 2.9.0 simplified the public journey to **Home · Systems · Services · 
 
 ## Future system-template foundation
 
-Version 2.7.0 prepared the reusable template foundation. Version 2.8.0 activates that architecture with two real systems: **Property Operations Command Center** and **Property Inventory Hub**. Each remains an independent completed system and free standard template by request; business-specific customization is paid development. See `docs/TEMPLATE_LIBRARY_FOUNDATION.md` and `docs/PUBLISHED_SYSTEM_TEMPLATES.md`.
+Version 2.7.0 prepared the reusable system-template foundation and 2.8.0 published the first two real systems. Version 3.2.0 keeps the same architecture but changes the commercial model: both systems are offered through **Managed System Subscription** access, with **Paid Customization** scoped and priced separately. See `docs/TEMPLATE_LIBRARY_FOUNDATION.md`, `docs/PUBLISHED_SYSTEM_TEMPLATES.md`, and `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`.
 
 
 ## Systems search and access model
 
 Version 3.1.0 adds an accessible, metadata-driven, real-time filter to the server-rendered Systems page. The search is intentionally lightweight: JavaScript filters the normal HTML system cards without changing routes, SEO content, or the Flask architecture. Empty search results lead naturally to the existing custom-system Contact path.
 
-The commercial boundary is explicit: the current standard system is free by request **as it is**; business-specific customization and additional development are paid services. See `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md`.
+The commercial boundary is explicit: subscription pays for ongoing managed access; customization pays separately for requested development work, and the subscription continues while the managed system remains in use. See `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`.

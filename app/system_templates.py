@@ -31,9 +31,9 @@ class SystemTemplate:
     """Source-controlled metadata for one reusable business-system template.
 
     Keep entries in ``SYSTEM_TEMPLATES`` as ``draft`` until the system, written
-    content, media, free-standard scope, CTA flow, SEO metadata, and security
-    review are all ready. Draft entries never become public routes or sitemap
-    entries.
+    content, media, managed-subscription scope, CTA flow, SEO metadata, and
+    security review are all ready. Draft entries never become public routes or
+    sitemap entries.
     """
 
     slug: str
@@ -161,8 +161,8 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             "Owner/Admin, Operations, and Team Member role model",
             "Properties, contacts, work tracking, approvals, short-term-rental operations, tenant placement, and checklists",
             "Rule-based attention and turnover automation included in the standard build",
-            "Local business-app setup with a private SQLite database and Windows launcher workflow",
-            "No payment processing, accounting, external property-platform integrations, AI assistant, e-signing, or native mobile app in the standard version",
+            "Managed access to the standard system; hosting, database, onboarding, and support details are confirmed before subscription activation",
+            "No payment processing, accounting, external property-platform integrations, AI assistant, e-signing, or native mobile app in the standard build",
         ),
         customization_opportunities=(
             "Company branding and terminology",
@@ -203,12 +203,12 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             ),
         ),
         project_note=(
-            "Completed independent implementation developed by Key Castro. It is presented as a working "
-            "portfolio system and free standard template, not as commissioned or adopted client software."
+            "Completed independent implementation developed by Key Castro and offered through managed "
+            "system subscription access. It is not presented as commissioned or adopted client software."
         ),
-        seo_title="Property Operations Command Center Template | Key Castro",
+        seo_title="Property Operations Command Center | Key Castro",
         meta_description=(
-            "Explore Key Castro's Property Operations Command Center: a free standard property-operations template for work, deadlines, approvals, guest readiness, tenant placement, SOPs, and automation."
+            "Explore Property Operations Command Center by Key Castro: a managed property-operations system for work, deadlines, approvals, guest readiness, tenant placement, SOPs, and automation."
         ),
         og_image="images/templates/property-operations-command-center/dashboard.png",
         published_date="2026-09-19",
@@ -274,7 +274,7 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             "Standard property fields, search/filter tools, and listing ownership workflow",
             "Freshness, reconfirmation, expiry, withdrawal, archive, and restore lifecycle",
             "Configurable client branding in the standard application",
-            "Local SQLite database and existing safe backup/update workflow",
+            "Managed access to the standard system; hosting, database, onboarding, and support details are confirmed before subscription activation",
         ),
         customization_opportunities=(
             "Company-specific property fields, listing types, statuses, and business rules",
@@ -312,12 +312,12 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             ),
         ),
         project_note=(
-            "Completed reusable system and free standard template developed by Key Castro. Client branding is "
-            "configurable; no claim is made that a specific company commissioned or adopted this template."
+            "Completed reusable system developed by Key Castro and offered through managed system subscription "
+            "access. Client branding is configurable; no claim is made that a specific company commissioned or adopted it."
         ),
-        seo_title="Property Inventory Hub Free Real Estate Template | Key Castro",
+        seo_title="Property Inventory Hub | Key Castro",
         meta_description=(
-            "Explore Property Inventory Hub by Key Castro: a free standard private real-estate inventory template with search, listing ownership, reconfirmation, expiry, history, and configurable branding."
+            "Explore Property Inventory Hub by Key Castro: a managed private real-estate inventory system with search, listing ownership, reconfirmation, expiry, history, and configurable branding."
         ),
         og_image="images/templates/property-inventory-hub/dashboard.png",
         published_date="2026-09-19",

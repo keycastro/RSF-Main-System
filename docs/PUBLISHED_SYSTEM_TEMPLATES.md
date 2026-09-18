@@ -1,16 +1,14 @@
-# PUBLISHED SYSTEM TEMPLATES — CURRENT PUBLIC POSITIONING
-
-This file records the source-of-truth public positioning for the first two systems published through the reusable template-library architecture.
+# PUBLISHED SYSTEMS — CURRENT PUBLIC POSITIONING (3.2.0)
 
 ## Business model
 
-The existing standard system is **free by request in its current form**. There is no automatic public source/download link. A business requests access through the existing Contact flow. Free access covers the published system as it already exists: its current interface, workflow, structure, features, and functionality.
+The two published systems are offered through **Managed System Subscription** access. Subscription terms may be monthly or yearly, but no public price is shown until pricing is finalized. Subscription represents ongoing managed access to the ready-made system; standard hosting/maintenance/support scope is confirmed during the subscription discussion. Access does not transfer ownership of the core software.
 
-Business-specific changes and additional development are **paid custom development**. Customization may include branding, roles, workflow, database design, dashboards, automation, integrations, reports, deployment, additional modules, or other changes needed to fit a specific business.
+If a subscriber needs business-specific changes, that work is **Paid Customization**. Requirements and development price are discussed separately. The customization fee pays for requested development work; the normal subscription continues while the client keeps using the managed system.
 
-Do not imply that free access includes unlimited customization, and do not describe the standard system as intentionally incomplete or inferior.
+If a visitor needs something completely different, the no-match search state and generic Contact path allow a custom-system discussion.
 
-Every template-origin inquiry carries trusted server-side context into the existing PostgreSQL inquiry flow and private KEY CASTRO INBOX, including the system name and request type.
+Every system-origin inquiry carries trusted server-side context into PostgreSQL and the private KEY CASTRO INBOX.
 
 ## 1. Property Operations Command Center
 
@@ -18,30 +16,24 @@ Stable public slug: `property-operations-command-center`
 
 A completed independent property-operations application built around surfacing operational attention before work is missed. Its source supports role-based access; property/contact records; work items with priorities, due dates, follow-ups and blockers; owner approvals; short-term-rental booking/readiness/turnover workflows; tenant-placement workflow; reusable SOP/checklists; rule-based operational automation; activity history; and reports.
 
-Technology in the supplied build: Python, Flask, SQLAlchemy, SQLite, server-rendered HTML/CSS/JavaScript, and Waitress for the local Windows runtime.
-
-Truth boundary: this is a completed implementation developed by Key Castro and presented as a working portfolio system/free standard template. Do not claim it was commissioned, adopted, paid for, or officially deployed by a client without separate evidence.
-
-Standard-build exclusions observed in the supplied source/documentation include payment processing, accounting, external property-platform integrations, an AI assistant, e-signing, and a native mobile app.
+Truth boundary: built by Key Castro. Do not claim a specific client commissioned, adopted, paid for, or currently uses it without separate evidence.
 
 ## 2. Property Inventory Hub
 
 Stable public slug: `property-inventory-hub`
 
-A completed reusable, brand-neutral internal real-estate inventory application. Its source supports access-code authentication; Administrator and Agent roles; a shared searchable Marketplace; property records; My Listings ownership workflow; freshness/reconfirmation/expiry lifecycle; withdrawal/archive/restore; listing status/reconfirmation history; historical inventory; authorized-user/access-code management; freshness settings; and configurable client branding.
+A completed reusable, brand-neutral internal real-estate inventory application. Its source supports access-code authentication; Administrator and Agent roles; searchable Marketplace; property records; My Listings ownership workflow; freshness/reconfirmation/expiry lifecycle; withdrawal/archive/restore; history; authorized-user/access-code management; freshness settings; and configurable branding.
 
-Technology in the supplied build: Python, Flask, SQLAlchemy, SQLite, Flask-Login, Flask-WTF, and server-rendered HTML/CSS/JavaScript.
-
-Truth boundary: this is a completed reusable system developed by Key Castro and presented as a free standard template. Do not claim that a specific brokerage/company commissioned, adopted, paid for, or uses it without separate evidence.
+Truth boundary: built by Key Castro. Do not claim a specific brokerage/company commissioned, adopted, paid for, or currently uses it without separate evidence.
 
 ## Independence rule
 
-These are **two separate applications**. Never merge their feature lists, screenshots, workflows, databases, or product names. Each has its own stable detail URL and conversion context.
+These are two separate applications. Never merge feature lists, screenshots, workflows, databases, or product names.
 
 ## Public screenshot rule
 
-The current website media are source-derived interface previews created from the supplied application structure and visual design using sample/demo data. They must be described as interface previews/sample data, not as screenshots of live client information or proof of a client deployment.
+Current website media are source-derived interface previews using sample/demo data. Do not present them as live client data or proof of client deployment.
 
 ## Nexus Properties
 
-Nexus Properties is removed from the public portfolio presentation beginning with 2.8.0. Historical documentation/source artifacts may remain for audit/history, but it must not appear in public navigation, homepage/project listings, system-template pages, current sitemap entries, or current SEO presentation unless the owner deliberately changes that decision later.
+Nexus remains removed from current public presentation.

@@ -32,7 +32,7 @@ Do not create a dedicated route/template for each future system unless the gener
 
 ## Free-template / paid-customization conversion
 
-The existing standard system is available **free by request**; there is no automatic public download in the current model. Business-specific changes are paid custom development.
+Published systems are now offered through **Managed System Subscription** access. Public pricing is not shown until finalized; subscription details are discussed through Contact. Business-specific changes are separately priced **Paid Customization**.
 
 Supported CTA patterns:
 
@@ -52,7 +52,7 @@ source_title
 source_action
 ```
 
-`source_action` stores a readable request type such as `Free Template Access` or `Custom System / Customization`. Generic Contact submissions continue to work with empty source fields.
+`source_action` stores a readable request type such as `System Subscription` or `Paid Customization`. Generic Contact submissions continue to work with empty source fields.
 
 ## SEO/search behavior
 

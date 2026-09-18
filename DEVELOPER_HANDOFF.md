@@ -10,10 +10,11 @@ Read in order:
 4. `docs/UX_INFORMATION_ARCHITECTURE.md`
 5. `docs/VISUAL_PRESENTATION_3_0.md`
 6. `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md`
-7. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
-8. `PROJECT_STATE.json`
-9. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
-10. `SECURITY_AND_SHARING_NOTES.md`
+7. `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`
+8. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
+9. `PROJECT_STATE.json`
+10. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
+11. `SECURITY_AND_SHARING_NOTES.md`
 
 Do not split the owner inbox back into a separate project folder. Do not expose owner-only routes or secrets in public UI, GitHub, logs, screenshots, or documentation.
 
@@ -37,4 +38,4 @@ Keep the premium KEY CASTRO identity, but do not return to screenshot-led pages 
 
 Systems search is a compact progressive enhancement over the server-rendered catalog. Search terms come from reusable system metadata, not JavaScript slug branches. Preserve keyboard use, visible focus, result status, clear/reset behavior, and the helpful no-match path to `Discuss a Custom System`.
 
-The standard published system is free by request in its current form. Business-specific changes are paid custom development. Keep that distinction concise on the Systems index, explicit on detail pages, and context-aware on Contact.
+The previous free-access model is retired. The current model is **Managed System Subscription + Paid Customization**. Subscription provides ongoing managed access; business-specific development is scoped and priced separately, and the normal subscription continues while the managed system remains in use. See `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`.

@@ -35,24 +35,14 @@ site = Blueprint("site", __name__)
 
 SERVICES = [
     {
-        "title": "Custom System Development",
-        "text": "Build a new web application around a real estate or property-operation workflow that existing tools do not fit well.",
-        "example": "Typical work: workflow design, interface, database, permissions, business rules, testing, and delivery preparation.",
+        "title": "Managed System Subscriptions",
+        "text": "Subscribe to use an existing KEY CASTRO system through managed access instead of buying or owning the core software.",
+        "example": "Subscription details can be discussed monthly or yearly and may include managed system access, standard hosting, ordinary maintenance, standard updates, and basic support for the subscribed service.",
     },
     {
-        "title": "Customize an Existing KEY CASTRO System",
-        "text": "Start from one of the completed standard systems and adapt it to the way your company actually operates.",
-        "example": "Typical changes: branding, roles, statuses, fields, dashboards, reports, workflow stages, and additional modules.",
-    },
-    {
-        "title": "Workflow & Data Configuration",
-        "text": "Reshape the information, actions, permissions, and status logic so the system matches the people and process using it.",
-        "example": "Useful when the standard workflow is close, but your team needs different data, approvals, views, or operating rules.",
-    },
-    {
-        "title": "Integrations, Automation & Deployment",
-        "text": "Add practical integrations, automation, notifications, or deployment changes when they are appropriate for the project.",
-        "example": "Scope depends on the approved external service, security requirements, hosting needs, and the business workflow.",
+        "title": "Paid Customization & Custom Development",
+        "text": "Change a subscribed system for your business, or discuss a different system when the ready-made options do not fit the workflow you need.",
+        "example": "Requirements and price are agreed separately for development work such as workflow changes, branding, roles, dashboards, reports, automation, integrations, or additional modules. The normal subscription continues while the managed system remains in use.",
     },
 ]
 
@@ -70,7 +60,7 @@ TECHNOLOGIES = [
 PAGE_SEO = {
     "home": {
         "title": "Custom Real Estate Systems Developer | Key Castro",
-        "description": "Key Castro builds custom real estate systems and offers completed standard systems for property operations, inventory, rental, maintenance, and team workflows.",
+        "description": "Key Castro builds custom real estate systems and offers managed subscriptions to completed systems for property operations, inventory, rental, maintenance, and team workflows.",
     },
     "about": {
         "title": "About Key Castro | Custom Real Estate Systems Developer",
@@ -78,7 +68,7 @@ PAGE_SEO = {
     },
     "services": {
         "title": "Custom Real Estate Software Services | Key Castro",
-        "description": "Paid custom development and system customization for real estate workflows, roles, data, dashboards, integrations, automation, and deployment.",
+        "description": "Managed real estate system subscriptions plus paid customization and custom development for workflows, roles, data, dashboards, integrations, automation, and deployment.",
     },
     "skills": {
         "title": "Skills & Technology | Key Castro",
@@ -89,12 +79,12 @@ PAGE_SEO = {
         "description": "Development experience focused on complete real estate systems, testing, documentation, and reliable delivery.",
     },
     "contact": {
-        "title": "Contact Key Castro | Free System Access or Custom Development",
-        "description": "Contact Key Castro to request a free standard system or discuss paid customization and custom real estate software development.",
+        "title": "Contact Key Castro | System Subscription or Custom Development",
+        "description": "Contact Key Castro to request managed system subscription details, discuss paid customization, or plan a custom real estate system.",
     },
     "system_templates": {
         "title": "Real Estate Systems | Key Castro",
-        "description": "Browse completed real estate systems built by Key Castro. Request a standard system for free or discuss paid business-specific customization.",
+        "description": "Browse completed real estate systems built by Key Castro. Request managed subscription details or discuss paid business-specific customization.",
     },
 }
 
@@ -291,8 +281,11 @@ def _send_smtp_message(record: dict) -> None:
 
 
 _TEMPLATE_INTENTS = {
-    "free-access": "Free Template Access",
-    "customize": "Custom System / Customization",
+    "subscribe": ("subscribe", "System Subscription"),
+    "customize": ("customize", "Paid Customization"),
+    # Backward compatibility for old external links/forms from the previous free-access model.
+    # Never expose the old label publicly; normalize it to the current subscription intent.
+    "free-access": ("subscribe", "System Subscription"),
 }
 
 
@@ -307,8 +300,8 @@ def _requested_template_intent(template_interest) -> tuple[str, str, str]:
         return "", "", ""
     raw = (request.form.get("source_intent") if request.method == "POST" else request.args.get("intent")) or ""
     raw = raw.strip().lower()
-    label = _TEMPLATE_INTENTS.get(raw, "System Template Inquiry")
-    return raw if raw in _TEMPLATE_INTENTS else "", label, label
+    canonical_intent, label = _TEMPLATE_INTENTS.get(raw, ("", "System Inquiry"))
+    return canonical_intent, label, label
 
 
 @site.route("/contact", methods=["GET", "POST"])

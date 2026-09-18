@@ -6,7 +6,7 @@
       <div class="hero-identity"><strong>KEY CASTRO</strong><span aria-hidden="true"></span></div>
       <p class="hero-role">Custom Real Estate Systems Developer</p>
       <h1>Clear business systems for <span>real estate operations.</span></h1>
-      <p class="hero-lead">Practical web systems for property operations, inventory, rental, maintenance, and team workflows. Use a standard system for free by request, or discuss paid customization for your business.</p>
+      <p class="hero-lead">Subscribe to a ready-made managed system for ongoing access, or discuss paid customization when your business needs a different workflow, feature set, or operating setup.</p>
       <div class="hero-actions">
         <a class="button primary" href="{{ url_for('site.system_templates') }}">View Systems</a>
         <a class="button secondary" href="{{ url_for('site.contact') }}">Discuss a Custom System</a>
@@ -28,7 +28,7 @@
 <section class="section home-systems-section" id="featured-systems">
   <div class="container">
     <div class="section-head reveal">
-      <div><p class="eyebrow">SYSTEMS BUILT BY KEY CASTRO</p><h2>See the systems before choosing what you need.</h2><p>Each system is a separate completed build. The standard version is available free by request.</p></div>
+      <div><p class="eyebrow">SYSTEMS BUILT BY KEY CASTRO</p><h2>Choose a ready-made system to start with.</h2><p>Each system is a separate completed build available through managed subscription access.</p></div>
       <a class="text-link desktop-link" href="{{ url_for('site.system_templates') }}">Browse all systems <span>→</span></a>
     </div>
 
@@ -36,7 +36,7 @@
       {% for item in published_system_templates %}
       <article class="system-showcase-card reveal delay-{{ loop.index0 % 2 }}">
         <div class="system-showcase-copy">
-          <div class="badge-row"><span>FREE STANDARD SYSTEM</span></div>
+          <div class="badge-row"><span>MANAGED SYSTEM SUBSCRIPTION</span></div>
           <h3>{{ item.name }}</h3>
           <p>{{ item.short_description }}</p>
           <p class="system-audience"><strong>For:</strong> {{ item.card_audience }}</p>
@@ -57,12 +57,12 @@
   </div>
 </section>
 
-<section class="section section-soft compact-choice-section" id="access-or-customize">
+<section class="section section-soft compact-choice-section" id="subscription-or-customize">
   <div class="container access-model-row reveal">
-    <div class="access-model-intro"><p class="eyebrow">TWO SIMPLE OPTIONS</p><h2>Start free. Customize only if your business needs something different.</h2></div>
+    <div class="access-model-intro"><p class="eyebrow">TWO SIMPLE SERVICES</p><h2>Subscribe to the system. Customize it only when your business needs changes.</h2></div>
     <div class="access-model-options">
-      <div><strong>Free standard system</strong><p>Request access to the existing version as it is currently built.</p><a class="text-link" href="{{ url_for('site.system_templates') }}">Choose a system <span>→</span></a></div>
-      <div><strong>Paid customization</strong><p>Change workflow, branding, roles, data, features, integrations, or deployment.</p><a class="text-link" href="{{ url_for('site.services') }}">See paid services <span>→</span></a></div>
+      <div><strong>Managed System Subscription</strong><p>Ongoing monthly or yearly access to a managed ready-made system. Pricing and subscription details are confirmed before access starts.</p><a class="text-link" href="{{ url_for('site.system_templates') }}">Choose a system <span>→</span></a></div>
+      <div><strong>Paid Customization</strong><p>Development work is quoted separately when a subscribed system needs business-specific changes. The normal subscription continues while the managed system remains in use.</p><a class="text-link" href="{{ url_for('site.services') }}">See how customization works <span>→</span></a></div>
     </div>
   </div>
 </section>
@@ -70,7 +70,7 @@
 <section class="section cta-wrap compact-cta-wrap">
   <div class="container">
     <div class="cta-panel reveal">
-      <div><p class="eyebrow">NEED SOMETHING DIFFERENT?</p><h2>Tell me what your business needs the system to do.</h2><p>You do not need a technical specification. Start with the workflow and what is difficult to manage today.</p></div>
+      <div><p class="eyebrow">NEED SOMETHING DIFFERENT?</p><h2>Tell me what your business needs the system to do.</h2><p>If the ready-made systems do not fit your workflow, we can discuss a custom system or separate paid development.</p></div>
       <a class="button light" href="{{ url_for('site.contact') }}">Discuss a Custom System</a>
     </div>
   </div>

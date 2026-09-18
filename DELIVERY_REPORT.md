@@ -1,25 +1,23 @@
-# KEY CASTRO WEBSITE — SYSTEM SEARCH + ACCESS MODEL 3.1.0
+# DELIVERY REPORT — KEY CASTRO 3.2.0
 
-Version 3.1.0 extends the existing 3.0.0 compact premium production site without rebuilding or changing its Flask/PostgreSQL/Render architecture.
+## Scope
 
-## Main changes
+Commercial-model migration only. The compact 3.0 presentation, 3.1 metadata-driven Systems search, Flask architecture, PostgreSQL inquiry flow, private owner Inbox, SEO, sitemap, robots, GitHub/Render setup, and desktop launchers are preserved.
 
-- Added a compact **Find a system** control to the Systems page.
-- Search filters the existing server-rendered system cards instantly without a page reload.
-- Search is metadata-driven through `SystemTemplate.search_text` and optional `search_terms`, so future systems inherit the behavior without slug-specific JavaScript.
-- Added accessible label, keyboard behavior, Escape/clear reset, visible focus, polite result-count status, and progressive enhancement.
-- Added a commercially useful no-match state that links to the existing generic custom-system Contact path instead of ending at “no results.”
-- Clarified that **free** means the existing standard system in its current form.
-- Clarified that business-specific modifications and additional development are **paid custom development**.
-- Updated system detail and contextual Contact wording without repeating the same sales explanation across every card.
+## Public model after 3.2.0
 
-## Preserved
+- **Managed System Subscription** — ongoing managed access to an existing KEY CASTRO system. Monthly/yearly terms and pricing are discussed before activation.
+- **Paid Customization** — separately scoped and priced development work when a subscriber needs business-specific changes. The normal subscription continues while the managed system remains in use.
+- Visitors needing something completely different can still discuss a custom system.
 
-- Compact 3.0.0 presentation and screenshot controls.
-- Home · Systems · Services · About · Contact information architecture.
-- Property Operations Command Center and Property Inventory Hub as separate systems.
-- Free-access, customization, and generic Contact flows.
-- Trusted server-side system attribution, PostgreSQL inquiry storage, and private KEY CASTRO INBOX.
-- SEO, canonical routes, sitemap, robots, structured data, Flask architecture, GitHub repositories, Render service, and desktop launchers.
+## Migration
 
-See `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md`.
+- Removed current public free-standard/free-template/free-access messaging.
+- New contact intent: `subscribe` -> `System Subscription`.
+- Customization intent: `customize` -> `Paid Customization`.
+- Legacy `free-access` URLs/forms normalize to the new subscription intent; no database schema migration is required.
+- Existing historical inquiry rows are not rewritten.
+
+## Safety
+
+No public price, source-code ownership, permanent ownership, unlimited hosting/storage/users/support, or lifetime-hosting promise is introduced.

@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Current version:** 3.1.0
+**Current version:** 3.2.0
 **Official site:** https://keycastro.onrender.com
 **Positioning:** KEY CASTRO — Custom Real Estate Systems Developer
 
@@ -11,7 +11,8 @@ Before changing the website, read:
 1. `00_FUTURE_DEVELOPER_READ_THIS_PLAN.md` (local/private roadmap)
 2. `docs/FUTURE_TEMPLATE_LIBRARY_ROADMAP.md` (local/private roadmap)
 3. `docs/UX_INFORMATION_ARCHITECTURE.md`
-4. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
+4. `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`
+5. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
 5. `PROJECT_STATE.json`
 6. `SECURITY_AND_SHARING_NOTES.md`
 7. `docs/DEPLOYMENT_HISTORY.md`
@@ -50,7 +51,7 @@ Use **Systems** as the visible public mental model for completed systems. The st
 - `Property Operations Command Center` → `/system-templates/property-operations-command-center`
 - `Property Inventory Hub` → `/system-templates/property-inventory-hub`
 
-Both are completed systems built by Key Castro and offered as free standard systems **by request**. Business-specific customization is paid development. They are separate applications: never mix their screenshots, features, workflows, databases, or product names.
+Both are completed systems built by Key Castro and offered through **Managed System Subscription** access. Business-specific changes are **Paid Customization** scoped and priced separately. The normal subscription continues while the managed system remains in use. They are separate applications: never mix their screenshots, features, workflows, databases, or product names.
 
 `app/system_templates.py` remains the source-controlled registry. Contact attribution includes `source_type`, `source_slug`, `source_title`, and `source_action`, allowing the private Inbox to distinguish free-template access from customization requests.
 
@@ -61,7 +62,7 @@ Nexus Properties remains removed from current public presentation.
 Before adding any visible page, card, CTA, or section, ask whether it creates a genuinely new decision or information need. Do not duplicate information already explained more clearly elsewhere. Preserve the visitor flow:
 
 ```text
-Home → Systems → System → Free Access or Customization → Contact
+Home → Systems → System → System Subscription or Paid Customization → Contact
 ```
 
 ## 3.0.0 presentation rule
@@ -78,17 +79,15 @@ The 2.9.0 information architecture remains authoritative. Version 3.0.0 changes 
 
 See `docs/VISUAL_PRESENTATION_3_0.md`.
 
-## 3.1.0 system search + commercial rule
+## 3.1.0 system search + 3.2.0 commercial rule
 
-The Systems page includes a lightweight client-side search. It is **progressive enhancement**: all published systems are rendered in normal server HTML first, and JavaScript only filters those existing cards. Do not replace it with a database/search service until the library is large enough to justify that complexity.
+The Systems page includes a lightweight client-side search. It is progressive enhancement: published systems are rendered in normal server HTML and JavaScript only filters existing cards. Search indexing remains metadata-driven through `SystemTemplate.search_text` / `search_terms`; do not add slug-specific JavaScript.
 
-Search indexing is metadata-driven through `SystemTemplate.search_text` and `search_terms` in `app/system_templates.py`. A new published system becomes searchable through its normal metadata; do not add slug-specific `if` statements to JavaScript.
+Current commercial rule from 3.2.0:
 
-Business rule:
+- **Managed System Subscription** = ongoing managed access to an existing published system. Monthly/yearly terms and pricing are discussed before activation.
+- **Paid Customization** = separately scoped and priced development work when a subscribed system needs business-specific changes. The normal subscription continues while the managed system remains in use.
 
-- **Free standard system** = the existing published version in its current form.
-- **Paid custom development** = business-specific changes, additional features, branding, integrations, workflow/data changes, deployment changes, or other additional development.
+Do not invent public prices. Do not imply source-code ownership, lifetime access, unlimited infrastructure, or unlimited support.
 
-Do not imply that free access includes unlimited customization. Do not imply that the standard system is intentionally incomplete.
-
-See `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md`.
+See `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md` and `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`.

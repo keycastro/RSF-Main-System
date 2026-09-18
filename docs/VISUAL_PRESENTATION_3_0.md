@@ -39,12 +39,12 @@ Screenshots are evidence, not the page itself.
 
 The two systems remain two independent applications. Each catalog card communicates, in order:
 
-1. Free standard system status
+1. Managed system subscription status
 2. System name
 3. One-sentence purpose
 4. Audience
 5. Compact preview
-6. View System / Request Free Access actions
+6. View System / Request Subscription Details actions
 
 ### Detail pages
 
@@ -55,7 +55,7 @@ Predictable sequence remains:
 3. Business problem + users
 4. Workflow + features
 5. Controlled screenshot gallery
-6. Free standard scope + paid customization
+6. Managed subscription scope + paid customization
 7. Technical disclosure
 8. Final decision CTA
 

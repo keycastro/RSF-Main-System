@@ -8,12 +8,12 @@
   </div>
   <div class="container template-hero-grid">
     <div class="case-intro reveal">
-      <div class="badge-row template-status-row"><span>{{ system_template.category|upper }}</span><span>FREE STANDARD SYSTEM</span></div>
+      <div class="badge-row template-status-row"><span>{{ system_template.category|upper }}</span><span>MANAGED SYSTEM SUBSCRIPTION</span></div>
       <h1>{{ system_template.name }}</h1>
       <p class="page-lead">{{ system_template.full_description }}</p>
       <div class="hero-actions template-primary-actions">
-        <a class="button primary" href="{{ url_for('site.contact', template=system_template.slug, intent='free-access') }}">Request Free Template Access</a>
-        <a class="button secondary" href="{{ url_for('site.contact', template=system_template.slug, intent='customize') }}">Customize This System</a>
+        <a class="button primary" href="{{ url_for('site.contact', template=system_template.slug, intent='subscribe') }}">Request Subscription Details</a>
+        <a class="button secondary" href="{{ url_for('site.contact', template=system_template.slug, intent='customize') }}">Request Paid Customization</a>
         {% if system_template.video.url or system_template.video.embed_url %}<a class="text-link" href="#demo">Watch Demonstration <span>↓</span></a>{% endif %}
       </div>
     </div>
@@ -78,18 +78,18 @@
 
 <section class="section section-soft compact-detail-section">
   <div class="container">
-    <div class="section-head compact-head"><div><p class="eyebrow">FREE OR CUSTOMIZED</p><h2>Start with the standard system. Customize only when needed.</h2></div></div>
+    <div class="section-head compact-head"><div><p class="eyebrow">SUBSCRIPTION + CUSTOMIZATION</p><h2>Managed access for the system. Separate pricing for business-specific changes.</h2></div></div>
     <div class="template-two-column template-choice-panels compact-choice-panels">
       <div class="template-scope-panel">
-        <p class="eyebrow">FREE STANDARD SYSTEM</p>
-        <h2>Use the existing version for free.</h2>
-        <p class="template-choice-summary">The standard system is available by request in its current form, with the existing features, workflow, interface, and structure shown here.</p>
+        <p class="eyebrow">MANAGED SYSTEM SUBSCRIPTION</p>
+        <h2>Subscribe to use the ready-made system.</h2>
+        <p class="template-choice-summary">Subscription provides ongoing managed access to the standard system. Monthly or yearly terms, pricing, hosting arrangements, and support scope are confirmed before activation. Subscription access does not transfer ownership of the core software.</p>
         <ul class="template-list compact-list">{% for item in system_template.standard_scope %}<li>{{ item }}</li>{% endfor %}</ul>
       </div>
       <div class="template-scope-panel accent">
-        <p class="eyebrow">PAID CUSTOM DEVELOPMENT</p>
-        <h2>Adapt it when your business needs changes.</h2>
-        <p class="template-choice-summary">If your company needs different workflows, features, branding, data, integrations, or other changes, additional development is a paid service.</p>
+        <p class="eyebrow">PAID CUSTOMIZATION</p>
+        <h2>Change the system when your business needs something different.</h2>
+        <p class="template-choice-summary">Requirements and development price are discussed separately. The customization fee pays for the requested development work; the normal subscription continues while your business keeps using the managed system.</p>
         <ul class="template-list compact-list">{% for item in system_template.customization_opportunities %}<li>{{ item }}</li>{% endfor %}</ul>
       </div>
     </div>
@@ -104,5 +104,5 @@
   </div>
 </section>
 
-<section class="section cta-wrap compact-cta-wrap"><div class="container"><div class="cta-panel"><div><p class="eyebrow">NEXT STEP</p><h2>Request the standard system or ask for a custom version.</h2><p>Use the standard system for free as it is. Business-specific changes are available through paid custom development.</p></div><div class="cta-action-stack"><a class="button light" href="{{ url_for('site.contact', template=system_template.slug, intent='free-access') }}">Request Free Template Access</a><a class="button outline-light" href="{{ url_for('site.contact', template=system_template.slug, intent='customize') }}">Customize This System</a></div></div></div></section>
+<section class="section cta-wrap compact-cta-wrap"><div class="container"><div class="cta-panel"><div><p class="eyebrow">NEXT STEP</p><h2>Ask about subscription access or discuss a business-specific change.</h2><p>Subscription pricing is provided after inquiry. Custom development is scoped and priced separately, and the normal subscription continues while the managed system remains in use.</p></div><div class="cta-action-stack"><a class="button light" href="{{ url_for('site.contact', template=system_template.slug, intent='subscribe') }}">Request Subscription Details</a><a class="button outline-light" href="{{ url_for('site.contact', template=system_template.slug, intent='customize') }}">Request Paid Customization</a></div></div></div></section>
 {% endblock %}
