@@ -107,6 +107,27 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"Custom System Development", services.data)
         self.assertIn(b"Customize an Existing KEY CASTRO System", services.data)
 
+    def test_compact_presentation_keeps_screenshots_supporting_content(self):
+        home = self.client.get("/")
+        systems = self.client.get("/system-templates")
+        detail = self.client.get("/system-templates/property-operations-command-center")
+
+        self.assertIn(b"hero-brief", home.data)
+        self.assertIn(b"compact-system-grid", home.data)
+        self.assertIn(b"compact-library-grid", systems.data)
+        self.assertIn(b"compact-template-card", systems.data)
+        self.assertIn(b"template-card-copy", systems.data)
+        self.assertIn(b"compact-case-cover", detail.data)
+        self.assertIn(b"compact-gallery-grid", detail.data)
+        self.assertIn(b"Open full screen", detail.data)
+
+        css_path = Path(__file__).resolve().parents[1] / "app" / "static" / "css" / "style.css"
+        css = css_path.read_text(encoding="utf-8")
+        self.assertIn('3.0.0', css)
+        self.assertIn('height:292px', css)
+        self.assertIn('height:215px', css)
+        self.assertIn('height:160px', css)
+
     def test_system_detail_has_truthful_status_boundary_and_dual_ctas(self):
         for slug in ("property-operations-command-center", "property-inventory-hub"):
             with self.subTest(slug=slug):

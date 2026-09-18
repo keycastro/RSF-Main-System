@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-19",
-  "version": "2.9.0",
+  "version": "3.0.0",
   "owner_public_name": "Key Castro",
   "positioning": "Custom Real Estate Systems Developer",
   "framework": "Flask",
@@ -62,7 +62,7 @@
     "template_request_type_active": true
   },
   "secrets_included_in_repository": false,
-  "visual_design": "Premium architectural ivory + navy + sage system; readability-first; 2.9.0 adds IA/readability cleanup without a visual rebuild",
+  "visual_design": "Premium architectural ivory + navy + sage system; 3.0.0 rebalances screenshot scale, section density, header/hero proportions, and system presentation while preserving the 2.9.0 information architecture.",
   "template_library_foundation": {
     "prepared": true,
     "published_templates": 2,
@@ -130,6 +130,7 @@
       "/experience"
     ],
     "ux_contract": "docs/UX_INFORMATION_ARCHITECTURE.md",
-    "visitor_flow": "Home -> Systems -> System -> Free Access or Customization -> Contact"
+    "visitor_flow": "Home -> Systems -> System -> Free Access or Customization -> Contact",
+    "presentation_contract": "Compact premium presentation: screenshots support system information, system catalog uses controlled previews, detail pages use compact preview + lightbox gallery, and core navigation remains Home -> Systems -> System -> Free Access or Customization -> Contact."
   }
 }

@@ -1,29 +1,31 @@
-# KEY CASTRO WEBSITE — INFORMATION ARCHITECTURE CLEANUP 2.9.0
+# KEY CASTRO WEBSITE — COMPACT PREMIUM PRESENTATION REDESIGN 3.0.0
 
-Version 2.9.0 reorganizes the existing production website without rebuilding or changing its Flask/PostgreSQL/Render architecture.
+Version 3.0.0 significantly rebalances the existing production website presentation without rebuilding or changing its Flask/PostgreSQL/Render architecture.
 
-## Main UX changes
+## Why this release exists
 
-- Replaced the competing `Projects` + `System Templates` top-level choices with one public destination: **Systems**.
-- Added explicit **Home** navigation for first-time/non-technical visitors.
-- `/projects` now permanently redirects to `/system-templates`; the duplicate Projects index template is removed.
-- Simplified the homepage to identity → systems → free-vs-custom rule → final contact CTA.
-- Simplified system cards to purpose, audience, free-standard status, and obvious actions.
-- Standardized system detail pages and removed the immediate duplicate access/customization block.
-- Moved technical build information into progressive disclosure so business information remains dominant.
-- Reframed Services around paid work rather than repeating system categories.
-- Simplified About and moved Skills/Experience to secondary navigation through About/footer.
-- Simplified Contact while preserving trusted template/request context through PostgreSQL into the private inbox.
-- Increased navigation/action readability and simplified small-screen presentation.
+The 2.9.0 information architecture is correct, but the live layout still inherited oversized screenshot and spacing rules from older portfolio designs. System previews were visually dominant, pages traveled too far vertically, the sticky header/hero/page heroes were taller than necessary, and supporting cards/CTAs retained more mass than the simplified content required.
+
+## Main presentation changes
+
+- Reduced sticky-header height while keeping navigation readable and obvious.
+- Replaced the near-full-viewport homepage hero with a shorter editorial hero and compact business-system brief.
+- Reduced default section/page-hero/CTA/footer vertical mass.
+- Rebuilt homepage system cards as balanced text + compact preview compositions.
+- Rebuilt the Systems catalog cards so information and action are primary and the screenshot is supporting evidence.
+- Reworked system detail heroes around a compact preview with existing click-to-expand lightbox access.
+- Reworked additional system screenshots into a controlled-height gallery.
+- Tightened workflow, feature, scope, Services, About, Contact, and footer spacing without shrinking essential text.
+- Added explicit mobile ordering and image-height controls so system pages do not become giant screenshot stacks.
 
 ## Preserved
 
-- Both independent published systems and their stable URLs.
-- Free standard access vs paid customization behavior.
-- Contact → PostgreSQL → private KEY CASTRO INBOX.
-- Owner authentication and private/public separation.
-- SEO metadata, canonical URLs, structured data, robots, and sitemap behavior.
-- Flask server-rendered architecture, GitHub repositories, Render service, and desktop launchers.
-- Nexus remains removed from current public presentation.
+- 2.9.0 information architecture: Home · Systems · Services · About · Contact.
+- Property Operations Command Center and Property Inventory Hub as two separate systems.
+- Free standard system access and paid customization behavior.
+- Contact → PostgreSQL → private KEY CASTRO INBOX attribution.
+- Owner authentication/private routes.
+- SEO, canonical URLs, structured data, sitemap, robots, stable system URLs.
+- Flask server-rendered architecture, GitHub repositories, exact-commit Render deployment, and desktop launchers.
 
-See `docs/UX_INFORMATION_ARCHITECTURE.md` for the ongoing information-architecture contract.
+See `docs/VISUAL_PRESENTATION_3_0.md` for the presentation contract and non-regression rules.

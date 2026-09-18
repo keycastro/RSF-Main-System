@@ -133,3 +133,14 @@ This content update does not claim that Nexus Properties officially hired, paid,
 - Simplified homepage, system library, system detail, Services, About, Contact, and secondary Skills/Experience navigation.
 - Preserved both independent published systems, Contact → PostgreSQL → private Inbox attribution, SEO, security, GitHub/Render architecture, and desktop launchers.
 - Deployment should use the exact release commit SHA per the existing safe workflow to avoid serving an older branch snapshot.
+
+
+## 3.0.0 — Compact premium presentation redesign
+
+- Preserves the 2.9.0 public information architecture and the same Flask/database/security/deployment architecture.
+- Reduces header, hero, page-hero, section, CTA, footer, and supporting-card vertical mass.
+- Rebuilds Systems cards around concise text plus controlled previews instead of full-width giant screenshots.
+- Caps system-detail hero previews and additional gallery images while retaining click-to-expand lightbox access.
+- Improves desktop, tablet, and mobile content density without reducing core body readability or tap-target clarity.
+- Keeps Property Operations Command Center and Property Inventory Hub fully separate.
+- Keeps free standard access, paid customization, trusted contact attribution, SEO, sitemap, robots, and private Inbox behavior unchanged.

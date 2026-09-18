@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Current version:** 2.9.0
+**Current version:** 3.0.0
 **Official site:** https://keycastro.onrender.com
 **Positioning:** KEY CASTRO — Custom Real Estate Systems Developer
 
@@ -63,3 +63,17 @@ Before adding any visible page, card, CTA, or section, ask whether it creates a 
 ```text
 Home → Systems → System → Free Access or Customization → Contact
 ```
+
+## 3.0.0 presentation rule
+
+The 2.9.0 information architecture remains authoritative. Version 3.0.0 changes **presentation density**, not the public mental model.
+
+- Screenshots support the system explanation; they must not dominate a viewport.
+- Systems cards use controlled/cropped previews and concise information.
+- System detail hero screenshots are compact previews with full-size lightbox access.
+- Additional screenshots stay in a controlled gallery.
+- Keep header, hero, sections, CTAs, cards, footer, and mobile spacing intentionally compact.
+- Preserve readable text and obvious buttons; compact does not mean tiny.
+- Do not revert to giant 16:10 screenshots at full card width or full-viewport hero height.
+
+See `docs/VISUAL_PRESENTATION_3_0.md`.

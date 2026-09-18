@@ -31,7 +31,7 @@ Flask + Gunicorn on the existing Render service. Render auto-deploy is off; use 
 
 ## Visual design system
 
-Version 2.6.0 delivers the high-end commercial visual system:
+The visual system began with the premium 2.6.0 direction. Version 3.0.0 keeps that identity while significantly improving presentation density:
 
 - warm neutral backgrounds
 - deep blue primary accents
@@ -40,12 +40,15 @@ Version 2.6.0 delivers the high-end commercial visual system:
 - stronger typography, spacing, hierarchy, screenshot framing, buttons, forms, and case-study structure
 - intentionally readable metadata and supporting text instead of ultra-small low-contrast labels
 - a premium business-tool treatment for the private owner inbox
+- controlled screenshot previews instead of giant screenshot-led cards
+- shorter header, hero, page-hero, section, CTA, and footer proportions
+- compact system-detail galleries with full-size lightbox inspection
 
-The core visual identity, inbox privacy, and deployment architecture remain unchanged.
+The core visual identity, inbox privacy, and deployment architecture remain unchanged. See `docs/VISUAL_PRESENTATION_3_0.md`.
 
 ## Public information architecture
 
-Version 2.9.0 simplifies the public journey to **Home · Systems · Services · About · Contact**. The previous Projects index duplicated the same published systems, so `/projects` now permanently redirects to the single Systems library at `/system-templates`. Skills and Experience remain public/indexable secondary pages reached through About/footer. See `docs/UX_INFORMATION_ARCHITECTURE.md`.
+Version 2.9.0 simplified the public journey to **Home · Systems · Services · About · Contact**. Version 3.0.0 preserves that architecture while making the presentation substantially more compact and balanced. The previous Projects index duplicated the same published systems, so `/projects` now permanently redirects to the single Systems library at `/system-templates`. Skills and Experience remain public/indexable secondary pages reached through About/footer. See `docs/UX_INFORMATION_ARCHITECTURE.md`.
 
 ## Future system-template foundation
 

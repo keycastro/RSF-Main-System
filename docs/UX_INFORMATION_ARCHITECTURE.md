@@ -139,3 +139,8 @@ Template-origin visitors see trusted server-side system context and request type
 This reorganization must never expose owner routes, login, inbox, tokens, or private inquiry data.
 
 Stable system URLs, canonical metadata, structured data, sitemap coverage, and secondary credibility pages remain intact. `/projects` is intentionally excluded from the sitemap because it is now a permanent legacy redirect.
+
+
+## 3.0.0 presentation layer
+
+Version 3.0.0 does not change this information architecture. It reduces oversized screenshot treatment and excess vertical spacing while preserving the same navigation, page purposes, visitor flow, SEO routes, and free-access/customization decisions. Presentation-specific constraints now live in `docs/VISUAL_PRESENTATION_3_0.md`.

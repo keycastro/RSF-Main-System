@@ -1,21 +1,28 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="page-hero">
+<section class="page-hero systems-page-hero">
   <div class="container page-hero-grid">
     <div class="reveal"><p class="eyebrow">SYSTEMS</p><h1>Completed systems for <span>real estate operations.</span></h1></div>
-    <div class="page-hero-copy reveal delay-1"><p>Browse systems built by Key Castro. The standard version of each system is available free by request. Business-specific changes are paid custom development.</p></div>
+    <div class="page-hero-copy reveal delay-1"><p>Choose a system to see how it works. The standard version is free by request; business-specific changes are paid custom development.</p></div>
   </div>
 </section>
 
-<section class="section section-soft">
-  <div class="container template-library-grid">
+<section class="section section-soft systems-catalog-section">
+  <div class="container template-library-grid compact-library-grid">
     {% for item in templates %}
-    <article class="template-library-card reveal delay-{{ loop.index0 % 3 }}">
-      {% if item.screenshots %}<a class="template-card-image" href="{{ url_for('site.system_template_detail', slug=item.slug) }}" aria-label="View {{ item.name }}"><img src="{{ url_for('static', filename=item.screenshots[0].src) }}" alt="{{ item.screenshots[0].alt }}" width="1600" height="1000" loading="lazy" decoding="async"></a>{% endif %}
-      <div class="badge-row"><span>FREE STANDARD SYSTEM</span></div>
-      <h2>{{ item.name }}</h2>
-      <p>{{ item.short_description }}</p>
-      <p class="system-audience"><strong>For:</strong> {{ item.card_audience }}</p>
+    <article class="template-library-card compact-template-card reveal delay-{{ loop.index0 % 2 }}">
+      <div class="template-card-copy">
+        <div class="badge-row"><span>FREE STANDARD SYSTEM</span></div>
+        <h2>{{ item.name }}</h2>
+        <p>{{ item.short_description }}</p>
+        <p class="system-audience"><strong>For:</strong> {{ item.card_audience }}</p>
+      </div>
+      {% if item.screenshots %}
+      <a class="template-card-image" href="{{ url_for('site.system_template_detail', slug=item.slug) }}" aria-label="View {{ item.name }}">
+        <img src="{{ url_for('static', filename=item.screenshots[0].src) }}" alt="{{ item.screenshots[0].alt }}" width="1600" height="1000" loading="lazy" decoding="async">
+        <span aria-hidden="true">System preview</span>
+      </a>
+      {% endif %}
       <div class="template-card-actions">
         <a class="button primary" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">View System</a>
         <a class="text-link" href="{{ url_for('site.contact', template=item.slug, intent='free-access') }}">Request Free Access <span>→</span></a>

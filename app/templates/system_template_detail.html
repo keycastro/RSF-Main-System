@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="case-hero template-hero">
+<section class="case-hero template-hero compact-template-hero">
   <div class="container">
     <nav class="breadcrumb reveal" aria-label="Breadcrumb">
       <a href="{{ url_for('site.system_templates') }}">Systems</a><span aria-hidden="true">/</span><strong aria-current="page">{{ system_template.name }}</strong>
@@ -18,18 +18,18 @@
       </div>
     </div>
     {% if system_template.screenshots %}
-    <button class="case-cover reveal delay-1" type="button" data-lightbox="{{ url_for('static', filename=system_template.screenshots[0].src) }}" data-caption="{{ system_template.screenshots[0].caption }}">
+    <button class="case-cover compact-case-cover reveal delay-1" type="button" data-lightbox="{{ url_for('static', filename=system_template.screenshots[0].src) }}" data-caption="{{ system_template.screenshots[0].caption }}">
       <img src="{{ url_for('static', filename=system_template.screenshots[0].src) }}" alt="{{ system_template.screenshots[0].alt }}" width="1600" height="1000" loading="eager" decoding="async">
-      <span>View System Screen</span>
+      <span>Open full screen</span>
     </button>
     {% endif %}
   </div>
 </section>
 
 {% if system_template.video.url or system_template.video.embed_url %}
-<section class="section section-soft" id="demo">
+<section class="section section-soft compact-detail-section" id="demo">
   <div class="container">
-    <div class="section-head"><div><p class="eyebrow">DEMONSTRATION</p><h2>See the workflow in action.</h2></div></div>
+    <div class="section-head compact-head"><div><p class="eyebrow">DEMONSTRATION</p><h2>See the workflow in action.</h2></div></div>
     <div class="template-video-note">
       {% if system_template.video.url %}
       <video class="template-video" controls preload="metadata" {% if system_template.video.thumbnail %}poster="{{ system_template.video.thumbnail }}"{% endif %}>
@@ -46,42 +46,45 @@
 </section>
 {% endif %}
 
+<section class="section compact-detail-section" id="overview">
+  <div class="container template-content-grid compact-overview-grid">
+    <div><p class="eyebrow">BUSINESS PROBLEM</p><h2>What this system helps organize.</h2><p class="large-copy">{{ system_template.business_problem }}</p></div>
+    <div><p class="eyebrow">WHO IT IS FOR</p><ul class="template-list compact-list">{% for user in system_template.target_users %}<li>{{ user }}</li>{% endfor %}</ul></div>
+  </div>
+</section>
+
+<section class="section section-soft compact-detail-section">
+  <div class="container template-two-column compact-workflow-grid">
+    <div><p class="eyebrow">HOW IT WORKS</p><h2>The standard workflow.</h2><ol class="template-steps compact-steps">{% for step in system_template.workflow %}<li><span>{{ '%02d'|format(loop.index) }}</span><p>{{ step }}</p></li>{% endfor %}</ol></div>
+    <div><p class="eyebrow">MAIN FEATURES</p><h2>What is already built in.</h2><ul class="template-list compact-list">{% for feature in system_template.features %}<li>{{ feature }}</li>{% endfor %}</ul></div>
+  </div>
+</section>
+
 {% if system_template.screenshots|length > 1 %}
-<section class="section section-soft system-screens-section">
+<section class="section system-screens-section compact-screens-section">
   <div class="container">
-    <div class="section-head"><div><p class="eyebrow">MORE SYSTEM SCREENS</p><h2>See more of the completed interface.</h2><p class="section-note">These previews use sample/demo data so the system can be shown without exposing private business information.</p></div></div>
-    <div class="gallery-grid template-gallery-grid">
+    <div class="section-head compact-head"><div><p class="eyebrow">SYSTEM SCREENS</p><h2>More of the completed interface.</h2><p class="section-note">Compact previews use sample/demo data. Click any preview to inspect it full screen.</p></div></div>
+    <div class="gallery-grid template-gallery-grid compact-gallery-grid">
       {% for screenshot in system_template.screenshots[1:] %}
-      <button class="gallery-item {{ 'gallery-main' if loop.first else '' }}" type="button" data-lightbox="{{ url_for('static', filename=screenshot.src) }}" data-caption="{{ screenshot.caption }}"><img src="{{ url_for('static', filename=screenshot.src) }}" alt="{{ screenshot.alt }}" width="1600" height="1000" loading="lazy" decoding="async"><span>{{ screenshot.caption }}</span></button>
+      <button class="gallery-item compact-gallery-item" type="button" data-lightbox="{{ url_for('static', filename=screenshot.src) }}" data-caption="{{ screenshot.caption }}">
+        <img src="{{ url_for('static', filename=screenshot.src) }}" alt="{{ screenshot.alt }}" width="1600" height="1000" loading="lazy" decoding="async">
+        <span>{{ screenshot.caption }}</span>
+      </button>
       {% endfor %}
     </div>
   </div>
 </section>
 {% endif %}
 
-<section class="section" id="overview">
-  <div class="container template-content-grid">
-    <div><p class="eyebrow">BUSINESS PROBLEM</p><h2>What this system helps organize.</h2><p class="large-copy">{{ system_template.business_problem }}</p></div>
-    <div><p class="eyebrow">WHO IT IS FOR</p><ul class="template-list">{% for user in system_template.target_users %}<li>{{ user }}</li>{% endfor %}</ul></div>
-  </div>
-</section>
-
-<section class="section section-soft">
-  <div class="container template-two-column">
-    <div><p class="eyebrow">HOW IT WORKS</p><h2>The standard workflow.</h2><ol class="template-steps">{% for step in system_template.workflow %}<li><span>{{ '%02d'|format(loop.index) }}</span><p>{{ step }}</p></li>{% endfor %}</ol></div>
-    <div><p class="eyebrow">MAIN FEATURES</p><h2>What is already built in.</h2><ul class="template-list">{% for feature in system_template.features %}<li>{{ feature }}</li>{% endfor %}</ul></div>
-  </div>
-</section>
-
-<section class="section">
+<section class="section section-soft compact-detail-section">
   <div class="container">
     <div class="section-head compact-head"><div><p class="eyebrow">FREE OR CUSTOMIZED</p><h2>Choose the version that fits your business.</h2></div></div>
-    <div class="template-two-column template-choice-panels">
-      <div class="template-scope-panel"><p class="eyebrow">FREE STANDARD SYSTEM</p><h2>Use the existing version.</h2><ul class="template-list">{% for item in system_template.standard_scope %}<li>{{ item }}</li>{% endfor %}</ul></div>
-      <div class="template-scope-panel accent"><p class="eyebrow">PAID CUSTOM DEVELOPMENT</p><h2>Adapt it to your operation.</h2><ul class="template-list">{% for item in system_template.customization_opportunities %}<li>{{ item }}</li>{% endfor %}</ul></div>
+    <div class="template-two-column template-choice-panels compact-choice-panels">
+      <div class="template-scope-panel"><p class="eyebrow">FREE STANDARD SYSTEM</p><h2>Use the existing version.</h2><ul class="template-list compact-list">{% for item in system_template.standard_scope %}<li>{{ item }}</li>{% endfor %}</ul></div>
+      <div class="template-scope-panel accent"><p class="eyebrow">PAID CUSTOM DEVELOPMENT</p><h2>Adapt it to your operation.</h2><ul class="template-list compact-list">{% for item in system_template.customization_opportunities %}<li>{{ item }}</li>{% endfor %}</ul></div>
     </div>
 
-    <details class="technical-disclosure">
+    <details class="technical-disclosure compact-technical-disclosure">
       <summary>Technical details about this build</summary>
       <div class="technical-disclosure-content">
         <div><strong>Technology</strong><div class="pill-row compact-pills">{% for item in system_template.technologies %}<span>{{ item }}</span>{% endfor %}</div></div>
@@ -91,5 +94,5 @@
   </div>
 </section>
 
-<section class="section cta-wrap"><div class="container"><div class="cta-panel"><div><p class="eyebrow">NEXT STEP</p><h2>Request the standard system or ask for a custom version.</h2><p>Free access is for the existing standard build. Business-specific changes are paid development.</p></div><div class="cta-action-stack"><a class="button light" href="{{ url_for('site.contact', template=system_template.slug, intent='free-access') }}">Request Free Template Access</a><a class="button outline-light" href="{{ url_for('site.contact', template=system_template.slug, intent='customize') }}">Customize This System</a></div></div></div></section>
+<section class="section cta-wrap compact-cta-wrap"><div class="container"><div class="cta-panel"><div><p class="eyebrow">NEXT STEP</p><h2>Request the standard system or ask for a custom version.</h2><p>Free access is for the existing standard build. Business-specific changes are paid development.</p></div><div class="cta-action-stack"><a class="button light" href="{{ url_for('site.contact', template=system_template.slug, intent='free-access') }}">Request Free Template Access</a><a class="button outline-light" href="{{ url_for('site.contact', template=system_template.slug, intent='customize') }}">Customize This System</a></div></div></div></section>
 {% endblock %}
