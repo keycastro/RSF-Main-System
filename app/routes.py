@@ -9,8 +9,6 @@ from datetime import datetime, timezone
 from email.message import EmailMessage
 from pathlib import Path
 
-from .inquiries import create_inquiry
-
 from flask import (
     Blueprint,
     abort,
@@ -23,6 +21,15 @@ from flask import (
     session,
     url_for,
 )
+
+from .inquiries import create_inquiry
+from .seo import (
+    absolute_url,
+    breadcrumb_structured_data,
+    core_structured_data,
+    software_template_structured_data,
+)
+from .system_templates import get_system_template, published_templates, template_library_enabled
 
 site = Blueprint("site", __name__)
 
@@ -38,6 +45,14 @@ PROJECTS = [
             "reconfirmation, expiry, and listing history."
         ),
         "image": "images/projects/nexus-dashboard.png",
+        "image_alt": "Nexus Properties internal off-market property marketplace dashboard",
+        "image_width": 1200,
+        "image_height": 750,
+        "seo_title": "Nexus Properties Real Estate System Case Study | Key Castro",
+        "meta_description": (
+            "See how Key Castro built a completed internal off-market property marketplace "
+            "with listing search, ownership, freshness checks, reconfirmation, expiry, and history."
+        ),
         "tags": ["Property listings", "Search & filters", "Status tracking", "Freshness rules"],
     }
 ]
@@ -76,35 +91,86 @@ TECHNOLOGIES = [
     ("Deployment", "Moving a tested system from local build to the web"),
 ]
 
-PAGE_META = {
-    "home": "Key Castro builds custom real estate systems and web applications for property, listing, and rental operations.",
-    "about": "Learn how Key Castro approaches custom real estate systems: understand the workflow, build the right tool, test it, and hand it over clearly.",
-    "services": "Custom property operations systems, listing management, rental workflows, maintenance tracking, dashboards, and workflow automation.",
-    "projects": "Browse completed custom real estate systems and case studies built by Key Castro.",
-    "skills": "Technologies and development skills used to build custom real estate web applications.",
-    "experience": "Development experience focused on complete real estate systems, testing, documentation, and reliable delivery.",
-    "contact": "Contact Key Castro to discuss a custom real estate or rental-property system.",
+PAGE_SEO = {
+    "home": {
+        "title": "Custom Real Estate Systems Developer | Key Castro",
+        "description": "Key Castro builds custom real estate systems and web applications for property, listing, rental, maintenance, and team operations.",
+    },
+    "about": {
+        "title": "About Key Castro | Custom Real Estate Systems Developer",
+        "description": "Learn how Key Castro approaches custom real estate systems: understand the workflow, build the right tool, test it, and hand it over clearly.",
+    },
+    "services": {
+        "title": "Custom Real Estate Software Services | Key Castro",
+        "description": "Custom property operations systems, listing management, rental workflows, maintenance tracking, dashboards, and workflow automation.",
+    },
+    "projects": {
+        "title": "Real Estate Software Projects & Case Studies | Key Castro",
+        "description": "Browse completed custom real estate systems and case studies built by Key Castro.",
+    },
+    "skills": {
+        "title": "Skills & Technology | Key Castro",
+        "description": "Technologies and development skills used by Key Castro to build custom real estate web applications and business systems.",
+    },
+    "experience": {
+        "title": "Development Experience | Key Castro",
+        "description": "Development experience focused on complete real estate systems, testing, documentation, and reliable delivery.",
+    },
+    "contact": {
+        "title": "Contact Key Castro | Discuss a Custom Real Estate System",
+        "description": "Contact Key Castro to discuss a custom real estate, property-operations, or rental-property system.",
+    },
+    "system_templates": {
+        "title": "Real Estate System Templates | Key Castro",
+        "description": "Explore reusable real estate system templates built by Key Castro, with workflows, demonstrations, screenshots, and customization options.",
+    },
 }
 
 
-def _common_context(page_key: str = "home"):
+def _common_context(
+    page_key: str = "home",
+    *,
+    seo_title: str | None = None,
+    meta_description: str | None = None,
+    og_image: str | None = None,
+    og_image_alt: str | None = None,
+    extra_structured_data: list[dict] | None = None,
+    indexable: bool = True,
+):
     base_url = current_app.config.get("PUBLIC_BASE_URL", "").rstrip("/")
-    canonical_url = f"{base_url}{request.path}" if base_url else ""
+    canonical_url = f"{base_url}{request.path}" if base_url and indexable else ""
+    socials = {
+        "linkedin": current_app.config.get("LINKEDIN_URL"),
+        "github": current_app.config.get("GITHUB_URL"),
+        "youtube": current_app.config.get("YOUTUBE_URL"),
+        "facebook": current_app.config.get("FACEBOOK_URL"),
+    }
+    page_meta = PAGE_SEO.get(page_key, PAGE_SEO["home"])
+    og_image_path = og_image or "images/projects/nexus-dashboard.png"
+    og_image_url = absolute_url(base_url, url_for("static", filename=og_image_path)) if base_url else ""
+    structured_data = core_structured_data(base_url, socials)
+    if extra_structured_data:
+        structured_data.extend(item for item in extra_structured_data if item)
+
     return {
         "projects": PROJECTS,
         "services": SERVICES,
         "technologies": TECHNOLOGIES,
+        "published_system_templates": published_templates(),
+        "template_library_enabled": template_library_enabled(),
         "contact_email": current_app.config.get("CONTACT_EMAIL"),
-        "socials": {
-            "linkedin": current_app.config.get("LINKEDIN_URL"),
-            "github": current_app.config.get("GITHUB_URL"),
-            "youtube": current_app.config.get("YOUTUBE_URL"),
-            "facebook": current_app.config.get("FACEBOOK_URL"),
-        },
+        "socials": socials,
         "environment_label": current_app.config.get("ENVIRONMENT_LABEL", ""),
-        "meta_description": PAGE_META.get(page_key, PAGE_META["home"]),
+        "seo_title": seo_title or page_meta["title"],
+        "meta_description": meta_description or page_meta["description"],
         "canonical_url": canonical_url,
         "public_base_url": base_url,
+        "og_image_url": og_image_url,
+        "og_image_alt": og_image_alt or "Key Castro custom real estate systems portfolio",
+        "structured_data": structured_data,
+        "robots_meta": "" if indexable else "noindex,nofollow",
+        "google_site_verification": current_app.config.get("GOOGLE_SITE_VERIFICATION", ""),
+        "bing_site_verification": current_app.config.get("BING_SITE_VERIFICATION", ""),
     }
 
 
@@ -134,11 +200,68 @@ def project_detail(slug: str):
     if project is None:
         abort(404)
     template_name = f"projects/{slug.replace('-', '_')}.html"
+    breadcrumb = breadcrumb_structured_data(
+        current_app.config.get("PUBLIC_BASE_URL", "").rstrip("/"),
+        [("Home", "/"), ("Projects", "/projects"), (project["name"], f"/projects/{project['slug']}")],
+    )
     return render_template(
         template_name,
         title=project["name"],
         project=project,
-        **_common_context("projects"),
+        **_common_context(
+            "projects",
+            seo_title=project["seo_title"],
+            meta_description=project["meta_description"],
+            og_image=project["image"],
+            og_image_alt=project["image_alt"],
+            extra_structured_data=[breadcrumb] if breadcrumb else [],
+        ),
+    )
+
+
+@site.get("/system-templates")
+def system_templates():
+    templates = published_templates()
+    if not templates:
+        abort(404)
+    return render_template(
+        "system_templates.html",
+        title="System Templates",
+        templates=templates,
+        **_common_context("system_templates"),
+    )
+
+
+@site.get("/system-templates/<slug>")
+def system_template_detail(slug: str):
+    item = get_system_template(slug)
+    if item is None:
+        abort(404)
+
+    base_url = current_app.config.get("PUBLIC_BASE_URL", "").rstrip("/")
+    breadcrumb = breadcrumb_structured_data(
+        base_url,
+        [
+            ("Home", "/"),
+            ("System Templates", "/system-templates"),
+            (item.name, f"/system-templates/{item.slug}"),
+        ],
+    )
+    structured = software_template_structured_data(base_url, item)
+    if breadcrumb:
+        structured.append(breadcrumb)
+    return render_template(
+        "system_template_detail.html",
+        title=item.name,
+        system_template=item,
+        **_common_context(
+            "system_templates",
+            seo_title=item.seo_title,
+            meta_description=item.meta_description,
+            og_image=item.og_image or None,
+            og_image_alt=f"{item.name} system preview",
+            extra_structured_data=structured,
+        ),
     )
 
 
@@ -180,11 +303,13 @@ def _send_smtp_message(record: dict) -> None:
     message["To"] = recipient
     message["Reply-To"] = record["email"]
     company = record.get("company") or "Not provided"
+    interest = record.get("source_title") or "General custom-system inquiry"
     message.set_content(
         "New website inquiry\n\n"
         f"Name: {record['name']}\n"
         f"Email: {record['email']}\n"
-        f"Company: {company}\n\n"
+        f"Company: {company}\n"
+        f"Interested in: {interest}\n\n"
         "Project details:\n"
         f"{record['message']}\n"
     )
@@ -205,10 +330,18 @@ def _send_smtp_message(record: dict) -> None:
         smtp.send_message(message)
 
 
+def _requested_system_template() -> object | None:
+    slug = (request.form.get("source_slug") if request.method == "POST" else request.args.get("template")) or ""
+    slug = slug.strip().lower()
+    return get_system_template(slug) if slug else None
+
+
 @site.route("/contact", methods=["GET", "POST"])
 def contact():
     context = _common_context("contact")
     context["csrf_token"] = _csrf_token()
+    template_interest = _requested_system_template()
+    context["template_interest"] = template_interest
 
     if request.method == "POST":
         sent = request.form.get("csrf_token", "")
@@ -246,6 +379,9 @@ def contact():
             "email": email,
             "company": company,
             "message": message,
+            "source_type": "system_template" if template_interest else "",
+            "source_slug": template_interest.slug if template_interest else "",
+            "source_title": template_interest.name if template_interest else "",
         }
 
         mode = current_app.config.get("CONTACT_DELIVERY_MODE", "local")
@@ -279,7 +415,6 @@ def contact():
         return redirect(url_for("site.contact"))
 
     return render_template("contact.html", title="Contact", **context)
-
 
 
 @site.get("/system/health")
@@ -318,6 +453,14 @@ def sitemap():
         url_for("site.contact", _external=True),
     ]
     pages.extend(url_for("site.project_detail", slug=item["slug"], _external=True) for item in PROJECTS)
+
+    templates = published_templates()
+    if templates:
+        pages.append(url_for("site.system_templates", _external=True))
+        pages.extend(
+            url_for("site.system_template_detail", slug=item.slug, _external=True) for item in templates
+        )
+
     body = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     body += "\n".join(f"  <url><loc>{page}</loc></url>" for page in pages)
     body += "\n</urlset>"
@@ -326,14 +469,32 @@ def sitemap():
 
 @site.app_errorhandler(400)
 def bad_request(error):
-    return render_template("error.html", title="Bad Request", code=400, message="That request could not be completed.", **_common_context()), 400
+    return render_template(
+        "error.html",
+        title="Bad Request",
+        code=400,
+        message="That request could not be completed.",
+        **_common_context(indexable=False),
+    ), 400
 
 
 @site.app_errorhandler(404)
 def not_found(error):
-    return render_template("error.html", title="Not Found", code=404, message="The page you requested does not exist.", **_common_context()), 404
+    return render_template(
+        "error.html",
+        title="Not Found",
+        code=404,
+        message="The page you requested does not exist.",
+        **_common_context(indexable=False),
+    ), 404
 
 
 @site.app_errorhandler(500)
 def server_error(error):
-    return render_template("error.html", title="Server Error", code=500, message="The website encountered an unexpected error.", **_common_context()), 500
+    return render_template(
+        "error.html",
+        title="Server Error",
+        code=500,
+        message="The website encountered an unexpected error.",
+        **_common_context(indexable=False),
+    ), 500

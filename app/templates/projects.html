@@ -12,7 +12,7 @@
     {% for project in projects %}
     <article class="project-card reveal">
       <a class="project-image-link" href="{{ url_for('site.project_detail', slug=project.slug) }}" aria-label="View {{ project.name }} case study">
-        <img src="{{ url_for('static', filename=project.image) }}" alt="{{ project.name }} dashboard preview">
+        <img src="{{ url_for('static', filename=project.image) }}" alt="{{ project.image_alt }}" width="{{ project.image_width }}" height="{{ project.image_height }}" loading="lazy" decoding="async">
         <span>View case study ↗</span>
       </a>
       <div class="project-info">

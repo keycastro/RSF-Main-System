@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="page-hero">
+  <div class="container page-hero-grid">
+    <div class="reveal"><p class="eyebrow">SYSTEM TEMPLATES</p><h1>Reusable systems for <span>real estate operations.</span></h1></div>
+    <div class="page-hero-copy reveal delay-1"><p>A curated library of working standard systems built to demonstrate real workflows. Use the standard version where appropriate, or ask Key Castro to adapt one to your business.</p></div>
+  </div>
+</section>
+
+<section class="section section-soft">
+  <div class="container template-library-grid">
+    {% for item in templates %}
+    <article class="template-library-card reveal delay-{{ loop.index0 % 3 }}">
+      <div class="badge-row"><span>{{ item.category|upper }}</span><span>STANDARD TEMPLATE</span></div>
+      <h2>{{ item.name }}</h2>
+      <p>{{ item.short_description }}</p>
+      <div class="template-card-actions">
+        <a class="button primary" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">View system</a>
+        <a class="text-link" href="{{ url_for('site.contact', template=item.slug) }}">Customize for my business <span>→</span></a>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

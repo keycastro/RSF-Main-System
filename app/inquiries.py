@@ -9,6 +9,11 @@ from typing import Any, Iterator
 from flask import current_app
 
 ALLOWED_STATUSES = {"new", "read", "replied", "archived"}
+_SOURCE_COLUMNS = {
+    "source_type": "TEXT NOT NULL DEFAULT ''",
+    "source_slug": "TEXT NOT NULL DEFAULT ''",
+    "source_title": "TEXT NOT NULL DEFAULT ''",
+}
 
 
 def _database_url() -> str:
@@ -52,6 +57,30 @@ def _connection() -> Iterator[Any]:
         conn.close()
 
 
+def _ensure_source_columns(conn: Any, url: str) -> None:
+    """Backward-compatible migration for optional inquiry-source context.
+
+    Existing generic inquiries keep empty-string defaults. New template-origin
+    inquiries can record their source without changing the current contact flow.
+    """
+    if _is_sqlite(url):
+        existing = {row["name"] for row in conn.execute("PRAGMA table_info(contact_inquiries)").fetchall()}
+        for column, definition in _SOURCE_COLUMNS.items():
+            if column not in existing:
+                conn.execute(f"ALTER TABLE contact_inquiries ADD COLUMN {column} {definition}")
+        return
+
+    conn.execute(
+        "ALTER TABLE contact_inquiries ADD COLUMN IF NOT EXISTS source_type VARCHAR(40) NOT NULL DEFAULT ''"
+    )
+    conn.execute(
+        "ALTER TABLE contact_inquiries ADD COLUMN IF NOT EXISTS source_slug VARCHAR(160) NOT NULL DEFAULT ''"
+    )
+    conn.execute(
+        "ALTER TABLE contact_inquiries ADD COLUMN IF NOT EXISTS source_title VARCHAR(200) NOT NULL DEFAULT ''"
+    )
+
+
 def ensure_schema() -> None:
     url = _database_url()
     if not url:
@@ -67,7 +96,10 @@ def ensure_schema() -> None:
             email TEXT NOT NULL,
             company TEXT NOT NULL DEFAULT '',
             message TEXT NOT NULL,
-            status TEXT NOT NULL DEFAULT 'new'
+            status TEXT NOT NULL DEFAULT 'new',
+            source_type TEXT NOT NULL DEFAULT '',
+            source_slug TEXT NOT NULL DEFAULT '',
+            source_title TEXT NOT NULL DEFAULT ''
         )
         """
     else:
@@ -80,37 +112,52 @@ def ensure_schema() -> None:
             email VARCHAR(160) NOT NULL,
             company VARCHAR(140) NOT NULL DEFAULT '',
             message TEXT NOT NULL,
-            status VARCHAR(20) NOT NULL DEFAULT 'new'
+            status VARCHAR(20) NOT NULL DEFAULT 'new',
+            source_type VARCHAR(40) NOT NULL DEFAULT '',
+            source_slug VARCHAR(160) NOT NULL DEFAULT '',
+            source_title VARCHAR(200) NOT NULL DEFAULT ''
         )
         """
 
     with _connection() as conn:
         conn.execute(sql)
+        _ensure_source_columns(conn, url)
 
 
 def create_inquiry(record: dict[str, str]) -> int:
     ensure_schema()
     url = _database_url()
     now = datetime.now(timezone.utc).isoformat()
+    values = (
+        record["name"],
+        record["email"],
+        record.get("company", ""),
+        record["message"],
+        record.get("source_type", ""),
+        record.get("source_slug", ""),
+        record.get("source_title", ""),
+    )
     with _connection() as conn:
         if _is_sqlite(url):
             cursor = conn.execute(
                 """
                 INSERT INTO contact_inquiries
-                    (created_at, updated_at, name, email, company, message, status)
-                VALUES (?, ?, ?, ?, ?, ?, 'new')
+                    (created_at, updated_at, name, email, company, message, status,
+                     source_type, source_slug, source_title)
+                VALUES (?, ?, ?, ?, ?, ?, 'new', ?, ?, ?)
                 """,
-                (now, now, record["name"], record["email"], record.get("company", ""), record["message"]),
+                (now, now, *values),
             )
             return int(cursor.lastrowid)
 
         row = conn.execute(
             """
-            INSERT INTO contact_inquiries (name, email, company, message, status)
-            VALUES (%s, %s, %s, %s, 'new')
+            INSERT INTO contact_inquiries
+                (name, email, company, message, status, source_type, source_slug, source_title)
+            VALUES (%s, %s, %s, %s, 'new', %s, %s, %s)
             RETURNING id
             """,
-            (record["name"], record["email"], record.get("company", ""), record["message"]),
+            values,
         ).fetchone()
         return int(row["id"])
 
@@ -128,42 +175,30 @@ def list_inquiries(status: str | None = None, limit: int = 100) -> list[dict[str
     ensure_schema()
     limit = max(1, min(int(limit), 200))
     url = _database_url()
+    fields = (
+        "id, created_at, updated_at, name, email, company, message, status, "
+        "source_type, source_slug, source_title"
+    )
     with _connection() as conn:
         if status in ALLOWED_STATUSES:
             if _is_sqlite(url):
                 rows = conn.execute(
-                    """
-                    SELECT id, created_at, updated_at, name, email, company, message, status
-                    FROM contact_inquiries WHERE status = ?
-                    ORDER BY id DESC LIMIT ?
-                    """,
+                    f"SELECT {fields} FROM contact_inquiries WHERE status = ? ORDER BY id DESC LIMIT ?",
                     (status, limit),
                 ).fetchall()
             else:
                 rows = conn.execute(
-                    """
-                    SELECT id, created_at, updated_at, name, email, company, message, status
-                    FROM contact_inquiries WHERE status = %s
-                    ORDER BY id DESC LIMIT %s
-                    """,
+                    f"SELECT {fields} FROM contact_inquiries WHERE status = %s ORDER BY id DESC LIMIT %s",
                     (status, limit),
                 ).fetchall()
         else:
             if _is_sqlite(url):
                 rows = conn.execute(
-                    """
-                    SELECT id, created_at, updated_at, name, email, company, message, status
-                    FROM contact_inquiries ORDER BY id DESC LIMIT ?
-                    """,
-                    (limit,),
+                    f"SELECT {fields} FROM contact_inquiries ORDER BY id DESC LIMIT ?", (limit,)
                 ).fetchall()
             else:
                 rows = conn.execute(
-                    """
-                    SELECT id, created_at, updated_at, name, email, company, message, status
-                    FROM contact_inquiries ORDER BY id DESC LIMIT %s
-                    """,
-                    (limit,),
+                    f"SELECT {fields} FROM contact_inquiries ORDER BY id DESC LIMIT %s", (limit,)
                 ).fetchall()
     return [_serialize(row) for row in rows]
 

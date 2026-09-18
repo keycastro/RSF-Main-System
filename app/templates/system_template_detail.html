@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="case-hero template-hero">
+  <div class="container">
+    <nav class="breadcrumb reveal" aria-label="Breadcrumb">
+      <a href="{{ url_for('site.system_templates') }}">System Templates</a><span aria-hidden="true">/</span><strong aria-current="page">{{ system_template.name }}</strong>
+    </nav>
+  </div>
+  <div class="container template-hero-grid">
+    <div class="case-intro reveal">
+      <p class="eyebrow">{{ system_template.category|upper }}</p>
+      <h1>{{ system_template.name }}</h1>
+      <p class="page-lead">{{ system_template.full_description }}</p>
+      <div class="hero-actions">
+        <a class="button primary" href="{{ url_for('site.contact', template=system_template.slug) }}">Customize this system for my business</a>
+        {% if system_template.video.url or system_template.video.embed_url %}<a class="button secondary" href="#demo">Watch demonstration</a>{% endif %}
+      </div>
+    </div>
+    {% if system_template.screenshots %}
+    <button class="case-cover reveal delay-1" type="button" data-lightbox="{{ url_for('static', filename=system_template.screenshots[0].src) }}" data-caption="{{ system_template.screenshots[0].caption }}">
+      <img src="{{ url_for('static', filename=system_template.screenshots[0].src) }}" alt="{{ system_template.screenshots[0].alt }}" loading="eager" decoding="async">
+      <span>View screen</span>
+    </button>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section" id="overview">
+  <div class="container template-content-grid">
+    <div><p class="eyebrow">BUSINESS PROBLEM</p><h2>What this system is designed to improve.</h2><p class="large-copy">{{ system_template.business_problem }}</p></div>
+    <div><p class="eyebrow">WHO IT IS FOR</p><ul class="template-list">{% for user in system_template.target_users %}<li>{{ user }}</li>{% endfor %}</ul></div>
+  </div>
+</section>
+
+{% if system_template.video.url or system_template.video.embed_url %}
+<section class="section section-soft" id="demo">
+  <div class="container">
+    <div class="section-head"><div><p class="eyebrow">VIDEO DEMONSTRATION</p><h2>See the workflow in action.</h2></div></div>
+    <div class="template-video-note">
+      {% if system_template.video.url %}
+      <video class="template-video" controls preload="metadata" {% if system_template.video.thumbnail %}poster="{{ system_template.video.thumbnail }}"{% endif %}>
+        <source src="{{ system_template.video.url }}">
+        Your browser does not support the video element.
+      </video>
+      {% elif system_template.video.embed_url %}
+      <a class="button secondary" href="{{ system_template.video.embed_url }}" target="_blank" rel="noopener noreferrer">Open video demonstration</a>
+      {% endif %}
+      <p>{{ system_template.video.description }}</p>
+      {% if system_template.video.transcript %}<details><summary>Read demonstration summary</summary><p>{{ system_template.video.transcript }}</p></details>{% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section">
+  <div class="container template-two-column">
+    <div><p class="eyebrow">WORKFLOW</p><h2>How the standard system works.</h2><ol class="template-steps">{% for step in system_template.workflow %}<li><span>{{ '%02d'|format(loop.index) }}</span><p>{{ step }}</p></li>{% endfor %}</ol></div>
+    <div><p class="eyebrow">CORE FEATURES</p><h2>What is already included.</h2><ul class="template-list">{% for feature in system_template.features %}<li>{{ feature }}</li>{% endfor %}</ul></div>
+  </div>
+</section>
+
+{% if system_template.screenshots %}
+<section class="section section-soft">
+  <div class="container">
+    <div class="section-head"><div><p class="eyebrow">SYSTEM SCREENS</p><h2>Product tour.</h2></div></div>
+    <div class="gallery-grid">
+      {% for screenshot in system_template.screenshots %}
+      <button class="gallery-item {{ 'gallery-main' if loop.first else '' }}" type="button" data-lightbox="{{ url_for('static', filename=screenshot.src) }}" data-caption="{{ screenshot.caption }}"><img src="{{ url_for('static', filename=screenshot.src) }}" alt="{{ screenshot.alt }}" loading="lazy" decoding="async"><span>{{ screenshot.caption }}</span></button>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section">
+  <div class="container template-two-column">
+    <div class="template-scope-panel"><p class="eyebrow">STANDARD / FREE SCOPE</p><h2>What stays standard.</h2><ul class="template-list">{% for item in system_template.standard_scope %}<li>{{ item }}</li>{% endfor %}</ul></div>
+    <div class="template-scope-panel accent"><p class="eyebrow">CUSTOM DEVELOPMENT</p><h2>What can be adapted to your business.</h2><ul class="template-list">{% for item in system_template.customization_opportunities %}<li>{{ item }}</li>{% endfor %}</ul></div>
+  </div>
+</section>
+
+<section class="section cta-wrap"><div class="container"><div class="cta-panel"><div><p class="eyebrow">NEED THIS SYSTEM TO MATCH YOUR OPERATION?</p><h2>Use the standard system as the starting point.</h2><p>Tell me what your team does differently and what needs to be customized.</p></div><a class="button light" href="{{ url_for('site.contact', template=system_template.slug) }}">Customize this system</a></div></div></section>
+{% endblock %}

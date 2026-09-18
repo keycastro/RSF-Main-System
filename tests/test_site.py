@@ -1,5 +1,7 @@
+import sqlite3
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from app import create_app
@@ -198,6 +200,116 @@ class PortfolioSiteTests(unittest.TestCase):
         robots = self.client.get("/robots.txt")
         self.assertEqual(robots.status_code, 200)
         self.assertIn(b"Disallow: /", robots.data)
+
+
+    def test_seo_foundation_and_structured_data(self):
+        self.app.config.update(
+            PUBLIC_BASE_URL="https://keycastro.onrender.com",
+            GOOGLE_SITE_VERIFICATION="google-proof",
+            BING_SITE_VERIFICATION="bing-proof",
+        )
+        home = self.client.get("/")
+        self.assertEqual(home.status_code, 200)
+        self.assertIn(b"<title>Custom Real Estate Systems Developer | Key Castro</title>", home.data)
+        self.assertIn(b'rel="canonical" href="https://keycastro.onrender.com/"', home.data)
+        self.assertIn(b'name="twitter:card" content="summary_large_image"', home.data)
+        self.assertIn(b'name="google-site-verification" content="google-proof"', home.data)
+        self.assertIn(b'name="msvalidate.01" content="bing-proof"', home.data)
+        self.assertIn(b'"@type": "Person"', home.data)
+        self.assertIn(b'"@type": "WebSite"', home.data)
+
+        case = self.client.get("/projects/nexus-properties")
+        self.assertIn(b"Nexus Properties Real Estate System Case Study | Key Castro", case.data)
+        self.assertIn(b'"@type": "BreadcrumbList"', case.data)
+        self.assertIn(b'og:image:alt', case.data)
+
+        missing = self.client.get("/does-not-exist")
+        self.assertEqual(missing.status_code, 404)
+        self.assertIn(b'name="robots" content="noindex,nofollow"', missing.data)
+
+    def test_template_library_stays_unpublished_until_real_content_exists(self):
+        index = self.client.get("/system-templates")
+        self.assertEqual(index.status_code, 404)
+        detail = self.client.get("/system-templates/property-maintenance-system")
+        self.assertEqual(detail.status_code, 404)
+
+        home = self.client.get("/")
+        self.assertNotIn(b">System Templates</a>", home.data)
+        sitemap = self.client.get("/sitemap.xml")
+        self.assertNotIn(b"/system-templates", sitemap.data)
+
+    def test_backward_compatible_inquiry_source_migration(self):
+        from app.inquiries import create_inquiry, get_inquiry
+
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "legacy.sqlite3"
+            conn = sqlite3.connect(db_path)
+            conn.execute(
+                """
+                CREATE TABLE contact_inquiries (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    name TEXT NOT NULL,
+                    email TEXT NOT NULL,
+                    company TEXT NOT NULL DEFAULT '',
+                    message TEXT NOT NULL,
+                    status TEXT NOT NULL DEFAULT 'new'
+                )
+                """
+            )
+            conn.commit()
+            conn.close()
+
+            self.app.config["DATABASE_URL"] = f"sqlite:///{db_path}"
+            with self.app.app_context():
+                inquiry_id = create_inquiry(
+                    {
+                        "name": "Template Prospect",
+                        "email": "template@example.com",
+                        "company": "Example Property Group",
+                        "message": "We want this property maintenance workflow adapted for our team.",
+                        "source_type": "system_template",
+                        "source_slug": "property-maintenance-system",
+                        "source_title": "Property Maintenance Management System",
+                    }
+                )
+                item = get_inquiry(inquiry_id)
+
+            self.assertEqual(item["source_type"], "system_template")
+            self.assertEqual(item["source_slug"], "property-maintenance-system")
+            self.assertEqual(item["source_title"], "Property Maintenance Management System")
+
+    def test_template_context_can_flow_to_contact_without_breaking_generic_contact(self):
+        from app.system_templates import SystemTemplate
+
+        sample = SystemTemplate(
+            slug="property-maintenance-system",
+            name="Property Maintenance Management System",
+            category="Property Operations",
+            short_description="Track maintenance requests from report to completion.",
+            full_description="A standard property maintenance workflow for requests, assignments, status, and completion.",
+            business_problem="Maintenance work is difficult to coordinate when requests and updates are scattered.",
+            target_users=("Property managers",),
+            workflow=("Report request", "Assign work", "Track status", "Complete request"),
+            features=("Request records", "Assignment", "Status history"),
+            technologies=("Flask", "SQL"),
+            standard_scope=("Standard request workflow",),
+            customization_opportunities=("Custom roles", "Notifications"),
+            status="published",
+            seo_title="Property Maintenance Management System | Key Castro",
+            meta_description="A property maintenance management system template for requests, assignments, status, and completion.",
+        )
+
+        with patch("app.routes.get_system_template", return_value=sample):
+            response = self.client.get("/contact?template=property-maintenance-system")
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b"Property Maintenance Management System", response.data)
+            self.assertIn(b'name="source_slug" value="property-maintenance-system"', response.data)
+
+        generic = self.client.get("/contact")
+        self.assertEqual(generic.status_code, 200)
+        self.assertNotIn(b'name="source_slug"', generic.data)
 
 
 if __name__ == "__main__":

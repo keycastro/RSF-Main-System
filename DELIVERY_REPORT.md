@@ -1,33 +1,26 @@
-# KEY CASTRO WEBSITE — HIGH-END VISUAL REDESIGN 2.6.0
+# KEY CASTRO WEBSITE — FOUNDATION RELEASE 2.7.0
 
-## Design direction
-A commercial-grade visual refinement for a technology + real-estate brand. The existing Flask application, routes, content architecture, database, authentication, inbox workflow, desktop launchers, GitHub remotes, and Render deployment model remain unchanged.
+This release prepares the existing production Flask application for a future curated real-estate system-template library and template-to-custom-development conversion funnel.
 
-## Visual system
-- Architectural ivory and soft-white page surfaces
-- Deep navy for trust, structure, calls to action, and high-value surfaces
-- Muted sage for operational/supporting accents
-- Restrained bronze/champagne only for premium detail and section cues
-- Readable charcoal/blue-gray text with intentionally stronger contrast
-- Reduced dependence on repetitive card styling and decorative gradients
+It does **not** publish placeholder templates.
 
-## Component refinement
-- Header/navigation: clearer active states and stronger contact action
-- Home hero: explicit Key Castro identity, role, audience, and premium system visualization
-- Projects: stronger screenshot framing, project hierarchy, badges, and CTA placement
-- Nexus case study: improved hero, sticky section navigation, workflow, features, gallery, build details, and project-status presentation
-- Services/About/Skills/Experience: editorial spacing, selective surface variation, and more readable supporting copy
-- Contact: higher-trust form treatment, stronger labels/boundaries/focus states, clearer instructions
-- Footer: deliberate deep-navy close with readable navigation
-- Private owner inbox: business-application styling, clearer status pills, list columns, inquiry detail hierarchy, and action controls
+## Foundation delivered
 
-## Accessibility and responsive quality
-- Body/supporting text sizes increased where earlier styling was too small
-- Low-contrast pale text on light backgrounds removed
-- Visible keyboard focus states retained/enhanced
-- Status is communicated with text labels as well as color
-- Reduced-motion behavior preserved
-- Desktop, tablet, and mobile breakpoints retained and refined
+- reusable source-controlled `SystemTemplate` metadata model
+- dormant generic `/system-templates` index/detail architecture
+- conditional public navigation only after a real template is published
+- sitemap integration only for real published templates
+- stronger unique SEO titles and social metadata
+- Person / WebSite / Breadcrumb structured data where accurate
+- future SoftwareApplication / VideoObject schema helpers
+- optional Google Search Console / Bing verification configuration
+- explicit noindex handling on error pages
+- improved image dimensions, alt text, decoding/loading hints
+- backward-compatible optional inquiry source fields
+- trusted future `/contact?template=<slug>` context
+- owner inbox source display when context exists
+- demo-isolation and first-flagship strategy documentation
 
-## Safety
-No public/private route exposure was added. No backend behavior, URLs, contact-form handling, PostgreSQL integration, owner authentication, status transitions, or deployment architecture was rebuilt.
+## Deliberately not built
+
+No fake templates, no CMS, no demo environment, no pricing, no download/licensing engine, no public empty library, and no framework migration.

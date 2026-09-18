@@ -22,6 +22,14 @@
 
     <form class="contact-form reveal delay-1" method="post" novalidate>
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      {% if template_interest %}
+      <input type="hidden" name="source_slug" value="{{ template_interest.slug }}">
+      <div class="contact-interest" role="note">
+        <span>System template</span>
+        <strong>{{ template_interest.name }}</strong>
+        <p>You are asking about adapting this standard system to your business. Add the workflow changes or requirements you have in mind.</p>
+      </div>
+      {% endif %}
       <div class="honeypot" aria-hidden="true"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
       <div class="form-row">
         <label><span>Name</span><input required maxlength="100" name="name" value="{{ form_data.name if form_data else '' }}" placeholder="Your name"></label>

@@ -2,8 +2,8 @@
 
 ## Current state
 
-Official host: **Render**  
-Official URL: **https://keycastro.onrender.com**  
+Official host: **Render**
+Official URL: **https://keycastro.onrender.com**
 Render service ID: **srv-dam749e1egvs738cppq0**
 
 ## Timeline
@@ -106,3 +106,11 @@ This content update does not claim that Nexus Properties officially hired, paid,
 - Added short-lived signed owner-access tickets so the desktop launcher can open the private online inbox without exposing the bearer token in the browser URL.
 - Kept the owner inbox absent from public navigation, footer, sitemap, project pages, and visitor-facing UI.
 - Preserved the two existing GitHub repositories and manual Render deployment architecture.
+
+### 2026-09-19 — Template-library and discoverability foundation 2.7.0
+
+- Added a source-controlled reusable system-template registry and generic index/detail rendering architecture.
+- Kept the public template library dormant while no real template is published.
+- Added optional, backward-compatible inquiry source fields for future template-to-contact attribution.
+- Added richer per-page SEO/social metadata, truthful structured data, and optional search-engine verification tags.
+- Preserved the existing Flask architecture, public routes, private owner inbox, two GitHub remotes, and manual Render deployment workflow.

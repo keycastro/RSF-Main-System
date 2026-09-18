@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-18",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "owner_public_name": "Key Castro",
   "positioning": "Custom Real Estate Systems Developer",
   "framework": "Flask",
@@ -61,5 +61,34 @@
     "smtp_auth_configured_and_verified": false
   },
   "secrets_included_in_repository": false,
-  "visual_design": "Premium architectural ivory + navy + sage system; readability-first; public site and private inbox aligned"
+  "visual_design": "Premium architectural ivory + navy + sage system; readability-first; public site and private inbox aligned",
+  "template_library_foundation": {
+    "prepared": true,
+    "published_templates": 0,
+    "public_index_active": false,
+    "routes": [
+      "/system-templates",
+      "/system-templates/<slug>"
+    ],
+    "source_controlled_registry": "app/system_templates.py",
+    "generic_templates_ready": true,
+    "contact_source_context_ready": true,
+    "inquiry_source_fields": [
+      "source_type",
+      "source_slug",
+      "source_title"
+    ],
+    "first_flagship_recommendation": "Property Maintenance Management System"
+  },
+  "seo_foundation": {
+    "canonical_urls": true,
+    "unique_page_titles": true,
+    "open_graph": true,
+    "twitter_cards": true,
+    "person_website_structured_data": true,
+    "project_breadcrumb_structured_data": true,
+    "future_template_structured_data_ready": true,
+    "search_console_verification_env_ready": true,
+    "sitemap_publishes_only_real_templates": true
+  }
 }

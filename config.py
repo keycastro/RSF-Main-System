@@ -27,6 +27,8 @@ class BaseConfig:
     GITHUB_URL = os.getenv("GITHUB_URL", "").strip()
     YOUTUBE_URL = os.getenv("YOUTUBE_URL", "").strip()
     FACEBOOK_URL = os.getenv("FACEBOOK_URL", "").strip()
+    GOOGLE_SITE_VERIFICATION = os.getenv("GOOGLE_SITE_VERIFICATION", "").strip()
+    BING_SITE_VERIFICATION = os.getenv("BING_SITE_VERIFICATION", "").strip()
 
     CONTACT_DELIVERY_MODE = os.getenv("CONTACT_DELIVERY_MODE", "local").strip().lower()
     DATABASE_URL = os.getenv("DATABASE_URL", "").strip()

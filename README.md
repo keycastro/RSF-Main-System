@@ -42,3 +42,7 @@ Version 2.6.0 delivers the high-end commercial visual system:
 - a premium business-tool treatment for the private owner inbox
 
 The site structure, routes, inbox privacy, and deployment architecture remain unchanged.
+
+## Future system-template foundation
+
+Version 2.7.0 prepares a reusable, dormant foundation for the future curated real-estate system-template library. No placeholder templates are published. The library becomes public only when a real template is marked published. See `docs/TEMPLATE_LIBRARY_FOUNDATION.md`.
