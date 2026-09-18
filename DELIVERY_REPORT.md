@@ -1,25 +1,33 @@
-# KEY CASTRO WEBSITE — VISUAL REDESIGN 2.5.0
+# KEY CASTRO WEBSITE — HIGH-END VISUAL REDESIGN 2.6.0
 
-## Goal
-Redesign the visual language of the existing KEY CASTRO website without rebuilding the project from scratch.
+## Design direction
+A commercial-grade visual refinement for a technology + real-estate brand. The existing Flask application, routes, content architecture, database, authentication, inbox workflow, desktop launchers, GitHub remotes, and Render deployment model remain unchanged.
 
-## What changed
-- Replaced the heavy dark/orange visual treatment with a lighter premium palette.
-- Introduced a calm real-estate + technology color system using:
-  - warm neutrals / cream backgrounds
-  - deep blue / navy accents
-  - muted green support accents
-  - soft gray borders and text tones
-- Improved readability, spacing clarity, button visibility, and card contrast.
-- Updated the private owner inbox to match the public website style while preserving privacy and authentication behavior.
+## Visual system
+- Architectural ivory and soft-white page surfaces
+- Deep navy for trust, structure, calls to action, and high-value surfaces
+- Muted sage for operational/supporting accents
+- Restrained bronze/champagne only for premium detail and section cues
+- Readable charcoal/blue-gray text with intentionally stronger contrast
+- Reduced dependence on repetitive card styling and decorative gradients
 
-## Files updated
-- `app/static/css/style.css`
-- `app/static/css/owner_inbox.css`
-- `VERSION.txt`
-- `README.md`
-- `DELIVERY_REPORT.md`
+## Component refinement
+- Header/navigation: clearer active states and stronger contact action
+- Home hero: explicit Key Castro identity, role, audience, and premium system visualization
+- Projects: stronger screenshot framing, project hierarchy, badges, and CTA placement
+- Nexus case study: improved hero, sticky section navigation, workflow, features, gallery, build details, and project-status presentation
+- Services/About/Skills/Experience: editorial spacing, selective surface variation, and more readable supporting copy
+- Contact: higher-trust form treatment, stronger labels/boundaries/focus states, clearer instructions
+- Footer: deliberate deep-navy close with readable navigation
+- Private owner inbox: business-application styling, clearer status pills, list columns, inquiry detail hierarchy, and action controls
+
+## Accessibility and responsive quality
+- Body/supporting text sizes increased where earlier styling was too small
+- Low-contrast pale text on light backgrounds removed
+- Visible keyboard focus states retained/enhanced
+- Status is communicated with text labels as well as color
+- Reduced-motion behavior preserved
+- Desktop, tablet, and mobile breakpoints retained and refined
 
 ## Safety
-- No routes, functionality, project structure, public/private separation, or deployment architecture were rebuilt.
-- This is a visual-system refresh only.
+No public/private route exposure was added. No backend behavior, URLs, contact-form handling, PostgreSQL integration, owner authentication, status transitions, or deployment architecture was rebuilt.

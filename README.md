@@ -31,12 +31,14 @@ Flask + Gunicorn on the existing Render service. Render auto-deploy is off; use 
 
 ## Visual design system
 
-Version 2.5.0 refreshes the interface with a lighter premium visual system:
+Version 2.6.0 delivers the high-end commercial visual system:
 
 - warm neutral backgrounds
 - deep blue primary accents
 - muted green supporting accents
-- softer borders and cleaner card surfaces
-- improved readability across the public site and private owner inbox
+- architectural section layering with ivory, soft white, navy, sage, and restrained bronze
+- stronger typography, spacing, hierarchy, screenshot framing, buttons, forms, and case-study structure
+- intentionally readable metadata and supporting text instead of ultra-small low-contrast labels
+- a premium business-tool treatment for the private owner inbox
 
 The site structure, routes, inbox privacy, and deployment architecture remain unchanged.

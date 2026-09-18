@@ -2,9 +2,14 @@
 {% block content %}
 <a class="owner-back" href="{{ url_for('owner.owner_inbox') }}">← Back to inbox</a>
 <section class="owner-panel owner-detail">
-  <span class="owner-status {{ item.status }}">{{ item.status }}</span>
-  <h1>{{ item.name }}</h1>
-  <p class="owner-meta">{{ item.email }}{% if item.company %} · {{ item.company }}{% endif %}<br>{{ item.date_label }}</p>
+  <div class="owner-detail-head">
+    <div>
+      <span class="owner-status {{ item.status }}">{{ item.status }}</span>
+      <h1>{{ item.name }}</h1>
+      <p class="owner-meta">{{ item.email }}{% if item.company %} · {{ item.company }}{% endif %}<br>{{ item.date_label }}</p>
+    </div>
+  </div>
+  <span class="owner-message-label">Inquiry message</span>
   <div class="owner-message">{{ item.message }}</div>
   <div class="owner-actions">
     <a class="owner-button primary" href="{{ item.reply_url }}">Reply by Email</a>

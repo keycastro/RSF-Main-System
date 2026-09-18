@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-18",
-  "version": "2.4.0",
+  "version": "2.6.0",
   "owner_public_name": "Key Castro",
   "positioning": "Custom Real Estate Systems Developer",
   "framework": "Flask",
@@ -31,7 +31,12 @@
     "listed_in_sitemap": false,
     "authentication": "desktop launcher exchanges a private bearer token for a short-lived signed access ticket; browser then uses a secure Flask session",
     "database": "Render PostgreSQL via DATABASE_URL",
-    "statuses": ["new", "read", "replied", "archived"],
+    "statuses": [
+      "new",
+      "read",
+      "replied",
+      "archived"
+    ],
     "local_secret_config": ".owner_inbox.json",
     "desktop_launcher": "KEY CASTRO INBOX",
     "localhost_required": false
@@ -55,5 +60,6 @@
     "smtp_notification_optional": true,
     "smtp_auth_configured_and_verified": false
   },
-  "secrets_included_in_repository": false
+  "secrets_included_in_repository": false,
+  "visual_design": "Premium architectural ivory + navy + sage system; readability-first; public site and private inbox aligned"
 }
