@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 3.8.1 — How It Works redundancy cleanup
+
+- Changed the existing-system sentence to: **“I can adapt one of my existing systems to fit your business.”**
+- Removed the redundant **“I build the system.”** middle step from How It Works.
+- Renumbered **“Choose who manages it.”** from Step 3 to Step 2.
+- Preserved the final **Want to get started?** CTA, both management choices, pricing, route, visual design, and all other pages.
+
 ## 3.8.0 — Human clarity and older-user-friendly simplification
 
 - Rewrote the public experience for first-time, non-technical, older, and basic-English visitors.

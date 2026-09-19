@@ -1,4 +1,4 @@
-# Content and Scope — 3.8.0
+# Content and Scope — 3.8.1
 
 ## Public identity
 
@@ -22,8 +22,9 @@ Technical implementation details stay secondary unless the visitor actually need
 The full process belongs primarily on **How It Works**:
 
 1. Tell me what you need.
-2. I build the system.
-3. Choose who manages it.
+2. Choose who manages it.
+
+Step 1 already explains that an existing system can be adapted or a new system can be built, so a separate build step is intentionally not repeated.
 
 Beginner-facing post-build choices:
 

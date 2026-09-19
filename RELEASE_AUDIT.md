@@ -1,15 +1,9 @@
-# KEY CASTRO WEBSITE 3.8.0 — RELEASE AUDIT
+# KEY CASTRO WEBSITE 3.8.1 — RELEASE AUDIT
 
-- Audited the actual v3.7.0 Flask source and current public page structure before modifying it.
-- Preserved architecture, canonical routes, contact backend, private owner Inbox, security boundaries, three published systems, and pricing rules.
-- Changed the visible **Services** label to **How It Works** without changing the `/services` URL.
-- Removed abstract public process terms where simpler human actions communicate the same meaning.
-- Removed repeated post-build management sections from system-detail pages.
-- Kept exactly two post-build choices on How It Works: **You Manage It** and **I Manage It**.
-- Kept internal Full Handover / Managed by KEY CASTRO terminology for trusted business logic and documentation, not as required visitor vocabulary.
-- Removed unnecessary category micro-labels from the three system cards.
-- Increased everyday text/button sizes for older-user readability while keeping the existing brand and compact layout.
-- Student Housing remains a truthful independent portfolio project with no commission, adoption, endorsement, ROI, or AI-matching claim.
-- Contact CSRF, server-resolved inquiry context/pricing, SEO, sitemap, robots, redirects, and private owner authentication remain intact.
-- Release ZIP must exclude `.env`, `.owner_inbox.json`, `.git`, runtime databases/logs, caches, backups, and other private runtime data.
-- Release is only live after production health reports 3.8.0 and the three-system content check passes.
+- Baseline inspected: v3.8.0 Human Clarity.
+- Scope limited to the approved How It Works copy/step cleanup and direct dependencies.
+- No visual redesign, route change, business-model change, unrelated page edit, or unrelated refactor.
+- Final How It Works flow is exactly Step 1 **Tell me what you need** → Step 2 **Choose who manages it** → preserved final CTA.
+- Pricing remains **$49/month** or **$490/year**.
+- Release ZIP must exclude `.env`, `.owner_inbox.json`, `.git`, databases, logs, caches, backups, tokens, and private runtime data.
+- Live deployment is valid only after production verification confirms version 3.8.1, the exact How It Works content, and all three published systems.

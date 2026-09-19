@@ -1,4 +1,4 @@
-KEY CASTRO WEBSITE v3.8.0 - ONE CMD AUTO DEPLOY
+KEY CASTRO WEBSITE v3.8.1 - ONE CMD AUTO DEPLOY
 
 This package updates the local website, preserves private configuration, runs the full test suite,
 stages only approved release files, creates a release commit when needed, pushes origin and
@@ -10,5 +10,6 @@ Release safety includes recovery for earlier stopped updater attempts:
 - approved staged files left by a stopped updater are safely reset and restaged
 - release Markdown whitespace is cleaned so Git diff --check remains a real safety gate
 
-Success is reported only after the live health endpoint reports v3.8.0 and the live Systems page
+Success is reported only after the live health endpoint reports v3.8.1, the live How It Works page
+shows the approved two-step flow and final CTA with unchanged pricing, and the live Systems page
 contains Student Housing Matching and Placement System with exactly three published system cards.

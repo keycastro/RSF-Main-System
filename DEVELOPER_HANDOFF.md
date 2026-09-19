@@ -1,12 +1,12 @@
 # KEY CASTRO WEBSITE — DEVELOPER HANDOFF
 
-**Release:** 3.8.0
+**Release:** 3.8.1
 **Live URL:** https://keycastro.onrender.com
 **Framework:** Flask
 
 ## Current direction
 
-Version 3.8.0 preserves the established website and its 3.7 visual refinement but makes the public experience deliberately beginner-friendly and older-user-friendly. Public pages use everyday English, larger readable text, fewer competing actions, and one primary purpose per page.
+Version 3.8.1 preserves the v3.8.0 Human Clarity website. The only public-page change is a minor How It Works cleanup: the existing-system copy explicitly says the system can be adapted, the redundant build step is removed, and management becomes Step 2.
 
 Primary navigation: **Home · Systems · How It Works · About · Contact**. The underlying `/services` URL remains unchanged.
 
@@ -39,4 +39,4 @@ A non-technical 50–70 year old business owner should understand the basic offe
 
 ## Release workflow
 
-Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/content verification for version 3.8.0. Never commit private/runtime files.
+Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/content verification for version 3.8.1. Never commit private/runtime files.

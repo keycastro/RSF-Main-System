@@ -5,8 +5,8 @@ $documents = [Environment]::GetFolderPath("MyDocuments")
 $target = Join-Path $documents "KEY_CASTRO_WEBSITE"
 $serviceId = "srv-dam749e1egvs738cppq0"
 $liveBase = "https://keycastro.onrender.com"
-$expectedVersion = "3.8.0"
-$commitMessage = "Release 3.8.0 human clarity and older-user UX simplification"
+$expectedVersion = "3.8.1"
+$commitMessage = "Release 3.8.1 How It Works redundancy cleanup"
 
 function Invoke-Native {
     param(
@@ -212,14 +212,23 @@ try {
             $stamp = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
             $health = Invoke-RestMethod -Uri "$liveBase/system/health?verify=$stamp" -Method Get -TimeoutSec 30
             $systems = Invoke-WebRequest -Uri "$liveBase/system-templates?verify=$stamp" -UseBasicParsing -TimeoutSec 30
+            $how = Invoke-WebRequest -Uri "$liveBase/services?verify=$stamp" -UseBasicParsing -TimeoutSec 30
             $hasStudentHousing = $systems.Content -match [regex]::Escape("Student Housing Matching and Placement System")
             $systemCardCount = ([regex]::Matches($systems.Content, "data-system-card")).Count
             $hasThreeSystems = $systemCardCount -eq 3
-            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems) {
+            $hasAdaptSentence = $how.Content -match [regex]::Escape("I can adapt one of my existing systems to fit your business.")
+            $hasStep1 = $how.Content -match [regex]::Escape('<div class="human-step-number">1</div>')
+            $hasStep2 = $how.Content -match [regex]::Escape('<div class="human-step-number">2</div>')
+            $hasNoStep3 = -not ($how.Content -match [regex]::Escape('<div class="human-step-number">3</div>'))
+            $oldBuildStepGone = -not ($how.Content -match [regex]::Escape('<h2>I build the system.</h2>'))
+            $hasManagementStep = $how.Content -match [regex]::Escape("Choose who manages it.")
+            $hasFinalCta = ($how.Content -match [regex]::Escape("Want to get started?")) -and ($how.Content -match [regex]::Escape("Tell Me What You Need"))
+            $hasPricing = ($how.Content -match [regex]::Escape('$49/month')) -and ($how.Content -match [regex]::Escape('$490/year'))
+            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems -and $hasAdaptSentence -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasFinalCta -and $hasPricing) {
                 $verified = $true
                 break
             }
-            $lastError = "Health/version/content has not refreshed yet."
+            $lastError = "Health/version/How It Works/Systems content has not refreshed yet."
         }
         catch {
             $lastError = $_.Exception.Message

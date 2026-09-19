@@ -20,7 +20,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Key Castro Portfolio")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.8.0")
+        self.assertEqual(data["version"], "3.8.1")
 
     def test_main_pages_and_template_library_render(self):
         routes = [
@@ -124,7 +124,16 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertNotIn(b">Experience</a>", about.data)
 
         self.assertIn(b"Tell me what you need.", services.data)
-        self.assertIn(b"I build the system.", services.data)
+        self.assertIn(b"I can adapt one of my existing systems to fit your business.", services.data)
+        self.assertNotIn(b"<h2>I build the system.</h2>", services.data)
+        self.assertEqual(services.data.count(b'class="human-step reveal'), 2)
+        self.assertIn(b'<div class="human-step-number">1</div>', services.data)
+        self.assertIn(b'<div class="human-step-number">2</div>', services.data)
+        self.assertNotIn(b'<div class="human-step-number">3</div>', services.data)
+        self.assertIn(b"Choose who manages it.", services.data)
+        self.assertIn(b"Want to get started?", services.data)
+        self.assertIn(b"You do not need to know which option is right yet. Just tell me what you need.", services.data)
+        self.assertIn(b"Tell Me What You Need", services.data)
         self.assertIn(b"You manage it.", services.data)
         self.assertIn(b"I manage it.", services.data)
         self.assertNotIn(b"Two simple decisions", services.data)

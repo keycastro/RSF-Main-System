@@ -1,39 +1,25 @@
-# DELIVERY REPORT — KEY CASTRO 3.8.0
+# DELIVERY REPORT — KEY CASTRO 3.8.1
 
 ## Scope
 
-Human-clarity and older-user-friendly simplification inside the existing Flask website. No framework migration, route rewrite, business-model change, or public/private security change.
+Strict minor change to **How It Works** only, plus direct test/release/deployment dependencies. No redesign, route change, business-model change, or unrelated content change.
 
-## Main public changes
+## Approved changes
 
-- **Services** is now labeled **How It Works** in navigation.
-- Home explains the business in plain language and uses concrete steps instead of abstract process words.
-- Systems shows the three existing systems with simpler descriptions and fewer visual micro-labels.
-- System detail pages focus on what the system does, who it helps, how it works, and what the team can do.
-- The complete post-build management explanation now lives on How It Works instead of being repeated on every system page.
-- The two post-build choices are beginner-facing **You Manage It** and **I Manage It**.
-- Public technical/business jargon was removed or rewritten where it did not help the visitor.
-- Contact is a single clear message form with one primary action.
-- Everyday text and controls were enlarged for older-user readability.
+- Existing-system card sentence: **“I can adapt one of my existing systems to fit your business.”**
+- Removed redundant Step 2: **“I build the system.”** and its two supporting lines.
+- Renumbered **“Choose who manages it.”** from Step 3 to Step 2.
+- Preserved the final **Want to get started?** CTA exactly.
+- Preserved **You Manage It**, **I Manage It**, **$49/month**, and **$490/year**.
 
 ## Preserved
 
-- ivory/navy/sage brand identity
-- Flask architecture and canonical routes
-- all three independent published systems
-- exactly two creation paths and exactly two post-build management options
-- managed price: $49/month or $490/year
-- separate build/customization pricing
-- Contact → inquiry database → private Inbox flow
-- CSRF and trusted server-side source/price context
-- private owner Inbox authentication boundary
-- SEO, sitemap, robots, redirects, structured data
-- controlled GitHub + Render deployment workflow
+- v3.8.0 Human Clarity visual design, ivory/navy/sage identity, typography, spacing, header, footer, and navigation
+- `/services` route
+- Home, Systems, About, Contact, and all three system-detail pages
+- Flask architecture, contact/database flow, private owner Inbox, CSRF/authentication, SEO, sitemap, robots, redirects
+- three published systems and two-option business model
 
-## Verification before packaging
+## Release rule
 
-- 30 automated tests pass.
-- Git whitespace validation must pass before final packaging.
-- Python and JavaScript syntax checks must pass before final packaging.
-- Release ZIP must exclude private secrets and runtime data.
-- Production is not considered 3.8.0 until the one-run deployer completes live verification.
+Production is not considered 3.8.1 until the one-run deployer verifies the live health version, exact How It Works change, final CTA, pricing, and all three published systems.
