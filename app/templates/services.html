@@ -1,27 +1,42 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="page-hero">
+<section class="page-hero page-hero-3-4">
   <div class="container page-hero-grid">
-    <div class="reveal"><p class="eyebrow">SERVICES</p><h1>Managed system access and <span>paid development when you need changes.</span></h1></div>
-    <div class="page-hero-copy reveal delay-1"><p>Subscribe to an existing KEY CASTRO system, or discuss paid customization when the system needs to match your business more closely. If you need something completely different, custom development can also be discussed.</p></div>
+    <div class="reveal"><p class="eyebrow">SERVICES</p><h1>Two ways to get the <span>system your operation needs.</span></h1></div>
+    <div class="page-hero-copy reveal delay-1"><p>Use an existing KEY CASTRO system through managed subscription access, or pay separately for business-specific development when the standard workflow is not enough.</p></div>
   </div>
 </section>
 
-<section class="section section-soft">
-  <div class="container service-grid services-grid">
+<section class="section services-editorial-section">
+  <div class="container service-path-list">
     {% for service in services %}
-    <article class="service-card detailed reveal delay-{{ loop.index0 % 3 }}">
-      <span class="card-index">{{ '%02d'|format(loop.index) }}</span>
-      <h2>{{ service.title }}</h2>
-      <p>{{ service.text }}</p>
-      {% if service.kind == 'subscription' %}
-      <div class="service-price-line"><strong>{{ subscription_pricing.monthly.price_label }}</strong><span>or</span><strong>{{ subscription_pricing.yearly.price_label }}</strong><em>Save {{ subscription_pricing.currency_symbol }}{{ subscription_pricing.annual_savings }}/year</em></div>
-      {% endif %}
-      <small>{{ service.example }}</small>
+    <article class="service-path reveal delay-{{ loop.index0 }}">
+      <div class="service-path-index">{{ '%02d'|format(loop.index) }}</div>
+      <div class="service-path-main">
+        <p class="eyebrow">{% if service.kind == 'subscription' %}EXISTING SYSTEM{% else %}BUSINESS-SPECIFIC WORK{% endif %}</p>
+        <h2>{{ service.title }}</h2>
+        <p class="service-path-lead">{{ service.text }}</p>
+      </div>
+      <div class="service-path-detail">
+        {% if service.kind == 'subscription' %}
+        <div class="service-price-line"><strong>{{ subscription_pricing.monthly.price_label }}</strong><span>or</span><strong>{{ subscription_pricing.yearly.price_label }}</strong><em>Save {{ subscription_pricing.currency_symbol }}{{ subscription_pricing.annual_savings }}/year</em></div>
+        {% endif %}
+        <p>{{ service.example }}</p>
+        {% if service.kind == 'subscription' %}
+        <a class="button primary" href="{{ url_for('site.system_templates') }}">View Systems</a>
+        {% else %}
+        <a class="button secondary" href="{{ url_for('site.contact') }}">Discuss Custom Work</a>
+        {% endif %}
+      </div>
     </article>
     {% endfor %}
   </div>
 </section>
 
-<section class="section cta-wrap"><div class="container"><div class="cta-panel reveal"><div><p class="eyebrow">KEEP IT SIMPLE</p><h2>Choose a system, then choose monthly or yearly managed access.</h2><p>Each ready-made system is {{ subscription_pricing.monthly.price_label }} or {{ subscription_pricing.yearly.price_label }}. Paid customization is quoted separately after requirements are discussed.</p></div><a class="button light" href="{{ url_for('site.system_templates') }}">View Systems</a></div></div></section>
+<section class="section section-soft service-boundary-section">
+  <div class="container service-boundary-grid reveal">
+    <div><p class="eyebrow">IMPORTANT DISTINCTION</p><h2>Development payment and system access are different things.</h2></div>
+    <p>Paid customization covers requested development work. If that work changes a managed system, the normal monthly or yearly subscription continues for ongoing managed access to that system.</p>
+  </div>
+</section>
 {% endblock %}

@@ -1,39 +1,40 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="page-hero">
+<section class="page-hero page-hero-3-4">
   <div class="container page-hero-grid">
     <div class="reveal"><p class="eyebrow">ABOUT</p><h1>I am Key Castro, a developer focused on <span>real estate business systems.</span></h1></div>
-    <div class="page-hero-copy reveal delay-1"><p>I build web applications around how property and real-estate teams actually work: the records they manage, the actions they take, and the information they need to see clearly.</p></div>
+    <div class="page-hero-copy reveal delay-1"><p>I build web applications around the records, decisions, handoffs, and day-to-day work that property and real-estate teams need to manage clearly.</p></div>
   </div>
 </section>
 
-<section class="section section-soft">
-  <div class="container">
-    <div class="section-head compact-head reveal"><div><p class="eyebrow">HOW I APPROACH A BUILD</p><h2>Understand the operation before designing the system.</h2></div></div>
-    <div class="value-grid">
-      <article class="value-card reveal"><span>01</span><h2>Understand</h2><p>Map the people, records, handoffs, delays, and decisions that shape the workflow.</p></article>
-      <article class="value-card reveal delay-1"><span>02</span><h2>Build</h2><p>Shape the screens, database, permissions, and actions around the agreed business process.</p></article>
-      <article class="value-card reveal delay-2"><span>03</span><h2>Make it usable</h2><p>Keep navigation, status, actions, testing, documentation, and handoff understandable.</p></article>
+<section class="section about-approach-section">
+  <div class="container editorial-split">
+    <div class="reveal">
+      <p class="eyebrow">HOW I APPROACH A BUILD</p>
+      <h2>Understand the operation before designing the system.</h2>
+      <p class="large-copy">The goal is not to add software for its own sake. The system should make the real workflow easier to understand, follow, and maintain.</p>
     </div>
+    <ol class="approach-list reveal delay-1">
+      <li><span>01</span><div><strong>Understand</strong><p>Map the people, records, handoffs, delays, and decisions that shape the work.</p></div></li>
+      <li><span>02</span><div><strong>Build</strong><p>Shape the screens, database, permissions, and actions around the agreed process.</p></div></li>
+      <li><span>03</span><div><strong>Make it usable</strong><p>Keep navigation, status, testing, documentation, and handoff understandable.</p></div></li>
+    </ol>
   </div>
 </section>
 
-<section class="section">
-  <div class="container about-simple-grid">
+<section class="section section-soft about-focus-section">
+  <div class="container editorial-split">
     <div class="reveal">
       <p class="eyebrow">SPECIALIZATION</p>
       <h2>Real estate and property operations.</h2>
-      <p class="large-copy">My current focus includes brokerages, property managers, rental operators, and real-estate teams that need clearer systems for inventory, operations, maintenance, follow-ups, and day-to-day coordination.</p>
+      <p>Current work focuses on brokerages, property managers, rental operators, and real-estate teams that need clearer systems for inventory, operations, maintenance, follow-ups, and coordination.</p>
+      <a class="button primary" href="{{ url_for('site.system_templates') }}">View Completed Systems</a>
     </div>
-    <div class="about-secondary reveal delay-1">
-      <p>For more detail about the development tools and delivery practice behind the systems, use the secondary pages below.</p>
-      <div class="secondary-link-list">
-        <a href="{{ url_for('site.skills') }}"><strong>Skills & technology</strong><span>Technical stack and capabilities →</span></a>
-        <a href="{{ url_for('site.experience') }}"><strong>Experience</strong><span>Development and delivery practice →</span></a>
-      </div>
+    <div class="about-reference reveal delay-1">
+      <p class="eyebrow">MORE DETAIL</p>
+      <a href="{{ url_for('site.skills') }}"><strong>Skills & technology</strong><span>Technical stack and capabilities →</span></a>
+      <a href="{{ url_for('site.experience') }}"><strong>Experience</strong><span>Development and delivery practice →</span></a>
     </div>
   </div>
 </section>
-
-<section class="section cta-wrap"><div class="container"><div class="cta-panel reveal"><div><p class="eyebrow">SEE THE SYSTEMS</p><h2>Review the completed work directly.</h2><p>Start with the systems themselves to see the workflows, screens, standard scope, and customization options.</p></div><a class="button light" href="{{ url_for('site.system_templates') }}">View Systems</a></div></div></section>
 {% endblock %}

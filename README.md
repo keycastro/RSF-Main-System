@@ -31,7 +31,7 @@ Flask + Gunicorn on the existing Render service. Render auto-deploy is off; use 
 
 ## Visual design system
 
-The visual system began with the premium 2.6.0 direction. Version 3.0.0 keeps that identity while significantly improving presentation density:
+The visual system began with the premium 2.6.0 direction. Version 3.4.0 keeps that identity while refining organization, hierarchy, and presentation density:
 
 - warm neutral backgrounds
 - deep blue primary accents
@@ -43,12 +43,15 @@ The visual system began with the premium 2.6.0 direction. Version 3.0.0 keeps th
 - controlled screenshot previews instead of giant screenshot-led cards
 - shorter header, hero, page-hero, section, CTA, and footer proportions
 - compact system-detail galleries with full-size lightbox inspection
+- fewer repeated CTA sections and clearer action hierarchy
+- editorial row/list patterns on supporting pages instead of unnecessary large cards
+- centralized subscription decisions on system detail pages
 
-The core visual identity, inbox privacy, and deployment architecture remain unchanged. See `docs/VISUAL_PRESENTATION_3_0.md`.
+The core visual identity, inbox privacy, and deployment architecture remain unchanged. See `docs/VISUAL_PRESENTATION_3_0.md` and `docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md`.
 
 ## Public information architecture
 
-Version 2.9.0 simplified the public journey to **Home · Systems · Services · About · Contact**. Version 3.0.0 preserves that architecture while making the presentation substantially more compact and balanced. The previous Projects index duplicated the same published systems, so `/projects` now permanently redirects to the single Systems library at `/system-templates`. Skills and Experience remain public/indexable secondary pages reached through About/footer. See `docs/UX_INFORMATION_ARCHITECTURE.md`.
+Version 2.9.0 simplified the public journey to **Home · Systems · Services · About · Contact**. Version 3.4.0 preserves that architecture while making page purpose, action hierarchy, and content density clearer. The previous Projects index duplicated the same published systems, so `/projects` now permanently redirects to the single Systems library at `/system-templates`. Skills and Experience remain public/indexable secondary pages reached through About/footer. See `docs/UX_INFORMATION_ARCHITECTURE.md`.
 
 ## Future system-template foundation
 

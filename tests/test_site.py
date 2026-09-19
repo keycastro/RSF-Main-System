@@ -20,7 +20,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Key Castro Portfolio")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.3.0")
+        self.assertEqual(data["version"], "3.4.0")
 
     def test_main_pages_and_template_library_render(self):
         routes = [
@@ -73,7 +73,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b">Contact</a>", response.data)
         self.assertNotIn(b">Projects</a>", response.data)
         self.assertNotIn(b">System Templates</a>", response.data)
-        self.assertIn(b"SYSTEMS BUILT BY KEY CASTRO", response.data)
+        self.assertIn(b"COMPLETED SYSTEMS", response.data)
         self.assertIn(b"View Systems", response.data)
         self.assertIn(b"Discuss a Custom System", response.data)
         self.assertEqual(response.data.count(b"Property Operations Command Center</h3>"), 1)
@@ -113,7 +113,7 @@ class PortfolioSiteTests(unittest.TestCase):
         systems = self.client.get("/system-templates")
         detail = self.client.get("/system-templates/property-operations-command-center")
 
-        self.assertIn(b"hero-brief", home.data)
+        self.assertIn(b"orientation-panel", home.data)
         self.assertIn(b"compact-system-grid", home.data)
         self.assertIn(b"compact-library-grid", systems.data)
         self.assertIn(b"compact-template-card", systems.data)
@@ -125,9 +125,10 @@ class PortfolioSiteTests(unittest.TestCase):
         css_path = Path(__file__).resolve().parents[1] / "app" / "static" / "css" / "style.css"
         css = css_path.read_text(encoding="utf-8")
         self.assertIn('3.0.0', css)
-        self.assertIn('height:292px', css)
-        self.assertIn('height:215px', css)
-        self.assertIn('height:160px', css)
+        self.assertIn('3.4.0', css)
+        self.assertIn('height:262px', css)
+        self.assertIn('height:190px', css)
+        self.assertIn('height:150px', css)
 
     def test_system_search_is_metadata_driven_accessible_and_progressive(self):
         from app.system_templates import published_templates
@@ -199,7 +200,7 @@ class PortfolioSiteTests(unittest.TestCase):
 
         systems = self.client.get("/system-templates")
         self.assertIn(b"MANAGED SYSTEM SUBSCRIPTION", systems.data)
-        self.assertIn(b"View Subscription", systems.data)
+        self.assertIn(b"View System", systems.data)
 
         detail = self.client.get("/system-templates/property-operations-command-center")
         self.assertIn(b"PAID CUSTOMIZATION", detail.data)
@@ -317,10 +318,10 @@ class PortfolioSiteTests(unittest.TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertIn(b'aria-label="Breadcrumb"', response.data)
                 self.assertIn(b"MANAGED SYSTEM SUBSCRIPTION", response.data)
-                self.assertIn(b"View Subscription", response.data)
-                self.assertIn(b"Get monthly access", response.data)
-                self.assertIn(b"Get yearly access", response.data)
-                self.assertIn(b"Request Paid Customization", response.data)
+                self.assertIn(b"View Subscription Options", response.data)
+                self.assertIn(b"Request Monthly Access", response.data)
+                self.assertIn(b"Request Yearly Access", response.data)
+                self.assertIn(b"Need customization?", response.data)
                 self.assertIn(b"$49", response.data)
                 self.assertIn(b"$490", response.data)
                 self.assertIn(b"Save $98/year", response.data)

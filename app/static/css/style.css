@@ -561,3 +561,259 @@ h3{font-size:22px}
   .subscription-plan-price strong{font-size:28px}
   .service-price-line em{margin-left:0;width:100%}
 }
+
+/* 3.4.0 — organization, hierarchy, and composition refinement
+   Purpose: reduce repeated decisions, lower card mass, shorten vertical travel,
+   and make each public page communicate one primary purpose more quickly. */
+:root{
+  --header:68px;
+  --container:min(1140px,calc(100vw - 44px));
+  --design-version:"3.4.0";
+}
+
+body{line-height:1.62}
+h1{font-size:clamp(38px,4.35vw,56px);line-height:1.04}
+h2{font-size:clamp(27px,2.9vw,39px);line-height:1.1}
+.section{padding:64px 0}
+.section-head{align-items:start;margin-bottom:30px;gap:34px}
+.section-head>div>p:last-child:not(.eyebrow){max-width:610px}
+.button{min-height:44px;padding-inline:18px}
+
+/* Header remains familiar, but uses less vertical weight. */
+.site-header{height:var(--header)}
+.brand-mark{width:37px;height:37px}
+.site-nav a{padding:8px 11px}
+
+/* Homepage orientation: one message, two clear paths. */
+.hero.hero-3-4{min-height:auto;padding:64px 0 66px;background:linear-gradient(118deg,var(--paper) 0%,#f7f3ec 60%,#eef2f0 100%)}
+.hero-grid-3-4{grid-template-columns:minmax(0,1.2fr) minmax(310px,.8fr);gap:66px;align-items:center}
+.hero-3-4 .hero-copy{max-width:690px}
+.hero-3-4 .hero-kicker{margin-bottom:18px}
+.hero-3-4 .hero-copy h1{font-size:clamp(42px,4.55vw,58px);margin:0 0 19px;max-width:720px}
+.hero-3-4 .hero-lead{font-size:18px;line-height:1.56;max-width:630px}
+.hero-3-4 .hero-actions{align-items:center;margin-top:25px;gap:18px}
+.hero-secondary-link{margin-left:2px}
+.orientation-panel{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:20px 0 6px}
+.orientation-panel>.eyebrow{margin-bottom:7px}
+.orientation-option{display:grid;grid-template-columns:32px 1fr;gap:14px;padding:17px 0;border-top:1px solid rgba(21,41,52,.09)}
+.orientation-option:first-of-type{border-top:0}
+.orientation-option>span{padding-top:2px;color:var(--sage-deep);font-size:10px;font-weight:850;letter-spacing:.08em}
+.orientation-option strong{display:block;color:var(--navy-deep);font-size:15px;margin-bottom:4px}
+.orientation-option p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
+
+.home-systems-section{padding:60px 0 64px}
+.system-type{margin:0!important;color:var(--sage-deep)!important;font-size:10px!important;font-weight:850;letter-spacing:.085em;line-height:1.25!important}
+.system-showcase-card{grid-template-columns:minmax(0,1.18fr) minmax(190px,.82fr);min-height:278px;border-radius:17px;box-shadow:0 8px 24px rgba(15,38,50,.055)}
+.system-showcase-copy{padding:22px 22px 20px}
+.system-showcase-copy h3{font-size:24px;margin:11px 0 9px}
+.system-showcase-image{padding:11px}
+.system-showcase-image img{max-height:205px;aspect-ratio:16/10}
+.system-showcase-actions{padding-top:16px}
+.system-showcase-actions .button{min-height:42px;font-size:13px}
+.system-card-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:13px;color:var(--navy-deep);font-size:12px;font-weight:800}
+.system-card-meta span:nth-child(2){color:var(--line-strong);font-weight:500}
+
+.work-path-section{padding:58px 0}
+.work-path-layout{display:grid;grid-template-columns:.8fr 1.2fr;gap:70px;align-items:start}
+.work-path-heading h2{margin-bottom:0;max-width:470px}
+.work-path-list{border-top:1px solid var(--line)}
+.work-path-list article{display:grid;grid-template-columns:1fr;gap:0;padding:22px 0;border-bottom:1px solid var(--line)}
+.work-path-list article>span{color:var(--sage-deep);font-size:10px;font-weight:850;letter-spacing:.08em}
+.work-path-list h3{margin:7px 0 7px;font-size:20px}
+.work-path-list p{margin:0 0 10px;max-width:670px;font-size:14px;line-height:1.55}
+
+/* Page-level orientation is shorter and more consistent. */
+.page-hero.page-hero-3-4{padding:49px 0 44px}
+.page-hero-3-4 .page-hero-grid{grid-template-columns:1.12fr .88fr;gap:52px;align-items:end}
+.page-hero-3-4 h1{font-size:clamp(36px,4vw,49px);max-width:770px}
+.page-hero-3-4 .page-hero-copy>p{font-size:15.5px;line-height:1.58;max-width:500px}
+.secondary-page-hero.page-hero-3-4{padding-top:33px}
+.secondary-page-hero .breadcrumb{margin-bottom:23px}
+
+/* Systems catalog: search is functional, cards have one dominant action. */
+.systems-catalog-section.catalog-3-4{padding:48px 0 62px;background:var(--paper)}
+.system-search-panel.system-search-3-4{grid-template-columns:minmax(0,1fr) minmax(300px,.72fr);gap:48px;margin-bottom:24px;padding-bottom:20px}
+.system-search-3-4 .system-search-heading h2{margin:5px 0 7px}
+.system-search-3-4 .system-search-status{margin-top:8px}
+.system-catalog-card{min-height:305px;border-radius:17px;box-shadow:0 8px 24px rgba(15,38,50,.05)}
+.system-catalog-card .template-card-copy{padding:22px 21px 8px}
+.system-catalog-card h2{font-size:24px;margin:11px 0 9px}
+.system-catalog-card .template-card-image{padding:11px}
+.system-catalog-card .template-card-image img{max-height:205px}
+.system-catalog-card .template-card-actions{padding:9px 21px 20px}
+.system-catalog-card .template-card-actions .button{width:max-content;min-height:42px;font-size:13px}
+.compact-price-strip{margin-top:12px;padding-top:11px}
+.compact-price-strip strong{font-size:17px}
+.compact-price-strip em{margin-left:0}
+
+/* Services: editorial rows replace large parallel cards. */
+.services-editorial-section{padding:54px 0 58px}
+.service-path-list{border-top:1px solid var(--line)}
+.service-path{display:grid;grid-template-columns:52px minmax(0,.92fr) minmax(310px,1.08fr);gap:34px;align-items:start;padding:34px 0;border-bottom:1px solid var(--line)}
+.service-path-index{padding-top:3px;color:var(--sage-deep);font-size:11px;font-weight:850;letter-spacing:.08em}
+.service-path-main h2{font-size:clamp(26px,2.7vw,36px);margin:7px 0 12px}
+.service-path-lead{max-width:510px;margin:0;font-size:16px;line-height:1.58;color:var(--ink-2)}
+.service-path-detail{padding-left:30px;border-left:1px solid var(--line)}
+.service-path-detail>p{font-size:14px;line-height:1.58;color:var(--muted)}
+.service-path-detail .button{margin-top:2px}
+.service-boundary-section{padding:45px 0}
+.service-boundary-grid{display:grid;grid-template-columns:1fr 1fr;gap:58px;align-items:start}
+.service-boundary-grid h2{font-size:clamp(25px,2.6vw,34px);margin:0}
+.service-boundary-grid>p{margin:0;font-size:15px;line-height:1.62;color:var(--ink-2)}
+
+/* About and secondary credibility pages use rows, not repeated cards. */
+.about-approach-section,.about-focus-section{padding:58px 0}
+.editorial-split{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:start}
+.editorial-split .large-copy{font-size:18px;line-height:1.57}
+.approach-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.approach-list li{display:grid;grid-template-columns:38px 1fr;gap:15px;padding:18px 0;border-bottom:1px solid var(--line)}
+.approach-list li>span{color:var(--sage-deep);font-size:10px;font-weight:850;letter-spacing:.08em}
+.approach-list strong{display:block;color:var(--navy-deep);font-size:16px;margin-bottom:4px}
+.approach-list p{margin:0;font-size:14px;line-height:1.53}
+.about-focus-section .button{margin-top:8px}
+.about-reference{border-top:1px solid var(--line)}
+.about-reference>.eyebrow{margin-top:17px}
+.about-reference>a{display:flex;justify-content:space-between;gap:22px;align-items:center;padding:18px 0;border-bottom:1px solid var(--line);text-decoration:none}
+.about-reference strong{font-size:15px;color:var(--ink)}
+.about-reference span{font-size:13px;color:var(--navy)}
+
+.secondary-list-section{padding:48px 0 34px}
+.structured-list{border-top:1px solid var(--line)}
+.structured-list-row{display:grid;grid-template-columns:52px minmax(180px,.55fr) minmax(0,1.45fr);gap:30px;align-items:start;padding:22px 0;border-bottom:1px solid var(--line)}
+.structured-list-row>span{padding-top:4px;color:var(--sage-deep);font-size:10px;font-weight:850;letter-spacing:.08em}
+.structured-list-row h2{font-size:21px;margin:0}
+.structured-list-row p{max-width:650px;margin:0;font-size:14px;line-height:1.57}
+.secondary-page-nav{display:flex;justify-content:space-between;gap:20px;padding-top:15px;padding-bottom:22px}
+
+/* System details: business understanding first, one subscription decision area. */
+.case-hero.detail-hero-3-4{padding:36px 0 48px}
+.detail-hero-3-4 .breadcrumb{margin-bottom:20px}
+.detail-hero-3-4 .template-hero-grid{grid-template-columns:1.1fr .9fr;gap:46px}
+.detail-hero-3-4 .case-intro h1{font-size:clamp(38px,4.25vw,52px);margin:10px 0 12px}
+.detail-hero-3-4 .page-lead{font-size:16.5px;line-height:1.55}
+.detail-quick-facts{display:flex;flex-wrap:wrap;gap:7px 14px;margin-top:18px;padding-top:15px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.detail-quick-facts strong{color:var(--navy-deep)}
+.detail-hero-3-4 .template-primary-actions{margin-top:22px;gap:16px}
+.detail-hero-3-4 .compact-case-cover{max-height:285px}
+.detail-hero-3-4 .compact-case-cover img{height:262px}
+.compact-detail-section{padding:55px 0}
+.detail-overview-layout{display:grid;grid-template-columns:1.15fr .85fr;gap:70px;align-items:start}
+.detail-overview-layout h2,.detail-function-layout h2{font-size:clamp(26px,2.7vw,36px)}
+.detail-overview-layout .large-copy{font-size:17px;line-height:1.56}
+.detail-function-layout{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
+.compact-screens-section{padding:50px 0}
+.compact-gallery-grid{max-width:920px;gap:12px}
+.template-gallery-grid .compact-gallery-item img,.template-gallery-grid .compact-gallery-item:not(:first-child) img{height:190px}
+
+.subscription-section-3-4{padding:58px 0 48px}
+.subscription-heading{display:grid;grid-template-columns:1fr .8fr;gap:58px;align-items:end;margin-bottom:25px}
+.subscription-heading h2{margin:0}
+.subscription-heading>p{margin:0;font-size:14px;line-height:1.58;color:var(--ink-2)}
+.subscription-decision-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(285px,.7fr);gap:22px;align-items:start}
+.subscription-main{min-width:0}
+.subscription-plan-grid{gap:12px;margin:0 0 22px}
+.subscription-plan-option{padding:19px;border-radius:14px}
+.subscription-plan-option p{margin:9px 0 14px;font-size:13px;line-height:1.5}
+.subscription-plan-option .button{width:100%;min-height:42px;padding-inline:12px;font-size:12.5px}
+.subscription-plan-price strong{font-size:29px}
+.scope-inline{padding:19px 0 0;border-top:1px solid var(--line)}
+.scope-inline>strong{font-size:14px;color:var(--navy-deep)}
+.customization-aside{padding:22px 23px;border-left:3px solid var(--sage);background:rgba(255,255,255,.64)}
+.customization-aside h3{font-size:22px;margin:8px 0 9px}
+.customization-aside>p:not(.eyebrow){font-size:13.5px;line-height:1.57}
+.customization-details{margin-top:18px;border-top:1px solid var(--line)}
+.customization-details summary{padding:14px 0;cursor:pointer;color:var(--navy-deep);font-size:13px;font-weight:800}
+.customization-details .compact-list{margin:0}
+.compact-technical-disclosure{margin-top:24px}
+.detail-bottom-nav{display:flex;justify-content:space-between;gap:18px;margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}
+
+/* Contact: short orientation + form. */
+.contact-section-3-4{padding:52px 0 58px}
+.contact-layout-3-4{grid-template-columns:minmax(270px,.72fr) minmax(0,1.28fr);gap:62px}
+.contact-layout-3-4 .contact-side{top:calc(var(--header) + 22px)}
+.contact-layout-3-4 .contact-side h2{font-size:31px;line-height:1.13}
+.contact-process{list-style:none;margin:25px 0 0;padding:0;border-top:1px solid var(--line)}
+.contact-process li{display:grid;grid-template-columns:34px 1fr;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+.contact-process span{color:var(--sage-deep);font-size:10px;font-weight:850;letter-spacing:.08em}
+.contact-process p{margin:0;font-size:13px;line-height:1.52;color:var(--ink-2)}
+.contact-form{padding:27px;border-radius:17px;box-shadow:0 10px 30px rgba(15,38,50,.065)}
+.contact-form textarea{min-height:138px}
+.contact-interest{padding:15px 16px;margin-bottom:20px}
+
+/* Footer is a destination, not another full page. */
+.site-footer{margin-top:42px;padding:42px 0 20px}
+.footer-main{gap:48px}
+.footer-bottom{margin-top:30px}
+
+@media(max-width:1050px){
+  .hero-grid-3-4{grid-template-columns:1fr .78fr;gap:44px}
+  .work-path-layout,.editorial-split{gap:48px}
+  .service-path{grid-template-columns:42px minmax(0,1fr);gap:24px}
+  .service-path-detail{grid-column:2;padding:0;border-left:0}
+  .subscription-decision-grid{grid-template-columns:1fr}
+  .customization-aside{border-left:0;border-top:3px solid var(--sage)}
+}
+
+@media(max-width:900px){
+  :root{--container:min(100% - 34px,850px)}
+  .hero.hero-3-4{padding:50px 0 54px}
+  .hero-grid-3-4,.page-hero-3-4 .page-hero-grid,.work-path-layout,.editorial-split,.service-boundary-grid,.detail-overview-layout,.detail-function-layout,.subscription-heading,.contact-layout-3-4{grid-template-columns:1fr}
+  .hero-grid-3-4{gap:34px}
+  .orientation-panel{max-width:720px}
+  .page-hero.page-hero-3-4{padding:42px 0 38px}
+  .service-boundary-grid,.subscription-heading{gap:18px}
+  .detail-overview-layout,.detail-function-layout{gap:42px}
+  .detail-hero-3-4 .template-hero-grid{grid-template-columns:1fr;gap:25px}
+  .detail-hero-3-4 .compact-case-cover{width:min(720px,100%)}
+  .contact-layout-3-4{gap:40px}
+  .contact-layout-3-4 .contact-side{position:static}
+}
+
+@media(max-width:680px){
+  :root{--container:calc(100vw - 28px)}
+  .section{padding:48px 0}
+  .hero.hero-3-4{padding:40px 0 44px}
+  .hero-3-4 .hero-copy h1{font-size:37px}
+  .hero-3-4 .hero-lead{font-size:16px}
+  .hero-3-4 .hero-actions{align-items:stretch;flex-direction:column;gap:14px}
+  .hero-3-4 .hero-actions .button{width:100%}
+  .hero-secondary-link{width:max-content;margin-left:0}
+  .orientation-panel{padding-top:15px}
+  .page-hero.page-hero-3-4{padding:35px 0 33px}
+  .page-hero-3-4 h1{font-size:34px}
+  .home-systems-section{padding:46px 0 50px}
+  .system-showcase-card{grid-template-columns:1fr;grid-template-areas:"copy" "image";min-height:0}
+  .system-showcase-copy{grid-area:copy;padding:20px 18px 17px}
+  .system-showcase-image{grid-area:image;border-left:0;border-top:1px solid var(--line);padding:8px}
+  .system-showcase-image img{height:145px;max-height:145px}
+  .system-showcase-actions .button{width:100%}
+  .work-path-section{padding:45px 0}
+  .system-search-panel.system-search-3-4{grid-template-columns:1fr;gap:16px}
+  .system-catalog-card{grid-template-columns:1fr;grid-template-areas:"copy" "image" "actions";min-height:0}
+  .system-catalog-card .template-card-image{border-left:0;border-top:1px solid var(--line);padding:8px}
+  .system-catalog-card .template-card-image img{height:150px;max-height:150px}
+  .system-catalog-card .template-card-actions .button{width:100%}
+  .service-path{grid-template-columns:32px 1fr;gap:15px;padding:27px 0}
+  .service-path-detail{grid-column:1 / -1;padding-left:47px}
+  .service-price-line em{width:100%}
+  .structured-list-row{grid-template-columns:34px 1fr;gap:14px;padding:18px 0}
+  .structured-list-row h2{font-size:20px}
+  .structured-list-row p{grid-column:2}
+  .secondary-page-nav,.detail-bottom-nav{align-items:flex-start;flex-direction:column}
+  .case-hero.detail-hero-3-4{padding:29px 0 40px}
+  .detail-hero-3-4 .case-intro h1{font-size:35px}
+  .detail-hero-3-4 .compact-case-cover{max-height:220px}
+  .detail-hero-3-4 .compact-case-cover img{height:203px}
+  .detail-quick-facts{display:grid;gap:4px}
+  .detail-hero-3-4 .template-primary-actions{align-items:stretch;flex-direction:column}
+  .detail-hero-3-4 .template-primary-actions .button{width:100%}
+  .compact-detail-section{padding:46px 0}
+  .template-gallery-grid .compact-gallery-item img,.template-gallery-grid .compact-gallery-item:not(:first-child) img{height:160px}
+  .subscription-section-3-4{padding:48px 0 40px}
+  .subscription-plan-grid{grid-template-columns:1fr}
+  .subscription-plan-option{padding:17px}
+  .customization-aside{padding:19px}
+  .contact-section-3-4{padding:44px 0 48px}
+  .contact-form{padding:21px 18px}
+  .site-footer{margin-top:34px;padding-top:36px}
+}

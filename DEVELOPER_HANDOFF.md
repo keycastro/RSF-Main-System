@@ -7,15 +7,16 @@ Read in order:
 1. `00_FUTURE_DEVELOPER_READ_THIS_PLAN.md` *(local/private roadmap on the owner's working copy)*
 2. `docs/FUTURE_TEMPLATE_LIBRARY_ROADMAP.md` *(local/private roadmap on the owner's working copy)*
 3. `NEXT_DEVELOPER_READ_THIS_FIRST.md`
-4. `docs/UX_INFORMATION_ARCHITECTURE.md`
-5. `docs/VISUAL_PRESENTATION_3_0.md`
-6. `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md`
-7. `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`
-8. `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`
-9. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
-10. `PROJECT_STATE.json`
-11. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
-12. `SECURITY_AND_SHARING_NOTES.md`
+4. `docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md`
+5. `docs/UX_INFORMATION_ARCHITECTURE.md`
+6. `docs/VISUAL_PRESENTATION_3_0.md`
+7. `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md`
+8. `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`
+9. `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`
+10. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
+11. `PROJECT_STATE.json`
+12. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
+13. `SECURITY_AND_SHARING_NOTES.md`
 
 Do not split the owner inbox back into a separate project folder. Do not expose owner-only routes or secrets in public UI, GitHub, logs, screenshots, or documentation.
 
@@ -29,6 +30,10 @@ Primary navigation is **Home · Systems · Services · About · Contact**.
 
 The two published systems remain separate applications and must stay separate in claims, screenshots, workflow, and metadata. Do not publish placeholder/thin systems. Read `docs/PUBLISHED_SYSTEM_TEMPLATES.md` before changing their public positioning.
 
+
+## Organization and hierarchy contract from 3.4.0
+
+Keep the existing Home · Systems · Services · About · Contact mental model, but preserve the 3.4.0 reduction in duplicated CTAs and card mass. System catalog cards have one dominant action. System detail pages centralize monthly/yearly subscription decisions in the subscription section; customization remains available without competing equally at every stage. Supporting credibility pages use compact structured rows. See `docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md`.
 
 ## Presentation contract from 3.0.0
 

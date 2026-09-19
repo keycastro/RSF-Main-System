@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-19",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "owner_public_name": "Key Castro",
   "positioning": "Custom Real Estate Systems Developer",
   "framework": "Flask",
@@ -62,7 +62,7 @@
     "template_request_type_active": true
   },
   "secrets_included_in_repository": false,
-  "visual_design": "Premium architectural ivory + navy + sage system; compact 3.0 presentation and metadata-driven 3.1 search preserved. 3.2.0 established managed subscriptions plus paid customization; 3.3.0 adds compact trusted public pricing without changing architecture.",
+  "visual_design": "Premium architectural ivory + navy + sage system; 3.4.0 refines organization and hierarchy by reducing repeated CTAs/card mass, centralizing system subscription decisions, and preserving compact screenshots, 3.1 metadata-driven search, 3.2 commercial boundaries, and 3.3 trusted pricing.",
   "template_library_foundation": {
     "prepared": true,
     "published_templates": 2,
@@ -131,7 +131,7 @@
     ],
     "ux_contract": "docs/UX_INFORMATION_ARCHITECTURE.md",
     "visitor_flow": "Home -> Systems -> System -> System Subscription or Paid Customization -> Contact",
-    "presentation_contract": "Compact premium presentation preserved: screenshots support system information, system catalog uses controlled previews, detail pages use compact preview + lightbox gallery, and the commercial model is Managed System Subscription + Paid Customization."
+    "presentation_contract": "3.4.0 keeps Home -> Systems -> System -> Subscription/Customization -> Contact while reducing repeated decisions, using one dominant catalog action, lighter supporting-page structures, and centralized subscription choices on system details."
   },
   "system_search": {
     "active": true,
@@ -168,5 +168,20 @@
       "single_source": "app/system_templates.py::MANAGED_SUBSCRIPTION_PRICING"
     },
     "plan_selection": "monthly/yearly plan keys are resolved server-side; official price text is generated from trusted pricing metadata; no checkout is implied"
+  },
+  "ux_refinement_3_4": {
+    "document": "docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md",
+    "navigation_changed": false,
+    "routes_changed": false,
+    "business_logic_changed": false,
+    "public_private_boundary_changed": false,
+    "focus": [
+      "clearer page purpose",
+      "less CTA repetition",
+      "less card overuse",
+      "shorter vertical travel",
+      "controlled media",
+      "mobile hierarchy"
+    ]
   }
 }

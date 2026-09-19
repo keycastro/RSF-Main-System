@@ -1,20 +1,23 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="page-hero secondary-page-hero">
+<section class="page-hero secondary-page-hero page-hero-3-4">
   <div class="container"><nav class="breadcrumb reveal" aria-label="Breadcrumb"><a href="{{ url_for('site.about') }}">About</a><span aria-hidden="true">/</span><strong aria-current="page">Experience</strong></nav></div>
   <div class="container page-hero-grid">
     <div class="reveal"><p class="eyebrow">EXPERIENCE</p><h1>Development practice centered on <span>complete working systems.</span></h1></div>
-    <div class="page-hero-copy reveal delay-1"><p>I work across workflow understanding, implementation, testing, documentation, and delivery preparation.</p></div>
+    <div class="page-hero-copy reveal delay-1"><p>The work covers workflow understanding, implementation, testing, documentation, and delivery preparation rather than isolated interface mockups.</p></div>
   </div>
 </section>
 
-<section class="section section-soft">
-  <div class="container experience-grid">
-    <article class="experience-card reveal"><small>SPECIALIZATION</small><h2>Real Estate Systems</h2><p>Purpose-built web applications for property, listing, rental, maintenance, inventory, and team operations.</p><div class="pill-row"><span>Real estate</span><span>Custom web apps</span></div></article>
-    <article class="experience-card reveal delay-1"><small>DELIVERY PRACTICE</small><h2>End-to-End Builds</h2><p>Requirements, database and interface development, business rules, testing, documentation, and deployment preparation.</p></article>
-    <article class="experience-card reveal delay-2"><small>COMPLETED WORK</small><h2>Working Systems</h2><p>Completed systems are documented with real workflow information, interface previews, and clear boundaries around what was actually built.</p></article>
+<section class="section secondary-list-section">
+  <div class="container structured-list experience-list">
+    <article class="structured-list-row reveal"><span>01</span><h2>Real Estate Systems</h2><p>Purpose-built web applications for property, listing, rental, maintenance, inventory, and team operations.</p></article>
+    <article class="structured-list-row reveal delay-1"><span>02</span><h2>End-to-End Builds</h2><p>Requirements, database and interface development, business rules, testing, documentation, and deployment preparation.</p></article>
+    <article class="structured-list-row reveal delay-2"><span>03</span><h2>Working Systems</h2><p>Completed systems are presented with real workflow information, interface previews, and clear boundaries around what was actually built.</p></article>
   </div>
 </section>
 
-<section class="section cta-wrap"><div class="container"><div class="cta-panel reveal"><div><p class="eyebrow">CURRENT WORK</p><h2>See the completed systems directly.</h2></div><a class="button light" href="{{ url_for('site.system_templates') }}">View Systems</a></div></div></section>
+<nav class="container secondary-page-nav" aria-label="About section navigation">
+  <a class="text-link" href="{{ url_for('site.about') }}">← Back to About</a>
+  <a class="text-link" href="{{ url_for('site.system_templates') }}">View Systems <span>→</span></a>
+</nav>
 {% endblock %}
