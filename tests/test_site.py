@@ -20,7 +20,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Key Castro Portfolio")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.5.1")
+        self.assertEqual(data["version"], "3.5.2")
 
     def test_main_pages_and_template_library_render(self):
         routes = [
@@ -137,6 +137,34 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn('height:262px', css)
         self.assertIn('height:190px', css)
         self.assertIn('height:150px', css)
+
+    def test_public_page_tops_use_compact_connected_spacing(self):
+        page_expectations = {
+            "/system-templates": b"page-hero page-hero-simple",
+            "/services": b"page-hero page-hero-simple",
+            "/about": b"page-hero page-hero-simple",
+            "/contact": b"page-hero page-hero-simple",
+            "/system-templates/property-operations-command-center": b"detail-hero-simple",
+            "/system-templates/property-inventory-hub": b"detail-hero-simple",
+        }
+        for route, marker in page_expectations.items():
+            with self.subTest(route=route):
+                response = self.client.get(route)
+                self.assertEqual(response.status_code, 200)
+                self.assertIn(marker, response.data)
+
+        not_found = self.client.get("/definitely-not-a-real-page")
+        self.assertEqual(not_found.status_code, 404)
+        self.assertIn(b"error-section", not_found.data)
+
+        css_path = Path(__file__).resolve().parents[1] / "app" / "static" / "css" / "style.css"
+        css = css_path.read_text(encoding="utf-8")
+        self.assertIn("3.5.2 — SITE-WIDE PAGE-TOP PROPORTION REFINEMENT", css)
+        self.assertIn(".page-hero.page-hero-simple + .section", css)
+        self.assertIn("padding:30px 0 24px", css)
+        self.assertIn("padding-top:28px", css)
+        self.assertIn(".case-hero.detail-hero-simple + .section", css)
+        self.assertIn("min-height:48vh", css)
 
     def test_system_cards_have_clear_separate_visual_identities(self):
         home = self.client.get("/")

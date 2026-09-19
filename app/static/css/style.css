@@ -1048,3 +1048,92 @@ h2{font-size:clamp(27px,2.9vw,39px);line-height:1.1}
   .system-choice-card{transition:none}
   .system-choice-card:hover{transform:none}
 }
+
+/* =========================================================
+   3.5.2 — SITE-WIDE PAGE-TOP PROPORTION REFINEMENT
+   Focused patch: compact public page introductions and connect
+   page titles more directly to the first useful content.
+   ========================================================= */
+
+/* Shared inner-page intro: compact, readable, and connected. */
+.page-hero.page-hero-simple{
+  padding:30px 0 24px;
+}
+.page-hero.page-hero-simple::after{
+  width:20%;
+  opacity:.28;
+}
+.simple-page-hero h1{
+  margin:4px 0 9px;
+  font-size:clamp(36px,4vw,50px);
+}
+.simple-page-hero>p:last-child:not(.eyebrow){
+  line-height:1.5;
+}
+.page-hero.page-hero-simple + .section{
+  padding-top:28px;
+}
+
+/* Home keeps a stronger opening, but removes unused vertical travel. */
+.hero.hero-simple{
+  padding:56px 0 52px;
+}
+.hero.hero-simple + .home-systems-section{
+  padding-top:40px;
+}
+
+/* System detail pages keep title + preview together and reach content sooner. */
+.case-hero.detail-hero-simple{
+  padding:24px 0 30px;
+}
+.detail-hero-simple .breadcrumb{
+  margin-bottom:14px;
+}
+.detail-hero-simple .template-hero-grid{
+  gap:38px;
+}
+.detail-hero-simple .case-intro h1{
+  margin:7px 0 10px;
+}
+.detail-hero-simple .template-primary-actions{
+  margin-top:18px;
+}
+.case-hero.detail-hero-simple + .section{
+  padding-top:34px;
+}
+
+/* 404 remains calm and centered without a large empty vertical field. */
+.error-section{
+  min-height:48vh;
+  padding:64px 0 58px;
+}
+.error-card>span{
+  font-size:84px;
+}
+
+@media(max-width:900px){
+  .page-hero.page-hero-simple{padding:27px 0 22px}
+  .page-hero.page-hero-simple + .section{padding-top:24px}
+  .hero.hero-simple{padding:46px 0 44px}
+  .hero.hero-simple + .home-systems-section{padding-top:36px}
+  .case-hero.detail-hero-simple{padding:22px 0 28px}
+  .detail-hero-simple .template-hero-grid{gap:22px}
+  .case-hero.detail-hero-simple + .section{padding-top:30px}
+  .error-section{min-height:44vh;padding:54px 0 50px}
+}
+
+@media(max-width:680px){
+  .page-hero.page-hero-simple{padding:24px 0 20px}
+  .page-hero.page-hero-simple::after{display:none}
+  .simple-page-hero h1{font-size:34px;margin-top:3px;margin-bottom:8px}
+  .page-hero.page-hero-simple + .section{padding-top:22px}
+  .hero.hero-simple{padding:36px 0 38px}
+  .hero.hero-simple + .home-systems-section{padding-top:32px}
+  .case-hero.detail-hero-simple{padding:20px 0 26px}
+  .detail-hero-simple .breadcrumb{margin-bottom:12px}
+  .detail-hero-simple .template-hero-grid{gap:20px}
+  .detail-hero-simple .template-primary-actions{margin-top:16px}
+  .case-hero.detail-hero-simple + .section{padding-top:26px}
+  .error-section{min-height:40vh;padding:46px 0 42px}
+  .error-card>span{font-size:72px}
+}

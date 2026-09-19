@@ -7,17 +7,18 @@ Read in order:
 1. `00_FUTURE_DEVELOPER_READ_THIS_PLAN.md` *(local/private roadmap on the owner's working copy)*
 2. `docs/FUTURE_TEMPLATE_LIBRARY_ROADMAP.md` *(local/private roadmap on the owner's working copy)*
 3. `NEXT_DEVELOPER_READ_THIS_FIRST.md`
-4. `docs/WEBSITE_SIMPLIFICATION_3_5.md`
-5. `docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md`
-6. `docs/UX_INFORMATION_ARCHITECTURE.md`
-7. `docs/VISUAL_PRESENTATION_3_0.md`
-8. `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md`
-9. `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`
-10. `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`
-11. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
-12. `PROJECT_STATE.json`
-13. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
-14. `SECURITY_AND_SHARING_NOTES.md`
+4. `docs/SITE_WIDE_PAGE_TOP_REFINEMENT_3_5_2.md`
+5. `docs/WEBSITE_SIMPLIFICATION_3_5.md`
+6. `docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md`
+7. `docs/UX_INFORMATION_ARCHITECTURE.md`
+8. `docs/VISUAL_PRESENTATION_3_0.md`
+9. `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md`
+10. `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`
+11. `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`
+12. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
+13. `PROJECT_STATE.json`
+14. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
+15. `SECURITY_AND_SHARING_NOTES.md`
 
 Do not split the owner inbox back into a separate project folder. Do not expose owner-only routes or secrets in public UI, GitHub, logs, screenshots, or documentation.
 
@@ -32,6 +33,10 @@ The old `/skills` and `/experience` URLs now permanently redirect to `/about`. T
 The two published systems remain separate applications and must stay separate in claims, screenshots, workflow, and metadata. Do not publish placeholder/thin systems. Read `docs/PUBLISHED_SYSTEM_TEMPLATES.md` before changing their public positioning.
 
 
+
+## Page-top proportion contract from 3.5.2
+
+Public page introductions are deliberately compact. `page-hero-simple` should read as a short introduction, not a large banner, and the first useful section should follow without a large blank gap. Home keeps a stronger opening but avoids wasted vertical travel. System-detail title/preview areas and the 404 page use the same proportion rule. Preserve readable spacing; compact does not mean cramped. See `docs/SITE_WIDE_PAGE_TOP_REFINEMENT_3_5_2.md`.
 
 ## System-card separation contract from 3.5.1
 

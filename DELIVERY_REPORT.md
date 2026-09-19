@@ -1,23 +1,25 @@
-# DELIVERY REPORT — KEY CASTRO 3.5.1
+# DELIVERY REPORT — KEY CASTRO 3.5.2
 
 ## Scope
 
-Focused visual separation update for the two published system cards. This patch does not redesign the full website and does not change business logic.
+Focused site-wide page-top proportion refinement. The website is not rebuilt and no business logic changes are included.
 
 ## Public experience changes
 
-- Home and Systems now make the two systems look like clearly separate choices.
-- Property Operations Command Center has a very light warm identity.
-- Property Inventory Hub has a very light cool identity.
-- Clearer borders, spacing, soft shadow, category-label accents, and focus treatment reinforce boundaries.
-- Text remains dark and high-contrast. Existing View System buttons remain obvious.
-- Mobile cards stay clearly separated when stacked.
-- Supporting copy remains short: each system solves a different problem; choose one to view.
+- Systems title now sits closer to search and system choices.
+- Services title leads sooner into the two service choices.
+- About title leads sooner into the first About content.
+- Contact title leads sooner into the request/form area.
+- System detail titles and previews connect sooner to the first information section.
+- Home is tightened moderately without removing its stronger orientation role.
+- 404 uses a smaller, more intentional vertical field.
+- Tablet and mobile use the same compact flow without becoming cramped.
 
 ## Preserved contracts
 
 - Home · Systems · Services · About · Contact navigation
 - two systems remain separate applications
+- 3.5.1 warm/cool system-card identities remain intact
 - pricing and commercial model unchanged
 - trusted server-side pricing and anti-spoof protection
 - metadata-driven Systems search
@@ -32,4 +34,4 @@ No secrets belong in a distributable update package. `.env`, `.owner_inbox.json`
 
 ## Reference
 
-See `docs/SYSTEM_CARD_VISUAL_SEPARATION_3_5_1.md`.
+See `docs/SITE_WIDE_PAGE_TOP_REFINEMENT_3_5_2.md`.

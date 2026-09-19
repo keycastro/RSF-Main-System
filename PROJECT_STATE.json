@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-19",
-  "version": "3.5.1",
+  "version": "3.5.2",
   "owner_public_name": "Key Castro",
   "positioning": "Custom Real Estate Systems Developer",
   "framework": "Flask",
@@ -62,7 +62,7 @@
     "template_request_type_active": true
   },
   "secrets_included_in_repository": false,
-  "visual_design": "Premium ivory + navy + sage design with a 3.5.1 system-card separation patch: short public copy, clear system boundaries, subtle warm/cool card identities, high readability, and compact media.",
+  "visual_design": "Premium ivory + navy + sage design with 3.5.1 system-card separation and 3.5.2 site-wide compact page-top proportions: short public copy, clear system boundaries, high readability, compact media, and intentional vertical spacing.",
   "template_library_foundation": {
     "prepared": true,
     "published_templates": 2,
@@ -213,6 +213,22 @@
       "high-contrast readable copy",
       "clear borders, spacing, hover and focus states",
       "consistent Home and Systems presentation"
+    ]
+  },
+  "page_top_refinement_3_5_2": {
+    "document": "docs/SITE_WIDE_PAGE_TOP_REFINEMENT_3_5_2.md",
+    "navigation_changed": false,
+    "routes_changed": false,
+    "business_logic_changed": false,
+    "pricing_changed": false,
+    "search_changed": false,
+    "focus": [
+      "compact page introductions",
+      "reduced empty hero space",
+      "shorter hero-to-content gaps",
+      "balanced system-detail page tops",
+      "responsive proportion",
+      "preserved accessibility and readability"
     ]
   }
 }
