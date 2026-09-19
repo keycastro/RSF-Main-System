@@ -1137,3 +1137,80 @@ h2{font-size:clamp(27px,2.9vw,39px);line-height:1.1}
   .error-section{min-height:40vh;padding:46px 0 42px}
   .error-card>span{font-size:72px}
 }
+
+/* =========================================================
+   3.5.3 - INTEGRATED PAGE INTRO FLOW
+   Inner-page titles belong to the content flow, not a separate
+   banner. Align title and content to the same container and remove
+   the visual band/gap between introduction and first useful content.
+   ========================================================= */
+
+/* Inner pages: same paper surface as the page, no detached hero band. */
+.page-hero.page-hero-simple{
+  padding:24px 0 8px;
+  background:var(--paper);
+  border-bottom:0;
+}
+.page-hero.page-hero-simple::after{
+  display:none;
+}
+.simple-page-hero{
+  max-width:none;
+}
+.simple-page-hero h1{
+  max-width:760px;
+  margin:4px 0 8px;
+}
+.simple-page-hero>p:last-child:not(.eyebrow){
+  max-width:640px;
+  margin-bottom:0;
+}
+.page-hero.page-hero-simple + .section{
+  padding-top:18px;
+}
+
+/* System details already contain useful preview content in the intro.
+   Keep that composition, but remove the detached banner feeling. */
+.case-hero.detail-hero-simple{
+  padding:20px 0 24px;
+  background:var(--paper);
+}
+.detail-hero-simple .breadcrumb{
+  margin-bottom:11px;
+}
+.detail-hero-simple .template-hero-grid{
+  gap:34px;
+}
+.detail-hero-simple .template-primary-actions{
+  margin-top:16px;
+}
+.case-hero.detail-hero-simple + .section{
+  padding-top:26px;
+}
+
+/* Error pages stay compact without creating an oversized vertical field. */
+.error-section{
+  min-height:40vh;
+  padding:48px 0 44px;
+}
+
+@media(max-width:900px){
+  .page-hero.page-hero-simple{padding:22px 0 7px}
+  .page-hero.page-hero-simple + .section{padding-top:16px}
+  .case-hero.detail-hero-simple{padding:19px 0 22px}
+  .detail-hero-simple .template-hero-grid{gap:20px}
+  .case-hero.detail-hero-simple + .section{padding-top:24px}
+  .error-section{min-height:38vh;padding:44px 0 40px}
+}
+
+@media(max-width:680px){
+  .page-hero.page-hero-simple{padding:20px 0 6px}
+  .simple-page-hero h1{font-size:33px;margin:3px 0 7px}
+  .page-hero.page-hero-simple + .section{padding-top:14px}
+  .case-hero.detail-hero-simple{padding:18px 0 20px}
+  .detail-hero-simple .breadcrumb{margin-bottom:10px}
+  .detail-hero-simple .template-hero-grid{gap:18px}
+  .detail-hero-simple .template-primary-actions{margin-top:14px}
+  .case-hero.detail-hero-simple + .section{padding-top:22px}
+  .error-section{min-height:36vh;padding:40px 0 36px}
+}

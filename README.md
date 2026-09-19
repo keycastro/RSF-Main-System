@@ -31,7 +31,7 @@ Flask + Gunicorn on the existing Render service. Render auto-deploy is off; use 
 
 ## Public design and content rule
 
-Version 3.5.2 preserves the 3.5.0 simplification and 3.5.1 system-card separation, and tightens page-top spacing across the public site so titles connect more directly to useful content:
+Version 3.5.3 preserves the 3.5.0 simplification and 3.5.1 system-card separation, and removes the remaining detached inner-page hero bands so titles align with and flow directly into useful content:
 
 - short headings and paragraphs
 - basic, easy-to-understand English
@@ -42,11 +42,11 @@ Version 3.5.2 preserves the 3.5.0 simplification and 3.5.1 system-card separatio
 - compact screenshots that support the page instead of dominating it
 - one clear purpose per page
 - subtle warm/cool system-card identities with high-contrast text and clear boundaries
-- compact page introductions with less empty hero space and shorter gaps before the first useful content
+- integrated page introductions on the same page surface, aligned to the main content with no detached hero divider
 
 The public rule is: **Short. Simple. Clear. No unnecessary repetition.**
 
-See `docs/WEBSITE_SIMPLIFICATION_3_5.md`, `docs/SYSTEM_CARD_VISUAL_SEPARATION_3_5_1.md`, and `docs/SITE_WIDE_PAGE_TOP_REFINEMENT_3_5_2.md`.
+See `docs/WEBSITE_SIMPLIFICATION_3_5.md`, `docs/SYSTEM_CARD_VISUAL_SEPARATION_3_5_1.md`, `docs/SITE_WIDE_PAGE_TOP_REFINEMENT_3_5_2.md`, and `docs/INTEGRATED_PAGE_INTRO_FLOW_3_5_3.md`.
 
 ## Public information architecture
 

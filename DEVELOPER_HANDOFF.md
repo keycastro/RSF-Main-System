@@ -7,18 +7,19 @@ Read in order:
 1. `00_FUTURE_DEVELOPER_READ_THIS_PLAN.md` *(local/private roadmap on the owner's working copy)*
 2. `docs/FUTURE_TEMPLATE_LIBRARY_ROADMAP.md` *(local/private roadmap on the owner's working copy)*
 3. `NEXT_DEVELOPER_READ_THIS_FIRST.md`
-4. `docs/SITE_WIDE_PAGE_TOP_REFINEMENT_3_5_2.md`
-5. `docs/WEBSITE_SIMPLIFICATION_3_5.md`
-6. `docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md`
-7. `docs/UX_INFORMATION_ARCHITECTURE.md`
-8. `docs/VISUAL_PRESENTATION_3_0.md`
-9. `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md`
-10. `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`
-11. `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`
-12. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
-13. `PROJECT_STATE.json`
-14. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
-15. `SECURITY_AND_SHARING_NOTES.md`
+4. `docs/INTEGRATED_PAGE_INTRO_FLOW_3_5_3.md`
+5. `docs/SITE_WIDE_PAGE_TOP_REFINEMENT_3_5_2.md`
+6. `docs/WEBSITE_SIMPLIFICATION_3_5.md`
+7. `docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md`
+8. `docs/UX_INFORMATION_ARCHITECTURE.md`
+9. `docs/VISUAL_PRESENTATION_3_0.md`
+10. `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md`
+11. `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`
+12. `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`
+13. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
+14. `PROJECT_STATE.json`
+15. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
+16. `SECURITY_AND_SHARING_NOTES.md`
 
 Do not split the owner inbox back into a separate project folder. Do not expose owner-only routes or secrets in public UI, GitHub, logs, screenshots, or documentation.
 
@@ -33,6 +34,10 @@ The old `/skills` and `/experience` URLs now permanently redirect to `/about`. T
 The two published systems remain separate applications and must stay separate in claims, screenshots, workflow, and metadata. Do not publish placeholder/thin systems. Read `docs/PUBLISHED_SYSTEM_TEMPLATES.md` before changing their public positioning.
 
 
+
+## Integrated page-intro contract from 3.5.3
+
+Inner public pages must not render the title as a visually detached banner. Systems, Services, About, and Contact use the same paper surface as the content below, no hero divider, and the title container aligns with the main content container. The first useful section follows immediately with controlled spacing. System detail pages keep title + preview together but use the same continuous-surface principle. Home retains its stronger orientation hero. See `docs/INTEGRATED_PAGE_INTRO_FLOW_3_5_3.md`.
 
 ## Page-top proportion contract from 3.5.2
 

@@ -1,19 +1,18 @@
-# DELIVERY REPORT — KEY CASTRO 3.5.2
+# DELIVERY REPORT — KEY CASTRO 3.5.3
 
 ## Scope
 
-Focused site-wide page-top proportion refinement. The website is not rebuilt and no business logic changes are included.
+Focused correction to the public page-intro composition. This release fixes the remaining detached hero-band problem from 3.5.2 without rebuilding the website or changing business logic.
 
 ## Public experience changes
 
-- Systems title now sits closer to search and system choices.
-- Services title leads sooner into the two service choices.
-- About title leads sooner into the first About content.
-- Contact title leads sooner into the request/form area.
-- System detail titles and previews connect sooner to the first information section.
-- Home is tightened moderately without removing its stronger orientation role.
-- 404 uses a smaller, more intentional vertical field.
-- Tablet and mobile use the same compact flow without becoming cramped.
+- Inner-page titles now align to the same full content container as the first useful section.
+- The separate gradient hero band and its bottom divider are removed from Systems, Services, About, and Contact.
+- The first useful content now follows the page introduction directly with a controlled gap.
+- System detail title/preview areas use the same page surface and tighter transition into the first information section.
+- 404 vertical space is reduced further.
+- Home keeps its existing orientation hero because it serves a different purpose.
+- Desktop, tablet, and mobile use proportional spacing without becoming cramped.
 
 ## Preserved contracts
 
@@ -34,4 +33,4 @@ No secrets belong in a distributable update package. `.env`, `.owner_inbox.json`
 
 ## Reference
 
-See `docs/SITE_WIDE_PAGE_TOP_REFINEMENT_3_5_2.md`.
+See `docs/INTEGRATED_PAGE_INTRO_FLOW_3_5_3.md`.

@@ -20,7 +20,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Key Castro Portfolio")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.5.2")
+        self.assertEqual(data["version"], "3.5.3")
 
     def test_main_pages_and_template_library_render(self):
         routes = [
@@ -165,6 +165,27 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn("padding-top:28px", css)
         self.assertIn(".case-hero.detail-hero-simple + .section", css)
         self.assertIn("min-height:48vh", css)
+
+    def test_inner_page_intros_flow_directly_into_content(self):
+        for route in ("/system-templates", "/services", "/about", "/contact"):
+            with self.subTest(route=route):
+                response = self.client.get(route)
+                self.assertEqual(response.status_code, 200)
+                self.assertIn(b"page-hero page-hero-simple", response.data)
+
+        home = self.client.get("/")
+        self.assertEqual(home.status_code, 200)
+        self.assertIn(b"hero hero-simple", home.data)
+
+        css_path = Path(__file__).resolve().parents[1] / "app" / "static" / "css" / "style.css"
+        css = css_path.read_text(encoding="utf-8")
+        self.assertIn("3.5.3 - INTEGRATED PAGE INTRO FLOW", css)
+        self.assertIn("background:var(--paper);", css)
+        self.assertIn("border-bottom:0;", css)
+        self.assertIn("max-width:none;", css)
+        self.assertIn("padding:24px 0 8px", css)
+        self.assertIn("padding-top:18px", css)
+        self.assertIn(".case-hero.detail-hero-simple", css)
 
     def test_system_cards_have_clear_separate_visual_identities(self):
         home = self.client.get("/")

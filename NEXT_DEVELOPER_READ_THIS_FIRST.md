@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Current version:** 3.5.2
+**Current version:** 3.5.3
 **Official site:** https://keycastro.onrender.com
 **Positioning:** KEY CASTRO — Custom Real Estate Systems Developer
 
@@ -10,17 +10,18 @@ Before changing the website, read:
 
 1. `00_FUTURE_DEVELOPER_READ_THIS_PLAN.md` (local/private roadmap)
 2. `docs/FUTURE_TEMPLATE_LIBRARY_ROADMAP.md` (local/private roadmap)
-3. `docs/SITE_WIDE_PAGE_TOP_REFINEMENT_3_5_2.md`
-4. `docs/WEBSITE_SIMPLIFICATION_3_5.md`
-5. `docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md`
-6. `docs/UX_INFORMATION_ARCHITECTURE.md`
-7. `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`
-8. `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`
-9. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
-10. `PROJECT_STATE.json`
-11. `SECURITY_AND_SHARING_NOTES.md`
-12. `docs/DEPLOYMENT_HISTORY.md`
-13. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
+3. `docs/INTEGRATED_PAGE_INTRO_FLOW_3_5_3.md`
+4. `docs/SITE_WIDE_PAGE_TOP_REFINEMENT_3_5_2.md`
+5. `docs/WEBSITE_SIMPLIFICATION_3_5.md`
+6. `docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md`
+7. `docs/UX_INFORMATION_ARCHITECTURE.md`
+8. `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`
+9. `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`
+10. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
+11. `PROJECT_STATE.json`
+12. `SECURITY_AND_SHARING_NOTES.md`
+13. `docs/DEPLOYMENT_HISTORY.md`
+14. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
 
 ## Current architecture
 
@@ -70,6 +71,10 @@ Home → Systems → System → System Subscription or Paid Customization → Co
 ```
 
 
+
+## 3.5.3 integrated page-intro rule
+
+Do not recreate a separate visual hero band on inner pages. Systems, Services, About, and Contact should align the title with the main content container and flow directly into the first useful content. Use the same page surface, no decorative divider between title and content, and controlled vertical spacing. System detail title/preview areas use the same continuous-surface principle. Home keeps its orientation hero. See `docs/INTEGRATED_PAGE_INTRO_FLOW_3_5_3.md`.
 
 ## 3.5.2 page-top proportion rule
 

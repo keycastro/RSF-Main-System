@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-19",
-  "version": "3.5.2",
+  "version": "3.5.3",
   "owner_public_name": "Key Castro",
   "positioning": "Custom Real Estate Systems Developer",
   "framework": "Flask",
@@ -62,7 +62,7 @@
     "template_request_type_active": true
   },
   "secrets_included_in_repository": false,
-  "visual_design": "Premium ivory + navy + sage design with 3.5.1 system-card separation and 3.5.2 site-wide compact page-top proportions: short public copy, clear system boundaries, high readability, compact media, and intentional vertical spacing.",
+  "visual_design": "Premium ivory + navy + sage design with 3.5.1 system-card separation and 3.5.3 integrated page-intro flow: inner-page titles align to the main content container, detached hero bands are removed, text stays highly readable, and useful content appears sooner.",
   "template_library_foundation": {
     "prepared": true,
     "published_templates": 2,
