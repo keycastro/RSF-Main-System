@@ -68,16 +68,16 @@ TECHNOLOGIES = [
 
 PAGE_SEO = {
     "home": {
-        "title": "Custom Real Estate Systems Developer | Key Castro",
-        "description": "Key Castro builds and customizes practical web systems for real estate, property, and student-housing operations, with full handover or managed maintenance options.",
+        "title": "Simple Real Estate Business Systems | Key Castro",
+        "description": "Key Castro builds simple web systems for real estate, property, and housing businesses. Choose an existing system or ask for a new one.",
     },
     "about": {
-        "title": "About Key Castro | Real Estate Systems Developer",
-        "description": "Key Castro builds simple web systems for real estate and property teams, with a focus on clear workflows and easy-to-use tools.",
+        "title": "About Key Castro | Business Systems",
+        "description": "Key Castro builds simple web systems for real estate, property, and housing businesses.",
     },
     "services": {
-        "title": "Real Estate System Services | Key Castro",
-        "description": "Customize an existing Key Castro system or request a custom build, then choose full handover or managed maintenance.",
+        "title": "How It Works | Key Castro",
+        "description": "See how working with Key Castro works: tell me what you need, I build the system, then you choose who manages it.",
     },
     "skills": {
         "title": "Skills & Technology | Key Castro",
@@ -89,11 +89,11 @@ PAGE_SEO = {
     },
     "contact": {
         "title": "Contact Key Castro | Real Estate Systems",
-        "description": "Contact Key Castro to customize an existing system, request a custom build, choose full handover, or discuss managed maintenance.",
+        "description": "Tell Key Castro what your business needs help with and get a reply by email.",
     },
     "system_templates": {
         "title": "Real Estate Systems | Key Castro",
-        "description": "Browse working Key Castro systems for property operations, private inventory, and student-housing workflows. Each system can be customized for your business.",
+        "description": "See working Key Castro systems for property operations, property listings, and student housing. Each one can be changed to fit your business.",
     },
 }
 
@@ -147,7 +147,7 @@ def _common_context(
 
 @site.get("/")
 def home():
-    return render_template("home.html", title="Custom Real Estate Systems Developer", **_common_context("home"))
+    return render_template("home.html", title="Simple Real Estate Business Systems", **_common_context("home"))
 
 
 @site.get("/about")
@@ -157,7 +157,7 @@ def about():
 
 @site.get("/services")
 def services():
-    return render_template("services.html", title="Services", **_common_context("services"))
+    return render_template("services.html", title="How It Works", **_common_context("services"))
 
 
 @site.get("/projects")

@@ -46,7 +46,7 @@ def core_structured_data(base_url: str, socials: dict[str, str]) -> list[dict]:
         "@id": f"{base_url}#website",
         "url": base_url,
         "name": "Key Castro",
-        "description": "Customizable business systems for property, real estate, rental, and student-housing workflows, with full handover or managed maintenance options.",
+        "description": "Simple web systems for real estate, property, rental, and student-housing businesses.",
         "creator": {"@id": f"{base_url}#key-castro"},
     }
     return [person, website]

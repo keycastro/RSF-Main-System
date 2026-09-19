@@ -1,68 +1,61 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="page-hero page-hero-simple">
+<section class="page-hero page-hero-simple how-page-hero">
   <div class="container simple-page-hero reveal">
-    <p class="eyebrow">SERVICES</p>
-    <h1>Two simple decisions.</h1>
-    <p>Choose how the system starts, then choose who manages it after delivery.</p>
+    <h1>How it works.</h1>
+    <p>Tell me what you need. I build the system. Then you choose who manages it.</p>
   </div>
 </section>
 
-<section class="section services-flow-section">
-  <div class="container services-flow">
-    <section class="service-stage reveal" aria-labelledby="service-stage-build">
-      <div class="service-stage-heading">
-        <span>01</span>
-        <div>
-          <p class="eyebrow">START THE SYSTEM</p>
-          <h2 id="service-stage-build">Choose how it is built.</h2>
+<section class="section human-how-section">
+  <div class="container human-how-flow">
+    <article class="human-step reveal">
+      <div class="human-step-number">1</div>
+      <div class="human-step-body">
+        <h2>Tell me what you need.</h2>
+        <p>Tell me about your business and what you want the system to help with.</p>
+        <div class="human-simple-options" aria-label="Ways I can build your system">
+          <div><strong>Use one of my existing systems</strong><span>If one is close to what you need, I can change it to fit your business.</span><a class="text-link" href="{{ url_for('site.system_templates') }}">View Systems <span>→</span></a></div>
+          <div><strong>Build a new system</strong><span>If none of the existing systems fit, I can build a new one for you.</span></div>
         </div>
       </div>
-      <div class="service-simple-list">
-        <article class="service-simple-row">
-          <div>
-            <h3>Customize an existing system</h3>
-            <p>Start with a working system and adapt the workflow, fields, roles, branding, and rules.</p>
-          </div>
-          <a class="button primary" href="{{ url_for('site.system_templates') }}">View Systems</a>
-        </article>
-        <article class="service-simple-row">
-          <div>
-            <h3>Build a custom system</h3>
-            <p>If the existing systems do not fit, I can build one around your workflow. Development is quoted separately.</p>
-          </div>
-          <a class="button secondary" href="{{ url_for('site.contact', intent='custom-build') }}">Discuss Custom Build</a>
-        </article>
-      </div>
-    </section>
+    </article>
 
-    <section class="service-stage reveal" aria-labelledby="service-stage-manage">
-      <div class="service-stage-heading">
-        <span>02</span>
-        <div>
-          <p class="eyebrow">AFTER DELIVERY</p>
-          <h2 id="service-stage-manage">Choose who manages it.</h2>
+    <article class="human-step reveal">
+      <div class="human-step-number">2</div>
+      <div class="human-step-body">
+        <h2>I build the system.</h2>
+        <p>I build or change the system around how your business actually works.</p>
+        <p class="human-note">The price depends on what you want me to build or change.</p>
+      </div>
+    </article>
+
+    <article class="human-step reveal" id="management-options">
+      <div class="human-step-number">3</div>
+      <div class="human-step-body">
+        <h2>Choose who manages it.</h2>
+        <p>After the system is ready, there are only two choices.</p>
+        <div class="management-choice-grid">
+          <section class="management-choice">
+            <p class="choice-label">YOU MANAGE IT</p>
+            <h3>I build it. You manage it.</h3>
+            <p>I give the finished system to you. After that, you or someone you hire keeps it online, safe, and updated.</p>
+          </section>
+          <section class="management-choice managed-choice">
+            <p class="choice-label">I MANAGE IT</p>
+            <h3>I build it. I manage it.</h3>
+            <p>I keep the system online, safe, fixed, and updated for you.</p>
+            <p class="human-price"><strong>{{ maintenance_pricing.currency_symbol }}{{ maintenance_pricing.monthly_price }}/month</strong><span>or</span><strong>{{ maintenance_pricing.currency_symbol }}{{ maintenance_pricing.yearly_price }}/year</strong></p>
+          </section>
         </div>
       </div>
-      <div class="service-simple-list">
-        <article class="service-simple-row">
-          <div>
-            <h3>Full Handover</h3>
-            <p><strong>I build it. You manage it.</strong> Your team takes over hosting, backups, maintenance, updates, and future technical work.</p>
-          </div>
-          <a class="button secondary" href="{{ url_for('site.contact', intent='handover') }}">Discuss Full Handover</a>
-        </article>
-        <article class="service-simple-row service-managed-row">
-          <div>
-            <h3>Managed by KEY CASTRO</h3>
-            <p><strong>I build it. I manage it.</strong> I continue the agreed hosting, backups, maintenance, fixes, updates, monitoring, and support.</p>
-            <p class="service-price-line"><strong>{{ maintenance_pricing.currency_symbol }}{{ maintenance_pricing.monthly_price }}/month</strong><span>or</span><strong>{{ maintenance_pricing.currency_symbol }}{{ maintenance_pricing.yearly_price }}/year</strong><em>managed maintenance</em></p>
-            <p class="service-note">Build or customization pricing is separate.</p>
-          </div>
-          <a class="button primary" href="{{ url_for('site.contact', intent='managed') }}">Discuss Managed Service</a>
-        </article>
-      </div>
-    </section>
+    </article>
+
+    <div class="human-how-cta reveal">
+      <h2>Want to get started?</h2>
+      <p>You do not need to know which option is right yet. Just tell me what you need.</p>
+      <a class="button primary" href="{{ url_for('site.contact') }}">Tell Me What You Need</a>
+    </div>
   </div>
 </section>
 {% endblock %}

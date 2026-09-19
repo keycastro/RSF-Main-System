@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="hero hero-simple hero-refined">
+<section class="hero hero-simple hero-refined human-hero">
   <div class="container simple-hero-wrap">
     <div class="hero-copy reveal">
-      <p class="eyebrow">KEY CASTRO</p>
-      <h1>Simple systems for <span>real estate and housing teams.</span></h1>
-      <p class="hero-lead">Customize a working system or have one built around your business.</p>
+      <h1>I build simple systems for real estate businesses.</h1>
+      <p class="hero-lead">I help property, real estate, and housing teams keep their daily work organized in one place.</p>
+      <p class="hero-support">Choose one of my existing systems or ask me to build one for your business.</p>
       <div class="hero-actions">
         <a class="button primary" href="{{ url_for('site.system_templates') }}">View Systems</a>
-        <a class="button secondary" href="{{ url_for('site.contact') }}">Contact Me</a>
+        <a class="button secondary" href="{{ url_for('site.contact') }}">Tell Me What You Need</a>
       </div>
     </div>
   </div>
@@ -18,18 +18,15 @@
   <div class="container">
     <div class="section-head simple-section-head reveal">
       <div>
-        <p class="eyebrow">SYSTEMS</p>
-        <h2>Choose the closest fit.</h2>
-        <p class="system-choice-helper">Each system is working now and can be adapted to your business.</p>
+        <h2>Systems I already built.</h2>
+        <p class="system-choice-helper">Choose the one that is closest to what your business needs.</p>
       </div>
-      <a class="text-link desktop-link" href="{{ url_for('site.system_templates') }}">View All Systems <span>→</span></a>
     </div>
 
     <div class="system-showcase-grid compact-system-grid portfolio-system-grid">
       {% for item in published_system_templates %}
       <article class="system-showcase-card simple-system-card system-choice-card system-choice-card--{{ item.slug }} reveal delay-{{ loop.index0 % 2 }}">
         <div class="system-showcase-copy">
-          <p class="system-type">{{ item.category|upper }}</p>
           <h3>{{ item.name }}</h3>
           <p>{{ item.short_description }}</p>
         </div>
@@ -46,22 +43,21 @@
       </article>
       {% endfor %}
     </div>
-    <a class="text-link mobile-link" href="{{ url_for('site.system_templates') }}">View All Systems <span>→</span></a>
   </div>
 </section>
 
-<section class="section section-soft home-process-section">
+<section class="section section-soft home-process-section human-process-section">
   <div class="container home-process-layout">
     <div class="home-process-heading reveal">
-      <p class="eyebrow">HOW IT WORKS</p>
-      <h2>Three simple steps.</h2>
+      <h2>How it works.</h2>
+      <p>From your problem to a working system.</p>
     </div>
     <ol class="home-process-list">
-      <li class="reveal"><span>01</span><div><strong>Choose</strong><p>Start with a working system or request a custom build.</p></div></li>
-      <li class="reveal delay-1"><span>02</span><div><strong>Adapt</strong><p>I build around the workflow and rules your team needs.</p></div></li>
-      <li class="reveal"><span>03</span><div><strong>Deliver</strong><p>Choose full handover or managed maintenance.</p></div></li>
+      <li class="reveal"><span>1</span><div><strong>Tell me what you need.</strong><p>Tell me about your business and the problem you want to solve.</p></div></li>
+      <li class="reveal delay-1"><span>2</span><div><strong>I build the system.</strong><p>I can change an existing system or build a new one for you.</p></div></li>
+      <li class="reveal"><span>3</span><div><strong>Choose who manages it.</strong><p>You can manage it yourself, or I can continue managing it for you.</p></div></li>
     </ol>
-    <a class="text-link home-process-link reveal" href="{{ url_for('site.services') }}">See Services <span>→</span></a>
+    <a class="text-link home-process-link reveal" href="{{ url_for('site.services') }}">See How It Works <span>→</span></a>
   </div>
 </section>
 {% endblock %}

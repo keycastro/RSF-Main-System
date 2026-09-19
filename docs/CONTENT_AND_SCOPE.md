@@ -1,38 +1,55 @@
-# Content and Scope — 3.7.0
+# Content and Scope — 3.8.0
 
 ## Public identity
 
 **KEY CASTRO**
-**Custom Real Estate Systems Developer**
 
-Core message: KEY CASTRO builds practical business systems, can customize existing working systems, and can build a custom system around a client's workflow.
+Public message: **I build simple systems for real estate businesses.**
+
+The visitor should immediately understand that KEY CASTRO can change an existing system to fit the business or build a new one.
 
 ## Public focus
 
-- Property and real-estate operations systems
-- Listing and inventory systems
-- Student-housing placement operations
-- Workflow/status tracking
-- Dashboards and operational visibility
-- Practical business automation
+- Property operations
+- Property listings and inventory
+- Student housing requests and placements
+- Simple business systems built around real work
 
-## Commercial clarity
+Technical implementation details stay secondary unless the visitor actually needs them.
 
-System creation: **Customize Existing System** or **Custom Build**.
+## Public commercial explanation
 
-After delivery: **Full Handover** or **Managed by KEY CASTRO** only.
+The full process belongs primarily on **How It Works**:
 
-Build/customization is separately quoted. Managed maintenance is $49/month or $490/year per system.
+1. Tell me what you need.
+2. I build the system.
+3. Choose who manages it.
+
+Beginner-facing post-build choices:
+
+- **You Manage It** — “I build it. You manage it.”
+- **I Manage It** — “I build it. I manage it.” — $49/month or $490/year.
+
+Internally these map to Full Handover and Managed by KEY CASTRO. Build/customization pricing is separate.
 
 ## Truth guardrails
 
-Do not invent clients, testimonials, employment history, certifications, adoption, project results, or official approvals. Portfolio systems are independent proof unless a documented client relationship exists.
-
-The Student Housing Matching and Placement System was built after market research around a publicly visible problem. Do not imply that the original poster commissioned, uses, or endorses it.
+Do not invent clients, testimonials, employment history, certifications, adoption, project results, or official approvals. The Student Housing system is independent portfolio work inspired by a publicly visible problem; do not imply that the original poster commissioned, uses, or endorses it. Do not claim AI matching.
 
 ## Navigation
 
-Primary public navigation: **Home · Systems · Services · About · Contact**. Details belong on system pages; service/delivery explanation belongs primarily on Services and system details.
+Primary public navigation: **Home · Systems · How It Works · About · Contact**.
+
+The `/services` URL remains stable; its visible label is **How It Works**.
+
+One page = one main job:
+
+- Home: what KEY CASTRO does
+- Systems: existing systems
+- System detail: what that system does
+- How It Works: the business process
+- About: who/how KEY CASTRO works
+- Contact: send a message
 
 ## Private Inbox boundary
 

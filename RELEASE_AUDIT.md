@@ -1,17 +1,15 @@
-# KEY CASTRO WEBSITE 3.7.0 — RELEASE AUDIT
+# KEY CASTRO WEBSITE 3.8.0 — RELEASE AUDIT
 
-- Completed a project-specific master UX, information-architecture, content, visual, accessibility, SEO, and release audit.
-- Preserved the Flask architecture, five-item navigation, canonical routes, contact backend, private owner Inbox, business rules, and security boundary.
-- Inspected the supplied standalone Student Housing, Property Operations, and Property Inventory project documentation to verify the website keeps their identities, workflows, and truth boundaries separate; none of those app codebases were merged or modified.
-- Preserved the ivory/navy/sage brand while tightening typography, spacing, page height, content widths, cards, and screenshot proportions.
-- Home is now an orientation page with concise copy, three balanced system cards, and one compact three-step process summary.
-- Systems now presents all three published systems as equal portfolio choices; the old centered odd third-card layout is neutralized.
-- Search remains metadata-driven but is hidden while the catalog has six or fewer systems.
-- Services now presents the two creation choices and exactly two post-build management choices in one clear flow.
-- About and Contact were shortened and reorganized to remove repeated sections and excessive empty space.
-- System detail pages use one primary customization action, compact evidence, progressive disclosure, and a concise two-option delivery section.
-- Managed maintenance remains $49/month or $490/year; build/customization pricing remains separate.
-- Student Housing remains truthful independent portfolio work and is not presented as commissioned, adopted, or endorsed.
-- Public/private boundaries, CSRF, trusted server-side inquiry context, SEO metadata, sitemap, robots rules, and redirects are retained.
-- Release package excludes `.env`, `.owner_inbox.json`, `.git`, runtime databases/logs, caches, bytecode, backups, and private runtime data.
-- Automated regression suite: 29 tests / 31 subtests passing before packaging.
+- Audited the actual v3.7.0 Flask source and current public page structure before modifying it.
+- Preserved architecture, canonical routes, contact backend, private owner Inbox, security boundaries, three published systems, and pricing rules.
+- Changed the visible **Services** label to **How It Works** without changing the `/services` URL.
+- Removed abstract public process terms where simpler human actions communicate the same meaning.
+- Removed repeated post-build management sections from system-detail pages.
+- Kept exactly two post-build choices on How It Works: **You Manage It** and **I Manage It**.
+- Kept internal Full Handover / Managed by KEY CASTRO terminology for trusted business logic and documentation, not as required visitor vocabulary.
+- Removed unnecessary category micro-labels from the three system cards.
+- Increased everyday text/button sizes for older-user readability while keeping the existing brand and compact layout.
+- Student Housing remains a truthful independent portfolio project with no commission, adoption, endorsement, ROI, or AI-matching claim.
+- Contact CSRF, server-resolved inquiry context/pricing, SEO, sitemap, robots, redirects, and private owner authentication remain intact.
+- Release ZIP must exclude `.env`, `.owner_inbox.json`, `.git`, runtime databases/logs, caches, backups, and other private runtime data.
+- Release is only live after production health reports 3.8.0 and the three-system content check passes.

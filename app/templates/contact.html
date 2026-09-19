@@ -2,67 +2,43 @@
 {% block content %}
 <section class="page-hero page-hero-simple contact-hero-simple">
   <div class="container simple-page-hero reveal">
-    <p class="eyebrow">CONTACT</p>
     <h1>Tell me what you need.</h1>
-    {% if template_interest and source_intent == 'managed' and selected_maintenance_plan %}
-    <p>{{ template_interest.name }} · {{ selected_maintenance_plan.label }} managed maintenance · {{ selected_maintenance_plan.price_label }}</p>
-    {% elif template_interest and source_intent == 'managed' %}
-    <p>You are asking KEY CASTRO to manage {{ template_interest.name }} after delivery.</p>
-    {% elif template_interest and source_intent == 'handover' %}
-    <p>You are asking about full handover for {{ template_interest.name }}.</p>
-    {% elif template_interest and source_intent == 'customize' %}
-    <p>You are asking to customize {{ template_interest.name }} for your business.</p>
-    {% elif source_intent == 'custom-build' %}
-    <p>You are asking about a custom system built around your business.</p>
-    {% elif source_intent == 'handover' %}
-    <p>You are asking about the Full Handover option.</p>
-    {% elif source_intent == 'managed' and selected_maintenance_plan %}
-    <p>{{ selected_maintenance_plan.label }} managed maintenance · {{ selected_maintenance_plan.price_label }}</p>
-    {% elif source_intent == 'managed' %}
-    <p>You are asking about ongoing managed maintenance by KEY CASTRO.</p>
-    {% else %}
-    <p>Send a short message. I will reply by email.</p>
-    {% endif %}
+    <p>Tell me about your business and what you want help with. I will reply by email.</p>
   </div>
 </section>
 
-<section class="section contact-section-simple contact-refined-section">
-  <div class="container contact-layout contact-layout-simple contact-refined-layout">
-    <aside class="contact-side reveal">
-      <p class="eyebrow">REPLY</p>
-      <h2>I reply by email.</h2>
-      <p>Briefly describe the system, workflow, or problem you want help with.</p>
-      {% if contact_email %}<p class="contact-email-option">Email: <a class="text-link" href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>{% endif %}
-    </aside>
-
-    <form class="contact-form reveal delay-1" method="post" novalidate>
+<section class="section human-contact-section">
+  <div class="container human-contact-wrap">
+    <form class="contact-form human-contact-form reveal" method="post" novalidate>
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       {% if template_interest %}<input type="hidden" name="source_slug" value="{{ template_interest.slug }}">{% endif %}
       {% if source_intent %}<input type="hidden" name="source_intent" value="{{ source_intent }}">{% endif %}
       {% if selected_maintenance_plan %}<input type="hidden" name="source_plan" value="{{ selected_maintenance_plan.key }}">{% endif %}
-      {% if template_interest or source_intent %}
-      <div class="contact-interest" role="note">
-        <span>YOUR REQUEST</span>
-        {% if template_interest %}<strong>{{ template_interest.name }}</strong>{% else %}<strong>KEY CASTRO Services</strong>{% endif %}
-        {% if source_action_label %}<small>{{ source_action_label }}</small>{% endif %}
-        {% if selected_maintenance_plan %}<small class="contact-selected-plan">{{ selected_maintenance_plan.label }} · {{ selected_maintenance_plan.price_label }}</small>{% endif %}
+
+      {% if template_interest %}
+      <div class="human-request-note" role="note">
+        <strong>You are asking about:</strong>
+        <span>{{ template_interest.name }}</span>
+      </div>
+      {% elif source_intent %}
+      <div class="human-request-note" role="note">
+        <strong>You are asking about:</strong>
+        <span>{% if source_intent == 'custom-build' %}a new system for your business{% elif source_intent == 'handover' %}managing the system yourself after it is built{% elif source_intent == 'managed' %}having KEY CASTRO continue managing the system{% else %}a system for your business{% endif %}</span>
       </div>
       {% endif %}
+
       <div class="honeypot" aria-hidden="true"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
       <div class="form-row">
         <label><span>Name</span><input required maxlength="100" name="name" value="{{ form_data.name if form_data else '' }}" placeholder="Your name"></label>
         <label><span>Email</span><input required maxlength="160" type="email" name="email" value="{{ form_data.email if form_data else '' }}" placeholder="you@company.com"></label>
       </div>
       <label><span>Company <small>optional</small></span><input maxlength="140" name="company" value="{{ form_data.company if form_data else '' }}" placeholder="Company name"></label>
-      <label><span>What do you need?</span><textarea required minlength="20" maxlength="3000" name="message" rows="5" placeholder="Briefly tell me what you need.">{{ form_data.message if form_data else '' }}</textarea></label>
-      <button class="button primary full-button" type="submit">
-        {% if source_intent == 'managed' and selected_maintenance_plan %}Request {{ selected_maintenance_plan.label }} Maintenance
-        {% elif source_intent == 'managed' %}Discuss Managed Service
-        {% elif source_intent == 'handover' %}Discuss Full Handover
-        {% elif source_intent == 'customize' %}Request Customization
-        {% elif source_intent == 'custom-build' %}Discuss Custom Build
-        {% else %}Send Message{% endif %}
-      </button>
+      <label><span>What do you need help with?</span><textarea required minlength="20" maxlength="3000" name="message" rows="6" placeholder="Tell me what you want the system to help with.">{{ form_data.message if form_data else '' }}</textarea></label>
+      <button class="button primary full-button" type="submit">Send Message</button>
+      <div class="human-contact-foot">
+        <p>I will reply to the email you provide.</p>
+        {% if contact_email %}<p>Or email me directly: <a class="text-link" href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>{% endif %}
+      </div>
       <p class="form-privacy">Do not send passwords or private client data.</p>
       {% if environment_label == 'Local' %}<p class="local-form-note">Local preview: test messages stay on this computer.</p>{% endif %}
     </form>

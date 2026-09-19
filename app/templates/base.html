@@ -37,7 +37,7 @@
         <span class="brand-mark" aria-hidden="true">KC</span>
         <span class="brand-copy">
           <strong>KEY CASTRO</strong>
-          <small>Real Estate Systems</small>
+          <small>Real Estate &amp; Housing Systems</small>
         </span>
       </a>
 
@@ -53,7 +53,7 @@
         {% set contact_active = request.endpoint == 'site.contact' %}
         <a class="{{ 'active' if home_active else '' }}" {% if home_active %}aria-current="page"{% endif %} href="{{ url_for('site.home') }}">Home</a>
         {% if template_library_enabled %}<a class="{{ 'active' if systems_active else '' }}" {% if systems_active %}aria-current="page"{% endif %} href="{{ url_for('site.system_templates') }}">Systems</a>{% endif %}
-        <a class="{{ 'active' if services_active else '' }}" {% if services_active %}aria-current="page"{% endif %} href="{{ url_for('site.services') }}">Services</a>
+        <a class="{{ 'active' if services_active else '' }}" {% if services_active %}aria-current="page"{% endif %} href="{{ url_for('site.services') }}">How It Works</a>
         <a class="{{ 'active' if about_active else '' }}" {% if about_active %}aria-current="page"{% endif %} href="{{ url_for('site.about') }}">About</a>
         <a class="nav-contact {{ 'active' if contact_active else '' }}" {% if contact_active %}aria-current="page"{% endif %} href="{{ url_for('site.contact') }}">Contact</a>
       </nav>
@@ -75,14 +75,14 @@
       <div class="footer-brand-block">
         <a class="brand" href="{{ url_for('site.home') }}">
           <span class="brand-mark" aria-hidden="true">KC</span>
-          <span class="brand-copy"><strong>KEY CASTRO</strong><small>Real Estate Systems</small></span>
+          <span class="brand-copy"><strong>KEY CASTRO</strong><small>Real Estate &amp; Housing Systems</small></span>
         </a>
-        <p>Simple systems for real estate, property, and housing teams.</p>
+        <p>Simple systems for real estate businesses.</p>
       </div>
       <nav class="simple-footer-nav" aria-label="Footer navigation">
         <a href="{{ url_for('site.home') }}">Home</a>
         {% if template_library_enabled %}<a href="{{ url_for('site.system_templates') }}">Systems</a>{% endif %}
-        <a href="{{ url_for('site.services') }}">Services</a>
+        <a href="{{ url_for('site.services') }}">How It Works</a>
         <a href="{{ url_for('site.about') }}">About</a>
         <a href="{{ url_for('site.contact') }}">Contact</a>
       </nav>

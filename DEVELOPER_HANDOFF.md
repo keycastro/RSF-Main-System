@@ -1,16 +1,18 @@
 # KEY CASTRO WEBSITE — DEVELOPER HANDOFF
 
-**Version:** 3.7.0
+**Release:** 3.8.0
+**Live URL:** https://keycastro.onrender.com
+**Framework:** Flask
 
-## Product state
+## Current direction
 
-KEY CASTRO is an existing Flask portfolio/business website. Version 3.7.0 keeps the established architecture, business model, security boundaries, and brand while applying the master site-wide UX simplification and visual refinement.
+Version 3.8.0 preserves the established website and its 3.7 visual refinement but makes the public experience deliberately beginner-friendly and older-user-friendly. Public pages use everyday English, larger readable text, fewer competing actions, and one primary purpose per page.
 
-## Current public navigation
+Primary navigation: **Home · Systems · How It Works · About · Contact**. The underlying `/services` URL remains unchanged.
 
-Home · Systems · Services · About · Contact
+## Architecture and private boundary
 
-Canonical system routes remain `/system-templates` and `/system-templates/<slug>`.
+Keep the current single Flask codebase. The public website/contact flow and private owner Inbox stay in the same project. The owner Inbox remains protected, unlisted, noindexed, and authenticated.
 
 ## Published systems
 
@@ -18,42 +20,23 @@ Canonical system routes remain `/system-templates` and `/system-templates/<slug>
 2. Property Inventory Hub
 3. Student Housing Matching and Placement System
 
-All are independent systems. Existing systems may be customized for a client's business. The Student Housing system is independent portfolio proof based on market research; no client relationship or endorsement is claimed.
+Never merge their codebases, screenshots, or claims. Student Housing remains independent portfolio work and must not be described as commissioned, adopted, endorsed, or AI-powered.
 
-## Commercial model
+## Business rules
 
-A client starts by either customizing an existing system or requesting a custom build. Development/customization is quoted separately.
+Creation: customize an existing system OR build a new system.
 
-After the system is ready, there are only two options:
+After build there are exactly two options:
 
-- **Full Handover** — KEY CASTRO builds/customizes it; client takes responsibility for ongoing hosting, domain, backups, maintenance, updates, and technical management after handover.
-- **Managed by KEY CASTRO** — KEY CASTRO continues the agreed technical management for $49/month or $490/year per system.
+- Full Handover — “I build it. You manage it.”
+- Managed by KEY CASTRO — “I build it. I manage it.” — $49/month or $490/year.
 
-The current price values are managed-maintenance prices, not software-access prices and not development prices. Source of truth: `MANAGED_MAINTENANCE_PRICING` in `app/system_templates.py`.
+The customer-facing page uses **You Manage It** / **I Manage It** so the visitor does not need to learn internal terminology.
 
-Legacy inquiry strings and URLs are normalized for backward compatibility. Historical records remain readable in the private Inbox.
+## UX rule
 
-## Contact / inquiry trust boundary
+A non-technical 50–70 year old business owner should understand the basic offer after one reading. Keep the complete management model on How It Works; system pages should explain the system itself. Use concrete actions such as “Your team signs in” and “Search for the property you need.”
 
-Never trust browser-submitted price text or system titles. The server resolves published system metadata, request type, and official monthly/yearly plan pricing before writing inquiry context. Generic Contact submissions still work.
+## Release workflow
 
-## Private owner Inbox
-
-Keep it private, absent from public navigation/sitemap, and protected by the existing authenticated launcher/session flow. Do not expose bearer tokens or environment secrets.
-
-## Design / UX
-
-Preserve the 3.7.0 ivory/navy/sage visual baseline, balanced three-column system presentation, compact information density, controlled screenshot previews, accessible focus states, five-item navigation, and simple English. Do not restore the older oversized layouts or centered odd third card.
-
-## Deployment
-
-Render remains the official host with manual deployment. Follow `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`. Do not claim production deployment until the pushed commit and Render deployment are verified.
-
-## Historical docs
-
-Documents named around `SUBSCRIPTION`, 3.2.0, or 3.3.0 describe older commercial states. They are historical only. Current authority is `docs/BUSINESS_MODEL_AND_MANAGED_MAINTENANCE_3_6.md`.
-
-
-## Default release rule — automatic live deployment
-
-Whenever a KEY CASTRO website release package changes the site, include and use the one-run `APPLY_UPDATE_AND_DEPLOY_LIVE.bat` workflow. A successful update must not stop after local installation: it runs tests, pushes the approved release to both Git remotes, triggers the existing Render service, and verifies the live site before reporting success. Render provider-level auto-deploy remains off; the controlled release script performs the deployment.
+Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/content verification for version 3.8.0. Never commit private/runtime files.

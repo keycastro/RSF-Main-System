@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="case-hero template-hero detail-hero-simple detail-hero-refined">
+<section class="case-hero template-hero detail-hero-simple detail-hero-refined human-detail-hero">
   <div class="container">
     <nav class="breadcrumb reveal" aria-label="Breadcrumb">
       <a href="{{ url_for('site.system_templates') }}">Systems</a><span aria-hidden="true">/</span><strong aria-current="page">{{ system_template.name }}</strong>
@@ -8,13 +8,10 @@
   </div>
   <div class="container template-hero-grid">
     <div class="case-intro reveal">
-      <p class="system-type">{{ system_template.category|upper }}</p>
       <h1>{{ system_template.name }}</h1>
       <p class="page-lead">{{ system_template.full_description }}</p>
-      <p class="detail-customize-note">This system can be adapted to your workflow, roles, fields, terminology, and rules.</p>
       <div class="hero-actions template-primary-actions">
-        <a class="button primary" href="{{ url_for('site.contact', template=system_template.slug, intent='customize') }}">Customize This System</a>
-        <a class="text-link" href="#overview">How It Works <span>↓</span></a>
+        <a class="button primary" href="{{ url_for('site.contact', template=system_template.slug, intent='customize') }}">Tell Me What You Need</a>
       </div>
     </div>
     {% if system_template.screenshots %}
@@ -29,7 +26,7 @@
 {% if system_template.video.url or system_template.video.embed_url %}
 <section class="section section-soft compact-detail-section" id="demo">
   <div class="container">
-    <div class="section-head compact-head"><div><p class="eyebrow">DEMO</p><h2>See the system in use.</h2></div></div>
+    <div class="section-head compact-head"><div><h2>See the system in use.</h2></div></div>
     <div class="template-video-note">
       {% if system_template.video.url %}
       <video class="template-video" controls preload="metadata" {% if system_template.video.thumbnail %}poster="{{ system_template.video.thumbnail }}"{% endif %}>
@@ -45,37 +42,33 @@
 </section>
 {% endif %}
 
-<section class="section compact-detail-section detail-overview-refined" id="overview">
+<section class="section compact-detail-section detail-overview-refined human-detail-overview" id="overview">
   <div class="container detail-overview-refined-grid">
     <div class="detail-problem reveal">
-      <p class="eyebrow">WHAT IT HELPS WITH</p>
-      <h2>Keep the work connected.</h2>
+      <h2>What this helps with.</h2>
       <p class="large-copy">{{ system_template.business_problem }}</p>
       <div class="detail-best-for">
-        <strong>Best for</strong>
+        <strong>Good for:</strong>
         <ul>{% for user in system_template.target_users %}<li>{{ user }}</li>{% endfor %}</ul>
       </div>
     </div>
 
     <div class="detail-workflow reveal delay-1">
-      <p class="eyebrow">HOW IT WORKS</p>
-      <h2>Simple workflow.</h2>
-      <ol class="template-steps compact-steps">{% for step in system_template.workflow %}<li><span>{{ '%02d'|format(loop.index) }}</span><p>{{ step }}</p></li>{% endfor %}</ol>
+      <h2>How it works.</h2>
+      <ol class="template-steps compact-steps">{% for step in system_template.workflow %}<li><span>{{ loop.index }}</span><p>{{ step }}</p></li>{% endfor %}</ol>
     </div>
   </div>
 </section>
 
-<section class="section section-soft compact-detail-section detail-evidence-section">
+<section class="section section-soft compact-detail-section detail-evidence-section human-detail-features">
   <div class="container detail-evidence-grid">
     <div class="detail-features reveal">
-      <p class="eyebrow">MAIN FEATURES</p>
-      <h2>What is included.</h2>
+      <h2>What your team can do.</h2>
       <ul class="template-list compact-list feature-list-refined">{% for feature in system_template.features %}<li>{{ feature }}</li>{% endfor %}</ul>
     </div>
 
     <div class="detail-media reveal delay-1">
       {% if system_template.screenshots|length > 1 %}
-      <p class="eyebrow">MORE OF THE SYSTEM</p>
       {% set screenshot = system_template.screenshots[1] %}
       <button class="gallery-item compact-gallery-item detail-secondary-preview" type="button" data-lightbox="{{ url_for('static', filename=screenshot.src) }}" data-caption="{{ screenshot.caption }}">
         <img src="{{ url_for('static', filename=screenshot.src) }}" alt="{{ screenshot.alt }}" width="1600" height="1000" loading="lazy" decoding="async">
@@ -84,14 +77,15 @@
       <p class="detail-media-caption">{{ screenshot.caption }}</p>
       {% endif %}
 
-      <details class="detail-disclosure">
-        <summary>What can be customized?</summary>
+      <details class="detail-disclosure human-disclosure">
+        <summary>Can this be changed for my business?</summary>
+        <p>Yes. I can change the information, screens, names, access, and steps to fit how your business works.</p>
         <ul class="template-list compact-list">{% for item in system_template.customization_opportunities %}<li>{{ item }}</li>{% endfor %}</ul>
       </details>
 
       {% if system_template.project_note %}
-      <details class="detail-disclosure project-note-disclosure">
-        <summary>Project note</summary>
+      <details class="detail-disclosure project-note-disclosure human-disclosure">
+        <summary>About this project</summary>
         <p>{{ system_template.project_note }}</p>
       </details>
       {% endif %}
@@ -99,37 +93,15 @@
   </div>
 </section>
 
-<section class="section compact-detail-section delivery-refined-section" id="delivery">
-  <div class="container">
-    <div class="delivery-refined-heading reveal">
-      <p class="eyebrow">AFTER DELIVERY</p>
-      <h2>Choose who manages the system.</h2>
-      <p>Build or customization pricing is quoted separately.</p>
+<section class="section human-detail-next">
+  <div class="container human-detail-next-inner reveal">
+    <div>
+      <h2>Want this system for your business?</h2>
+      <p>Tell me what you want it to help with. You do not need to know the technical details.</p>
     </div>
-
-    <div class="delivery-refined-list">
-      <article class="delivery-refined-row reveal">
-        <span>01</span>
-        <div>
-          <h3>Full Handover</h3>
-          <p><strong>I build it. You manage it.</strong> Your team takes over ongoing hosting and technical management.</p>
-        </div>
-        <a class="button secondary" href="{{ url_for('site.contact', template=system_template.slug, intent='handover') }}">Discuss Full Handover</a>
-      </article>
-
-      <article class="delivery-refined-row managed reveal delay-1">
-        <span>02</span>
-        <div>
-          <h3>Managed by KEY CASTRO</h3>
-          <p><strong>I build it. I manage it.</strong> Ongoing managed maintenance is {{ maintenance_pricing.currency_symbol }}{{ maintenance_pricing.monthly_price }}/month or {{ maintenance_pricing.currency_symbol }}{{ maintenance_pricing.yearly_price }}/year.</p>
-        </div>
-        <a class="button primary" href="{{ url_for('site.contact', template=system_template.slug, intent='managed') }}">Discuss Managed Service</a>
-      </article>
-    </div>
-
-    <div class="detail-bottom-nav simple-bottom-nav">
-      <a class="text-link" href="{{ url_for('site.services') }}">See Service Details <span>→</span></a>
-      <a class="text-link" href="{{ url_for('site.system_templates') }}">← Back to Systems</a>
+    <div class="human-detail-next-actions">
+      <a class="button primary" href="{{ url_for('site.contact', template=system_template.slug, intent='customize') }}">Tell Me What You Need</a>
+      <a class="text-link" href="{{ url_for('site.system_templates') }}">Back to Systems</a>
     </div>
   </div>
 </section>

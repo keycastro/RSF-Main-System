@@ -1724,3 +1724,179 @@ h3{font-size:21px}
   grid-row:auto;
   grid-column:auto;
 }
+
+/* =========================================================
+   3.8.0 — HUMAN CLARITY + OLDER-USER FRIENDLY REFINEMENT
+   Plain-language hierarchy, fewer decisions, readable controls,
+   and one clear purpose per public page.
+   ========================================================= */
+:root{--design-version:"3.8.0"}
+body{font-size:16.5px;line-height:1.64}
+.button{min-height:46px;font-size:14.5px}
+.site-nav a{font-size:14px}
+.hero-refined .hero-copy h1{max-width:850px;font-size:clamp(40px,4.65vw,58px)}
+.hero-refined .hero-lead{max-width:690px;font-size:18px;color:var(--ink-2);margin-bottom:9px}
+.hero-support{max-width:690px;margin:0;color:var(--muted);font-size:16px;line-height:1.55}
+.human-hero .hero-actions{margin-top:24px}
+.simple-section-head h2{margin-bottom:0}
+.system-choice-helper{font-size:15px}
+.system-showcase-copy>p:not(.system-type),
+.compact-template-card .template-card-copy>p:not(.system-type){font-size:14px;line-height:1.55}
+.system-card-footer .system-audience{font-size:13px!important;line-height:1.5!important}
+
+/* Home process: concrete actions, readable at a glance. */
+.human-process-section .home-process-heading p{max-width:260px;margin:8px 0 0;font-size:14px;line-height:1.5}
+.human-process-section .home-process-list li{grid-template-columns:38px 1fr;padding:15px 0}
+.human-process-section .home-process-list li>span{font-size:12px}
+.human-process-section .home-process-list strong{font-size:16px;margin-bottom:4px}
+.human-process-section .home-process-list p{font-size:14px;line-height:1.5}
+
+/* Systems: simple fallback path if the existing systems do not fit. */
+.human-next-step{justify-content:space-between;align-items:center;padding:20px 0 0}
+.human-next-step>div{display:flex;flex-direction:column;gap:3px}
+.human-next-step strong{color:var(--ink);font-size:15px}
+.human-next-step span{color:var(--muted);font-size:14px}
+
+/* How It Works: chronological story instead of simultaneous decisions. */
+.human-how-section{padding:34px 0 58px}
+.human-how-flow{max-width:980px}
+.human-step{display:grid;grid-template-columns:52px minmax(0,1fr);gap:20px;padding:31px 0;border-top:1px solid var(--line)}
+.human-step:first-child{padding-top:13px;border-top:0}
+.human-step-number{width:38px;height:38px;display:grid;place-items:center;border-radius:50%;background:var(--surface-sage);border:1px solid #cbd7d0;color:var(--sage-deep);font-size:15px;font-weight:850}
+.human-step-body h2{margin:1px 0 8px;font-size:29px}
+.human-step-body>p{max-width:720px;margin:0;font-size:16px;line-height:1.55;color:var(--ink-2)}
+.human-simple-options{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}
+.human-simple-options>div{padding:18px 19px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.55)}
+.human-simple-options strong{display:block;margin-bottom:5px;color:var(--ink);font-size:16px}
+.human-simple-options span{display:block;color:var(--muted);font-size:14px;line-height:1.52}
+.human-simple-options .text-link{margin-top:12px}
+.human-note{margin-top:12px!important;color:var(--muted)!important;font-size:14px!important}
+.management-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}
+.management-choice{padding:21px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.management-choice.managed-choice{border-color:#bed3c8;background:#f3f7f4}
+.management-choice .choice-label{margin:0 0 8px;color:var(--sage-deep);font-size:11px;font-weight:850;letter-spacing:.08em}
+.management-choice h3{margin:0 0 8px;font-size:21px}
+.management-choice>p:not(.choice-label):not(.human-price){margin:0;color:var(--ink-2);font-size:14.5px;line-height:1.55}
+.management-choice small{display:block;margin-top:14px;color:var(--muted);font-size:12px}
+.human-price{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 0!important;padding-top:13px;border-top:1px solid rgba(21,41,52,.12);color:var(--ink)!important}
+.human-price strong{font-size:16px}.human-price span{font-size:12px;color:var(--muted)}
+.human-how-cta{margin-top:18px;padding:26px 28px;border-radius:15px;background:var(--navy-deep);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.human-how-cta h2{margin:0;color:#fff;font-size:24px}
+.human-how-cta p{flex:1 1 360px;margin:0;color:#d7e2e6;font-size:14.5px;line-height:1.5}
+.human-how-cta .button{flex:0 0 auto}
+
+/* About: one simple story, no secondary business taxonomy. */
+.human-about-section{padding:32px 0 58px}
+.human-about-layout{display:grid;grid-template-columns:.9fr 1.1fr;gap:70px;max-width:1000px;align-items:start}
+.human-about-copy h2,.human-about-steps h2{margin:0 0 12px;font-size:29px}
+.human-about-copy p{max-width:470px;font-size:16px;line-height:1.6;color:var(--ink-2)}
+.human-about-copy .button{margin-top:6px}
+.human-about-steps ol{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.human-about-steps li{display:grid;grid-template-columns:38px 1fr;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)}
+.human-about-steps li>span{padding-top:2px;color:var(--sage-deep);font-size:12px;font-weight:850}
+.human-about-steps strong{display:block;margin-bottom:3px;color:var(--ink);font-size:16px}
+.human-about-steps p{margin:0;font-size:14px;line-height:1.5}
+
+/* Contact: one job, one column, no service terminology required. */
+.human-contact-section{padding:30px 0 56px}
+.human-contact-wrap{max-width:760px}
+.human-contact-form{padding:26px;border-radius:16px;box-shadow:0 10px 30px rgba(15,38,50,.06)}
+.human-contact-form label>span{font-size:14px}
+.human-contact-form input,.human-contact-form textarea{font-size:16px;line-height:1.45;padding:13px 14px}
+.human-contact-form textarea{min-height:145px}
+.human-request-note{display:flex;gap:7px 10px;flex-wrap:wrap;margin-bottom:19px;padding:13px 15px;border:1px solid #cbd7d0;border-radius:10px;background:var(--surface-sage);font-size:14px;line-height:1.45}
+.human-request-note strong{color:var(--ink)}.human-request-note span{color:var(--ink-2)}
+.human-contact-foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:14px}
+.human-contact-foot p{margin:0;font-size:13px;line-height:1.5}
+.human-contact-foot .text-link{font-size:13px}
+
+/* System detail: explain the system first; management choices live on How It Works. */
+.human-detail-hero .case-intro h1{max-width:760px}
+.human-detail-hero .page-lead{max-width:690px;font-size:17px;line-height:1.55}
+.human-detail-overview .large-copy{font-size:16px;line-height:1.58}
+.human-detail-overview .detail-best-for>strong{font-size:14px}
+.human-detail-overview .detail-best-for li{font-size:12.5px;padding:6px 9px}
+.human-detail-overview .compact-steps li{padding:13px 0}
+.human-detail-overview .compact-steps li>span{font-size:11px}
+.human-detail-overview .compact-steps p{font-size:14.5px;line-height:1.5}
+.human-detail-features .feature-list-refined li{font-size:14px;line-height:1.5}
+.human-disclosure summary{font-size:14px;padding-block:15px}
+.human-disclosure>p{font-size:13.5px;line-height:1.55}
+.human-disclosure .template-list li{font-size:13.5px;line-height:1.5}
+.human-detail-next{padding:42px 0}
+.human-detail-next-inner{display:flex;align-items:center;justify-content:space-between;gap:28px;padding-top:2px}
+.human-detail-next-inner h2{margin:0 0 7px;font-size:27px}
+.human-detail-next-inner p{max-width:620px;margin:0;font-size:15px;line-height:1.5}
+.human-detail-next-actions{display:flex;align-items:center;gap:18px;flex:0 0 auto}
+
+@media(max-width:900px){
+  .human-simple-options,.management-choice-grid,.human-about-layout{grid-template-columns:1fr}
+  .human-about-layout{gap:38px}
+  .human-detail-next-inner{align-items:flex-start;flex-direction:column}
+  .human-detail-next-actions{width:100%}
+}
+@media(max-width:680px){
+  body{font-size:16px}
+  .site-nav a{font-size:15px}
+  .hero-refined .hero-copy h1{font-size:36px}
+  .hero-refined .hero-lead{font-size:17px}
+  .hero-support{font-size:15px}
+  .system-choice-helper{font-size:14px}
+  .human-next-step{align-items:stretch}.human-next-step .button{width:100%}
+  .human-step{grid-template-columns:38px 1fr;gap:12px;padding:25px 0}
+  .human-step-number{width:34px;height:34px;font-size:14px}
+  .human-step-body h2{font-size:25px}
+  .human-step-body>p{font-size:15px}
+  .human-simple-options>div,.management-choice{padding:17px}
+  .human-how-cta{padding:22px 19px;align-items:flex-start;flex-direction:column}
+  .human-how-cta .button{width:100%}
+  .human-about-copy h2,.human-about-steps h2{font-size:26px}
+  .human-contact-form{padding:20px 17px}
+  .human-contact-form .form-row{grid-template-columns:1fr}
+  .human-contact-foot{flex-direction:column;gap:8px}
+  .human-detail-next-actions{align-items:stretch;flex-direction:column}
+  .human-detail-next-actions .button{width:100%}
+}
+
+/* 3.8.0 readability pass — larger everyday text for beginner and older visitors. */
+body{font-size:17px;line-height:1.68}
+.site-nav a{font-size:15px}
+.button{min-height:48px;font-size:15px}
+.text-link{font-size:15px}
+.hero-lead,.hero-support,.simple-page-hero>p{font-size:17px;line-height:1.62}
+.compact-template-card .template-card-copy>p:not(.system-type),
+.system-card-footer .system-audience,
+.human-process-section .home-process-heading p,
+.human-process-section .home-process-list p,
+.human-simple-options span,
+.human-note,
+.human-about-steps p,
+.human-contact-form label>span,
+.human-request-note,
+.human-detail-overview .compact-steps p,
+.human-detail-features .feature-list-refined li,
+.human-disclosure summary{font-size:15.5px!important;line-height:1.58!important}
+.human-process-section .home-process-list strong,
+.human-about-steps strong{font-size:16px}
+.human-contact-form input,
+.human-contact-form textarea{font-size:16px!important}
+.human-contact-foot p,.human-contact-foot .text-link{font-size:14.5px}
+.management-choice>p:not(.choice-label):not(.human-price){font-size:16px;line-height:1.62}
+.management-choice .choice-label{font-size:12px}
+.human-price strong{font-size:18px}
+.simple-footer-nav a,.simple-footer .footer-brand-block>p{font-size:14.5px}
+.human-detail-overview .detail-best-for li{font-size:14.5px}
+@media(max-width:680px){
+  .human-how-cta p{flex:none;width:100%}
+}
+.system-card-footer .button,
+.compact-template-card .template-card-actions .button{min-height:48px;font-size:15px}
+@media(max-width:680px){
+  .detail-overview-refined-grid,
+  .detail-evidence-grid{grid-template-columns:minmax(0,1fr)}
+  .detail-overview-refined-grid>*,
+  .detail-evidence-grid>*{min-width:0}
+}
+@media(max-width:680px){
+  .detail-best-for li{box-sizing:border-box;width:fit-content;max-width:100%;overflow-wrap:anywhere}
+}

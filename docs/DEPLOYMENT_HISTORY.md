@@ -187,9 +187,20 @@ This content update does not claim that Nexus Properties officially hired, paid,
 - This entry records a prepared release. Production should not be marked updated until the commit is pushed and Render deployment is verified.
 
 
-## 3.7.0 — Master UX simplification prepared
+## 3.7.0 — Master UX simplification deployed and verified
 
 - Reorganized and visually rebalanced the existing public website without changing the Flask architecture or business logic.
 - Preserved three published systems, the two-option post-build business model, Contact/inquiry flow, private owner Inbox, SEO, and deployment architecture.
-- Prepared the controlled one-run updater/deployer to require live health version 3.7.0 and exactly three published system cards before success.
-- Production is not considered updated until the one-run deployment completes and live verification passes.
+- Release commit `6c4a0e3e8f006254d6eb6b995aba0228bf4e178e` was pushed to both repositories.
+- Render deployment succeeded and production live verification confirmed version 3.7.0 with all three published systems.
+
+
+## 3.8.0 — Human clarity and older-user UX prepared
+
+- Preserves the existing Flask architecture, three systems, commercial model, private owner Inbox, SEO, and deployment architecture.
+- Changes the visible Services label to **How It Works** while keeping `/services` stable.
+- Rewrites public copy for first-time, non-technical, older, and basic-English visitors.
+- Moves the complete two-option post-build explanation to How It Works and removes repeated management choices from system-detail pages.
+- Uses beginner-facing **You Manage It** / **I Manage It** labels while retaining formal business terms internally.
+- Enlarges everyday text and controls and removes unnecessary system-card micro-labels.
+- The release is only considered live after the one-run deployer verifies production health version 3.8.0 and all three published systems.

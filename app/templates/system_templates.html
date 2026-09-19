@@ -2,9 +2,8 @@
 {% block content %}
 <section class="page-hero page-hero-simple">
   <div class="container simple-page-hero reveal">
-    <p class="eyebrow">SYSTEMS</p>
-    <h1>Choose a system to customize.</h1>
-    <p>Pick the system closest to your workflow. I can adapt it to your business.</p>
+    <h1>Systems I already built.</h1>
+    <p>Choose the one that is closest to what your business needs. I can change it to fit your business.</p>
   </div>
 </section>
 
@@ -12,7 +11,7 @@
   <div class="container">
     {% if templates|length > 6 %}
     <div class="system-search-panel system-search-simple" data-system-search role="search" aria-label="Find a system" hidden>
-      <label for="system-search-input">Search systems</label>
+      <label for="system-search-input">Find a system</label>
       <div class="system-search-input-wrap">
         <input id="system-search-input" type="search" inputmode="search" autocomplete="off" spellcheck="false" placeholder="Search systems..." aria-controls="system-results" aria-describedby="system-search-status" data-system-search-input>
         <button type="button" class="system-search-clear" data-system-search-clear hidden>Clear</button>
@@ -24,10 +23,8 @@
     <div class="template-library-grid compact-library-grid portfolio-system-grid" id="system-results" data-system-results>
       {% for item in templates %}
       <article class="template-library-card compact-template-card system-catalog-card simple-catalog-card system-choice-card system-choice-card--{{ item.slug }} reveal delay-{{ loop.index0 % 2 }}"
-               data-system-card
-               data-search="{{ item.search_text|e }}">
+               data-system-card data-search="{{ item.search_text|e }}">
         <div class="template-card-copy">
-          <p class="system-type">{{ item.category|upper }}</p>
           <h2>{{ item.name }}</h2>
           <p>{{ item.short_description }}</p>
         </div>
@@ -48,14 +45,14 @@
     {% if templates|length > 6 %}
     <div class="system-search-empty" data-system-search-empty hidden>
       <h2>No matching system.</h2>
-      <p>Need something different? I can build a custom system around your workflow.</p>
-      <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">Discuss Custom Build</a>
+      <p>I can build a new system for your business.</p>
+      <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">Tell Me What You Need</a>
     </div>
     {% endif %}
 
-    <div class="catalog-next-step reveal">
-      <span>None of these fit?</span>
-      <a class="text-link" href="{{ url_for('site.contact', intent='custom-build') }}">Discuss a Custom Build <span>→</span></a>
+    <div class="catalog-next-step reveal human-next-step">
+      <div><strong>None of these fit?</strong><span>I can build a new system for your business.</span></div>
+      <a class="button secondary" href="{{ url_for('site.contact', intent='custom-build') }}">Tell Me What You Need</a>
     </div>
   </div>
 </section>

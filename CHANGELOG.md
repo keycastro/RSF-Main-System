@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 3.8.0 — Human clarity and older-user-friendly simplification
+
+- Rewrote the public experience for first-time, non-technical, older, and basic-English visitors.
+- Renamed the visible **Services** navigation label to **How It Works** while preserving the canonical `/services` route.
+- Replaced abstract process wording with concrete actions: **Tell me what you need → I build the system → choose who manages it**.
+- Simplified system cards and removed nonessential category micro-labels and repeated “See All Systems” links.
+- Simplified system-detail pages so they explain the system first and no longer repeat the full post-build management model.
+- Kept the complete management explanation on **How It Works** with only two choices: **You Manage It** or **I Manage It**.
+- Removed public-facing secondary jargon labels such as “Full handover” and “Managed by KEY CASTRO” from the choice cards while preserving those terms internally for business logic and documentation.
+- Increased everyday text and control sizes for older-user readability without changing the ivory/navy/sage brand.
+- Preserved all three systems, pricing, contact/database flow, private owner Inbox, SEO, security boundaries, and deployment architecture.
+- Expanded regression coverage for beginner/older-user public-copy rules.
+
 ## 3.7.0 — Master UX simplification and visual refinement
 
 - Performed the complete site-wide UX, content, information-architecture, visual, responsive, accessibility, SEO, and release audit.

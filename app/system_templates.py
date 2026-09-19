@@ -197,9 +197,9 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         slug="property-operations-command-center",
         name="Property Operations Command Center",
         category="Property Operations",
-        short_description="Track property tasks, deadlines, approvals, rentals, and follow-ups in one place.",
-        card_audience="Property managers and operations teams.",
-        full_description="Manage daily property work, deadlines, follow-ups, approvals, rentals, and team tasks in one place.",
+        short_description="Keep property tasks, deadlines, approvals, rentals, and follow-ups together in one place.",
+        card_audience="Property managers and teams handling daily property work.",
+        full_description="Keep daily property work, deadlines, approvals, rentals, and team tasks organized in one place.",
         business_problem=(
             "Property work is easy to miss when tasks, deadlines, approvals, and updates are spread across chats "
             "and separate tools. This system keeps the important work in one place."
@@ -210,19 +210,19 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             "Property operations teams",
         ),
         workflow=(
-            "Add properties, contacts, and work.",
-            "Assign tasks, priorities, due dates, and follow-up dates.",
-            "Use the dashboard to see urgent work, approvals, and rental readiness.",
-            "Track completed work and activity history.",
+            "Add the properties, people, and work your team needs to track.",
+            "Give tasks to team members and set due dates.",
+            "See urgent work, approvals, and rental updates on one main screen.",
+            "Keep a record of completed work and past activity.",
         ),
         features=(
-            "Roles for Owner/Admin, Operations, and Team Member users",
-            "Dashboard for urgent, overdue, and follow-up work",
-            "Task tracking with priority, deadline, assignment, and status",
-            "Owner approvals",
-            "Rental booking, guest readiness, contractor, and turnover tracking",
-            "Tenant placement and reusable checklists",
-            "Automatic alerts and turnover tasks",
+            "Different access for owners, managers, and team members",
+            "See urgent, overdue, and follow-up work in one place",
+            "Track who is doing each task and when it is due",
+            "Ask owners for approval when needed",
+            "Track rentals, guest preparation, contractors, and turnovers",
+            "Track tenant placement and use repeatable checklists",
+            "Get reminders for important work and turnovers",
         ),
         technologies=(
             "Python",
@@ -234,10 +234,10 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         ),
         managed_scope=_COMMON_MANAGED_SCOPE,
         customization_opportunities=(
-            "Company branding and wording",
-            "Different roles, permissions, and approval rules",
-            "Custom fields, reports, work steps, alerts, or connections to other tools",
-            "Extra modules for your property process",
+            "Your company name, colors, and wording",
+            "Who can see, change, or approve information",
+            "The information, reports, steps, and reminders your team needs",
+            "Extra parts needed for your property work",
         ),
         search_terms=(
             "property management",
@@ -259,8 +259,8 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         screenshots=(
             TemplateScreenshot(
                 src="images/templates/property-operations-command-center/dashboard.png",
-                alt="Property Operations Command Center dashboard interface preview using sample data",
-                caption="Dashboard using sample data — urgent work, due tasks, arrivals, and owner decisions.",
+                alt="Property Operations Command Center main screen preview using sample data",
+                caption="Main screen using sample data — urgent work, due tasks, arrivals, and owner decisions.",
             ),
             TemplateScreenshot(
                 src="images/templates/property-operations-command-center/work.png",
@@ -269,9 +269,7 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             ),
         ),
         project_note=(
-            "Completed independent implementation developed by Key Castro. It can be customized for a business, "
-            "then delivered through full handover or managed by KEY CASTRO. It is not presented as commissioned "
-            "or adopted client software."
+            "Independent system built by Key Castro. It is not presented as software commissioned or used by a specific client."
         ),
         seo_title="Property Operations Command Center | Key Castro",
         meta_description=(
@@ -286,12 +284,12 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         slug="property-inventory-hub",
         name="Property Inventory Hub",
         category="Real Estate Inventory",
-        short_description="Keep private property listings searchable, current, and easy to share with your team.",
-        card_audience="Brokerages and real estate teams.",
-        full_description="A private system for teams to add, search, update, and manage shared property listings.",
+        short_description="Keep property listings in one place so your team can find and update them easily.",
+        card_audience="Real estate teams that share property listings.",
+        full_description="Keep your property listings organized and easy for your team to search and update.",
         business_problem=(
-            "Listings become hard to trust when they are spread across chats, spreadsheets, and agent files. "
-            "This system keeps shared inventory searchable and shows when listings need to be checked or updated."
+            "Property listings are hard to manage when they are spread across chats, spreadsheets, and different files. "
+            "This system keeps them together so your team can find and update them easily."
         ),
         target_users=(
             "Real estate brokerages",
@@ -299,19 +297,19 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             "Teams sharing private or off-market listings",
         ),
         workflow=(
-            "Authorized users sign in.",
-            "Agents add and update property listings.",
-            "The team searches and filters shared inventory.",
-            "Old or unavailable listings move to history instead of disappearing.",
+            "Your team signs in.",
+            "Add or update a property listing.",
+            "Search for the property you need.",
+            "Move old or unavailable listings to history instead of deleting them.",
         ),
         features=(
-            "Administrator and Agent roles",
-            "Searchable shared property inventory",
-            "Filters for property type, sale or rent, availability, price, bedrooms, and sorting",
-            "My Listings for each agent",
-            "Reconfirmation and automatic expiry for old listings",
-            "Withdraw, archive, restore, and history tools",
-            "User, access-code, freshness, and branding settings",
+            "Different access for admins and agents",
+            "Search all team property listings in one place",
+            "Find properties by type, price, bedrooms, availability, and more",
+            "Each agent can quickly see their own listings",
+            "Reminders to check old listings",
+            "Keep old listings in history and bring them back when needed",
+            "Manage team access, listing checks, and your company name and look",
         ),
         technologies=(
             "Python",
@@ -323,10 +321,10 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         ),
         managed_scope=_COMMON_MANAGED_SCOPE,
         customization_opportunities=(
-            "Company branding and property fields",
-            "Different roles, teams, permissions, or approval steps",
-            "Custom reports, alerts, exports, or connections to other tools",
-            "Extra modules for your listing workflow",
+            "Your company name, colors, and property information",
+            "Who can see or change information",
+            "Reports, reminders, downloads, or connections your team needs",
+            "Extra parts needed for your listing process",
         ),
         search_terms=(
             "inventory",
@@ -346,8 +344,8 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         screenshots=(
             TemplateScreenshot(
                 src="images/templates/property-inventory-hub/dashboard.png",
-                alt="Property Inventory Hub dashboard interface preview using sample data",
-                caption="Dashboard using sample data — current listings and listings that need attention.",
+                alt="Property Inventory Hub main screen preview using sample data",
+                caption="Main screen using sample data — current listings and listings that need attention.",
             ),
             TemplateScreenshot(
                 src="images/templates/property-inventory-hub/marketplace.png",
@@ -356,8 +354,7 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             ),
         ),
         project_note=(
-            "Completed reusable system developed by Key Castro. It can be customized for a business, then fully "
-            "handed over or managed by KEY CASTRO. No claim is made that a specific company commissioned or adopted it."
+            "Independent system built by Key Castro. It is not presented as software commissioned or used by a specific client."
         ),
         seo_title="Property Inventory Hub | Key Castro",
         meta_description=(
@@ -373,38 +370,37 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         name="Student Housing Matching and Placement System",
         category="Student Housing Operations",
         short_description=(
-            "Track housing requests, matching, viewings, reservations, and placements in one place."
+            "Keep student housing requests, available units, viewings, reservations, and placements in one place."
         ),
-        card_audience="Student-housing and placement teams.",
+        card_audience="Teams helping students find and secure housing.",
         full_description=(
-            "A focused internal system for managing student housing requests, available units, rule-based matching, "
-            "viewings, follow-ups, reservations, and completed placements."
+            "Help your team manage student housing requests, available units, viewings, reservations, and completed placements in one place."
         ),
         business_problem=(
-            "Student-housing teams can lose track of what each student needs when requests, availability, viewings, "
-            "follow-ups, and placement status are kept in separate records. This system connects those steps in one workflow."
+            "Student housing becomes hard to manage when requests, available units, viewings, and follow-ups are kept in different places. "
+            "This system keeps those steps together from the first request to the final placement."
         ),
         target_users=(
-            "Student-housing platforms",
+            "Student housing businesses",
             "Housing coordinators and placement teams",
-            "Off-campus housing and leasing operations",
+            "Off-campus housing and leasing teams",
         ),
         workflow=(
-            "Record the student and housing request.",
-            "Compare suitable available units using rule-based criteria.",
-            "Review options and schedule a viewing when needed.",
-            "Track follow-ups and the next action.",
-            "Reserve the selected unit and prevent double booking.",
-            "Complete placement and update housing availability.",
+            "Add the student and what kind of housing they need.",
+            "See available units that match the student’s needs.",
+            "Review the options and schedule a viewing when needed.",
+            "Keep track of follow-ups and what needs to happen next.",
+            "Reserve the chosen unit and avoid double booking.",
+            "Mark the student as placed and update unit availability.",
         ),
         features=(
-            "Student and housing-request records",
-            "Property owners, properties, units, and live availability",
-            "Rule-based matching using operational housing criteria",
-            "Viewings and follow-up tracking",
-            "Reservation and placement workflow with double-booking protection",
-            "Administrator and Housing Coordinator hierarchy with Access Code sign-in",
-            "Activity history and dashboard visibility",
+            "Keep student details and housing requests together",
+            "Track property owners, properties, units, and availability",
+            "Find suitable units using clear housing requirements",
+            "Track viewings and follow-ups",
+            "Reserve units and help prevent double booking",
+            "Different access for administrators and housing coordinators",
+            "See recent activity and important updates on the main screen",
         ),
         technologies=(
             "Python",
@@ -415,10 +411,10 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         ),
         managed_scope=_COMMON_MANAGED_SCOPE,
         customization_opportunities=(
-            "Business branding and terminology",
-            "Housing-request fields, matching rules, and status flow",
-            "Roles, permissions, dashboards, and reports",
-            "Business-specific property, placement, and follow-up workflows",
+            "Your business name, colors, and wording",
+            "The housing information and the way your team chooses suitable housing",
+            "Who can access what, plus the main screens and reports you need",
+            "The property, placement, and follow-up steps your team uses",
         ),
         search_terms=(
             "student housing",
@@ -438,8 +434,8 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         screenshots=(
             TemplateScreenshot(
                 src="images/templates/student-housing-matching-and-placement-system/dashboard.png",
-                alt="Student Housing Matching and Placement System dashboard preview using synthetic sample data",
-                caption="Dashboard using synthetic sample data — open requests, available units, follow-ups, viewings, reservations, and placements.",
+                alt="Student Housing Matching and Placement System main screen preview using synthetic sample data",
+                caption="Main screen using synthetic sample data — open requests, available units, follow-ups, viewings, reservations, and placements.",
             ),
             TemplateScreenshot(
                 src="images/templates/student-housing-matching-and-placement-system/match-center.png",
@@ -449,13 +445,13 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         ),
         project_note=(
             "Independent portfolio project built by Key Castro after studying a publicly visible 2026 student-housing "
-            "system request and the related placement workflow. Not commissioned by, affiliated with, or endorsed by "
+            "system request and how the housing placement process works. Not commissioned by, affiliated with, or endorsed by "
             "the original poster."
         ),
         seo_title="Student Housing Matching & Placement System | Key Castro",
         meta_description=(
-            "Explore Key Castro's Student Housing Matching and Placement System: a customizable internal workflow "
-            "for housing requests, availability, matching, viewings, follow-ups, reservations, and placements."
+            "Explore Key Castro's Student Housing Matching and Placement System for housing requests, availability, "
+            "matching, viewings, follow-ups, reservations, and placements."
         ),
         og_image="images/templates/student-housing-matching-and-placement-system/dashboard.png",
         published_date="2026-09-19",

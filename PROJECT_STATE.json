@@ -1,9 +1,9 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-20",
-  "version": "3.7.0",
+  "version": "3.8.0",
   "owner_public_name": "Key Castro",
-  "positioning": "Custom Real Estate Systems Developer",
+  "positioning": "Simple systems for real estate, property, and housing businesses",
   "framework": "Flask",
   "production_entrypoint": "wsgi:app",
   "official_live_url": "https://keycastro.onrender.com",
@@ -62,7 +62,7 @@
     "template_request_type_active": true
   },
   "secrets_included_in_repository": false,
-  "visual_design": "Premium ivory + navy + sage design retained and professionally rebalanced in 3.7.0 with tighter proportion, clearer hierarchy, three-column system presentation, controlled media, and less empty space.",
+  "visual_design": "Premium ivory + navy + sage design retained. Version 3.8.0 adds larger everyday text, fewer micro-labels, simpler public wording, fewer competing CTAs, and older-user-friendly readability while preserving the compact 3.7 composition.",
   "template_library_foundation": {
     "prepared": true,
     "published_templates": 3,
@@ -126,7 +126,7 @@
     "primary_navigation": [
       "Home",
       "Systems",
-      "Services",
+      "How It Works",
       "About",
       "Contact"
     ],
@@ -137,8 +137,8 @@
       "experience": "301 redirect to /about"
     },
     "ux_contract": "Short, simple, clear public content. No unnecessary repetition. One clear purpose per page.",
-    "visitor_flow": "Home -> Systems -> System -> Customize or Custom Build -> Full Handover or Managed by KEY CASTRO -> Contact",
-    "presentation_contract": "3.5.0 keeps Home, Systems, Services, About, and Contact while removing repeated pricing/explanations, simplifying public language, and merging Skills/Experience into About through permanent redirects."
+    "visitor_flow": "Home -> Systems -> System -> Contact, with How It Works explaining the build process and the two post-build management choices.",
+    "presentation_contract": "One main job per page: Home explains the offer; Systems shows existing systems; each System page explains that system; How It Works explains the business process and management choices; Contact collects one inquiry."
   },
   "system_search": {
     "active": true,
@@ -256,7 +256,7 @@
     "launcher": "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
     "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
     "provider_auto_deploy": false,
-    "success_condition": "production health reports version 3.7.0 and live Systems page contains Student Housing Matching and Placement System plus exactly 3 published system cards"
+    "success_condition": "production health reports version 3.8.0 and live Systems page contains Student Housing Matching and Placement System plus exactly 3 published system cards"
   },
   "ux_master_refinement_3_7": {
     "document": "docs/MASTER_UX_REFINEMENT_3_7.md",
@@ -272,6 +272,37 @@
       "controlled screenshots",
       "simple international English",
       "responsive visual hierarchy"
+    ]
+  },
+  "human_clarity_3_8": {
+    "document": "docs/HUMAN_CLARITY_AND_OLDER_USER_UX_3_8.md",
+    "public_navigation_label_change": "Services -> How It Works; canonical /services route preserved",
+    "routes_changed": false,
+    "business_logic_changed": false,
+    "public_private_boundary_changed": false,
+    "primary_test": "first-time non-technical older visitor can understand the basic offer without learning internal terminology",
+    "page_responsibilities": {
+      "home": "what KEY CASTRO does",
+      "systems": "systems already built",
+      "system_detail": "what one system does",
+      "how_it_works": "build process and exactly two post-build management choices",
+      "about": "how KEY CASTRO works",
+      "contact": "send one inquiry"
+    },
+    "public_management_labels": [
+      "You Manage It",
+      "I Manage It"
+    ],
+    "formal_management_terms_preserved_internally": [
+      "Full Handover",
+      "Managed by KEY CASTRO"
+    ],
+    "readability": [
+      "larger everyday text",
+      "48px primary controls",
+      "fewer micro-labels",
+      "fewer competing CTAs",
+      "plain English"
     ]
   }
 }
