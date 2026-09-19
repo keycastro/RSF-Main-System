@@ -1,9 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
 <section class="page-hero page-hero-simple about-page-hero">
-  <div class="container simple-page-hero reveal">
-    <h1>About Key Castro.</h1>
-    <p>I build custom business systems and automation for real estate, property, and housing businesses.</p>
+  <div class="container simple-page-hero about-hero-grid reveal">
+    <div class="about-hero-copy">
+      <h1>About Key Castro.</h1>
+      <p>I build custom business systems and automation for real estate, property, and housing businesses.</p>
+    </div>
+    <figure class="about-portrait-frame">
+      <img class="about-portrait" src="{{ url_for('static', filename='images/about/key-castro.png') }}" alt="Key Castro" width="1166" height="1349" decoding="async">
+    </figure>
   </div>
 </section>
 

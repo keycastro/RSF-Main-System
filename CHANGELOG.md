@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 3.8.4 — About portrait integration
+
+- Added Key Castro’s supplied professional portrait to the About-page introduction only.
+- Kept the approved About copy, automation messaging, footer, navigation, pricing, routes, published systems, backend, and private functionality unchanged.
+- Added responsive About-only portrait styling and direct regression/live-deployment verification for the image asset.
+- Release ZIP continues to exclude private/runtime files.
+
 ## 3.8.3 — About problem, automation, and value clarity
 
 - Expanded the About page to clearly explain the operational problems Key Castro helps solve.

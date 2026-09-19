@@ -1,12 +1,12 @@
 # KEY CASTRO WEBSITE — DEVELOPER HANDOFF
 
-**Release:** 3.8.3
+**Release:** 3.8.4
 **Live URL:** https://keycastro.onrender.com
 **Framework:** Flask
 
 ## Current direction
 
-Version 3.8.3 preserves the v3.8.2 site and changes only the About page plus the footer tagline. About now explains the main business problems, highlights rule-based automation, and explains that consolidating workflows may reduce dependence on multiple paid tools. The footer tagline is “Better systems for complex business needs.”
+Version 3.8.4 preserves the approved v3.8.3 site and adds only the supplied Key Castro professional portrait to the About-page introduction. Existing About messaging, footer tagline, navigation, pricing, systems, backend, and private functionality remain unchanged.
 
 Primary navigation: **Home · Systems · How It Works · About · Contact**. The underlying `/services` URL remains unchanged.
 
@@ -39,4 +39,4 @@ A non-technical 50–70 year old business owner should understand the basic offe
 
 ## Release workflow
 
-Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/content verification for version 3.8.3. Never commit private/runtime files.
+Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/content/portrait verification for version 3.8.4. Never commit private/runtime files.

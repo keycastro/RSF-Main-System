@@ -5,8 +5,8 @@ $documents = [Environment]::GetFolderPath("MyDocuments")
 $target = Join-Path $documents "KEY_CASTRO_WEBSITE"
 $serviceId = "srv-dam749e1egvs738cppq0"
 $liveBase = "https://keycastro.onrender.com"
-$expectedVersion = "3.8.3"
-$commitMessage = "Release 3.8.3 About automation and problem clarity"
+$expectedVersion = "3.8.4"
+$commitMessage = "Release 3.8.4 About portrait integration"
 
 function Invoke-Native {
     param(
@@ -214,6 +214,7 @@ try {
             $systems = Invoke-WebRequest -Uri "$liveBase/system-templates?verify=$stamp" -UseBasicParsing -TimeoutSec 30
             $how = Invoke-WebRequest -Uri "$liveBase/services?verify=$stamp" -UseBasicParsing -TimeoutSec 30
             $about = Invoke-WebRequest -Uri "$liveBase/about?verify=$stamp" -UseBasicParsing -TimeoutSec 30
+            $portrait = Invoke-WebRequest -Uri "$liveBase/static/images/about/key-castro.png?verify=$stamp" -UseBasicParsing -TimeoutSec 30
             $hasStudentHousing = $systems.Content -match [regex]::Escape("Student Housing Matching and Placement System")
             $systemCardCount = ([regex]::Matches($systems.Content, "data-system-card")).Count
             $hasThreeSystems = $systemCardCount -eq 3
@@ -231,7 +232,9 @@ try {
             $hasAboutSubscriptionValue = $about.Content -match [regex]::Escape("One system can reduce the need for too many paid tools.")
             $hasNewTagline = $about.Content -match [regex]::Escape("Better systems for complex business needs.")
             $oldTaglineGone = -not ($about.Content -match [regex]::Escape("Simple systems for real estate businesses."))
-            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems -and $hasAdaptSentence -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasPricing -and $hasAboutAutomation -and $hasAboutSubscriptionValue -and $hasNewTagline -and $oldTaglineGone) {
+            $hasAboutPortrait = ($about.Content -match [regex]::Escape('/static/images/about/key-castro.png')) -and ($about.Content -match [regex]::Escape('alt="Key Castro"'))
+            $portraitLoads = ($portrait.StatusCode -eq 200) -and ($portrait.RawContentLength -gt 100000)
+            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems -and $hasAdaptSentence -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasPricing -and $hasAboutAutomation -and $hasAboutSubscriptionValue -and $hasNewTagline -and $oldTaglineGone -and $hasAboutPortrait -and $portraitLoads) {
                 $verified = $true
                 break
             }
@@ -259,6 +262,7 @@ try {
     Write-Host "Systems: 3 published systems confirmed"
     Write-Host "Student Housing system: confirmed LIVE"
     Write-Host "About automation/problem update: confirmed LIVE"
+    Write-Host "About portrait: confirmed LIVE"
     Write-Host "Footer tagline: confirmed LIVE"
     Write-Host "Commit: $sha"
     Write-Host ""
