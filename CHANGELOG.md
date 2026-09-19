@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 3.8.7 — Approved About profile redesign
+
+- Implemented only the user-approved About-page top profile composition.
+- Moved the existing portrait to the left profile column and grouped it with **Key Castro** and **Custom Business App Developer & Automation Specialist**.
+- Replaced the prior top copy with the approved **ABOUT / What I do.** service summary using the exact user-approved paragraph.
+- Added the approved compact value row: **Custom Systems — Built around your workflow**, **Automation — Less manual work**, and **Real Results — More time for what matters**.
+- Preserved the portrait asset and the complete **THE PROBLEMS I HELP SOLVE** section and everything below it, plus every unrelated page, route, price, system, backend feature, and private function.
+
 ## 3.8.6 — About top profile block refinement
 
 - Redesigned only the About-page top profile area.

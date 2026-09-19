@@ -1,16 +1,15 @@
-# DELIVERY REPORT — KEY CASTRO 3.8.6
+# DELIVERY REPORT — KEY CASTRO 3.8.7
 
 ## Scope
 
-Strict redesign of the **About-page top profile area only**, plus direct About-scoped CSS, test, version, and deployment-verification dependencies.
+Strict implementation of the **approved About-page top profile design only**, plus direct About-scoped CSS, test, version, and deployment-verification dependencies.
 
 ## Approved change
 
-- Kept **About Key Castro.** and the existing approved short intro on the left.
-- Kept the current approved portrait asset unchanged.
-- Moved **Custom Business App Developer & Automation Specialist** from the left intro to directly below the portrait.
-- Grouped the portrait and title into one clean profile block and rebalanced only the top About grid/responsive behavior.
-- Preserved the full **Problems I Help Solve** section and every section below it exactly as approved.
+- Left profile column: unchanged approved portrait, **Key Castro**, and **Custom Business App Developer & Automation Specialist**.
+- Right service-summary column: **ABOUT**, **What I do.**, and the exact user-approved service description.
+- Kept the approved compact value row: **Custom Systems — Built around your workflow**, **Automation — Less manual work**, and **Real Results — More time for what matters**.
+- Preserved the full **THE PROBLEMS I HELP SOLVE** section and every section below it exactly as supplied by the authoritative v3.8.6 ZIP.
 
 ## Preserved
 
@@ -20,4 +19,4 @@ Strict redesign of the **About-page top profile area only**, plus direct About-s
 
 ## Release rule
 
-Production is not considered 3.8.6 until the one-run deployer verifies the live health version, the existing approved About problem/automation content, the revised top profile block, portrait asset, footer tagline, approved How It Works flow/pricing, and all three published systems.
+Production is not considered 3.8.7 until the one-run deployer verifies the live health version, the approved About profile composition and exact service description/value row, the existing approved About problem/automation content, portrait asset, footer tagline, approved How It Works flow/pricing, and all three published systems.

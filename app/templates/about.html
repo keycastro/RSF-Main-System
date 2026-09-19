@@ -1,17 +1,43 @@
 {% extends 'base.html' %}
 {% block content %}
 <section class="page-hero page-hero-simple about-page-hero">
-  <div class="container simple-page-hero about-hero-grid reveal">
-    <div class="about-hero-copy">
-      <h1>About Key Castro.</h1>
-      <p>I build custom business systems and automation for real estate, property, and housing businesses.</p>
-    </div>
+  <div class="container about-intro-layout reveal">
     <aside class="about-profile-block" aria-label="Key Castro profile">
       <figure class="about-portrait-frame">
         <img class="about-portrait" src="{{ url_for('static', filename='images/about/key-castro.png') }}" alt="Key Castro" width="1254" height="1254" decoding="async">
       </figure>
-      <p class="about-professional-title">Custom Business App Developer &amp; Automation Specialist</p>
+      <div class="about-profile-identity">
+        <p class="about-profile-name">Key Castro</p>
+        <p class="about-professional-title">Custom Business App Developer &amp; Automation Specialist</p>
+      </div>
     </aside>
+
+    <div class="about-hero-copy">
+      <p class="about-kicker">ABOUT</p>
+      <h1>What I do.</h1>
+      <p class="about-what-i-do-copy">I build custom business systems and automation for real estate, property, and housing businesses. I help reduce manual work, organize scattered tasks and information, and create workflows that fit how the business really works. When useful, I also help reduce the need for too many separate tools and subscriptions by bringing key work into one system.</p>
+
+      <div class="about-value-row" aria-label="What I do at a glance">
+        <div class="about-value-item">
+          <span class="about-value-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm8.2 3.5-.9-.5c.1-.6.1-1.1 0-1.7l.9-.5a1 1 0 0 0 .4-1.4l-1-1.8a1 1 0 0 0-1.4-.4l-.9.5c-.5-.4-1-.7-1.5-.9V4.2a1 1 0 0 0-1-1h-2.1a1 1 0 0 0-1 1v1.1c-.6.2-1.1.5-1.5.9l-.9-.5a1 1 0 0 0-1.4.4l-1 1.8a1 1 0 0 0 .4 1.4l.9.5a8 8 0 0 0 0 1.7l-.9.5a1 1 0 0 0-.4 1.4l1 1.8a1 1 0 0 0 1.4.4l.9-.5c.5.4 1 .7 1.5.9v1.1a1 1 0 0 0 1 1h2.1a1 1 0 0 0 1-1V16c.6-.2 1.1-.5 1.5-.9l.9.5a1 1 0 0 0 1.4-.4l1-1.8a1 1 0 0 0-.4-1.4Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span><strong>Custom Systems</strong><small>Built around your workflow</small></span>
+        </div>
+        <div class="about-value-item">
+          <span class="about-value-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false"><path d="m13.2 2-7 11h5l-.4 9 7-12h-5.1l.5-8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span><strong>Automation</strong><small>Less manual work</small></span>
+        </div>
+        <div class="about-value-item">
+          <span class="about-value-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false"><path d="M4 20h16M6 17h3v3H6v-3Zm5-5h3v8h-3v-8Zm5-6h3v14h-3V6Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span><strong>Real Results</strong><small>More time for what matters</small></span>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 

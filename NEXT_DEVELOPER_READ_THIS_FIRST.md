@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Release version:** 3.8.6
+**Release version:** 3.8.7
 **Official site:** https://keycastro.onrender.com
 **Framework:** Flask
 
@@ -78,7 +78,7 @@ Do not repeat the full management model on every system page.
 
 ## Design rule
 
-Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.6 redesigns only the About top profile area: the approved portrait and professional title are grouped together on the right while the approved intro remains on the left; its CSS remains scoped to `.about-*` classes. Do not use this release as permission to redesign unrelated pages. Compact must never mean tiny text.
+Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.7 implements only the approved About top profile layout: portrait/name/title on the left, and ABOUT / What I do. / exact service description / compact three-item value row on the right; its CSS remains scoped to `.about-*` classes. Do not use this release as permission to redesign unrelated pages. Compact must never mean tiny text.
 
 ## Security
 

@@ -5,8 +5,8 @@ $documents = [Environment]::GetFolderPath("MyDocuments")
 $target = Join-Path $documents "KEY_CASTRO_WEBSITE"
 $serviceId = "srv-dam749e1egvs738cppq0"
 $liveBase = "https://keycastro.onrender.com"
-$expectedVersion = "3.8.6"
-$commitMessage = "Release 3.8.6 About top profile block refinement"
+$expectedVersion = "3.8.7"
+$commitMessage = "Release 3.8.7 approved About profile redesign"
 
 function Invoke-Native {
     param(
@@ -235,8 +235,13 @@ try {
             $hasAboutPortrait = ($about.Content -match [regex]::Escape('/static/images/about/key-castro.png')) -and ($about.Content -match [regex]::Escape('alt="Key Castro"'))
             $hasAboutProfessionalTitle = $about.Content -match [regex]::Escape("Custom Business App Developer &amp; Automation Specialist")
             $hasAboutProfileBlock = $about.Content -match [regex]::Escape('class="about-profile-block"')
+            $hasAboutProfileName = $about.Content -match [regex]::Escape('class="about-profile-name">Key Castro</p>')
+            $hasWhatIDo = $about.Content -match [regex]::Escape('<h1>What I do.</h1>')
+            $approvedAboutDescription = "I build custom business systems and automation for real estate, property, and housing businesses. I help reduce manual work, organize scattered tasks and information, and create workflows that fit how the business really works. When useful, I also help reduce the need for too many separate tools and subscriptions by bringing key work into one system."
+            $hasApprovedAboutDescription = $about.Content -match [regex]::Escape($approvedAboutDescription)
+            $hasAboutValueRow = ($about.Content -match [regex]::Escape("Custom Systems")) -and ($about.Content -match [regex]::Escape("Built around your workflow")) -and ($about.Content -match [regex]::Escape("Automation")) -and ($about.Content -match [regex]::Escape("Less manual work")) -and ($about.Content -match [regex]::Escape("Real Results")) -and ($about.Content -match [regex]::Escape("More time for what matters"))
             $portraitLoads = ($portrait.StatusCode -eq 200) -and ($portrait.RawContentLength -gt 100000)
-            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems -and $hasAdaptSentence -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasPricing -and $hasAboutAutomation -and $hasAboutSubscriptionValue -and $hasNewTagline -and $oldTaglineGone -and $hasAboutPortrait -and $hasAboutProfessionalTitle -and $hasAboutProfileBlock -and $portraitLoads) {
+            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems -and $hasAdaptSentence -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasPricing -and $hasAboutAutomation -and $hasAboutSubscriptionValue -and $hasNewTagline -and $oldTaglineGone -and $hasAboutPortrait -and $hasAboutProfessionalTitle -and $hasAboutProfileBlock -and $hasAboutProfileName -and $hasWhatIDo -and $hasApprovedAboutDescription -and $hasAboutValueRow -and $portraitLoads) {
                 $verified = $true
                 break
             }
@@ -264,7 +269,7 @@ try {
     Write-Host "Systems: 3 published systems confirmed"
     Write-Host "Student Housing system: confirmed LIVE"
     Write-Host "About automation/problem update: confirmed LIVE"
-    Write-Host "About top profile block: confirmed LIVE"
+    Write-Host "Approved About profile redesign: confirmed LIVE"
     Write-Host "Footer tagline: confirmed LIVE"
     Write-Host "Commit: $sha"
     Write-Host ""

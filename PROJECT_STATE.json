@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-20",
-  "version": "3.8.6",
+  "version": "3.8.7",
   "owner_public_name": "Key Castro",
   "positioning": "Better systems for complex business needs",
   "framework": "Flask",
@@ -256,7 +256,7 @@
     "launcher": "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
     "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
     "provider_auto_deploy": false,
-    "success_condition": "production health reports version 3.8.6; live About shows the approved automation/problem/subscription-value content, footer tagline Better systems for complex business needs, and the approved Key Castro portrait grouped with the professional title in the About top profile block, and portrait static asset loading successfully; live How It Works preserves the approved two-step flow, action buttons, and pricing; live Systems contains Student Housing Matching and Placement System plus exactly 3 published system cards"
+    "success_condition": "production health reports version 3.8.7; live About shows the approved portrait/name/title profile block on the left and ABOUT / What I do. / exact approved service description / compact Custom Systems, Automation, and Real Results value row on the right; existing About problem/automation/subscription-value content and footer tagline Better systems for complex business needs remain present; live How It Works preserves the approved two-step flow, action buttons, and pricing; live Systems contains Student Housing Matching and Placement System plus exactly 3 published system cards"
   },
   "ux_master_refinement_3_7": {
     "document": "docs/MASTER_UX_REFINEMENT_3_7.md",
@@ -379,6 +379,20 @@
       "Grouped the portrait and title into one clean About-only profile block",
       "Rebalanced only the About top grid and responsive behavior to reduce the disconnected/floating appearance",
       "Preserved the approved portrait asset, intro copy, all About content below the top profile area, and all unrelated public/private functionality"
+    ]
+  },
+  "minor_change_3_8_7": {
+    "scope": "Approved About top profile redesign only, plus direct CSS/test/release/deployment dependencies",
+    "routes_changed": false,
+    "business_model_changed": false,
+    "pricing_changed": false,
+    "approved_about_lower_content_changed": false,
+    "portrait_asset_changed": false,
+    "changes": [
+      "Moved the unchanged approved portrait into the left profile column and grouped it with Key Castro and the existing professional title",
+      "Changed the right side of the top About area to ABOUT / What I do. with the exact user-approved service summary",
+      "Added the approved compact Custom Systems / Automation / Real Results value row",
+      "Preserved THE PROBLEMS I HELP SOLVE and everything below it, plus all unrelated public/private functionality"
     ]
   }
 }
