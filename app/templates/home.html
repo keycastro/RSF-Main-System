@@ -1,57 +1,39 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="hero hero-3-4">
-  <div class="container hero-grid hero-grid-3-4">
+<section class="hero hero-simple">
+  <div class="container simple-hero-wrap">
     <div class="hero-copy reveal">
-      <p class="eyebrow hero-kicker">KEY CASTRO · REAL ESTATE SYSTEMS</p>
-      <h1>Business systems that make <span>real estate work easier to see and manage.</span></h1>
-      <p class="hero-lead">Use a completed managed system for an existing workflow, or discuss a custom build when your operation needs something different.</p>
+      <p class="eyebrow">KEY CASTRO</p>
+      <h1>Simple systems for <span>real estate teams.</span></h1>
+      <p class="hero-lead">I build web systems that help teams manage property work, listings, rentals, and daily tasks.</p>
       <div class="hero-actions">
         <a class="button primary" href="{{ url_for('site.system_templates') }}">View Systems</a>
-        <a class="text-link hero-secondary-link" href="{{ url_for('site.contact') }}">Discuss a Custom System <span>→</span></a>
+        <a class="button secondary" href="{{ url_for('site.contact') }}">Contact Me</a>
       </div>
     </div>
-
-    <aside class="orientation-panel reveal delay-1" aria-label="Ways to work with Key Castro">
-      <p class="eyebrow">START HERE</p>
-      <div class="orientation-option">
-        <span>01</span>
-        <div><strong>Use an existing system</strong><p>Choose a completed system and subscribe monthly or yearly for managed access.</p></div>
-      </div>
-      <div class="orientation-option">
-        <span>02</span>
-        <div><strong>Adapt or build something different</strong><p>Discuss paid customization or a separate custom system around your workflow.</p></div>
-      </div>
-    </aside>
   </div>
 </section>
 
 <section class="section home-systems-section" id="featured-systems">
   <div class="container">
-    <div class="section-head reveal">
+    <div class="section-head simple-section-head reveal">
       <div>
-        <p class="eyebrow">COMPLETED SYSTEMS</p>
-        <h2>Start with the workflow you need.</h2>
-        <p>These are separate systems with different purposes. Open one to review its workflow, features, screens, and subscription options.</p>
+        <p class="eyebrow">SYSTEMS</p>
+        <h2>Choose the system that matches your work.</h2>
       </div>
-      <a class="text-link desktop-link" href="{{ url_for('site.system_templates') }}">Browse Systems <span>→</span></a>
+      <a class="text-link desktop-link" href="{{ url_for('site.system_templates') }}">View All Systems <span>→</span></a>
     </div>
 
     <div class="system-showcase-grid compact-system-grid">
       {% for item in published_system_templates %}
-      <article class="system-showcase-card reveal delay-{{ loop.index0 % 2 }}">
+      <article class="system-showcase-card simple-system-card reveal delay-{{ loop.index0 % 2 }}">
         <div class="system-showcase-copy">
-          <p class="system-type">MANAGED SYSTEM SUBSCRIPTION</p>
+          <p class="system-type">{{ item.category|upper }}</p>
           <h3>{{ item.name }}</h3>
           <p>{{ item.short_description }}</p>
           <p class="system-audience"><strong>Best for:</strong> {{ item.card_audience }}</p>
-          <div class="system-card-meta">
-            <span>{{ subscription_pricing.monthly.price_label }}</span>
-            <span aria-hidden="true">·</span>
-            <span>{{ subscription_pricing.yearly.price_label }}</span>
-          </div>
           <div class="system-showcase-actions">
-            <a class="button primary" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">View {{ item.name }}</a>
+            <a class="button primary" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">View System</a>
           </div>
         </div>
         {% if item.screenshots %}
@@ -63,30 +45,7 @@
       </article>
       {% endfor %}
     </div>
-    <a class="text-link mobile-link" href="{{ url_for('site.system_templates') }}">Browse Systems <span>→</span></a>
-  </div>
-</section>
-
-<section class="section section-soft work-path-section">
-  <div class="container work-path-layout reveal">
-    <div class="work-path-heading">
-      <p class="eyebrow">HOW TO WORK WITH KEY CASTRO</p>
-      <h2>One clear path for an existing system. Another for custom work.</h2>
-    </div>
-    <div class="work-path-list">
-      <article>
-        <span>MANAGED SYSTEM SUBSCRIPTION</span>
-        <h3>Use a completed system.</h3>
-        <p>{{ subscription_pricing.monthly.price_label }} or {{ subscription_pricing.yearly.price_label }} per system. Yearly saves {{ subscription_pricing.currency_symbol }}{{ subscription_pricing.annual_savings }}. Managed access covers the subscribed service within the agreed scope.</p>
-        <a class="text-link" href="{{ url_for('site.system_templates') }}">Choose a system <span>→</span></a>
-      </article>
-      <article>
-        <span>PAID DEVELOPMENT</span>
-        <h3>Change a system or build a different one.</h3>
-        <p>Business-specific development is scoped and quoted separately. For customization of a subscribed system, the normal subscription continues while the managed system remains in use.</p>
-        <a class="text-link" href="{{ url_for('site.services') }}">Understand the options <span>→</span></a>
-      </article>
-    </div>
+    <a class="text-link mobile-link" href="{{ url_for('site.system_templates') }}">View All Systems <span>→</span></a>
   </div>
 </section>
 {% endblock %}

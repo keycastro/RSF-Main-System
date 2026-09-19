@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-19",
-  "version": "3.4.0",
+  "version": "3.5.0",
   "owner_public_name": "Key Castro",
   "positioning": "Custom Real Estate Systems Developer",
   "framework": "Flask",
@@ -62,7 +62,7 @@
     "template_request_type_active": true
   },
   "secrets_included_in_repository": false,
-  "visual_design": "Premium architectural ivory + navy + sage system; 3.4.0 refines organization and hierarchy by reducing repeated CTAs/card mass, centralizing system subscription decisions, and preserving compact screenshots, 3.1 metadata-driven search, 3.2 commercial boundaries, and 3.3 trusted pricing.",
+  "visual_design": "Premium ivory + navy + sage design with a 3.5.0 simplicity rule: short public copy, fewer choices, less repetition, compact media, and one clear purpose per page.",
   "template_library_foundation": {
     "prepared": true,
     "published_templates": 2,
@@ -125,13 +125,13 @@
     ],
     "systems_primary_route": "/system-templates",
     "legacy_projects_route": "301 redirect to /system-templates",
-    "secondary_pages": [
-      "/skills",
-      "/experience"
-    ],
-    "ux_contract": "docs/UX_INFORMATION_ARCHITECTURE.md",
-    "visitor_flow": "Home -> Systems -> System -> System Subscription or Paid Customization -> Contact",
-    "presentation_contract": "3.4.0 keeps Home -> Systems -> System -> Subscription/Customization -> Contact while reducing repeated decisions, using one dominant catalog action, lighter supporting-page structures, and centralized subscription choices on system details."
+    "secondary_pages": {
+      "skills": "301 redirect to /about",
+      "experience": "301 redirect to /about"
+    },
+    "ux_contract": "Short, simple, clear public content. No unnecessary repetition. One clear purpose per page.",
+    "visitor_flow": "Home -> Systems -> System -> Plan or Customization -> Contact",
+    "presentation_contract": "3.5.0 keeps Home, Systems, Services, About, and Contact while removing repeated pricing/explanations, simplifying public language, and merging Skills/Experience into About through permanent redirects."
   },
   "system_search": {
     "active": true,
@@ -147,7 +147,7 @@
       "target_users",
       "search_terms"
     ],
-    "no_match_conversion": "Discuss a Custom System -> generic Contact",
+    "no_match_conversion": "Contact Me -> generic Contact",
     "javascript_required_for_content": false
   },
   "commercial_model": {
@@ -182,6 +182,22 @@
       "shorter vertical travel",
       "controlled media",
       "mobile hierarchy"
+    ]
+  },
+  "ux_simplification_3_5": {
+    "document": "docs/WEBSITE_SIMPLIFICATION_3_5.md",
+    "navigation_changed": false,
+    "skills_experience_redirect_to_about": true,
+    "business_logic_changed": false,
+    "public_private_boundary_changed": false,
+    "pricing_location": "system detail pages and plan-specific Contact context",
+    "focus": [
+      "simple English",
+      "shorter pages",
+      "less repetition",
+      "fewer choices",
+      "clear buttons",
+      "one purpose per page"
     ]
   }
 }

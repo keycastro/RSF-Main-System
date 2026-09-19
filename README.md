@@ -29,29 +29,26 @@ The inbox is not linked or advertised anywhere on the public website. It does no
 
 Flask + Gunicorn on the existing Render service. Render auto-deploy is off; use the documented explicit push + deploy workflow.
 
-## Visual design system
+## Public design and content rule
 
-The visual system began with the premium 2.6.0 direction. Version 3.4.0 keeps that identity while refining organization, hierarchy, and presentation density:
+Version 3.5.0 keeps the existing premium visual identity but makes the public website much simpler:
 
-- warm neutral backgrounds
-- deep blue primary accents
-- muted green supporting accents
-- architectural section layering with ivory, soft white, navy, sage, and restrained bronze
-- stronger typography, spacing, hierarchy, screenshot framing, buttons, forms, and case-study structure
-- intentionally readable metadata and supporting text instead of ultra-small low-contrast labels
-- a premium business-tool treatment for the private owner inbox
-- controlled screenshot previews instead of giant screenshot-led cards
-- shorter header, hero, page-hero, section, CTA, and footer proportions
-- compact system-detail galleries with full-size lightbox inspection
-- fewer repeated CTA sections and clearer action hierarchy
-- editorial row/list patterns on supporting pages instead of unnecessary large cards
-- centralized subscription decisions on system detail pages
+- short headings and paragraphs
+- basic, easy-to-understand English
+- fewer repeated explanations
+- fewer buttons and choices
+- pricing shown on system detail pages instead of repeated across Home and Systems
+- simpler Services, About, Contact, and footer content
+- compact screenshots that support the page instead of dominating it
+- one clear purpose per page
 
-The core visual identity, inbox privacy, and deployment architecture remain unchanged. See `docs/VISUAL_PRESENTATION_3_0.md` and `docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md`.
+The public rule is: **Short. Simple. Clear. No unnecessary repetition.**
+
+See `docs/WEBSITE_SIMPLIFICATION_3_5.md`.
 
 ## Public information architecture
 
-Version 2.9.0 simplified the public journey to **Home · Systems · Services · About · Contact**. Version 3.4.0 preserves that architecture while making page purpose, action hierarchy, and content density clearer. The previous Projects index duplicated the same published systems, so `/projects` now permanently redirects to the single Systems library at `/system-templates`. Skills and Experience remain public/indexable secondary pages reached through About/footer. See `docs/UX_INFORMATION_ARCHITECTURE.md`.
+Primary navigation remains **Home · Systems · Services · About · Contact**. `/projects` permanently redirects to `/system-templates`. `/skills` and `/experience` now permanently redirect to `/about` so the normal visitor journey has fewer pages and fewer duplicate explanations.
 
 ## Future system-template foundation
 

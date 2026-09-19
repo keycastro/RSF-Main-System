@@ -1,51 +1,39 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="page-hero systems-page-hero page-hero-3-4">
-  <div class="container page-hero-grid">
-    <div class="reveal"><p class="eyebrow">SYSTEMS</p><h1>Completed systems for <span>specific real estate workflows.</span></h1></div>
-    <div class="page-hero-copy reveal delay-1"><p>Find the workflow that matches your operation. Each system is independent, available through managed subscription access, with paid customization handled as a separate development project when needed.</p></div>
+<section class="page-hero page-hero-simple">
+  <div class="container simple-page-hero reveal">
+    <p class="eyebrow">SYSTEMS</p>
+    <h1>Choose a system.</h1>
+    <p>Each system solves a different real estate problem.</p>
   </div>
 </section>
 
-<section class="section systems-catalog-section catalog-3-4">
+<section class="section systems-catalog-section catalog-simple">
   <div class="container">
-    <div class="system-search-panel system-search-3-4" data-system-search role="search" aria-label="Find a system" hidden>
-      <div class="system-search-heading">
-        <p class="eyebrow">FIND A SYSTEM</p>
-        <h2>Search by workflow or business need.</h2>
-        <p>Examples: inventory, operations, rental, brokerage, maintenance, listings, tenant, or approvals.</p>
-        <p class="system-search-status" id="system-search-status" data-system-search-status role="status" aria-live="polite"></p>
+    <div class="system-search-panel system-search-simple" data-system-search role="search" aria-label="Find a system" hidden>
+      <label for="system-search-input">Search systems</label>
+      <div class="system-search-input-wrap">
+        <input id="system-search-input" type="search" inputmode="search" autocomplete="off" spellcheck="false" placeholder="Search systems..." aria-controls="system-results" aria-describedby="system-search-status" data-system-search-input>
+        <button type="button" class="system-search-clear" data-system-search-clear hidden>Clear</button>
       </div>
-      <div class="system-search-control">
-        <label for="system-search-input">Search systems</label>
-        <div class="system-search-input-wrap">
-          <input id="system-search-input" type="search" inputmode="search" autocomplete="off" spellcheck="false" placeholder="Search by business need..." aria-controls="system-results" aria-describedby="system-search-status" data-system-search-input>
-          <button type="button" class="system-search-clear" data-system-search-clear hidden>Clear search</button>
-        </div>
-      </div>
+      <p class="system-search-status" id="system-search-status" data-system-search-status role="status" aria-live="polite"></p>
     </div>
 
     <div class="template-library-grid compact-library-grid" id="system-results" data-system-results>
       {% for item in templates %}
-      <article class="template-library-card compact-template-card system-catalog-card reveal delay-{{ loop.index0 % 2 }}"
+      <article class="template-library-card compact-template-card system-catalog-card simple-catalog-card reveal delay-{{ loop.index0 % 2 }}"
                data-system-card
                data-search="{{ item.search_text|e }}">
         <div class="template-card-copy">
-          <p class="system-type">MANAGED SYSTEM SUBSCRIPTION</p>
+          <p class="system-type">{{ item.category|upper }}</p>
           <h2>{{ item.name }}</h2>
           <p>{{ item.short_description }}</p>
           <p class="system-audience"><strong>Best for:</strong> {{ item.card_audience }}</p>
-          <div class="compact-price-strip" aria-label="Managed subscription pricing">
-            <span><strong>{{ subscription_pricing.currency_symbol }}{{ subscription_pricing.monthly_price }}</strong><small>/month</small></span>
-            <span class="price-divider" aria-hidden="true">or</span>
-            <span><strong>{{ subscription_pricing.currency_symbol }}{{ subscription_pricing.yearly_price }}</strong><small>/year</small></span>
-            <em>Save {{ subscription_pricing.currency_symbol }}{{ subscription_pricing.annual_savings }}/year</em>
-          </div>
         </div>
         {% if item.screenshots %}
         <a class="template-card-image" href="{{ url_for('site.system_template_detail', slug=item.slug) }}" aria-label="View {{ item.name }}">
           <img src="{{ url_for('static', filename=item.screenshots[0].src) }}" alt="{{ item.screenshots[0].alt }}" width="1600" height="1000" loading="lazy" decoding="async">
-          <span aria-hidden="true">System preview</span>
+          <span aria-hidden="true">Preview</span>
         </a>
         {% endif %}
         <div class="template-card-actions">
@@ -56,10 +44,9 @@
     </div>
 
     <div class="system-search-empty" data-system-search-empty hidden>
-      <p class="eyebrow">CUSTOM DEVELOPMENT</p>
-      <h2>No matching system yet.</h2>
-      <p>The current ready-made systems do not cover every workflow. Tell Key Castro what your business needs instead.</p>
-      <a class="button primary" href="{{ url_for('site.contact') }}">Discuss a Custom System</a>
+      <h2>No matching system.</h2>
+      <p>Need something different? Tell me what you need.</p>
+      <a class="button primary" href="{{ url_for('site.contact') }}">Contact Me</a>
     </div>
   </div>
 </section>

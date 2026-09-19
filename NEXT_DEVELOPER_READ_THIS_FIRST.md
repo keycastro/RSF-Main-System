@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Current version:** 3.4.0
+**Current version:** 3.5.0
 **Official site:** https://keycastro.onrender.com
 **Positioning:** KEY CASTRO — Custom Real Estate Systems Developer
 
@@ -10,15 +10,16 @@ Before changing the website, read:
 
 1. `00_FUTURE_DEVELOPER_READ_THIS_PLAN.md` (local/private roadmap)
 2. `docs/FUTURE_TEMPLATE_LIBRARY_ROADMAP.md` (local/private roadmap)
-3. `docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md`
-4. `docs/UX_INFORMATION_ARCHITECTURE.md`
-5. `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`
-6. `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`
-7. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
-8. `PROJECT_STATE.json`
-9. `SECURITY_AND_SHARING_NOTES.md`
-10. `docs/DEPLOYMENT_HISTORY.md`
-11. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
+3. `docs/WEBSITE_SIMPLIFICATION_3_5.md`
+4. `docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md`
+5. `docs/UX_INFORMATION_ARCHITECTURE.md`
+6. `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`
+7. `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`
+8. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
+9. `PROJECT_STATE.json`
+10. `SECURITY_AND_SHARING_NOTES.md`
+11. `docs/DEPLOYMENT_HISTORY.md`
+12. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
 
 ## Current architecture
 
@@ -46,7 +47,7 @@ Use **Systems** as the visible public mental model for completed systems. The st
 
 `/projects` is a permanent legacy redirect to `/system-templates`. Do not rebuild a duplicate Projects index. `/projects/<published-system-slug>` remains a compatibility redirect to the canonical system detail page.
 
-`/skills` and `/experience` remain public/indexable but secondary; they are reached from About/footer rather than primary navigation.
+The old `/skills` and `/experience` URLs now permanently redirect to `/about` under the 3.5.0 simplification. They are no longer separate visitor destinations or sitemap entries.
 
 ## Published systems
 
@@ -67,6 +68,11 @@ Before adding any visible page, card, CTA, or section, ask whether it creates a 
 Home → Systems → System → System Subscription or Paid Customization → Contact
 ```
 
+
+
+## 3.5.0 simplification rule
+
+Version 3.5.0 makes the public website shorter and easier to understand. Use simple English, short paragraphs, clear buttons, and one purpose per page. Do not repeat pricing or business-model explanations across several pages. Pricing is shown on system detail pages. `/skills` and `/experience` now permanently redirect to `/about` and are not in the sitemap or footer. Preserve the five-item primary navigation, the metadata-driven Systems search, trusted pricing, contact security, private Inbox, and separation of the two systems. See `docs/WEBSITE_SIMPLIFICATION_3_5.md`.
 
 ## 3.4.0 organization + hierarchy rule
 

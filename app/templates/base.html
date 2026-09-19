@@ -37,7 +37,7 @@
         <span class="brand-mark" aria-hidden="true">KC</span>
         <span class="brand-copy">
           <strong>KEY CASTRO</strong>
-          <small>Custom Real Estate Systems Developer</small>
+          <small>Real Estate Systems</small>
         </span>
       </a>
 
@@ -70,33 +70,22 @@
 
   <main id="main-content">{% block content %}{% endblock %}</main>
 
-  <footer class="site-footer">
-    <div class="container footer-main">
+  <footer class="site-footer simple-footer">
+    <div class="container simple-footer-row">
       <div class="footer-brand-block">
         <a class="brand" href="{{ url_for('site.home') }}">
           <span class="brand-mark" aria-hidden="true">KC</span>
-          <span class="brand-copy"><strong>KEY CASTRO</strong><small>Custom Real Estate Systems Developer</small></span>
+          <span class="brand-copy"><strong>KEY CASTRO</strong><small>Real Estate Systems</small></span>
         </a>
-        <p>Business systems for real estate and property operations.</p>
+        <p>Simple systems for real estate and property teams.</p>
       </div>
-
-      <div class="footer-nav">
-        <div>
-          <strong>Navigate</strong>
-          <a href="{{ url_for('site.home') }}">Home</a>
-          {% if template_library_enabled %}<a href="{{ url_for('site.system_templates') }}">Systems</a>{% endif %}
-          <a href="{{ url_for('site.services') }}">Services</a>
-          <a href="{{ url_for('site.about') }}">About</a>
-          <a href="{{ url_for('site.contact') }}">Contact</a>
-        </div>
-        <div>
-          <strong>More about Key Castro</strong>
-          <a href="{{ url_for('site.skills') }}">Skills & technology</a>
-          <a href="{{ url_for('site.experience') }}">Experience</a>
-          {% if socials.linkedin %}<a href="{{ socials.linkedin }}" rel="noopener noreferrer" target="_blank">LinkedIn</a>{% endif %}
-          {% if socials.github %}<a href="{{ socials.github }}" rel="noopener noreferrer" target="_blank">GitHub</a>{% endif %}
-        </div>
-      </div>
+      <nav class="simple-footer-nav" aria-label="Footer navigation">
+        <a href="{{ url_for('site.home') }}">Home</a>
+        {% if template_library_enabled %}<a href="{{ url_for('site.system_templates') }}">Systems</a>{% endif %}
+        <a href="{{ url_for('site.services') }}">Services</a>
+        <a href="{{ url_for('site.about') }}">About</a>
+        <a href="{{ url_for('site.contact') }}">Contact</a>
+      </nav>
     </div>
     <div class="container footer-bottom">
       <span>© <span data-year></span> Key Castro. All rights reserved.</span>

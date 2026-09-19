@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="case-hero template-hero compact-template-hero detail-hero-3-4">
+<section class="case-hero template-hero detail-hero-simple">
   <div class="container">
     <nav class="breadcrumb reveal" aria-label="Breadcrumb">
       <a href="{{ url_for('site.system_templates') }}">Systems</a><span aria-hidden="true">/</span><strong aria-current="page">{{ system_template.name }}</strong>
@@ -8,24 +8,18 @@
   </div>
   <div class="container template-hero-grid">
     <div class="case-intro reveal">
-      <p class="system-type">{{ system_template.category|upper }} · MANAGED SYSTEM</p>
+      <p class="system-type">{{ system_template.category|upper }}</p>
       <h1>{{ system_template.name }}</h1>
       <p class="page-lead">{{ system_template.full_description }}</p>
-      <div class="detail-quick-facts" aria-label="System access summary">
-        <span><strong>{{ subscription_pricing.monthly.price_label }}</strong> monthly</span>
-        <span><strong>{{ subscription_pricing.yearly.price_label }}</strong> yearly</span>
-        <span>Save {{ subscription_pricing.currency_symbol }}{{ subscription_pricing.annual_savings }}/year</span>
-      </div>
       <div class="hero-actions template-primary-actions">
-        <a class="button primary" href="#subscription">View Subscription Options</a>
-        <a class="text-link" href="{{ url_for('site.contact', template=system_template.slug, intent='customize') }}">Need customization? <span>→</span></a>
-        {% if system_template.video.url or system_template.video.embed_url %}<a class="text-link" href="#demo">Watch Demonstration <span>↓</span></a>{% endif %}
+        <a class="button primary" href="#plans">View Plans</a>
+        {% if system_template.video.url or system_template.video.embed_url %}<a class="text-link" href="#demo">Watch Demo <span>↓</span></a>{% endif %}
       </div>
     </div>
     {% if system_template.screenshots %}
     <button class="case-cover compact-case-cover reveal delay-1" type="button" data-lightbox="{{ url_for('static', filename=system_template.screenshots[0].src) }}" data-caption="{{ system_template.screenshots[0].caption }}">
       <img src="{{ url_for('static', filename=system_template.screenshots[0].src) }}" alt="{{ system_template.screenshots[0].alt }}" width="1600" height="1000" loading="eager" decoding="async">
-      <span>Open full screen</span>
+      <span>Open image</span>
     </button>
     {% endif %}
   </div>
@@ -34,7 +28,7 @@
 {% if system_template.video.url or system_template.video.embed_url %}
 <section class="section section-soft compact-detail-section" id="demo">
   <div class="container">
-    <div class="section-head compact-head"><div><p class="eyebrow">DEMONSTRATION</p><h2>See the workflow in action.</h2></div></div>
+    <div class="section-head compact-head"><div><p class="eyebrow">DEMO</p><h2>See the system in use.</h2></div></div>
     <div class="template-video-note">
       {% if system_template.video.url %}
       <video class="template-video" controls preload="metadata" {% if system_template.video.thumbnail %}poster="{{ system_template.video.thumbnail }}"{% endif %}>
@@ -42,24 +36,23 @@
         Your browser does not support the video element.
       </video>
       {% elif system_template.video.embed_url %}
-      <a class="button secondary" href="{{ system_template.video.embed_url }}" target="_blank" rel="noopener noreferrer">Open Video Demonstration</a>
+      <a class="button secondary" href="{{ system_template.video.embed_url }}" target="_blank" rel="noopener noreferrer">Open Demo</a>
       {% endif %}
       <p>{{ system_template.video.description }}</p>
-      {% if system_template.video.transcript %}<details><summary>Read demonstration summary</summary><p>{{ system_template.video.transcript }}</p></details>{% endif %}
     </div>
   </div>
 </section>
 {% endif %}
 
-<section class="section compact-detail-section detail-overview-section" id="overview">
+<section class="section compact-detail-section detail-overview-simple">
   <div class="container detail-overview-layout">
-    <div class="detail-problem reveal">
-      <p class="eyebrow">BUSINESS PROBLEM</p>
-      <h2>What this system helps organize.</h2>
+    <div class="reveal">
+      <p class="eyebrow">WHAT IT HELPS WITH</p>
+      <h2>Keep important work in one place.</h2>
       <p class="large-copy">{{ system_template.business_problem }}</p>
     </div>
-    <div class="detail-audience reveal delay-1">
-      <p class="eyebrow">WHO IT IS FOR</p>
+    <div class="reveal delay-1">
+      <p class="eyebrow">BEST FOR</p>
       <ul class="template-list compact-list">{% for user in system_template.target_users %}<li>{{ user }}</li>{% endfor %}</ul>
     </div>
   </div>
@@ -69,12 +62,12 @@
   <div class="container detail-function-layout">
     <div class="reveal">
       <p class="eyebrow">HOW IT WORKS</p>
-      <h2>The standard workflow.</h2>
+      <h2>Simple workflow.</h2>
       <ol class="template-steps compact-steps">{% for step in system_template.workflow %}<li><span>{{ '%02d'|format(loop.index) }}</span><p>{{ step }}</p></li>{% endfor %}</ol>
     </div>
     <div class="reveal delay-1">
       <p class="eyebrow">MAIN FEATURES</p>
-      <h2>What is already built in.</h2>
+      <h2>What is included.</h2>
       <ul class="template-list compact-list">{% for feature in system_template.features %}<li>{{ feature }}</li>{% endfor %}</ul>
     </div>
   </div>
@@ -83,7 +76,7 @@
 {% if system_template.screenshots|length > 1 %}
 <section class="section system-screens-section compact-screens-section">
   <div class="container">
-    <div class="section-head compact-head"><div><p class="eyebrow">SYSTEM SCREENS</p><h2>Inspect more of the completed interface.</h2><p class="section-note">Previews use sample/demo data. Open any image when you want a closer look.</p></div></div>
+    <div class="section-head compact-head"><div><p class="eyebrow">SCREENS</p><h2>See more of the system.</h2><p class="section-note">Images use sample/demo data.</p></div></div>
     <div class="gallery-grid template-gallery-grid compact-gallery-grid">
       {% for screenshot in system_template.screenshots[1:] %}
       <button class="gallery-item compact-gallery-item" type="button" data-lightbox="{{ url_for('static', filename=screenshot.src) }}" data-caption="{{ screenshot.caption }}">
@@ -96,59 +89,45 @@
 </section>
 {% endif %}
 
-<section class="section section-soft compact-detail-section subscription-section-3-4" id="subscription">
+<section class="section section-soft compact-detail-section subscription-section-simple" id="plans">
   <div class="container">
-    <div class="subscription-heading reveal">
-      <div><p class="eyebrow">MANAGED SYSTEM SUBSCRIPTION</p><h2>Choose how you want ongoing access.</h2></div>
-      <p>Pricing is per system. Subscription provides ongoing managed access to the ready-made system; it does not transfer ownership of the core software.</p>
+    <div class="subscription-heading-simple reveal">
+      <p class="eyebrow">PLANS</p>
+      <h2>Choose monthly or yearly access.</h2>
+      <p>You pay for access to this system. The core software is not sold.</p>
     </div>
 
-    <div class="subscription-decision-grid">
+    <div class="subscription-decision-grid simple-plan-layout">
       <div class="subscription-main reveal">
         <div class="subscription-plan-grid" aria-label="Subscription options">
           <article class="subscription-plan-option">
             <span>MONTHLY</span>
             <div class="subscription-plan-price"><strong>{{ subscription_pricing.currency_symbol }}{{ subscription_pricing.monthly_price }}</strong><small>/month</small></div>
-            <p>Flexible month-to-month managed access.</p>
             <a class="button primary" href="{{ url_for('site.contact', template=system_template.slug, intent='subscribe', plan='monthly') }}">Request Monthly Access</a>
           </article>
           <article class="subscription-plan-option preferred">
             <span>YEARLY</span>
             <div class="subscription-plan-price"><strong>{{ subscription_pricing.currency_symbol }}{{ subscription_pricing.yearly_price }}</strong><small>/year</small></div>
             <em>Save {{ subscription_pricing.currency_symbol }}{{ subscription_pricing.annual_savings }}/year</em>
-            <p>One year of managed access at the approved annual price.</p>
             <a class="button primary" href="{{ url_for('site.contact', template=system_template.slug, intent='subscribe', plan='yearly') }}">Request Yearly Access</a>
           </article>
         </div>
         <div class="scope-inline">
-          <strong>Standard managed scope</strong>
+          <strong>Included</strong>
           <ul class="template-list compact-list">{% for item in system_template.standard_scope %}<li>{{ item }}</li>{% endfor %}</ul>
         </div>
       </div>
 
       <aside class="customization-aside reveal delay-1">
-        <p class="eyebrow">PAID CUSTOMIZATION</p>
-        <h3>Need this system changed for your business?</h3>
-        <p>Requirements and development price are discussed separately. The customization fee covers requested development work; the normal subscription continues while the managed system remains in use.</p>
-        <a class="text-link customization-link" href="{{ url_for('site.contact', template=system_template.slug, intent='customize') }}">Request a custom quote <span>→</span></a>
-        <details class="customization-details">
-          <summary>Examples of possible customization</summary>
-          <ul class="template-list compact-list">{% for item in system_template.customization_opportunities %}<li>{{ item }}</li>{% endfor %}</ul>
-        </details>
+        <p class="eyebrow">CUSTOM CHANGES</p>
+        <h3>Need something changed?</h3>
+        <p>Custom work is priced separately. If it changes this subscribed system, the normal subscription still continues.</p>
+        <a class="button secondary" href="{{ url_for('site.contact', template=system_template.slug, intent='customize') }}">Request Customization</a>
       </aside>
     </div>
 
-    <details class="technical-disclosure compact-technical-disclosure">
-      <summary>Technical details about this build</summary>
-      <div class="technical-disclosure-content">
-        <div><strong>Technology</strong><div class="pill-row compact-pills">{% for item in system_template.technologies %}<span>{{ item }}</span>{% endfor %}</div></div>
-        {% if system_template.project_note %}<div><strong>Build note</strong><p>{{ system_template.project_note }}</p></div>{% endif %}
-      </div>
-    </details>
-
-    <nav class="detail-bottom-nav" aria-label="System navigation">
+    <nav class="detail-bottom-nav simple-bottom-nav" aria-label="System navigation">
       <a class="text-link" href="{{ url_for('site.system_templates') }}">← Back to Systems</a>
-      <a class="text-link" href="{{ url_for('site.contact') }}">Discuss a Different System <span>→</span></a>
     </nav>
   </div>
 </section>

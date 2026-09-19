@@ -20,15 +20,13 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Key Castro Portfolio")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.4.0")
+        self.assertEqual(data["version"], "3.5.0")
 
     def test_main_pages_and_template_library_render(self):
         routes = [
             "/",
             "/about",
             "/services",
-            "/skills",
-            "/experience",
             "/contact",
             "/system-templates",
             "/system-templates/property-operations-command-center",
@@ -39,6 +37,12 @@ class PortfolioSiteTests(unittest.TestCase):
                 response = self.client.get(route)
                 self.assertEqual(response.status_code, 200)
                 self.assertIn(b"KEY CASTRO", response.data)
+
+        for route in ("/skills", "/experience"):
+            with self.subTest(route=route):
+                response = self.client.get(route, follow_redirects=False)
+                self.assertEqual(response.status_code, 301)
+                self.assertEqual(response.headers["Location"], "/about")
 
     def test_two_systems_are_published_separately_and_nexus_is_removed(self):
         home = self.client.get("/")
@@ -55,10 +59,10 @@ class PortfolioSiteTests(unittest.TestCase):
 
         pocc = self.client.get("/system-templates/property-operations-command-center")
         pih = self.client.get("/system-templates/property-inventory-hub")
-        self.assertIn(b"Work items with priority", pocc.data)
-        self.assertNotIn(b"Freshness engine with reconfirmation", pocc.data)
-        self.assertIn(b"Freshness engine with reconfirmation", pih.data)
-        self.assertNotIn(b"Owner approval requests", pih.data)
+        self.assertIn(b"Task tracking with priority", pocc.data)
+        self.assertNotIn(b"Reconfirmation and automatic expiry", pocc.data)
+        self.assertIn(b"Reconfirmation and automatic expiry", pih.data)
+        self.assertNotIn(b"Owner approvals", pih.data)
 
         old_nexus = self.client.get("/projects/nexus-properties")
         self.assertEqual(old_nexus.status_code, 404)
@@ -73,9 +77,11 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b">Contact</a>", response.data)
         self.assertNotIn(b">Projects</a>", response.data)
         self.assertNotIn(b">System Templates</a>", response.data)
-        self.assertIn(b"COMPLETED SYSTEMS", response.data)
+        self.assertIn(b">SYSTEMS<", response.data)
         self.assertIn(b"View Systems", response.data)
-        self.assertIn(b"Discuss a Custom System", response.data)
+        self.assertIn(b"Contact Me", response.data)
+        self.assertNotIn(b"$49", response.data)
+        self.assertNotIn(b"$490", response.data)
         self.assertEqual(response.data.count(b"Property Operations Command Center</h3>"), 1)
         self.assertEqual(response.data.count(b"Property Inventory Hub</h3>"), 1)
         public_shell = response.data.lower()
@@ -93,19 +99,19 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b">Systems</a>", home.data)
         self.assertNotIn(b">Projects</a>", home.data)
         self.assertNotIn(b">System Templates</a>", home.data)
-        self.assertIn(b"Completed systems for", systems.data)
+        self.assertIn(b"Choose a system.", systems.data)
         self.assertNotIn(b"Free access by request</strong>", systems.data)
 
-        # Skills and Experience remain useful secondary pages, but not primary navigation items.
+        # Skills and Experience are merged into About and their old URLs redirect there.
         header = home.data.split(b"</header>", 1)[0]
-        self.assertNotIn(b">Skills & technology</a>", header)
+        self.assertNotIn(b">Skills &amp; technology</a>", header)
         self.assertNotIn(b">Experience</a>", header)
-        self.assertIn(b"Skills & technology", about.data)
-        self.assertIn(b"Experience", about.data)
+        self.assertNotIn(b"Skills &amp; technology", about.data)
+        self.assertNotIn(b">Experience</a>", about.data)
 
-        # Services explains the two commercial paths without duplicating the catalog.
-        self.assertIn(b"Managed System Subscriptions", services.data)
-        self.assertIn(b"Paid Customization &amp; Custom Development", services.data)
+        # Services has only the two choices a visitor needs.
+        self.assertIn(b"Use a ready-made system", services.data)
+        self.assertIn(b"Custom work", services.data)
         self.assertNotIn(b"FREE STANDARD SYSTEM", services.data)
 
     def test_compact_presentation_keeps_screenshots_supporting_content(self):
@@ -113,19 +119,21 @@ class PortfolioSiteTests(unittest.TestCase):
         systems = self.client.get("/system-templates")
         detail = self.client.get("/system-templates/property-operations-command-center")
 
-        self.assertIn(b"orientation-panel", home.data)
+        self.assertIn(b"hero-simple", home.data)
+        self.assertNotIn(b"orientation-panel", home.data)
         self.assertIn(b"compact-system-grid", home.data)
         self.assertIn(b"compact-library-grid", systems.data)
         self.assertIn(b"compact-template-card", systems.data)
         self.assertIn(b"template-card-copy", systems.data)
         self.assertIn(b"compact-case-cover", detail.data)
         self.assertIn(b"compact-gallery-grid", detail.data)
-        self.assertIn(b"Open full screen", detail.data)
+        self.assertIn(b"Open image", detail.data)
 
         css_path = Path(__file__).resolve().parents[1] / "app" / "static" / "css" / "style.css"
         css = css_path.read_text(encoding="utf-8")
         self.assertIn('3.0.0', css)
         self.assertIn('3.4.0', css)
+        self.assertIn('3.5.0', css)
         self.assertIn('height:262px', css)
         self.assertIn('height:190px', css)
         self.assertIn('height:150px', css)
@@ -137,12 +145,12 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(systems.status_code, 200)
         self.assertIn(b'data-system-search', systems.data)
         self.assertIn(b'role="search"', systems.data)
-        self.assertIn(b'Search by business need...', systems.data)
+        self.assertIn(b'Search systems...', systems.data)
         self.assertIn(b'aria-controls="system-results"', systems.data)
         self.assertIn(b'aria-live="polite"', systems.data)
-        self.assertIn(b'Clear search', systems.data)
-        self.assertIn(b'No matching system yet.', systems.data)
-        self.assertIn(b'Discuss a Custom System', systems.data)
+        self.assertIn(b'>Clear</button>', systems.data)
+        self.assertIn(b'No matching system.', systems.data)
+        self.assertIn(b'Contact Me', systems.data)
         self.assertEqual(systems.data.count(b'data-system-card'), 2)
 
         templates = {item.slug: item for item in published_templates()}
@@ -168,16 +176,15 @@ class PortfolioSiteTests(unittest.TestCase):
         subscription_contact = self.client.get("/contact?template=property-operations-command-center&intent=subscribe")
         custom_contact = self.client.get("/contact?template=property-operations-command-center&intent=customize")
 
-        self.assertIn(b'managed subscription access', systems.data)
-        self.assertIn(b'paid customization', systems.data)
-        self.assertIn(b'Subscription provides ongoing managed access to the ready-made system', detail.data)
-        self.assertIn(b'ongoing managed access', detail.data)
-        self.assertIn(b'PAID CUSTOMIZATION', detail.data)
-        self.assertIn(b'development price are discussed separately', detail.data)
-        self.assertIn(b'managed subscription access to Property Operations Command Center', subscription_contact.data)
-        self.assertIn(b'$49/month', subscription_contact.data)
-        self.assertIn(b'$490/year', subscription_contact.data)
-        self.assertIn(b'paid customization for Property Operations Command Center', custom_contact.data)
+        self.assertNotIn(b'$49', systems.data)
+        self.assertNotIn(b'$490', systems.data)
+        self.assertIn(b'You pay for access to this system', detail.data)
+        self.assertIn(b'CUSTOM CHANGES', detail.data)
+        self.assertIn(b'Custom work is priced separately', detail.data)
+        self.assertIn(b'You are asking for access to Property Operations Command Center', subscription_contact.data)
+        self.assertNotIn(b'$49/month', subscription_contact.data)
+        self.assertNotIn(b'$490/year', subscription_contact.data)
+        self.assertIn(b'You are asking for changes to Property Operations Command Center', custom_contact.data)
         self.assertIn(b'name="source_intent" value="subscribe"', subscription_contact.data)
         self.assertIn(b'name="source_intent" value="customize"', custom_contact.data)
 
@@ -199,12 +206,12 @@ class PortfolioSiteTests(unittest.TestCase):
                     self.assertNotIn(phrase, response.data)
 
         systems = self.client.get("/system-templates")
-        self.assertIn(b"MANAGED SYSTEM SUBSCRIPTION", systems.data)
         self.assertIn(b"View System", systems.data)
+        self.assertNotIn(b"MANAGED SYSTEM SUBSCRIPTION", systems.data)
 
         detail = self.client.get("/system-templates/property-operations-command-center")
-        self.assertIn(b"PAID CUSTOMIZATION", detail.data)
-        self.assertIn(b"normal subscription continues", detail.data)
+        self.assertIn(b"CUSTOM CHANGES", detail.data)
+        self.assertIn(b"normal subscription still continues", detail.data)
         self.assertNotIn(b"lifetime", detail.data.lower())
         self.assertNotIn(b"own the source", detail.data.lower())
 
@@ -223,30 +230,33 @@ class PortfolioSiteTests(unittest.TestCase):
 
         systems = self.client.get("/system-templates")
         self.assertEqual(systems.status_code, 200)
-        self.assertEqual(systems.data.count(b'class="compact-price-strip"'), 2)
-        self.assertGreaterEqual(systems.data.count(b"$49"), 2)
-        self.assertGreaterEqual(systems.data.count(b"$490"), 2)
-        self.assertEqual(systems.data.count(b"Save $98/year"), 2)
+        self.assertNotIn(b"$49", systems.data)
+        self.assertNotIn(b"$490", systems.data)
+
+        detail = self.client.get("/system-templates/property-operations-command-center")
+        self.assertIn(b"$49", detail.data)
+        self.assertIn(b"$490", detail.data)
+        self.assertIn(b"Save $98/year", detail.data)
         for forbidden in (b"Starter", b"Basic plan", b"Professional plan", b"Enterprise"):
-            self.assertNotIn(forbidden, systems.data)
+            self.assertNotIn(forbidden, detail.data)
 
     def test_monthly_and_yearly_subscription_plan_selection_is_server_resolved(self):
         monthly = self.client.get(
             "/contact?template=property-operations-command-center&intent=subscribe&plan=monthly"
         )
         self.assertEqual(monthly.status_code, 200)
-        self.assertIn(b"Monthly plan at $49/month", monthly.data)
+        self.assertIn("Property Operations Command Center · Monthly plan · $49/month".encode("utf-8"), monthly.data)
         self.assertIn(b'name="source_plan" value="monthly"', monthly.data)
-        self.assertIn(b"Selected plan: Monthly", monthly.data)
+        self.assertIn("Monthly · $49/month".encode("utf-8"), monthly.data)
         self.assertIn(b"$49/month", monthly.data)
 
         yearly = self.client.get(
             "/contact?template=property-inventory-hub&intent=subscribe&plan=yearly"
         )
         self.assertEqual(yearly.status_code, 200)
-        self.assertIn(b"Yearly plan at $490/year", yearly.data)
+        self.assertIn("Property Inventory Hub · Yearly plan · $490/year".encode("utf-8"), yearly.data)
         self.assertIn(b'name="source_plan" value="yearly"', yearly.data)
-        self.assertIn(b"Selected plan: Yearly", yearly.data)
+        self.assertIn("Yearly · $490/year".encode("utf-8"), yearly.data)
         self.assertIn(b"$490/year", yearly.data)
 
         invalid = self.client.get(
@@ -254,7 +264,8 @@ class PortfolioSiteTests(unittest.TestCase):
         )
         self.assertEqual(invalid.status_code, 200)
         self.assertNotIn(b'name="source_plan"', invalid.data)
-        self.assertNotIn(b"Selected plan:", invalid.data)
+        self.assertNotIn("Monthly ·".encode("utf-8"), invalid.data)
+        self.assertNotIn("Yearly ·".encode("utf-8"), invalid.data)
 
     def test_subscription_plan_and_price_cannot_be_spoofed_in_inquiry(self):
         from app.inquiries import get_inquiry
@@ -317,16 +328,16 @@ class PortfolioSiteTests(unittest.TestCase):
                 response = self.client.get(f"/system-templates/{slug}")
                 self.assertEqual(response.status_code, 200)
                 self.assertIn(b'aria-label="Breadcrumb"', response.data)
-                self.assertIn(b"MANAGED SYSTEM SUBSCRIPTION", response.data)
-                self.assertIn(b"View Subscription Options", response.data)
+                self.assertIn(b"View Plans", response.data)
                 self.assertIn(b"Request Monthly Access", response.data)
                 self.assertIn(b"Request Yearly Access", response.data)
-                self.assertIn(b"Need customization?", response.data)
+                self.assertIn(b"Need something changed?", response.data)
+                self.assertIn(b"Request Customization", response.data)
                 self.assertIn(b"$49", response.data)
                 self.assertIn(b"$490", response.data)
                 self.assertIn(b"Save $98/year", response.data)
                 self.assertIn(b"sample/demo data", response.data)
-                self.assertIn(b"Technical details about this build", response.data)
+                self.assertNotIn(b"Technical details about this build", response.data)
                 self.assertNotIn(b"Request the existing system", response.data)
                 self.assertNotIn(b"client hired", response.data.lower())
                 self.assertNotIn(b"official client", response.data.lower())
@@ -469,6 +480,8 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertNotIn(b"<loc>http://localhost/projects</loc>", sitemap.data)
         self.assertNotIn(b"/owner/", sitemap.data)
         self.assertNotIn(b"/__owner", sitemap.data)
+        self.assertNotIn(b"/skills", sitemap.data)
+        self.assertNotIn(b"/experience", sitemap.data)
         robots = self.client.get("/robots.txt")
         self.assertEqual(robots.status_code, 200)
         self.assertIn(b"Disallow: /", robots.data)
@@ -565,7 +578,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"System Subscription", subscription.data)
         self.assertIn(b'name="source_slug" value="property-operations-command-center"', subscription.data)
         self.assertIn(b'name="source_intent" value="subscribe"', subscription.data)
-        self.assertIn(b"Request Subscription Details", subscription.data)
+        self.assertIn(b"Request Access", subscription.data)
 
         customize = self.client.get(
             "/contact?template=property-inventory-hub&intent=customize"
@@ -574,7 +587,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"Property Inventory Hub", customize.data)
         self.assertIn(b"Paid Customization", customize.data)
         self.assertIn(b'name="source_intent" value="customize"', customize.data)
-        self.assertIn(b"Send Customization Request", customize.data)
+        self.assertIn(b"Request Customization", customize.data)
 
         generic = self.client.get("/contact")
         self.assertEqual(generic.status_code, 200)

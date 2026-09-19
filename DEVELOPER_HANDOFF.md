@@ -7,16 +7,17 @@ Read in order:
 1. `00_FUTURE_DEVELOPER_READ_THIS_PLAN.md` *(local/private roadmap on the owner's working copy)*
 2. `docs/FUTURE_TEMPLATE_LIBRARY_ROADMAP.md` *(local/private roadmap on the owner's working copy)*
 3. `NEXT_DEVELOPER_READ_THIS_FIRST.md`
-4. `docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md`
-5. `docs/UX_INFORMATION_ARCHITECTURE.md`
-6. `docs/VISUAL_PRESENTATION_3_0.md`
-7. `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md`
-8. `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`
-9. `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`
-10. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
-11. `PROJECT_STATE.json`
-12. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
-13. `SECURITY_AND_SHARING_NOTES.md`
+4. `docs/WEBSITE_SIMPLIFICATION_3_5.md`
+5. `docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md`
+6. `docs/UX_INFORMATION_ARCHITECTURE.md`
+7. `docs/VISUAL_PRESENTATION_3_0.md`
+8. `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md`
+9. `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`
+10. `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`
+11. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
+12. `PROJECT_STATE.json`
+13. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
+14. `SECURITY_AND_SHARING_NOTES.md`
 
 Do not split the owner inbox back into a separate project folder. Do not expose owner-only routes or secrets in public UI, GitHub, logs, screenshots, or documentation.
 
@@ -26,10 +27,15 @@ Primary navigation is **Home · Systems · Services · About · Contact**.
 
 `Systems` is the one public browse destination for the two published independent systems. `/projects` is a permanent legacy redirect to `/system-templates`; do not recreate a second competing systems catalog without a new, distinct information need.
 
-`Skills` and `Experience` remain public/indexable secondary credibility pages reached through About/footer, not primary navigation.
+The old `/skills` and `/experience` URLs now permanently redirect to `/about`. They are not separate visitor destinations or sitemap entries.
 
 The two published systems remain separate applications and must stay separate in claims, screenshots, workflow, and metadata. Do not publish placeholder/thin systems. Read `docs/PUBLISHED_SYSTEM_TEMPLATES.md` before changing their public positioning.
 
+
+
+## Simplification contract from 3.5.0
+
+Keep public content short, simple, and easy to understand. Home should orient, Systems should help visitors choose, each system detail page should explain and price that one system, Services should show only the two ways to work with Key Castro, About should stay brief, and Contact should be direct. Do not re-add repeated pricing to Home or the Systems catalog. `/skills` and `/experience` redirect to `/about`. See `docs/WEBSITE_SIMPLIFICATION_3_5.md`.
 
 ## Organization and hierarchy contract from 3.4.0
 
@@ -42,6 +48,6 @@ Keep the premium KEY CASTRO identity, but do not return to screenshot-led pages 
 
 ## Search and access contract from 3.1.0
 
-Systems search is a compact progressive enhancement over the server-rendered catalog. Search terms come from reusable system metadata, not JavaScript slug branches. Preserve keyboard use, visible focus, result status, clear/reset behavior, and the helpful no-match path to `Discuss a Custom System`.
+Systems search is a compact progressive enhancement over the server-rendered catalog. Search terms come from reusable system metadata, not JavaScript slug branches. Preserve keyboard use, visible focus, result status, clear/reset behavior, and the helpful no-match path to `Contact Me`.
 
 The previous free-access model is retired. The current model is **Managed System Subscription + Paid Customization**. Public managed-subscription pricing is **$49/month or $490/year per system**, with $98/year savings on the yearly option. Pricing comes from one trusted source in `app/system_templates.py`. Business-specific development is scoped and priced separately, and the normal subscription continues while the managed system remains in use. See `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md` and `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`.

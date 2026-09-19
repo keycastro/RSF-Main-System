@@ -1,40 +1,36 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="page-hero page-hero-3-4">
-  <div class="container page-hero-grid">
-    <div class="reveal"><p class="eyebrow">ABOUT</p><h1>I am Key Castro, a developer focused on <span>real estate business systems.</span></h1></div>
-    <div class="page-hero-copy reveal delay-1"><p>I build web applications around the records, decisions, handoffs, and day-to-day work that property and real-estate teams need to manage clearly.</p></div>
+<section class="page-hero page-hero-simple">
+  <div class="container simple-page-hero reveal">
+    <p class="eyebrow">ABOUT</p>
+    <h1>About Key Castro.</h1>
+    <p>I build simple web systems for real estate and property teams.</p>
   </div>
 </section>
 
-<section class="section about-approach-section">
-  <div class="container editorial-split">
+<section class="section about-simple-section">
+  <div class="container about-simple-grid">
     <div class="reveal">
-      <p class="eyebrow">HOW I APPROACH A BUILD</p>
-      <h2>Understand the operation before designing the system.</h2>
-      <p class="large-copy">The goal is not to add software for its own sake. The system should make the real workflow easier to understand, follow, and maintain.</p>
+      <p class="eyebrow">HOW I WORK</p>
+      <h2>Understand the work first.</h2>
+      <p>I learn how the team works, then build a system around the real process.</p>
     </div>
     <ol class="approach-list reveal delay-1">
-      <li><span>01</span><div><strong>Understand</strong><p>Map the people, records, handoffs, delays, and decisions that shape the work.</p></div></li>
-      <li><span>02</span><div><strong>Build</strong><p>Shape the screens, database, permissions, and actions around the agreed process.</p></div></li>
-      <li><span>03</span><div><strong>Make it usable</strong><p>Keep navigation, status, testing, documentation, and handoff understandable.</p></div></li>
+      <li><span>01</span><div><strong>Understand</strong><p>Learn the people, tasks, records, and problems.</p></div></li>
+      <li><span>02</span><div><strong>Build</strong><p>Create the screens, rules, and data the team needs.</p></div></li>
+      <li><span>03</span><div><strong>Test and deliver</strong><p>Check the system and make it easy to use.</p></div></li>
     </ol>
   </div>
 </section>
 
-<section class="section section-soft about-focus-section">
-  <div class="container editorial-split">
-    <div class="reveal">
-      <p class="eyebrow">SPECIALIZATION</p>
-      <h2>Real estate and property operations.</h2>
-      <p>Current work focuses on brokerages, property managers, rental operators, and real-estate teams that need clearer systems for inventory, operations, maintenance, follow-ups, and coordination.</p>
-      <a class="button primary" href="{{ url_for('site.system_templates') }}">View Completed Systems</a>
+<section class="section section-soft about-focus-simple">
+  <div class="container simple-focus-row reveal">
+    <div>
+      <p class="eyebrow">FOCUS</p>
+      <h2>Real estate and property work.</h2>
+      <p>I focus on systems for property operations, listings, rentals, maintenance, follow-ups, and team coordination.</p>
     </div>
-    <div class="about-reference reveal delay-1">
-      <p class="eyebrow">MORE DETAIL</p>
-      <a href="{{ url_for('site.skills') }}"><strong>Skills & technology</strong><span>Technical stack and capabilities →</span></a>
-      <a href="{{ url_for('site.experience') }}"><strong>Experience</strong><span>Development and delivery practice →</span></a>
-    </div>
+    <a class="button primary" href="{{ url_for('site.system_templates') }}">View Systems</a>
   </div>
 </section>
 {% endblock %}

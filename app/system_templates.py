@@ -173,46 +173,32 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         slug="property-operations-command-center",
         name="Property Operations Command Center",
         category="Property Operations",
-        short_description=(
-            "An action-first operations system for property teams to track work, deadlines, "
-            "follow-ups, approvals, guest readiness, tenant placement, and repeatable SOPs."
-        ),
-        card_audience="Property managers, rental operators, and property-operations teams.",
-        full_description=(
-            "A completed property-operations application built around one practical goal: know what "
-            "needs attention before something gets missed. It brings day-to-day operational work, "
-            "follow-ups, approvals, readiness, and repeatable processes into one structured workspace."
-        ),
+        short_description="Track property work, deadlines, follow-ups, approvals, rentals, and team tasks in one place.",
+        card_audience="Property managers, rental teams, and operations teams.",
+        full_description="Manage daily property work, deadlines, follow-ups, approvals, rentals, and team tasks in one place.",
         business_problem=(
-            "Property operations can scatter deadlines, follow-ups, guest-readiness tasks, contractor "
-            "coordination, owner decisions, tenant-placement stages, and checklists across messages and "
-            "separate tools. This system brings those operational attention points into one structured workspace."
+            "Property work is easy to miss when tasks, deadlines, approvals, and updates are spread across chats "
+            "and separate tools. This system keeps the important work in one place."
         ),
         target_users=(
-            "Property operations owners and managers",
-            "Short-term rental operations teams",
-            "Rental and tenant-placement teams",
-            "Operations coordinators managing deadlines, contractors, and approvals",
+            "Property managers",
+            "Rental and short-term rental teams",
+            "Property operations teams",
         ),
         workflow=(
-            "Record the properties, contacts, and operational records the team is responsible for.",
-            "Create work items with a type, priority, due date, follow-up date, assignment, and status.",
-            "Use the operations dashboard to surface overdue, urgent, waiting-owner, and follow-up work.",
-            "Coordinate short-term-rental bookings, guest readiness, tenant-placement stages, and reusable checklists.",
-            "Route decisions through the owner-approval queue when work is blocked by an owner decision.",
-            "Run rule-based automation for overdue work, same-day readiness alerts, and post-checkout turnover work.",
-            "Use activity history and operational reports to keep actions and completed work visible.",
+            "Add properties, contacts, and work.",
+            "Assign tasks, priorities, due dates, and follow-up dates.",
+            "Use the dashboard to see urgent work, approvals, and rental readiness.",
+            "Track completed work and activity history.",
         ),
         features=(
-            "Role-based access for Owner/Admin, Operations, and Team Member users",
-            "Action-oriented dashboard with due today, overdue, follow-up, owner-waiting, issue, and arrival counts",
-            "Work items with priority, deadlines, follow-ups, blockers, assignments, and completion tracking",
-            "Owner approval requests with auditable decisions and escalation behavior",
-            "Short-term-rental booking, arrival-readiness, cleaner/contractor coordination, and turnover tracking",
-            "Tenant-placement pipeline from inquiry through placement stages",
-            "Reusable checklist and SOP templates with checklist instances",
-            "Rule-based automation for overdue items, guest-readiness alerts, and turnover tasks/checklists",
-            "Property and external-contact records, activity history, reports, and external document links",
+            "Roles for Owner/Admin, Operations, and Team Member users",
+            "Dashboard for urgent, overdue, and follow-up work",
+            "Task tracking with priority, deadline, assignment, and status",
+            "Owner approvals",
+            "Rental booking, guest readiness, contractor, and turnover tracking",
+            "Tenant placement and reusable checklists",
+            "Automatic alerts and turnover tasks",
         ),
         technologies=(
             "Python",
@@ -223,21 +209,17 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             "Waitress for local Windows runtime",
         ),
         standard_scope=(
-            "The complete standard workflow shown on this page",
-            "Owner/Admin, Operations, and Team Member role model",
-            "Properties, contacts, work tracking, approvals, short-term-rental operations, tenant placement, and checklists",
-            "Rule-based attention and turnover automation included in the standard build",
-            "Managed access to the standard system; hosting, database, onboarding, and support details are confirmed before subscription activation",
-            "No payment processing, accounting, external property-platform integrations, AI assistant, e-signing, or native mobile app in the standard build",
+            "The standard system shown on this page",
+            "Standard roles, property records, task tracking, approvals, rentals, and checklists",
+            "Standard alerts and tasks after checkout",
+            "Hosting, setup, and support details are confirmed before access starts",
+            "Payment processing, accounting, AI, e-signing, and a native mobile app are not included in the standard system",
         ),
         customization_opportunities=(
-            "Company branding and terminology",
-            "Different roles, permissions, approval rules, and operational statuses",
-            "Business-specific dashboards, reports, fields, and workflow stages",
-            "Custom automation and notification rules",
-            "Database, hosting, deployment, or multi-user environment changes",
-            "Integrations with approved external systems or APIs",
-            "Additional modules built around the company’s actual property-operation process",
+            "Company branding and wording",
+            "Different roles, permissions, and approval rules",
+            "Custom fields, reports, work steps, alerts, or connections to other tools",
+            "Extra modules for your property process",
         ),
         search_terms=(
             "property management",
@@ -260,12 +242,12 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             TemplateScreenshot(
                 src="images/templates/property-operations-command-center/dashboard.png",
                 alt="Property Operations Command Center dashboard interface preview using sample data",
-                caption="Operations dashboard interface preview using sample data — attention queue, due work, arrivals, and owner decisions.",
+                caption="Dashboard using sample data — urgent work, due tasks, arrivals, and owner decisions.",
             ),
             TemplateScreenshot(
                 src="images/templates/property-operations-command-center/work.png",
                 alt="Property Operations Command Center work queue interface preview using sample data",
-                caption="Work queue interface preview using sample data — priority, status, due date, follow-up, and assignment tracking.",
+                caption="Work list using sample data — priority, status, due date, follow-up, and assigned person.",
             ),
         ),
         project_note=(
@@ -284,46 +266,32 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         slug="property-inventory-hub",
         name="Property Inventory Hub",
         category="Real Estate Inventory",
-        short_description=(
-            "A private property-inventory workspace where authorized real-estate teams can add, search, "
-            "maintain, reconfirm, and retire shared off-market listings."
-        ),
-        card_audience="Brokerages and real-estate teams managing shared private inventory.",
-        full_description=(
-            "A completed, brand-neutral internal real-estate inventory system for teams that need one private "
-            "place to keep shared property listings searchable, owned, reconfirmed, and current."
-        ),
+        short_description="Keep private property listings in one searchable place and keep them up to date.",
+        card_audience="Brokerages and real estate teams sharing private listings.",
+        full_description="A private system for teams to add, search, update, and manage shared property listings.",
         business_problem=(
-            "Shared property inventory becomes difficult to trust when listings live in chats, spreadsheets, or "
-            "separate agent files. Availability gets stale, ownership is unclear, and useful older records are "
-            "hard to find. Property Inventory Hub centralizes the private marketplace and adds a freshness lifecycle."
+            "Listings become hard to trust when they are spread across chats, spreadsheets, and agent files. "
+            "This system keeps shared inventory searchable and shows when listings need to be checked or updated."
         ),
         target_users=(
-            "Real-estate brokerages managing shared private inventory",
-            "Sales and leasing teams working with off-market properties",
-            "Property teams that need searchable internal inventory",
-            "Administrators who need control over authorized users, freshness rules, and client branding",
+            "Real estate brokerages",
+            "Sales and leasing teams",
+            "Teams sharing private or off-market listings",
         ),
         workflow=(
-            "Authorized users sign in with a private access code.",
-            "Agents add property records with location, type, sale/rent purpose, price, and relevant property details.",
-            "The team searches and filters the shared Marketplace to find current inventory.",
-            "Each agent maintains the current listings they are responsible for in My Listings.",
-            "Freshness rules calculate reconfirmation and expiry dates so availability is reviewed before listings become stale.",
-            "Expired, unavailable, or archived records move into History instead of disappearing.",
-            "Administrators manage users, access codes, freshness rules, and deployment branding from Management.",
+            "Authorized users sign in.",
+            "Agents add and update property listings.",
+            "The team searches and filters shared inventory.",
+            "Old or unavailable listings move to history instead of disappearing.",
         ),
         features=(
-            "Secure access-code sign-in with Administrator and Agent roles",
-            "Shared Marketplace with text search, property type, sale/rent, availability, price, bedroom, and sorting filters",
-            "Property records for location, type, purpose, price, bedrooms, bathrooms, size, furnishing, parking, and agent notes",
-            "My Listings view for current properties owned by the signed-in agent",
-            "Freshness engine with reconfirmation dates, expiry dates, automatic due state, and automatic expiry",
-            "Manual reconfirmation, withdrawal, archive, and restore workflows",
-            "Listing status history and reconfirmation history",
-            "History view for expired, unavailable, and historical records",
-            "Management tools for authorized users, access codes, freshness rules, and client branding",
-            "Configurable company name, app title, logo, colors, business email, and phone without rebuilding the app",
+            "Administrator and Agent roles",
+            "Searchable shared property inventory",
+            "Filters for property type, sale or rent, availability, price, bedrooms, and sorting",
+            "My Listings for each agent",
+            "Reconfirmation and automatic expiry for old listings",
+            "Withdraw, archive, restore, and history tools",
+            "User, access-code, freshness, and branding settings",
         ),
         technologies=(
             "Python",
@@ -334,21 +302,17 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             "Server-rendered HTML/CSS/JavaScript",
         ),
         standard_scope=(
-            "Brand-neutral Property Inventory Hub workspace",
-            "Administrator and Agent access model",
-            "Dashboard, Marketplace, My Listings, History, and Management areas",
-            "Standard property fields, search/filter tools, and listing ownership workflow",
-            "Freshness, reconfirmation, expiry, withdrawal, archive, and restore lifecycle",
-            "Configurable client branding in the standard application",
-            "Managed access to the standard system; hosting, database, onboarding, and support details are confirmed before subscription activation",
+            "The standard system shown on this page",
+            "Administrator and Agent access",
+            "Dashboard, shared listings, My Listings, History, and Management",
+            "Standard search, filters, listing ownership, checks for old listings, archive, and restore tools",
+            "Hosting, setup, and support details are confirmed before access starts",
         ),
         customization_opportunities=(
-            "Company-specific property fields, listing types, statuses, and business rules",
-            "Different user roles, permissions, teams, branches, or approval processes",
-            "Custom dashboards, reports, analytics, exports, or notifications",
-            "Alternative database and hosted deployment architecture",
-            "Integrations with approved CRM, listing, messaging, or property systems",
-            "Additional modules around the brokerage’s own inventory and agent workflow",
+            "Company branding and property fields",
+            "Different roles, teams, permissions, or approval steps",
+            "Custom reports, alerts, exports, or connections to other tools",
+            "Extra modules for your listing workflow",
         ),
         search_terms=(
             "inventory",
@@ -369,12 +333,12 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             TemplateScreenshot(
                 src="images/templates/property-inventory-hub/dashboard.png",
                 alt="Property Inventory Hub dashboard interface preview using sample data",
-                caption="Dashboard interface preview using sample data — current inventory, personal inventory, and listings needing attention.",
+                caption="Dashboard using sample data — current listings and listings that need attention.",
             ),
             TemplateScreenshot(
                 src="images/templates/property-inventory-hub/marketplace.png",
                 alt="Property Inventory Hub marketplace interface preview using sample data",
-                caption="Marketplace interface preview using sample data — searchable inventory, filters, availability, and reconfirmation status.",
+                caption="Marketplace using sample data — search, filters, availability, and listing status.",
             ),
         ),
         project_note=(

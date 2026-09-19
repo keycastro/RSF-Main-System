@@ -568,7 +568,7 @@ h3{font-size:22px}
 :root{
   --header:68px;
   --container:min(1140px,calc(100vw - 44px));
-  --design-version:"3.4.0";
+  --design-version:"3.5.0";
 }
 
 body{line-height:1.62}
@@ -816,4 +816,138 @@ h2{font-size:clamp(27px,2.9vw,39px);line-height:1.1}
   .contact-section-3-4{padding:44px 0 48px}
   .contact-form{padding:21px 18px}
   .site-footer{margin-top:34px;padding-top:36px}
+}
+
+
+/* =========================================================
+   3.5.0 — SIMPLE PUBLIC EXPERIENCE
+   Short. Clear. One purpose per page. Minimal repetition.
+   ========================================================= */
+
+/* Header and footer: fewer words, familiar navigation. */
+.brand-copy small{letter-spacing:.02em}
+.simple-footer{margin-top:34px;padding:34px 0 18px}
+.simple-footer-row{display:flex;align-items:flex-start;justify-content:space-between;gap:40px}
+.simple-footer .footer-brand-block>p{margin-top:16px;max-width:360px}
+.simple-footer-nav{display:flex;flex-wrap:wrap;gap:10px 20px;padding-top:9px}
+.simple-footer-nav a{font-size:14px;color:#d9e2e5;text-decoration:none}
+.simple-footer-nav a:hover{color:#fff}
+.simple-footer .footer-bottom{margin-top:24px}
+
+/* Homepage: one message, then the two systems. */
+.hero.hero-simple{min-height:0;padding:72px 0 68px;background:linear-gradient(118deg,var(--paper) 0%,#f7f3ec 66%,#eef2f0 100%)}
+.simple-hero-wrap{display:block}
+.hero-simple .hero-copy{max-width:760px}
+.hero-simple .hero-copy h1{max-width:720px;margin:0 0 18px;font-size:clamp(44px,5vw,64px)}
+.hero-simple .hero-lead{max-width:610px;margin:0;font-size:18px;line-height:1.55}
+.hero-simple .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.simple-section-head{align-items:end}
+.simple-section-head h2{margin-bottom:0}
+.simple-system-card .system-showcase-copy>p:not(.system-type):not(.system-audience){max-width:520px}
+.simple-system-card .system-showcase-actions{padding-top:18px}
+
+/* Page heroes: one clear purpose, no two-column explanation. */
+.page-hero.page-hero-simple{padding:48px 0 42px}
+.simple-page-hero{max-width:800px}
+.simple-page-hero h1{margin:6px 0 12px;font-size:clamp(38px,4.4vw,54px)}
+.simple-page-hero>p:last-child:not(.eyebrow){max-width:610px;margin:0;font-size:16px;line-height:1.55;color:var(--ink-2)}
+
+/* Systems: search is a single compact control; price lives on detail pages. */
+.systems-catalog-section.catalog-simple{padding:42px 0 58px;background:var(--paper)}
+.system-search-panel.system-search-simple{display:grid;grid-template-columns:150px minmax(240px,520px) 1fr;align-items:center;gap:14px;margin:0 0 24px;padding:0 0 18px;border-bottom:1px solid var(--line)}
+.system-search-simple>label{font-size:13px;font-weight:800;color:var(--navy-deep)}
+.system-search-simple .system-search-status{margin:0;font-size:12px;color:var(--muted)}
+.simple-catalog-card{min-height:270px}
+.simple-catalog-card .template-card-copy{padding-bottom:12px}
+.simple-catalog-card .template-card-actions{padding-top:8px}
+.system-search-empty{max-width:520px;padding:34px 0}
+.system-search-empty h2{font-size:28px;margin:0 0 8px}
+.system-search-empty p{margin:0 0 18px}
+
+/* Services: two choices only. */
+.services-simple-section{padding:48px 0 56px}
+.service-simple-list{border-top:1px solid var(--line)}
+.service-simple-row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:26px;align-items:center;padding:28px 0;border-bottom:1px solid var(--line)}
+.service-simple-row>span{align-self:start;padding-top:7px;color:var(--sage-deep);font-size:10px;font-weight:850;letter-spacing:.08em}
+.service-simple-row h2{font-size:27px;margin:0 0 8px}
+.service-simple-row p{max-width:650px;margin:0;font-size:15px;line-height:1.55;color:var(--ink-2)}
+.service-simple-row .service-note{margin-top:9px;font-size:13px;color:var(--muted)}
+.service-simple-row .button{min-width:132px}
+
+/* About: one short explanation and one simple process. */
+.about-simple-section{padding:52px 0 58px}
+.about-simple-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:64px;align-items:start}
+.about-simple-grid h2{margin-top:0}
+.about-simple-grid>div>p:last-child{max-width:480px}
+.about-focus-simple{padding:42px 0}
+.simple-focus-row{display:flex;align-items:center;justify-content:space-between;gap:40px}
+.simple-focus-row>div{max-width:700px}
+.simple-focus-row h2{font-size:30px;margin:5px 0 8px}
+.simple-focus-row p{margin:0}
+
+/* System detail: explain, show, price, act. */
+.case-hero.detail-hero-simple{padding:32px 0 44px}
+.detail-hero-simple .breadcrumb{margin-bottom:18px}
+.detail-hero-simple .template-hero-grid{grid-template-columns:1.08fr .92fr;gap:44px;align-items:center}
+.detail-hero-simple .case-intro h1{font-size:clamp(38px,4.35vw,53px);margin:9px 0 12px}
+.detail-hero-simple .page-lead{max-width:650px;font-size:17px;line-height:1.55}
+.detail-hero-simple .template-primary-actions{margin-top:23px}
+.detail-hero-simple .compact-case-cover{max-height:285px}
+.detail-hero-simple .compact-case-cover img{height:262px}
+.detail-overview-simple{padding-top:50px;padding-bottom:50px}
+.subscription-section-simple{padding:52px 0 42px}
+.subscription-heading-simple{max-width:720px;margin-bottom:24px}
+.subscription-heading-simple h2{margin:5px 0 9px}
+.subscription-heading-simple>p:last-child{margin:0;font-size:14px;color:var(--ink-2)}
+.simple-plan-layout{grid-template-columns:minmax(0,1.3fr) minmax(260px,.7fr)}
+.subscription-section-simple .subscription-plan-option p{display:none}
+.subscription-section-simple .scope-inline{margin-top:2px}
+.subscription-section-simple .customization-aside .button{margin-top:10px}
+.simple-bottom-nav{justify-content:flex-start}
+
+/* Contact: short instruction + form. */
+.contact-section-simple{padding:46px 0 54px}
+.contact-layout-simple{grid-template-columns:minmax(220px,.58fr) minmax(0,1.42fr);gap:58px}
+.contact-layout-simple .contact-side{position:sticky;top:calc(var(--header) + 22px)}
+.contact-layout-simple .contact-side h2{font-size:28px;margin:7px 0 9px}
+.contact-layout-simple .contact-side>p:not(.eyebrow):not(.contact-email-option){font-size:14px;line-height:1.55}
+.contact-layout-simple .contact-form textarea{min-height:120px}
+.contact-layout-simple .contact-interest span{font-size:10px}
+
+@media(max-width:900px){
+  .simple-footer-row{flex-direction:column;gap:24px}
+  .hero.hero-simple{padding:54px 0 55px}
+  .system-search-panel.system-search-simple{grid-template-columns:1fr;gap:8px}
+  .service-simple-row{grid-template-columns:38px 1fr;align-items:start}
+  .service-simple-row .button{grid-column:2;width:max-content;margin-top:2px}
+  .about-simple-grid,.detail-hero-simple .template-hero-grid,.contact-layout-simple{grid-template-columns:1fr}
+  .about-simple-grid{gap:38px}
+  .simple-focus-row{align-items:flex-start;flex-direction:column;gap:20px}
+  .contact-layout-simple{gap:30px}
+  .contact-layout-simple .contact-side{position:static}
+  .simple-plan-layout{grid-template-columns:1fr}
+}
+
+@media(max-width:680px){
+  .simple-footer-nav{gap:8px 16px}
+  .hero.hero-simple{padding:42px 0 44px}
+  .hero-simple .hero-copy h1{font-size:38px}
+  .hero-simple .hero-lead{font-size:16px}
+  .hero-simple .hero-actions{align-items:stretch;flex-direction:column}
+  .hero-simple .hero-actions .button{width:100%}
+  .page-hero.page-hero-simple{padding:34px 0 31px}
+  .simple-page-hero h1{font-size:35px}
+  .systems-catalog-section.catalog-simple{padding:34px 0 46px}
+  .service-simple-row{grid-template-columns:30px 1fr;gap:14px;padding:23px 0}
+  .service-simple-row h2{font-size:23px}
+  .service-simple-row .button{grid-column:1/-1;width:100%;margin-top:2px}
+  .about-simple-section{padding:43px 0 48px}
+  .simple-focus-row .button{width:100%}
+  .case-hero.detail-hero-simple{padding:28px 0 38px}
+  .detail-hero-simple .case-intro h1{font-size:35px}
+  .detail-hero-simple .compact-case-cover{max-height:220px}
+  .detail-hero-simple .compact-case-cover img{height:203px}
+  .subscription-section-simple{padding:45px 0 38px}
+  .contact-section-simple{padding:40px 0 46px}
+  .simple-footer{margin-top:28px;padding-top:30px}
 }

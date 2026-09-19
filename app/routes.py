@@ -43,15 +43,15 @@ site = Blueprint("site", __name__)
 SERVICES = [
     {
         "kind": "subscription",
-        "title": "Managed System Subscriptions",
-        "text": "Subscribe to use an existing KEY CASTRO system through managed access instead of buying or owning the core software.",
-        "example": "Managed access includes standard hosting for the subscribed service, database operation, standard updates, ordinary maintenance, and basic support within the agreed service scope.",
+        "title": "Use a ready-made system",
+        "text": "Choose a completed system and pay monthly or yearly for access.",
+        "example": "Plans and prices are shown on each system page.",
     },
     {
         "kind": "customization",
-        "title": "Paid Customization & Custom Development",
-        "text": "Change a subscribed system for your business, or discuss a different system when the ready-made options do not fit the workflow you need.",
-        "example": "Requirements and price are agreed separately for development work such as workflow changes, branding, roles, dashboards, reports, automation, integrations, or additional modules. The normal subscription continues while the managed system remains in use.",
+        "title": "Custom work",
+        "text": "Ask for changes to a system or a new system built for your business.",
+        "example": "Custom work is quoted separately.",
     },
 ]
 
@@ -69,15 +69,15 @@ TECHNOLOGIES = [
 PAGE_SEO = {
     "home": {
         "title": "Custom Real Estate Systems Developer | Key Castro",
-        "description": "Key Castro builds custom real estate systems and offers managed subscriptions to completed systems for property operations, inventory, rental, maintenance, and team workflows.",
+        "description": "Key Castro builds simple web systems for real estate and property teams, including property operations, inventory, rentals, and custom workflows.",
     },
     "about": {
-        "title": "About Key Castro | Custom Real Estate Systems Developer",
-        "description": "Learn how Key Castro approaches custom real estate systems: understand the workflow, build the right tool, test it, and hand it over clearly.",
+        "title": "About Key Castro | Real Estate Systems Developer",
+        "description": "Key Castro builds simple web systems for real estate and property teams, with a focus on clear workflows and easy-to-use tools.",
     },
     "services": {
-        "title": "Custom Real Estate Software Services | Key Castro",
-        "description": "Managed real estate system subscriptions plus paid customization and custom development for workflows, roles, data, dashboards, integrations, automation, and deployment.",
+        "title": "Real Estate System Services | Key Castro",
+        "description": "Use a ready-made Key Castro system or request custom work for your real estate or property business.",
     },
     "skills": {
         "title": "Skills & Technology | Key Castro",
@@ -88,12 +88,12 @@ PAGE_SEO = {
         "description": "Development experience focused on complete real estate systems, testing, documentation, and reliable delivery.",
     },
     "contact": {
-        "title": "Contact Key Castro | System Subscription or Custom Development",
-        "description": "Contact Key Castro to request managed system subscription details, discuss paid customization, or plan a custom real estate system.",
+        "title": "Contact Key Castro | Real Estate Systems",
+        "description": "Contact Key Castro to request system access, ask for custom changes, or discuss a new real estate system.",
     },
     "system_templates": {
         "title": "Real Estate Systems | Key Castro",
-        "description": "Browse completed real estate systems built by Key Castro. Request managed subscription details or discuss paid business-specific customization.",
+        "description": "Browse completed real estate systems by Key Castro for property operations, private inventory, rentals, and team workflows.",
     },
 }
 
@@ -225,12 +225,14 @@ def system_template_detail(slug: str):
 
 @site.get("/skills")
 def skills():
-    return render_template("skills.html", title="Skills & Technologies", **_common_context("skills"))
+    # Skills are now summarized on About to keep the public site simple.
+    return redirect(url_for("site.about"), code=301)
 
 
 @site.get("/experience")
 def experience():
-    return render_template("experience.html", title="Experience", **_common_context("experience"))
+    # Experience is now summarized on About to avoid a second credibility page.
+    return redirect(url_for("site.about"), code=301)
 
 
 def _csrf_token():
@@ -390,14 +392,14 @@ def contact():
                         _send_smtp_message(record)
                     except Exception:
                         current_app.logger.exception("Optional SMTP notification failed for inquiry %s", inquiry_id)
-                flash("Message received. I’ll review it and reply using the email address you provided.", "success")
+                flash("Message received. I’ll reply by email.", "success")
             elif mode == "smtp":
                 _send_smtp_message(record)
-                flash("Thanks. Your project details were sent successfully.", "success")
+                flash("Message sent. I’ll reply by email.", "success")
             elif current_app.config.get("ENABLE_LOCAL_CONTACT_STORAGE"):
                 _store_local_message(record)
                 current_app.logger.info("Local contact message stored for %s", email)
-                flash("Saved locally for testing. Public delivery will use the configured business inbox.", "success")
+                flash("Saved locally for testing.", "success")
             else:
                 raise RuntimeError("Contact delivery is not configured.")
         except Exception:
@@ -449,8 +451,6 @@ def sitemap():
         [
             url_for("site.services", _external=True),
             url_for("site.about", _external=True),
-            url_for("site.skills", _external=True),
-            url_for("site.experience", _external=True),
             url_for("site.contact", _external=True),
         ]
     )
