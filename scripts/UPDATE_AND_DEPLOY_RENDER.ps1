@@ -5,8 +5,8 @@ $documents = [Environment]::GetFolderPath("MyDocuments")
 $target = Join-Path $documents "KEY_CASTRO_WEBSITE"
 $serviceId = "srv-dam749e1egvs738cppq0"
 $liveBase = "https://keycastro.onrender.com"
-$expectedVersion = "3.8.1"
-$commitMessage = "Release 3.8.1 How It Works redundancy cleanup"
+$expectedVersion = "3.8.2"
+$commitMessage = "Release 3.8.2 How It Works action clarity"
 
 function Invoke-Native {
     param(
@@ -222,9 +222,11 @@ try {
             $hasNoStep3 = -not ($how.Content -match [regex]::Escape('<div class="human-step-number">3</div>'))
             $oldBuildStepGone = -not ($how.Content -match [regex]::Escape('<h2>I build the system.</h2>'))
             $hasManagementStep = $how.Content -match [regex]::Escape("Choose who manages it.")
-            $hasFinalCta = ($how.Content -match [regex]::Escape("Want to get started?")) -and ($how.Content -match [regex]::Escape("Tell Me What You Need"))
+            $hasViewSystemsButton = ($how.Content -match [regex]::Escape('href="/system-templates"')) -and ($how.Content -match [regex]::Escape('>View Systems</a>'))
+            $hasRequestSystemButton = ($how.Content -match [regex]::Escape('href="/contact?intent=custom-build"')) -and ($how.Content -match [regex]::Escape('>Request a System</a>'))
+            $finalCtaGone = -not ($how.Content -match [regex]::Escape("Want to get started?"))
             $hasPricing = ($how.Content -match [regex]::Escape('$49/month')) -and ($how.Content -match [regex]::Escape('$490/year'))
-            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems -and $hasAdaptSentence -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasFinalCta -and $hasPricing) {
+            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems -and $hasAdaptSentence -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasPricing) {
                 $verified = $true
                 break
             }

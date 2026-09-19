@@ -1766,10 +1766,10 @@ body{font-size:16.5px;line-height:1.64}
 .human-step-body h2{margin:1px 0 8px;font-size:29px}
 .human-step-body>p{max-width:720px;margin:0;font-size:16px;line-height:1.55;color:var(--ink-2)}
 .human-simple-options{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}
-.human-simple-options>div{padding:18px 19px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.55)}
+.human-simple-options>div{display:flex;flex-direction:column;align-items:flex-start;padding:18px 19px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.55)}
 .human-simple-options strong{display:block;margin-bottom:5px;color:var(--ink);font-size:16px}
-.human-simple-options span{display:block;color:var(--muted);font-size:14px;line-height:1.52}
-.human-simple-options .text-link{margin-top:12px}
+.human-simple-options span{display:block;margin-bottom:14px;color:var(--muted);font-size:14px;line-height:1.52}
+.human-simple-options .human-option-button{min-width:170px;margin-top:auto}
 .human-note{margin-top:12px!important;color:var(--muted)!important;font-size:14px!important}
 .management-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}
 .management-choice{padding:21px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
@@ -1780,10 +1780,6 @@ body{font-size:16.5px;line-height:1.64}
 .management-choice small{display:block;margin-top:14px;color:var(--muted);font-size:12px}
 .human-price{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 0!important;padding-top:13px;border-top:1px solid rgba(21,41,52,.12);color:var(--ink)!important}
 .human-price strong{font-size:16px}.human-price span{font-size:12px;color:var(--muted)}
-.human-how-cta{margin-top:18px;padding:26px 28px;border-radius:15px;background:var(--navy-deep);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
-.human-how-cta h2{margin:0;color:#fff;font-size:24px}
-.human-how-cta p{flex:1 1 360px;margin:0;color:#d7e2e6;font-size:14.5px;line-height:1.5}
-.human-how-cta .button{flex:0 0 auto}
 
 /* About: one simple story, no secondary business taxonomy. */
 .human-about-section{padding:32px 0 58px}
@@ -1848,8 +1844,6 @@ body{font-size:16.5px;line-height:1.64}
   .human-step-body h2{font-size:25px}
   .human-step-body>p{font-size:15px}
   .human-simple-options>div,.management-choice{padding:17px}
-  .human-how-cta{padding:22px 19px;align-items:flex-start;flex-direction:column}
-  .human-how-cta .button{width:100%}
   .human-about-copy h2,.human-about-steps h2{font-size:26px}
   .human-contact-form{padding:20px 17px}
   .human-contact-form .form-row{grid-template-columns:1fr}
@@ -1886,9 +1880,6 @@ body{font-size:17px;line-height:1.68}
 .human-price strong{font-size:18px}
 .simple-footer-nav a,.simple-footer .footer-brand-block>p{font-size:14.5px}
 .human-detail-overview .detail-best-for li{font-size:14.5px}
-@media(max-width:680px){
-  .human-how-cta p{flex:none;width:100%}
-}
 .system-card-footer .button,
 .compact-template-card .template-card-actions .button{min-height:48px;font-size:15px}
 @media(max-width:680px){

@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-20",
-  "version": "3.8.1",
+  "version": "3.8.2",
   "owner_public_name": "Key Castro",
   "positioning": "Simple systems for real estate, property, and housing businesses",
   "framework": "Flask",
@@ -256,7 +256,7 @@
     "launcher": "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
     "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
     "provider_auto_deploy": false,
-    "success_condition": "production health reports version 3.8.1; live How It Works shows exactly two numbered steps, the existing-system adaptation sentence, Step 2 Choose who manages it, the final CTA, and the live Systems page contains Student Housing Matching and Placement System plus exactly 3 published system cards"
+    "success_condition": "production health reports version 3.8.2; live How It Works shows exactly two numbered steps, the existing-system adaptation sentence, balanced View Systems and Request a System buttons in Step 1, no final Want to get started CTA, and the live Systems page contains Student Housing Matching and Placement System plus exactly 3 published system cards"
   },
   "ux_master_refinement_3_7": {
     "document": "docs/MASTER_UX_REFINEMENT_3_7.md",
@@ -315,6 +315,17 @@
       "Removed redundant I build the system step",
       "Renumbered Choose who manages it from Step 3 to Step 2",
       "Preserved final Want to get started CTA and both management choices/prices"
+    ]
+  },
+  "minor_change_3_8_2": {
+    "scope": "How It Works only, plus direct tests/release/deployment dependencies",
+    "route_changed": false,
+    "business_model_changed": false,
+    "changes": [
+      "Converted View Systems from a text link to a clear button CTA",
+      "Added Request a System button linked to the existing custom-build Contact context",
+      "Removed the redundant final Want to get started CTA block",
+      "Preserved Step 1/Step 2 flow, management choices, prices, and all unrelated pages/features"
     ]
   }
 }

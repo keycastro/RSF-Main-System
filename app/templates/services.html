@@ -15,8 +15,8 @@
         <h2>Tell me what you need.</h2>
         <p>Tell me about your business and what you want the system to help with.</p>
         <div class="human-simple-options" aria-label="Ways I can build your system">
-          <div><strong>Use one of my existing systems</strong><span>I can adapt one of my existing systems to fit your business.</span><a class="text-link" href="{{ url_for('site.system_templates') }}">View Systems <span>→</span></a></div>
-          <div><strong>Build a new system</strong><span>If none of the existing systems fit, I can build a new one for you.</span></div>
+          <div><strong>Use one of my existing systems</strong><span>I can adapt one of my existing systems to fit your business.</span><a class="button primary human-option-button" href="{{ url_for('site.system_templates') }}">View Systems</a></div>
+          <div><strong>Build a new system</strong><span>If none of the existing systems fit, I can build a new one for you.</span><a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Request a System</a></div>
         </div>
       </div>
     </article>
@@ -42,11 +42,6 @@
       </div>
     </article>
 
-    <div class="human-how-cta reveal">
-      <h2>Want to get started?</h2>
-      <p>You do not need to know which option is right yet. Just tell me what you need.</p>
-      <a class="button primary" href="{{ url_for('site.contact') }}">Tell Me What You Need</a>
-    </div>
   </div>
 </section>
 {% endblock %}

@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Release version:** 3.8.1
+**Release version:** 3.8.2
 **Official site:** https://keycastro.onrender.com
 **Framework:** Flask
 
@@ -78,7 +78,7 @@ Do not repeat the full management model on every system page.
 
 ## Design rule
 
-Preserve the existing ivory/navy/sage brand and 3.8.0 Human Clarity composition. Version 3.8.1 changes only the How It Works step flow and one sentence; do not expand that scope. Compact must never mean tiny text.
+Preserve the existing ivory/navy/sage brand and 3.8.0 Human Clarity composition. Version 3.8.2 changes only the How It Works Step 1 action buttons and removes its redundant final CTA; do not expand that scope. Compact must never mean tiny text.
 
 ## Security
 

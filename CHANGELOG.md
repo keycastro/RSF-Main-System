@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 3.8.2 — How It Works action clarity
+
+- Replaced the Step 1 **View Systems** text link with a clear button-style action.
+- Added a matching **Request a System** button to the **Build a new system** card; it opens Contact with the existing custom-build context.
+- Removed the redundant final **Want to get started?** CTA block.
+- Preserved the two-step flow, management choices, pricing, route, visual identity, and every unrelated page/feature.
+
 ## 3.8.1 — How It Works redundancy cleanup
 
 - Changed the existing-system sentence to: **“I can adapt one of my existing systems to fit your business.”**
