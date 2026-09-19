@@ -1,33 +1,30 @@
-# DELIVERY REPORT — KEY CASTRO 3.5.0
+# DELIVERY REPORT — KEY CASTRO 3.5.1
 
 ## Scope
 
-Public website simplification inside the existing production architecture. The goal is to make the site shorter, clearer, easier to scan, and easier to understand without changing the important business or security logic.
+Focused visual separation update for the two published system cards. This patch does not redesign the full website and does not change business logic.
 
 ## Public experience changes
 
-- Home now has one simple message, two clear actions, and the two systems.
-- Pricing was removed from Home and the Systems catalog to avoid repetition.
-- Systems search remains available but is visually simpler.
-- System pages use shorter descriptions, fewer bullets, simple headings, and one clear plan section.
-- Services is reduced to two choices: use a ready-made system or request custom work.
-- About is shorter and uses three simple steps.
-- Skills and Experience are merged into the About journey; their old URLs redirect permanently to About.
-- Contact uses shorter instructions, labels, and helper text.
-- Footer navigation is reduced to the five main public pages.
+- Home and Systems now make the two systems look like clearly separate choices.
+- Property Operations Command Center has a very light warm identity.
+- Property Inventory Hub has a very light cool identity.
+- Clearer borders, spacing, soft shadow, category-label accents, and focus treatment reinforce boundaries.
+- Text remains dark and high-contrast. Existing View System buttons remain obvious.
+- Mobile cards stay clearly separated when stacked.
+- Supporting copy remains short: each system solves a different problem; choose one to view.
 
 ## Preserved contracts
 
-- Home · Systems · Services · About · Contact primary navigation
-- Property Operations Command Center and Property Inventory Hub remain separate
-- $49/month or $490/year per system; save $98/year
-- custom work remains separately priced
-- trusted server-side pricing and plan resolution
-- PostgreSQL inquiry storage and private owner Inbox
-- canonical system routes, structured data, robots behavior, and safe redirects
-- `/projects` permanent redirect
+- Home · Systems · Services · About · Contact navigation
+- two systems remain separate applications
+- pricing and commercial model unchanged
+- trusted server-side pricing and anti-spoof protection
 - metadata-driven Systems search
-- desktop launchers and Render/GitHub deployment architecture
+- Contact and PostgreSQL inquiry flow
+- private owner Inbox and authentication
+- SEO, canonical routes, sitemap, robots, and redirects
+- deployment architecture
 
 ## Safety
 
@@ -35,4 +32,4 @@ No secrets belong in a distributable update package. `.env`, `.owner_inbox.json`
 
 ## Reference
 
-See `docs/WEBSITE_SIMPLIFICATION_3_5.md`.
+See `docs/SYSTEM_CARD_VISUAL_SEPARATION_3_5_1.md`.

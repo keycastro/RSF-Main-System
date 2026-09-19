@@ -20,13 +20,14 @@
       <div>
         <p class="eyebrow">SYSTEMS</p>
         <h2>Choose the system that matches your work.</h2>
+        <p class="system-choice-helper">Each system solves a different problem. Choose one to view.</p>
       </div>
       <a class="text-link desktop-link" href="{{ url_for('site.system_templates') }}">View All Systems <span>→</span></a>
     </div>
 
     <div class="system-showcase-grid compact-system-grid">
       {% for item in published_system_templates %}
-      <article class="system-showcase-card simple-system-card reveal delay-{{ loop.index0 % 2 }}">
+      <article class="system-showcase-card simple-system-card system-choice-card system-choice-card--{{ item.slug }} reveal delay-{{ loop.index0 % 2 }}">
         <div class="system-showcase-copy">
           <p class="system-type">{{ item.category|upper }}</p>
           <h3>{{ item.name }}</h3>

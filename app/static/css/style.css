@@ -951,3 +951,100 @@ h2{font-size:clamp(27px,2.9vw,39px);line-height:1.1}
   .contact-section-simple{padding:40px 0 46px}
   .simple-footer{margin-top:28px;padding-top:30px}
 }
+
+
+/* =========================================================
+   3.5.1 — SYSTEM CARD VISUAL SEPARATION
+   Focused patch: make each published system read as a separate choice
+   without changing content, pricing, routes, search, or business logic.
+   ========================================================= */
+.system-choice-helper{max-width:610px;margin:10px 0 0;color:var(--ink-2);font-size:14px;line-height:1.5}
+.compact-system-grid,.compact-library-grid{gap:24px}
+.system-choice-card{
+  position:relative;
+  isolation:isolate;
+  border-width:1px;
+  border-style:solid;
+  background:var(--surface);
+  box-shadow:0 10px 28px rgba(15,38,50,.07);
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.system-choice-card::before{
+  content:"";
+  position:absolute;
+  z-index:2;
+  top:0;
+  left:0;
+  right:0;
+  height:3px;
+  pointer-events:none;
+}
+.system-choice-card:hover{transform:translateY(-2px);box-shadow:0 16px 36px rgba(15,38,50,.10)}
+.system-choice-card:focus-within{box-shadow:0 0 0 3px rgba(49,88,107,.14),0 16px 36px rgba(15,38,50,.10)}
+.system-choice-card .system-type{
+  display:inline-flex;
+  width:max-content;
+  max-width:100%;
+  padding:6px 9px;
+  border:1px solid transparent;
+  border-radius:999px;
+  font-size:10px!important;
+  line-height:1.2!important;
+  letter-spacing:.075em;
+}
+.system-choice-card h2,.system-choice-card h3{color:var(--ink)}
+.system-choice-card .system-showcase-copy>p:not(.system-type),
+.system-choice-card .template-card-copy>p:not(.system-type){color:var(--ink-2)}
+.system-choice-card .system-audience{border-top:1px solid rgba(21,41,52,.14)}
+
+/* Property Operations Command Center — restrained warm identity. */
+.system-choice-card--property-operations-command-center{
+  background:#fffaf3;
+  border-color:#decdb8;
+}
+.system-choice-card--property-operations-command-center::before{background:#b58a58}
+.system-choice-card--property-operations-command-center .system-type{
+  color:#7d542f!important;
+  background:#f6eadb;
+  border-color:#e4cfb5;
+}
+.system-choice-card--property-operations-command-center .system-showcase-image,
+.system-choice-card--property-operations-command-center .template-card-image{
+  background:#f7efe4;
+  border-color:#decdb8;
+}
+
+/* Property Inventory Hub — restrained cool identity. */
+.system-choice-card--property-inventory-hub{
+  background:#f4f8fa;
+  border-color:#bfd3dd;
+}
+.system-choice-card--property-inventory-hub::before{background:#5f8ea4}
+.system-choice-card--property-inventory-hub .system-type{
+  color:#2e6177!important;
+  background:#e3eff5;
+  border-color:#c5dce7;
+}
+.system-choice-card--property-inventory-hub .system-showcase-image,
+.system-choice-card--property-inventory-hub .template-card-image{
+  background:#e8f0f4;
+  border-color:#bfd3dd;
+}
+
+@media(max-width:680px){
+  .compact-system-grid,.compact-library-grid{gap:18px}
+  .system-choice-helper{font-size:13px}
+  .system-choice-card{box-shadow:0 8px 24px rgba(15,38,50,.07)}
+  .system-choice-card:hover{transform:none}
+  .system-choice-card .system-showcase-image,
+  .system-choice-card .template-card-image{border-left:0}
+  .system-choice-card--property-operations-command-center .system-showcase-image,
+  .system-choice-card--property-operations-command-center .template-card-image{border-top-color:#decdb8}
+  .system-choice-card--property-inventory-hub .system-showcase-image,
+  .system-choice-card--property-inventory-hub .template-card-image{border-top-color:#bfd3dd}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .system-choice-card{transition:none}
+  .system-choice-card:hover{transform:none}
+}

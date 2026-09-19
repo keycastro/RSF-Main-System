@@ -4,7 +4,7 @@
   <div class="container simple-page-hero reveal">
     <p class="eyebrow">SYSTEMS</p>
     <h1>Choose a system.</h1>
-    <p>Each system solves a different real estate problem.</p>
+    <p>Each system solves a different problem. Choose one to view.</p>
   </div>
 </section>
 
@@ -21,7 +21,7 @@
 
     <div class="template-library-grid compact-library-grid" id="system-results" data-system-results>
       {% for item in templates %}
-      <article class="template-library-card compact-template-card system-catalog-card simple-catalog-card reveal delay-{{ loop.index0 % 2 }}"
+      <article class="template-library-card compact-template-card system-catalog-card simple-catalog-card system-choice-card system-choice-card--{{ item.slug }} reveal delay-{{ loop.index0 % 2 }}"
                data-system-card
                data-search="{{ item.search_text|e }}">
         <div class="template-card-copy">

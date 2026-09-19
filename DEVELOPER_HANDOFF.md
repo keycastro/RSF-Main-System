@@ -33,6 +33,10 @@ The two published systems remain separate applications and must stay separate in
 
 
 
+## System-card separation contract from 3.5.1
+
+Home and Systems use subtle per-system visual identities so the two published systems read as separate choices. Property Operations uses a restrained warm tint; Property Inventory uses a restrained cool tint. Separation also relies on border, spacing, typography, focus, and card structure — never color alone. Preserve dark readable copy, existing navy buttons, search, pricing placement, routes, and system independence. See `docs/SYSTEM_CARD_VISUAL_SEPARATION_3_5_1.md`.
+
 ## Simplification contract from 3.5.0
 
 Keep public content short, simple, and easy to understand. Home should orient, Systems should help visitors choose, each system detail page should explain and price that one system, Services should show only the two ways to work with Key Castro, About should stay brief, and Contact should be direct. Do not re-add repeated pricing to Home or the Systems catalog. `/skills` and `/experience` redirect to `/about`. See `docs/WEBSITE_SIMPLIFICATION_3_5.md`.

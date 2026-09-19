@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Current version:** 3.5.0
+**Current version:** 3.5.1
 **Official site:** https://keycastro.onrender.com
 **Positioning:** KEY CASTRO — Custom Real Estate Systems Developer
 
@@ -69,6 +69,10 @@ Home → Systems → System → System Subscription or Paid Customization → Co
 ```
 
 
+
+## 3.5.1 system-card separation rule
+
+Version 3.5.1 is a focused visual patch. Home and Systems must make the two published systems feel like separate selectable choices using subtle identity tints, clear borders, spacing, and accessible focus treatment. Keep all text high-contrast and keep the normal navy View System button. Do not move pricing back into catalog cards. Do not change search, routes, business logic, or merge the two systems. See `docs/SYSTEM_CARD_VISUAL_SEPARATION_3_5_1.md`.
 
 ## 3.5.0 simplification rule
 

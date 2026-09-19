@@ -31,7 +31,7 @@ Flask + Gunicorn on the existing Render service. Render auto-deploy is off; use 
 
 ## Public design and content rule
 
-Version 3.5.0 keeps the existing premium visual identity but makes the public website much simpler:
+Version 3.5.1 preserves the 3.5.0 simplification and adds clearer visual separation between the two system choices:
 
 - short headings and paragraphs
 - basic, easy-to-understand English
@@ -41,10 +41,11 @@ Version 3.5.0 keeps the existing premium visual identity but makes the public we
 - simpler Services, About, Contact, and footer content
 - compact screenshots that support the page instead of dominating it
 - one clear purpose per page
+- subtle warm/cool system-card identities with high-contrast text and clear boundaries
 
 The public rule is: **Short. Simple. Clear. No unnecessary repetition.**
 
-See `docs/WEBSITE_SIMPLIFICATION_3_5.md`.
+See `docs/WEBSITE_SIMPLIFICATION_3_5.md` and `docs/SYSTEM_CARD_VISUAL_SEPARATION_3_5_1.md`.
 
 ## Public information architecture
 

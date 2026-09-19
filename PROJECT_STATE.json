@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-19",
-  "version": "3.5.0",
+  "version": "3.5.1",
   "owner_public_name": "Key Castro",
   "positioning": "Custom Real Estate Systems Developer",
   "framework": "Flask",
@@ -62,7 +62,7 @@
     "template_request_type_active": true
   },
   "secrets_included_in_repository": false,
-  "visual_design": "Premium ivory + navy + sage design with a 3.5.0 simplicity rule: short public copy, fewer choices, less repetition, compact media, and one clear purpose per page.",
+  "visual_design": "Premium ivory + navy + sage design with a 3.5.1 system-card separation patch: short public copy, clear system boundaries, subtle warm/cool card identities, high readability, and compact media.",
   "template_library_foundation": {
     "prepared": true,
     "published_templates": 2,
@@ -198,6 +198,21 @@
       "fewer choices",
       "clear buttons",
       "one purpose per page"
+    ]
+  },
+  "system_card_separation_3_5_1": {
+    "navigation_changed": false,
+    "routes_changed": false,
+    "business_logic_changed": false,
+    "pricing_changed": false,
+    "search_changed": false,
+    "focus": [
+      "clear visual separation between system choices",
+      "subtle warm identity for Property Operations Command Center",
+      "subtle cool identity for Property Inventory Hub",
+      "high-contrast readable copy",
+      "clear borders, spacing, hover and focus states",
+      "consistent Home and Systems presentation"
     ]
   }
 }

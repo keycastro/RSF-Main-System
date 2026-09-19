@@ -20,7 +20,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Key Castro Portfolio")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.5.0")
+        self.assertEqual(data["version"], "3.5.1")
 
     def test_main_pages_and_template_library_render(self):
         routes = [
@@ -137,6 +137,26 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn('height:262px', css)
         self.assertIn('height:190px', css)
         self.assertIn('height:150px', css)
+
+    def test_system_cards_have_clear_separate_visual_identities(self):
+        home = self.client.get("/")
+        systems = self.client.get("/system-templates")
+
+        for response in (home, systems):
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b"system-choice-card--property-operations-command-center", response.data)
+            self.assertIn(b"system-choice-card--property-inventory-hub", response.data)
+            self.assertIn(b"View System", response.data)
+
+        self.assertIn(b"Each system solves a different problem. Choose one to view.", home.data)
+        self.assertIn(b"Each system solves a different problem. Choose one to view.", systems.data)
+
+        css_path = Path(__file__).resolve().parents[1] / "app" / "static" / "css" / "style.css"
+        css = css_path.read_text(encoding="utf-8")
+        self.assertIn("3.5.1 — SYSTEM CARD VISUAL SEPARATION", css)
+        self.assertIn("#fffaf3", css)
+        self.assertIn("#f4f8fa", css)
+        self.assertIn("prefers-reduced-motion:reduce", css)
 
     def test_system_search_is_metadata_driven_accessible_and_progressive(self):
         from app.system_templates import published_templates
