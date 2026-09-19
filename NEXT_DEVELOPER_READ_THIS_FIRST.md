@@ -1,22 +1,23 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Current version:** 3.6.0
+**Current version:** 3.7.0
 **Official site:** https://keycastro.onrender.com
 **Positioning:** KEY CASTRO — Custom Real Estate Systems Developer
 
 ## Read first
 
-1. `docs/BUSINESS_MODEL_AND_MANAGED_MAINTENANCE_3_6.md`
-2. `PROJECT_STATE.json`
-3. `README.md`
-4. `SECURITY_AND_SHARING_NOTES.md`
-5. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
-6. `docs/DEPLOYMENT_HISTORY.md`
-7. `docs/PUBLISHED_SYSTEM_TEMPLATES.md`
-8. `docs/UX_INFORMATION_ARCHITECTURE.md`
-9. 3.5.x visual-refinement documents for the preserved design rules
+1. `docs/MASTER_UX_REFINEMENT_3_7.md`
+2. `docs/BUSINESS_MODEL_AND_MANAGED_MAINTENANCE_3_6.md`
+3. `PROJECT_STATE.json`
+4. `README.md`
+5. `SECURITY_AND_SHARING_NOTES.md`
+6. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
+7. `docs/DEPLOYMENT_HISTORY.md`
+8. `docs/PUBLISHED_SYSTEM_TEMPLATES.md`
+9. `docs/UX_INFORMATION_ARCHITECTURE.md`
+10. 3.5.x visual-refinement documents for the preserved design rules
 
-Historical 3.2/3.3 subscription documents are retained for history only and are **superseded** by 3.6.0. Do not restore the old subscription-access model.
+Historical 3.2/3.3 subscription documents are retained for history only and are **superseded** by the current 3.6 business model and 3.7 UX state. Do not restore the old subscription-access model.
 
 ## Architecture
 
@@ -72,7 +73,7 @@ Home → Systems → System → Customize / Build → Full Handover OR Managed b
 
 ## Design rule
 
-The owner likes the current website design. Preserve the premium ivory/navy/sage identity, typography, spacing philosophy, compact cards, controlled screenshots, integrated inner-page intros, and responsive behavior. Do not redesign just to make the site look different.
+Version 3.7.0 is the current visual baseline. Preserve its premium ivory/navy/sage identity, compact header and page rhythm, balanced three-system grid, controlled screenshots, simple English, and responsive behavior. Do not restore the older oversized or 2+1 card composition.
 
 ## Security
 

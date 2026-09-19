@@ -20,7 +20,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Key Castro Portfolio")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.6.0")
+        self.assertEqual(data["version"], "3.7.0")
 
     def test_main_pages_and_template_library_render(self):
         routes = [
@@ -92,8 +92,12 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(response.data.count(b"Property Operations Command Center</h3>"), 1)
         self.assertEqual(response.data.count(b"Property Inventory Hub</h3>"), 1)
         self.assertEqual(response.data.count(b"Student Housing Matching and Placement System</h3>"), 1)
-        self.assertIn(b"Full Handover", response.data)
-        self.assertIn(b"Managed by KEY CASTRO", response.data)
+        self.assertIn(b"Three simple steps", response.data)
+        self.assertIn(b"Choose", response.data)
+        self.assertIn(b"Adapt", response.data)
+        self.assertIn(b"Deliver", response.data)
+        self.assertNotIn(b"Full Handover", response.data)
+        self.assertNotIn(b"Managed by KEY CASTRO", response.data)
         public_shell = response.data.lower()
         self.assertNotIn(b"key castro inbox", public_shell)
         self.assertNotIn(b"owner dashboard", public_shell)
@@ -135,7 +139,10 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"compact-template-card", systems.data)
         self.assertIn(b"template-card-copy", systems.data)
         self.assertIn(b"compact-case-cover", detail.data)
-        self.assertIn(b"compact-gallery-grid", detail.data)
+        self.assertIn(b"detail-evidence-section", detail.data)
+        self.assertIn(b"detail-secondary-preview", detail.data)
+        self.assertIn(b"detail-disclosure", detail.data)
+        self.assertNotIn(b"compact-gallery-grid", detail.data)
         self.assertIn(b"Open image", detail.data)
 
         css_path = Path(__file__).resolve().parents[1] / "app" / "static" / "css" / "style.css"
@@ -143,9 +150,11 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn('3.0.0', css)
         self.assertIn('3.4.0', css)
         self.assertIn('3.5.0', css)
-        self.assertIn('height:262px', css)
-        self.assertIn('height:190px', css)
-        self.assertIn('height:150px', css)
+        self.assertIn('3.7.0 — MASTER SIMPLIFICATION + COMPOSITION REFINEMENT', css)
+        self.assertIn('.portfolio-system-grid', css)
+        self.assertIn('.detail-secondary-preview', css)
+        self.assertIn('height:124px', css)
+        self.assertIn('height:170px', css)
 
     def test_public_page_tops_use_compact_connected_spacing(self):
         page_expectations = {
@@ -208,13 +217,17 @@ class PortfolioSiteTests(unittest.TestCase):
             self.assertIn(b"system-choice-card--student-housing-matching-and-placement-system", response.data)
             self.assertIn(b"View System", response.data)
 
-        self.assertIn(b"Choose a working system to customize.", home.data)
-        self.assertIn(b"working systems", systems.data)
+        self.assertIn(b"Choose the closest fit.", home.data)
+        self.assertIn(b"Pick the system closest to your workflow.", systems.data)
+        self.assertIn(b"portfolio-system-grid", home.data)
+        self.assertIn(b"portfolio-system-grid", systems.data)
 
         css_path = Path(__file__).resolve().parents[1] / "app" / "static" / "css" / "style.css"
         css = css_path.read_text(encoding="utf-8")
         self.assertIn("3.5.1 — SYSTEM CARD VISUAL SEPARATION", css)
         self.assertIn("3.6.0 — BUSINESS MODEL + THIRD SYSTEM INTEGRATION", css)
+        self.assertIn("3.7.0 — MASTER SIMPLIFICATION + COMPOSITION REFINEMENT", css)
+        self.assertIn("grid-template-columns:repeat(3,minmax(0,1fr))", css)
         self.assertIn("#fffaf3", css)
         self.assertIn("#f4f8fa", css)
         self.assertIn("#f4f8f5", css)
@@ -225,14 +238,13 @@ class PortfolioSiteTests(unittest.TestCase):
 
         systems = self.client.get("/system-templates")
         self.assertEqual(systems.status_code, 200)
-        self.assertIn(b'data-system-search', systems.data)
-        self.assertIn(b'role="search"', systems.data)
-        self.assertIn(b'Search systems...', systems.data)
-        self.assertIn(b'aria-controls="system-results"', systems.data)
-        self.assertIn(b'aria-live="polite"', systems.data)
-        self.assertIn(b'>Clear</button>', systems.data)
-        self.assertIn(b'No matching system.', systems.data)
-        self.assertIn(b'Discuss Custom Build', systems.data)
+        # With only three systems, search is intentionally hidden to reduce cognitive load.
+        self.assertNotIn(b'data-system-search', systems.data)
+        self.assertNotIn(b'role="search"', systems.data)
+        self.assertNotIn(b'Search systems...', systems.data)
+        self.assertNotIn(b'>Clear</button>', systems.data)
+        self.assertNotIn(b'No matching system.', systems.data)
+        self.assertIn(b'Discuss a Custom Build', systems.data)
         self.assertEqual(systems.data.count(b'data-system-card'), 3)
 
         templates = {item.slug: item for item in published_templates()}
@@ -267,7 +279,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"Choose who manages the system", detail.data)
         self.assertIn(b"Full Handover", detail.data)
         self.assertIn(b"Managed by KEY CASTRO", detail.data)
-        self.assertIn(b"Customization is quoted separately", detail.data)
+        self.assertIn(b"Build or customization pricing is quoted separately.", detail.data)
         self.assertIn(b"manage Property Operations Command Center after delivery", managed_contact.data)
         self.assertNotIn(b"$49/month", managed_contact.data)
         self.assertNotIn(b"$490/year", managed_contact.data)
@@ -314,7 +326,8 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"AFTER DELIVERY", detail.data)
         self.assertIn(b"Full Handover", detail.data)
         self.assertIn(b"Managed by KEY CASTRO", detail.data)
-        self.assertIn(b"monthly/yearly price above is for ongoing managed maintenance", detail.data)
+        self.assertIn(b"Ongoing managed maintenance is $49/month or $490/year.", detail.data)
+        self.assertIn(b"Build or customization pricing is quoted separately.", detail.data)
 
     def test_managed_maintenance_pricing_has_one_trusted_source_and_correct_math(self):
         from app.system_templates import MANAGED_MAINTENANCE_PRICING, published_templates
@@ -337,8 +350,8 @@ class PortfolioSiteTests(unittest.TestCase):
         detail = self.client.get("/system-templates/property-operations-command-center")
         self.assertIn(b"$49", detail.data)
         self.assertIn(b"$490", detail.data)
-        self.assertIn(b"Save $98/year", detail.data)
-        self.assertIn(b"Managed maintenance", detail.data)
+        self.assertNotIn(b"Save $98/year", detail.data)
+        self.assertIn(b"managed maintenance", detail.data)
         for forbidden in (b"Starter", b"Basic plan", b"Professional plan", b"Enterprise"):
             self.assertNotIn(forbidden, detail.data)
 
@@ -439,12 +452,14 @@ class PortfolioSiteTests(unittest.TestCase):
                 self.assertIn(b"I build it. You manage it.", response.data)
                 self.assertIn(b"Managed by KEY CASTRO", response.data)
                 self.assertIn(b"I build it. I manage it.", response.data)
-                self.assertIn(b"Choose Monthly Maintenance", response.data)
-                self.assertIn(b"Choose Yearly Maintenance", response.data)
-                self.assertIn(b"$49", response.data)
-                self.assertIn(b"$490", response.data)
-                self.assertIn(b"Save $98/year", response.data)
-                self.assertIn(b"synthetic sample data", response.data)
+                self.assertNotIn(b"Choose Monthly Maintenance", response.data)
+                self.assertNotIn(b"Choose Yearly Maintenance", response.data)
+                self.assertIn(b"$49/month", response.data)
+                self.assertIn(b"$490/year", response.data)
+                self.assertNotIn(b"Save $98/year", response.data)
+                self.assertIn(b"sample data", response.data)
+                if slug == "student-housing-matching-and-placement-system":
+                    self.assertIn(b"synthetic sample data", response.data)
                 self.assertNotIn(b"Choose monthly or yearly access", response.data)
                 self.assertNotIn(b"core software is not sold", response.data.lower())
 

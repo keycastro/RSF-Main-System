@@ -3,63 +3,66 @@
 <section class="page-hero page-hero-simple">
   <div class="container simple-page-hero reveal">
     <p class="eyebrow">SERVICES</p>
-    <h1>Choose how your system starts.</h1>
-    <p>Customize an existing system or have one built around your business.</p>
+    <h1>Two simple decisions.</h1>
+    <p>Choose how the system starts, then choose who manages it after delivery.</p>
   </div>
 </section>
 
-<section class="section services-simple-section">
-  <div class="container service-simple-list">
-    <article class="service-simple-row reveal">
-      <span>01</span>
-      <div>
-        <h2>Customize an existing system</h2>
-        <p>Start with one of my working systems and adapt the workflow, fields, roles, branding, or business rules to fit your operation.</p>
-      </div>
-      <a class="button primary" href="{{ url_for('site.system_templates') }}">View Systems</a>
-    </article>
-
-    <article class="service-simple-row reveal delay-1">
-      <span>02</span>
-      <div>
-        <h2>Build a custom system</h2>
-        <p>If the existing systems do not fit, I can build around your workflow and requirements. Development is quoted separately based on scope.</p>
-      </div>
-      <a class="button secondary" href="{{ url_for('site.contact', intent='custom-build') }}">Discuss Custom Build</a>
-    </article>
-  </div>
-</section>
-
-<section class="section section-soft services-simple-section delivery-services-section">
-  <div class="container">
-    <div class="section-head simple-section-head reveal">
-      <div>
-        <p class="eyebrow">AFTER THE SYSTEM IS READY</p>
-        <h2>Choose one management option.</h2>
-        <p>Who manages the system after delivery depends on our agreement.</p>
-      </div>
-    </div>
-    <div class="service-simple-list">
-      <article class="service-simple-row reveal">
+<section class="section services-flow-section">
+  <div class="container services-flow">
+    <section class="service-stage reveal" aria-labelledby="service-stage-build">
+      <div class="service-stage-heading">
         <span>01</span>
         <div>
-          <h2>Full Handover</h2>
-          <p><strong>I build it. You manage it.</strong> After handover, you handle your own hosting, domain, backups, maintenance, updates, and future technical management.</p>
+          <p class="eyebrow">START THE SYSTEM</p>
+          <h2 id="service-stage-build">Choose how it is built.</h2>
         </div>
-        <a class="button secondary" href="{{ url_for('site.contact', intent='handover') }}">Discuss Full Handover</a>
-      </article>
+      </div>
+      <div class="service-simple-list">
+        <article class="service-simple-row">
+          <div>
+            <h3>Customize an existing system</h3>
+            <p>Start with a working system and adapt the workflow, fields, roles, branding, and rules.</p>
+          </div>
+          <a class="button primary" href="{{ url_for('site.system_templates') }}">View Systems</a>
+        </article>
+        <article class="service-simple-row">
+          <div>
+            <h3>Build a custom system</h3>
+            <p>If the existing systems do not fit, I can build one around your workflow. Development is quoted separately.</p>
+          </div>
+          <a class="button secondary" href="{{ url_for('site.contact', intent='custom-build') }}">Discuss Custom Build</a>
+        </article>
+      </div>
+    </section>
 
-      <article class="service-simple-row reveal delay-1">
+    <section class="service-stage reveal" aria-labelledby="service-stage-manage">
+      <div class="service-stage-heading">
         <span>02</span>
         <div>
-          <h2>Managed by KEY CASTRO</h2>
-          <p><strong>I build it. I manage it.</strong> I continue handling the agreed hosting, backups, maintenance, fixes, updates, monitoring, and technical support.</p>
-          <div class="service-price-line"><strong>{{ maintenance_pricing.currency_symbol }}{{ maintenance_pricing.monthly_price }}/month</strong><span>or</span><strong>{{ maintenance_pricing.currency_symbol }}{{ maintenance_pricing.yearly_price }}/year</strong><em>Managed maintenance</em></div>
-          <p class="service-note">Build/customization pricing is separate. Managed maintenance begins only if we agree on this option.</p>
+          <p class="eyebrow">AFTER DELIVERY</p>
+          <h2 id="service-stage-manage">Choose who manages it.</h2>
         </div>
-        <a class="button primary" href="{{ url_for('site.contact', intent='managed') }}">Discuss Managed Service</a>
-      </article>
-    </div>
+      </div>
+      <div class="service-simple-list">
+        <article class="service-simple-row">
+          <div>
+            <h3>Full Handover</h3>
+            <p><strong>I build it. You manage it.</strong> Your team takes over hosting, backups, maintenance, updates, and future technical work.</p>
+          </div>
+          <a class="button secondary" href="{{ url_for('site.contact', intent='handover') }}">Discuss Full Handover</a>
+        </article>
+        <article class="service-simple-row service-managed-row">
+          <div>
+            <h3>Managed by KEY CASTRO</h3>
+            <p><strong>I build it. I manage it.</strong> I continue the agreed hosting, backups, maintenance, fixes, updates, monitoring, and support.</p>
+            <p class="service-price-line"><strong>{{ maintenance_pricing.currency_symbol }}{{ maintenance_pricing.monthly_price }}/month</strong><span>or</span><strong>{{ maintenance_pricing.currency_symbol }}{{ maintenance_pricing.yearly_price }}/year</strong><em>managed maintenance</em></p>
+            <p class="service-note">Build or customization pricing is separate.</p>
+          </div>
+          <a class="button primary" href="{{ url_for('site.contact', intent='managed') }}">Discuss Managed Service</a>
+        </article>
+      </div>
+    </section>
   </div>
 </section>
 {% endblock %}

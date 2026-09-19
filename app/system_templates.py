@@ -197,8 +197,8 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         slug="property-operations-command-center",
         name="Property Operations Command Center",
         category="Property Operations",
-        short_description="Track property work, deadlines, follow-ups, approvals, rentals, and team tasks in one place.",
-        card_audience="Property managers, rental teams, and operations teams.",
+        short_description="Track property tasks, deadlines, approvals, rentals, and follow-ups in one place.",
+        card_audience="Property managers and operations teams.",
         full_description="Manage daily property work, deadlines, follow-ups, approvals, rentals, and team tasks in one place.",
         business_problem=(
             "Property work is easy to miss when tasks, deadlines, approvals, and updates are spread across chats "
@@ -286,8 +286,8 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         slug="property-inventory-hub",
         name="Property Inventory Hub",
         category="Real Estate Inventory",
-        short_description="Keep private property listings in one searchable place and keep them up to date.",
-        card_audience="Brokerages and real estate teams sharing private listings.",
+        short_description="Keep private property listings searchable, current, and easy to share with your team.",
+        card_audience="Brokerages and real estate teams.",
         full_description="A private system for teams to add, search, update, and manage shared property listings.",
         business_problem=(
             "Listings become hard to trust when they are spread across chats, spreadsheets, and agent files. "
@@ -373,10 +373,9 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         name="Student Housing Matching and Placement System",
         category="Student Housing Operations",
         short_description=(
-            "Manage student housing requests, available units, matching, viewings, follow-ups, reservations, "
-            "and placements in one workflow."
+            "Track housing requests, matching, viewings, reservations, and placements in one place."
         ),
-        card_audience="Student-housing platforms, placement teams, and off-campus housing operators.",
+        card_audience="Student-housing and placement teams.",
         full_description=(
             "A focused internal system for managing student housing requests, available units, rule-based matching, "
             "viewings, follow-ups, reservations, and completed placements."

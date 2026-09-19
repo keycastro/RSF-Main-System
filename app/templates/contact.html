@@ -3,7 +3,7 @@
 <section class="page-hero page-hero-simple contact-hero-simple">
   <div class="container simple-page-hero reveal">
     <p class="eyebrow">CONTACT</p>
-    <h1>Contact Me.</h1>
+    <h1>Tell me what you need.</h1>
     {% if template_interest and source_intent == 'managed' and selected_maintenance_plan %}
     <p>{{ template_interest.name }} · {{ selected_maintenance_plan.label }} managed maintenance · {{ selected_maintenance_plan.price_label }}</p>
     {% elif template_interest and source_intent == 'managed' %}
@@ -21,17 +21,17 @@
     {% elif source_intent == 'managed' %}
     <p>You are asking about ongoing managed maintenance by KEY CASTRO.</p>
     {% else %}
-    <p>Tell me what you need. I will reply by email.</p>
+    <p>Send a short message. I will reply by email.</p>
     {% endif %}
   </div>
 </section>
 
-<section class="section contact-section-simple">
-  <div class="container contact-layout contact-layout-simple">
+<section class="section contact-section-simple contact-refined-section">
+  <div class="container contact-layout contact-layout-simple contact-refined-layout">
     <aside class="contact-side reveal">
-      <p class="eyebrow">NEXT STEP</p>
-      <h2>Send a short message.</h2>
-      <p>I will read it and reply to the email you provide.</p>
+      <p class="eyebrow">REPLY</p>
+      <h2>I reply by email.</h2>
+      <p>Briefly describe the system, workflow, or problem you want help with.</p>
       {% if contact_email %}<p class="contact-email-option">Email: <a class="text-link" href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>{% endif %}
     </aside>
 
@@ -54,7 +54,7 @@
         <label><span>Email</span><input required maxlength="160" type="email" name="email" value="{{ form_data.email if form_data else '' }}" placeholder="you@company.com"></label>
       </div>
       <label><span>Company <small>optional</small></span><input maxlength="140" name="company" value="{{ form_data.company if form_data else '' }}" placeholder="Company name"></label>
-      <label><span>What do you need?</span><textarea required minlength="20" maxlength="3000" name="message" rows="6" placeholder="Briefly tell me what you need.">{{ form_data.message if form_data else '' }}</textarea></label>
+      <label><span>What do you need?</span><textarea required minlength="20" maxlength="3000" name="message" rows="5" placeholder="Briefly tell me what you need.">{{ form_data.message if form_data else '' }}</textarea></label>
       <button class="button primary full-button" type="submit">
         {% if source_intent == 'managed' and selected_maintenance_plan %}Request {{ selected_maintenance_plan.label }} Maintenance
         {% elif source_intent == 'managed' %}Discuss Managed Service

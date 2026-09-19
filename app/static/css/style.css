@@ -1300,3 +1300,427 @@ h2{font-size:clamp(27px,2.9vw,39px);line-height:1.1}
   .maintenance-plan-grid{grid-template-columns:1fr}
   .maintenance-section-simple{padding:45px 0 38px}
 }
+
+/* =========================================================
+   3.7.0 — MASTER SIMPLIFICATION + COMPOSITION REFINEMENT
+   One coherent public experience: compact, balanced, clear.
+   Existing Flask architecture, business logic, brand colors,
+   accessibility behavior, SEO, and private owner boundary remain.
+   ========================================================= */
+:root{
+  --header:66px;
+  --container:min(1120px,calc(100vw - 44px));
+  --reading:680px;
+  --design-version:"3.7.0";
+}
+
+body{line-height:1.62}
+h1{font-size:clamp(38px,4.2vw,56px);line-height:1.03}
+h2{font-size:clamp(27px,2.8vw,38px);line-height:1.1}
+h3{font-size:21px}
+.section{padding:56px 0}
+.section-head{gap:34px;margin-bottom:27px}
+.section-head>div>p:last-child:not(.eyebrow){margin-top:10px}
+.eyebrow{margin-bottom:10px}
+.button{min-height:44px;padding-inline:18px;font-size:14px;border-radius:8px}
+.text-link{font-size:14px}
+
+/* Header: keep the same identity, reduce visual mass. */
+.site-header{height:var(--header)}
+.nav-shell{gap:22px}
+.brand{gap:10px}
+.brand-mark{width:36px;height:36px;border-radius:9px;font-size:11px}
+.brand-copy strong{font-size:11px}
+.brand-copy small{font-size:10px;margin-top:3px}
+.site-nav{gap:2px}
+.site-nav a{font-size:13.5px;padding:8px 11px}
+.site-nav .nav-contact{margin-left:5px;padding-inline:15px}
+
+/* Home: focused orientation without a decorative empty right panel. */
+.hero.hero-simple.hero-refined{
+  min-height:0;
+  padding:50px 0 46px;
+  background:linear-gradient(118deg,var(--paper) 0%,#f8f4ed 72%,#f0f3f1 100%);
+}
+.hero-refined::before{display:none}
+.hero-refined .hero-copy{max-width:790px}
+.hero-refined .hero-copy h1{max-width:780px;margin:0 0 15px;font-size:clamp(42px,4.8vw,60px)}
+.hero-refined .hero-lead{max-width:590px;font-size:17px;line-height:1.52}
+.hero-refined .hero-actions{margin-top:23px}
+.hero.hero-simple.hero-refined + .home-systems-section{padding-top:44px}
+.home-systems-section{padding-bottom:52px}
+.simple-section-head h2{font-size:clamp(27px,2.8vw,37px)}
+.system-choice-helper{margin-top:8px;font-size:13.5px;line-height:1.48}
+
+/* Three published systems read as one portfolio, not 2 + detached 1. */
+.portfolio-system-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:17px;
+  align-items:stretch;
+  max-width:none;
+}
+.compact-system-grid>.system-choice-card:last-child:nth-child(odd),
+.compact-library-grid>.system-choice-card:last-child:nth-child(odd){
+  grid-column:auto;
+  width:auto;
+  justify-self:stretch;
+}
+.system-showcase-card,
+.compact-template-card{
+  display:grid;
+  grid-template-columns:1fr;
+  grid-template-rows:auto auto 1fr;
+  grid-template-areas:none;
+  min-height:0;
+  border-radius:17px;
+  overflow:hidden;
+  box-shadow:0 8px 24px rgba(15,38,50,.06);
+}
+.system-choice-card:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(15,38,50,.085)}
+.system-showcase-copy,
+.template-card-copy{
+  display:block;
+  grid-area:auto;
+  padding:20px 20px 14px;
+}
+.system-showcase-copy h3,
+.compact-template-card h2{
+  margin:12px 0 8px;
+  font-size:22px;
+  line-height:1.13;
+}
+.system-showcase-copy>p:not(.system-type),
+.compact-template-card .template-card-copy>p:not(.system-type){
+  margin:0;
+  font-size:13.5px;
+  line-height:1.5;
+}
+.system-choice-card .system-type{padding:5px 8px;font-size:9.5px!important}
+.system-showcase-image,
+.compact-template-card .template-card-image{
+  grid-area:auto;
+  order:0;
+  min-height:0;
+  margin:0!important;
+  padding:8px;
+  border-left:0;
+  border-top:1px solid rgba(21,41,52,.10);
+  border-bottom:1px solid rgba(21,41,52,.10);
+  display:block;
+}
+.system-showcase-image img,
+.compact-template-card .template-card-image img{
+  width:100%;
+  height:124px;
+  max-height:124px;
+  aspect-ratio:auto;
+  object-fit:cover;
+  object-position:top center;
+  border-radius:8px;
+  box-shadow:0 8px 20px rgba(15,38,50,.07);
+}
+.system-showcase-image>span,
+.compact-template-card .template-card-image>span{
+  right:13px;
+  bottom:13px;
+  padding:5px 8px;
+  font-size:9px;
+}
+.system-card-footer,
+.compact-template-card .template-card-actions.system-card-footer{
+  grid-area:auto;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:14px;
+  margin:0!important;
+  padding:14px 20px 20px;
+}
+.system-card-footer .system-audience{
+  width:100%;
+  margin:0!important;
+  padding-top:0!important;
+  border-top:0;
+  font-size:12.5px!important;
+  line-height:1.45!important;
+}
+.system-card-footer .button{margin-top:auto;min-height:42px}
+.system-choice-card--property-operations-command-center .system-showcase-image,
+.system-choice-card--property-operations-command-center .template-card-image{border-top-color:#decdb8;border-bottom-color:#decdb8}
+.system-choice-card--property-inventory-hub .system-showcase-image,
+.system-choice-card--property-inventory-hub .template-card-image{border-top-color:#bfd3dd;border-bottom-color:#bfd3dd}
+.system-choice-card--student-housing-matching-and-placement-system .system-showcase-image,
+.system-choice-card--student-housing-matching-and-placement-system .template-card-image{border-top-color:#bed3c8;border-bottom-color:#bed3c8}
+
+/* Systems: search only appears when the catalog is genuinely large. */
+.systems-catalog-section.catalog-simple{padding:30px 0 52px}
+.catalog-next-step{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:16px;
+  margin-top:22px;
+  padding-top:18px;
+  border-top:1px solid var(--line);
+  color:var(--muted);
+  font-size:13px;
+}
+
+/* Home process: orientation summary, not a second Services page. */
+.home-process-section{padding:44px 0 48px}
+.home-process-layout{
+  display:grid;
+  grid-template-columns:minmax(210px,.65fr) minmax(0,1.35fr);
+  gap:24px 58px;
+  align-items:start;
+}
+.home-process-heading h2{margin:0;font-size:30px}
+.home-process-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.home-process-list li{display:grid;grid-template-columns:36px 1fr;gap:13px;padding:13px 0;border-bottom:1px solid var(--line)}
+.home-process-list li>span{padding-top:2px;color:var(--sage-deep);font-size:10px;font-weight:850;letter-spacing:.07em}
+.home-process-list strong{display:block;color:var(--navy-deep);font-size:14px;margin-bottom:2px}
+.home-process-list p{margin:0;font-size:13px;line-height:1.45}
+.home-process-link{grid-column:2;justify-self:start}
+
+/* Shared inner-page intro: one compact title, directly connected to content. */
+.page-hero.page-hero-simple{padding:25px 0 8px;background:var(--paper);border-bottom:0}
+.simple-page-hero h1{max-width:760px;margin:3px 0 7px;font-size:clamp(35px,3.7vw,46px)}
+.simple-page-hero>p:last-child:not(.eyebrow){max-width:650px;font-size:15px;line-height:1.48}
+.page-hero.page-hero-simple + .section{padding-top:20px}
+
+/* Services: two stages in one continuous decision flow. */
+.services-flow-section{padding:32px 0 58px}
+.services-flow{max-width:1020px}
+.service-stage + .service-stage{margin-top:45px;padding-top:38px;border-top:1px solid var(--line)}
+.service-stage-heading{display:grid;grid-template-columns:42px 1fr;gap:18px;align-items:start;margin-bottom:14px}
+.service-stage-heading>span{padding-top:5px;color:var(--sage-deep);font-size:10px;font-weight:850;letter-spacing:.08em}
+.service-stage-heading .eyebrow{margin-bottom:5px}
+.service-stage-heading h2{margin:0;font-size:29px}
+.services-flow .service-simple-list{border-top:1px solid var(--line)}
+.services-flow .service-simple-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:30px;
+  align-items:center;
+  padding:22px 0;
+}
+.services-flow .service-simple-row h3{margin:0 0 6px;font-size:21px}
+.services-flow .service-simple-row p{max-width:690px;margin:0;font-size:14px;line-height:1.5}
+.services-flow .service-simple-row .button{min-width:150px}
+.services-flow .service-price-line{margin:11px 0 8px;padding:9px 0;font-size:13px}
+.services-flow .service-price-line strong{font-size:15px}
+.services-flow .service-note{margin-top:6px!important;font-size:12px!important}
+
+/* About: one compact story instead of separate large sections. */
+.about-refined-section{padding:38px 0 60px}
+.about-refined-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:start;max-width:1040px}
+.about-refined-intro h2{margin:3px 0 10px;font-size:31px}
+.about-refined-intro>p:not(.eyebrow){max-width:470px;font-size:14.5px;line-height:1.55}
+.about-focus-note{margin:22px 0 18px!important;padding-top:17px;border-top:1px solid var(--line);font-size:13px!important}
+.about-focus-note strong{color:var(--ink)}
+.about-method>.eyebrow{margin-bottom:11px}
+.about-method .approach-list li{padding:15px 0}
+.about-method .approach-list strong{font-size:15px}
+.about-method .approach-list p{font-size:13.5px}
+
+/* Contact: lighter form and no repeated instructions. */
+.contact-refined-section{padding:34px 0 58px}
+.contact-refined-layout{
+  grid-template-columns:minmax(210px,260px) minmax(0,680px);
+  gap:48px;
+  max-width:1010px;
+  align-items:start;
+}
+.contact-refined-layout .contact-side{position:static}
+.contact-refined-layout .contact-side h2{margin:4px 0 8px;font-size:25px}
+.contact-refined-layout .contact-side>p:not(.eyebrow):not(.contact-email-option){font-size:13.5px;line-height:1.5}
+.contact-refined-layout .contact-email-option{margin-top:20px;padding-top:15px;font-size:13px}
+.contact-refined-layout .contact-form{
+  padding:24px;
+  border-radius:15px;
+  box-shadow:0 8px 24px rgba(15,38,50,.055);
+}
+.contact-refined-layout .contact-form label{margin-bottom:15px}
+.contact-refined-layout .contact-form input,
+.contact-refined-layout .contact-form textarea{padding:12px 13px;font-size:14px}
+.contact-refined-layout .contact-form textarea{min-height:108px}
+.contact-refined-layout .contact-interest{margin-bottom:16px;padding:13px 14px}
+.contact-refined-layout .full-button{min-height:46px}
+
+/* System detail: compact hierarchy + progressive disclosure. */
+.case-hero.detail-hero-simple.detail-hero-refined{padding:18px 0 28px;background:var(--paper)}
+.detail-hero-refined .breadcrumb{margin-bottom:10px}
+.detail-hero-refined .template-hero-grid{grid-template-columns:1.1fr .9fr;gap:38px;align-items:center}
+.detail-hero-refined .case-intro h1{margin:7px 0 9px;font-size:clamp(36px,4vw,49px)}
+.detail-hero-refined .page-lead{max-width:650px;font-size:16px;line-height:1.5}
+.detail-customize-note{max-width:620px;margin:13px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:13px;line-height:1.48;color:var(--muted)}
+.detail-hero-refined .template-primary-actions{margin-top:18px;gap:15px}
+.detail-hero-refined .compact-case-cover{max-height:245px;padding:7px;border-radius:15px}
+.detail-hero-refined .compact-case-cover img{height:230px;border-radius:9px}
+.detail-hero-refined .compact-case-cover span{right:15px;bottom:15px;padding:5px 8px;font-size:9px}
+.case-hero.detail-hero-simple.detail-hero-refined + .section{padding-top:40px}
+
+.detail-overview-refined{padding:48px 0 52px}
+.detail-overview-refined-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:62px;align-items:start}
+.detail-overview-refined-grid h2,.detail-evidence-grid h2{margin:3px 0 10px;font-size:30px}
+.detail-overview-refined-grid .large-copy{max-width:610px;font-size:15.5px;line-height:1.55}
+.detail-best-for{margin-top:24px;padding-top:17px;border-top:1px solid var(--line)}
+.detail-best-for>strong{display:block;margin-bottom:8px;color:var(--navy-deep);font-size:13px}
+.detail-best-for ul{display:flex;flex-wrap:wrap;gap:7px 9px;list-style:none;margin:0;padding:0}
+.detail-best-for li{padding:5px 8px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.62);color:var(--ink-2);font-size:11.5px;line-height:1.3}
+.detail-workflow .compact-steps{margin-top:12px}
+.detail-workflow .compact-steps li{padding:11px 0}
+.detail-workflow .compact-steps p{font-size:13px;line-height:1.45}
+
+.detail-evidence-section{padding:48px 0 52px}
+.detail-evidence-grid{display:grid;grid-template-columns:1.12fr .88fr;gap:62px;align-items:start}
+.feature-list-refined{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:22px;margin-top:14px}
+.feature-list-refined li{font-size:13px;line-height:1.45;padding:10px 0 10px 20px}
+.feature-list-refined li::before{top:16px}
+.detail-secondary-preview{display:block;width:100%;padding:7px;border-radius:14px}
+.detail-secondary-preview img,.gallery-item.detail-secondary-preview:not(:first-child) img{width:100%;height:170px;object-fit:cover;object-position:top center;border-radius:8px}
+.detail-secondary-preview span{left:auto;right:14px;bottom:14px;padding:5px 8px;font-size:9px}
+.detail-media-caption{margin:9px 0 18px;font-size:11.5px;line-height:1.45;color:var(--muted)}
+.detail-disclosure{border-top:1px solid var(--line)}
+.detail-disclosure:last-child{border-bottom:1px solid var(--line)}
+.detail-disclosure summary{position:relative;cursor:pointer;list-style:none;padding:13px 26px 13px 0;color:var(--navy-deep);font-size:13px;font-weight:800}
+.detail-disclosure summary::-webkit-details-marker{display:none}
+.detail-disclosure summary::after{content:"+";position:absolute;right:2px;top:9px;color:var(--sage-deep);font-size:20px;font-weight:500}
+.detail-disclosure[open] summary::after{content:"−"}
+.detail-disclosure .template-list{margin:0 0 13px}
+.detail-disclosure .template-list li{font-size:12.5px;padding-top:9px;padding-bottom:9px}
+.detail-disclosure>p{margin:0 0 14px;font-size:12.5px;line-height:1.52;color:var(--muted)}
+
+.delivery-refined-section{padding:46px 0 42px}
+.delivery-refined-heading{max-width:720px;margin-bottom:15px}
+.delivery-refined-heading h2{margin:3px 0 7px;font-size:30px}
+.delivery-refined-heading>p:last-child{margin:0;font-size:13px;line-height:1.45}
+.delivery-refined-list{border-top:1px solid var(--line)}
+.delivery-refined-row{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:20px;align-items:center;padding:20px 0;border-bottom:1px solid var(--line)}
+.delivery-refined-row>span{align-self:start;padding-top:5px;color:var(--sage-deep);font-size:10px;font-weight:850;letter-spacing:.08em}
+.delivery-refined-row h3{margin:0 0 5px;font-size:20px}
+.delivery-refined-row p{max-width:690px;margin:0;font-size:13.5px;line-height:1.5}
+.delivery-refined-row p strong{color:var(--ink)}
+.delivery-refined-row .button{min-width:160px}
+.delivery-refined-section .detail-bottom-nav{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-top:18px;padding-top:0;border-top:0}
+
+/* Footer stays compact and clearly secondary. */
+.simple-footer{margin-top:24px;padding:30px 0 16px}
+.simple-footer .footer-brand-block>p{margin-top:12px;font-size:13px}
+.simple-footer-nav{padding-top:6px}
+.simple-footer-nav a{font-size:13px}
+.simple-footer .footer-bottom{margin-top:20px;padding-top:16px}
+
+@media(max-width:1050px){
+  :root{--container:min(100% - 36px,1000px)}
+  .portfolio-system-grid{gap:14px}
+  .system-showcase-copy,.template-card-copy{padding:18px 17px 12px}
+  .system-card-footer,.compact-template-card .template-card-actions.system-card-footer{padding:12px 17px 18px}
+  .system-showcase-copy h3,.compact-template-card h2{font-size:20px}
+  .system-showcase-image img,.compact-template-card .template-card-image img{height:112px;max-height:112px}
+  .detail-overview-refined-grid,.detail-evidence-grid{gap:44px}
+}
+
+@media(max-width:900px){
+  :root{--container:min(100% - 32px,860px)}
+  .site-header{height:64px}
+  .portfolio-system-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .compact-system-grid>.system-choice-card:last-child:nth-child(odd),
+  .compact-library-grid>.system-choice-card:last-child:nth-child(odd){grid-column:1/-1;width:100%;justify-self:stretch}
+  .home-process-layout{grid-template-columns:1fr;gap:18px}
+  .home-process-link{grid-column:1}
+  .services-flow .service-simple-row{grid-template-columns:1fr;gap:13px;align-items:start}
+  .services-flow .service-simple-row .button{width:max-content}
+  .about-refined-grid,.contact-refined-layout,.detail-hero-refined .template-hero-grid,.detail-overview-refined-grid,.detail-evidence-grid{grid-template-columns:1fr}
+  .about-refined-grid{gap:38px}
+  .contact-refined-layout{gap:28px;max-width:760px}
+  .contact-refined-layout .contact-form{max-width:720px}
+  .detail-hero-refined .template-hero-grid{gap:22px}
+  .detail-hero-refined .compact-case-cover{width:min(700px,100%)}
+  .detail-overview-refined-grid,.detail-evidence-grid{gap:36px}
+  .delivery-refined-row{grid-template-columns:32px 1fr;gap:12px 16px;align-items:start}
+  .delivery-refined-row .button{grid-column:2;width:max-content}
+}
+
+@media(max-width:680px){
+  :root{--header:62px;--container:calc(100vw - 26px)}
+  .site-header{height:62px}
+  .brand-mark{width:35px;height:35px}
+  .section{padding:44px 0}
+  .hero.hero-simple.hero-refined{padding:36px 0 38px}
+  .hero-refined .hero-copy h1{font-size:37px;line-height:1.05}
+  .hero-refined .hero-lead{font-size:15.5px}
+  .hero-refined .hero-actions{gap:9px}
+  .hero-refined .hero-actions .button{width:100%}
+  .hero.hero-simple.hero-refined + .home-systems-section{padding-top:34px}
+  .home-systems-section{padding-bottom:44px}
+  .section-head{align-items:flex-start;margin-bottom:22px}
+  .portfolio-system-grid{grid-template-columns:1fr;gap:14px}
+  .compact-system-grid>.system-choice-card:last-child:nth-child(odd),
+  .compact-library-grid>.system-choice-card:last-child:nth-child(odd){grid-column:auto}
+  .system-showcase-image img,.compact-template-card .template-card-image img{height:142px;max-height:142px}
+  .system-card-footer .button{width:100%}
+  .catalog-next-step{align-items:flex-start;flex-direction:column;gap:6px}
+  .home-process-section{padding:38px 0 42px}
+  .home-process-heading h2{font-size:27px}
+  .page-hero.page-hero-simple{padding:19px 0 6px}
+  .simple-page-hero h1{font-size:32px}
+  .page-hero.page-hero-simple + .section{padding-top:16px}
+  .services-flow-section{padding:26px 0 46px}
+  .service-stage + .service-stage{margin-top:34px;padding-top:31px}
+  .service-stage-heading{grid-template-columns:30px 1fr;gap:12px}
+  .service-stage-heading h2{font-size:25px}
+  .services-flow .service-simple-row{padding:18px 0}
+  .services-flow .service-simple-row h3{font-size:19px}
+  .services-flow .service-simple-row .button{width:100%}
+  .about-refined-section{padding:28px 0 48px}
+  .about-refined-intro h2{font-size:27px}
+  .contact-refined-section{padding:26px 0 46px}
+  .contact-refined-layout .contact-form{padding:20px 17px;border-radius:13px}
+  .contact-refined-layout .contact-form textarea{min-height:105px}
+  .case-hero.detail-hero-simple.detail-hero-refined{padding:16px 0 24px}
+  .detail-hero-refined .case-intro h1{font-size:34px}
+  .detail-hero-refined .page-lead{font-size:15px}
+  .detail-hero-refined .template-primary-actions{align-items:stretch;flex-direction:column;gap:12px}
+  .detail-hero-refined .template-primary-actions .button{width:100%}
+  .detail-hero-refined .compact-case-cover{max-height:215px}
+  .detail-hero-refined .compact-case-cover img{height:200px}
+  .case-hero.detail-hero-simple.detail-hero-refined + .section{padding-top:34px}
+  .detail-overview-refined,.detail-evidence-section{padding:39px 0 43px}
+  .detail-overview-refined-grid h2,.detail-evidence-grid h2,.delivery-refined-heading h2{font-size:26px}
+  .detail-best-for ul{display:grid;grid-template-columns:1fr;gap:6px}
+  .detail-best-for li{width:max-content;max-width:100%}
+  .feature-list-refined{grid-template-columns:1fr}
+  .detail-secondary-preview img,.gallery-item.detail-secondary-preview:not(:first-child) img{height:155px}
+  .delivery-refined-section{padding:38px 0 36px}
+  .delivery-refined-row{grid-template-columns:28px 1fr;padding:18px 0}
+  .delivery-refined-row .button{grid-column:1/-1;width:100%}
+  .delivery-refined-section .detail-bottom-nav{align-items:flex-start;flex-direction:column-reverse;gap:12px}
+  .simple-footer{margin-top:18px;padding-top:27px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .system-choice-card{transition:none}
+  .system-choice-card:hover{transform:none}
+}
+
+/* 3.7.0 final card order normalization — neutralize older grid-item order rules. */
+.portfolio-system-grid .system-showcase-copy,
+.portfolio-system-grid .template-card-copy{
+  order:0;
+  grid-row:auto;
+  grid-column:auto;
+}
+.portfolio-system-grid .system-showcase-image,
+.portfolio-system-grid .template-card-image{
+  order:1;
+  grid-row:auto;
+  grid-column:auto;
+}
+.portfolio-system-grid .system-card-footer,
+.portfolio-system-grid .template-card-actions.system-card-footer{
+  order:2;
+  grid-row:auto;
+  grid-column:auto;
+}

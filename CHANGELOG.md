@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 3.7.0 — Master UX simplification and visual refinement
+
+- Performed the complete site-wide UX, content, information-architecture, visual, responsive, accessibility, SEO, and release audit.
+- Preserved the existing Flask architecture, brand identity, five-item navigation, business model, contact flow, owner Inbox, and security boundary.
+- Rebalanced Home into a compact orientation page and removed repeated delivery information.
+- Changed Home and Systems to a balanced three-column system grid on desktop; removed the old centered odd third-card composition.
+- Hid the Systems search control for the current three-item catalog while retaining metadata-driven search for future larger catalogs.
+- Simplified Services into one two-stage decision flow and kept exactly two post-build management options.
+- Merged and shortened About content; tightened Contact content and form composition.
+- Simplified system detail pages with controlled media, progressive disclosure, and compact delivery rows.
+- Updated public copy to shorter, internationally understandable English.
+- Updated tests to protect the new 3.7.0 composition and retained backend/security behavior.
+
 ## 3.6.0 — Business model + Student Housing portfolio update
 
 - Preserved the existing KEY CASTRO visual design, Flask architecture, navigation, SEO foundation, contact flow, and private owner Inbox.

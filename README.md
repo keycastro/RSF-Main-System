@@ -4,7 +4,7 @@ Professional portfolio and client-acquisition website for **KEY CASTRO — Custo
 
 Official website: https://keycastro.onrender.com
 
-**Current version: 3.6.0**
+**Current version: 3.7.0**
 
 ## One project folder
 
@@ -16,13 +16,13 @@ This single Flask codebase contains the public website, published system pages, 
 
 ## Public design rule
 
-Preserve the current premium ivory/navy/sage design, typography, compact spacing, card language, responsive behavior, and five-item navigation. Version 3.6.0 changes the business model and portfolio content without redesigning the site.
+Preserve the premium ivory/navy/sage identity, typography, compact spacing, card language, responsive behavior, and five-item navigation. Version 3.7.0 professionally simplifies and rebalances the existing design without replacing the architecture or brand.
 
 Public rule: **Short. Simple. Clear. No unnecessary repetition.**
 
 Primary navigation remains **Home · Systems · Services · About · Contact**. Stable system routes remain under `/system-templates`.
 
-## Current business model — 3.6.0
+## Current business model
 
 A client can:
 
@@ -55,7 +55,7 @@ Published systems are registered in `app/system_templates.py` and rendered throu
 - `/system-templates`
 - `/system-templates/<slug>`
 
-Systems search remains a metadata-driven client-side enhancement over server-rendered cards. A no-match search should lead to a custom-system discussion.
+Systems search remains a metadata-driven client-side enhancement, but it is intentionally hidden while the catalog has six or fewer systems. With the current three-system catalog, visitors see the choices directly without an unnecessary search control.
 
 ## Private owner Inbox
 

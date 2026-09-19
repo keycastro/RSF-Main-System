@@ -1,30 +1,35 @@
-# DELIVERY REPORT — KEY CASTRO 3.6.0
+# DELIVERY REPORT — KEY CASTRO 3.7.0
 
 ## Scope
 
-Business-model and portfolio update inside the existing Flask website. The established design, navigation, private Inbox, deployment architecture, and public/private security boundary are preserved.
+Master site-wide organization, simplification, UX refinement, and visual refinement inside the existing Flask website. No framework migration, business-logic rewrite, or public/private security change.
 
-## Public changes
+## Main public changes
 
-- Existing systems are clearly available for customization.
-- Visitors may also request a completely custom system.
-- After a system is ready, only two choices are presented: **Full Handover** or **Managed by KEY CASTRO**.
-- $49/month and $490/year now clearly mean **managed maintenance**, not software access and not custom development.
-- Added the **Student Housing Matching and Placement System** as a third independent portfolio system using synthetic sample screenshots and truthful independent-project wording.
-- Contact/inquiry intents now support customization, custom build, full handover, managed service, monthly maintenance, and yearly maintenance while preserving legacy-link compatibility.
+- Rebalanced the Home page into a compact orientation page.
+- Rebuilt the system-card composition into a balanced three-column portfolio grid on desktop.
+- Removed the unnecessary visible search control for the current three-system catalog while retaining future metadata-driven search support.
+- Reduced repeated copy and large empty sections across Home, Systems, Services, About, and Contact.
+- Combined Services into one simple decision flow: how the system starts, then who manages it.
+- Simplified system detail pages with controlled screenshots and optional deeper information instead of long stacked galleries.
+- Preserved exactly two post-build choices: Full Handover or Managed by KEY CASTRO.
+- Preserved managed-maintenance pricing at $49/month or $490/year and separate build/customization pricing.
 
 ## Preserved
 
-- premium ivory/navy/sage design
+- premium ivory/navy/sage identity
 - Home · Systems · Services · About · Contact navigation
-- Flask architecture
-- canonical system routes and redirects
-- metadata-driven Systems search
+- Flask architecture and canonical routes
+- all three independent published systems
 - Contact → inquiry database → private Inbox flow
 - CSRF and trusted server-side source/price context
-- SEO, sitemap, structured data, Open Graph/Twitter metadata
-- manual Render deployment architecture
+- private owner Inbox authentication boundary
+- SEO, sitemap, robots, redirects, Open Graph/Twitter metadata
+- controlled Render deployment architecture
 
-## Safety
+## Verification
 
-Distributable releases must exclude `.env`, `.owner_inbox.json`, logs, caches, private inquiry data, database dumps, access codes, tokens, and Python bytecode. Student Housing website screenshots use a fresh synthetic demo database.
+- 29 automated tests passed.
+- 31 subtests passed.
+- Git whitespace validation passes.
+- Release package is prepared without private secrets or runtime data.

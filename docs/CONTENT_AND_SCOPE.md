@@ -1,4 +1,4 @@
-# Content and Scope — 3.6.0
+# Content and Scope — 3.7.0
 
 ## Public identity
 

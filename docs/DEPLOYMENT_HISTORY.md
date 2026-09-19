@@ -185,3 +185,11 @@ This content update does not claim that Nexus Properties officially hired, paid,
 - Adds Student Housing Matching and Placement System as a third independent portfolio system with synthetic demo-safe screenshots and a no-client-affiliation disclaimer.
 - Preserves legacy inquiry-link compatibility, trusted server-side pricing/context, private Inbox security, SEO, canonical routes, sitemap, and explicit manual Render deployment.
 - This entry records a prepared release. Production should not be marked updated until the commit is pushed and Render deployment is verified.
+
+
+## 3.7.0 — Master UX simplification prepared
+
+- Reorganized and visually rebalanced the existing public website without changing the Flask architecture or business logic.
+- Preserved three published systems, the two-option post-build business model, Contact/inquiry flow, private owner Inbox, SEO, and deployment architecture.
+- Prepared the controlled one-run updater/deployer to require live health version 3.7.0 and exactly three published system cards before success.
+- Production is not considered updated until the one-run deployment completes and live verification passes.

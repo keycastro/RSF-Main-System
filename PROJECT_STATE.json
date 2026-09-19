@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
-  "handoff_date": "2026-09-19",
-  "version": "3.6.0",
+  "handoff_date": "2026-09-20",
+  "version": "3.7.0",
   "owner_public_name": "Key Castro",
   "positioning": "Custom Real Estate Systems Developer",
   "framework": "Flask",
@@ -62,7 +62,7 @@
     "template_request_type_active": true
   },
   "secrets_included_in_repository": false,
-  "visual_design": "Premium ivory + navy + sage design preserved in 3.6.0. Business-model wording and portfolio content changed without redesigning the established visual system.",
+  "visual_design": "Premium ivory + navy + sage design retained and professionally rebalanced in 3.7.0 with tighter proportion, clearer hierarchy, three-column system presentation, controlled media, and less empty space.",
   "template_library_foundation": {
     "prepared": true,
     "published_templates": 3,
@@ -256,6 +256,22 @@
     "launcher": "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
     "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
     "provider_auto_deploy": false,
-    "success_condition": "production health reports version 3.6.0 and live Systems page contains Student Housing Matching and Placement System plus exactly 3 published system cards"
+    "success_condition": "production health reports version 3.7.0 and live Systems page contains Student Housing Matching and Placement System plus exactly 3 published system cards"
+  },
+  "ux_master_refinement_3_7": {
+    "document": "docs/MASTER_UX_REFINEMENT_3_7.md",
+    "navigation_changed": false,
+    "routes_changed": false,
+    "business_logic_changed": false,
+    "public_private_boundary_changed": false,
+    "search_behavior": "metadata search remains implemented but is hidden while the public catalog has 6 or fewer systems",
+    "focus": [
+      "balanced three-system portfolio grid",
+      "less repeated commercial copy",
+      "compact page composition",
+      "controlled screenshots",
+      "simple international English",
+      "responsive visual hierarchy"
+    ]
   }
 }

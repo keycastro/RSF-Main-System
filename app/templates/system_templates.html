@@ -4,12 +4,13 @@
   <div class="container simple-page-hero reveal">
     <p class="eyebrow">SYSTEMS</p>
     <h1>Choose a system to customize.</h1>
-    <p>These are working systems. Choose one to see how it can fit your business.</p>
+    <p>Pick the system closest to your workflow. I can adapt it to your business.</p>
   </div>
 </section>
 
 <section class="section systems-catalog-section catalog-simple">
   <div class="container">
+    {% if templates|length > 6 %}
     <div class="system-search-panel system-search-simple" data-system-search role="search" aria-label="Find a system" hidden>
       <label for="system-search-input">Search systems</label>
       <div class="system-search-input-wrap">
@@ -18,8 +19,9 @@
       </div>
       <p class="system-search-status" id="system-search-status" data-system-search-status role="status" aria-live="polite"></p>
     </div>
+    {% endif %}
 
-    <div class="template-library-grid compact-library-grid" id="system-results" data-system-results>
+    <div class="template-library-grid compact-library-grid portfolio-system-grid" id="system-results" data-system-results>
       {% for item in templates %}
       <article class="template-library-card compact-template-card system-catalog-card simple-catalog-card system-choice-card system-choice-card--{{ item.slug }} reveal delay-{{ loop.index0 % 2 }}"
                data-system-card
@@ -28,7 +30,6 @@
           <p class="system-type">{{ item.category|upper }}</p>
           <h2>{{ item.name }}</h2>
           <p>{{ item.short_description }}</p>
-          <p class="system-audience"><strong>Best for:</strong> {{ item.card_audience }}</p>
         </div>
         {% if item.screenshots %}
         <a class="template-card-image" href="{{ url_for('site.system_template_detail', slug=item.slug) }}" aria-label="View {{ item.name }}">
@@ -36,17 +37,25 @@
           <span aria-hidden="true">Preview</span>
         </a>
         {% endif %}
-        <div class="template-card-actions">
+        <div class="template-card-actions system-card-footer">
+          <p class="system-audience"><strong>Best for:</strong> {{ item.card_audience }}</p>
           <a class="button primary" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">View System</a>
         </div>
       </article>
       {% endfor %}
     </div>
 
+    {% if templates|length > 6 %}
     <div class="system-search-empty" data-system-search-empty hidden>
       <h2>No matching system.</h2>
       <p>Need something different? I can build a custom system around your workflow.</p>
       <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">Discuss Custom Build</a>
+    </div>
+    {% endif %}
+
+    <div class="catalog-next-step reveal">
+      <span>None of these fit?</span>
+      <a class="text-link" href="{{ url_for('site.contact', intent='custom-build') }}">Discuss a Custom Build <span>→</span></a>
     </div>
   </div>
 </section>

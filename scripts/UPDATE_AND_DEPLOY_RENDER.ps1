@@ -5,8 +5,8 @@ $documents = [Environment]::GetFolderPath("MyDocuments")
 $target = Join-Path $documents "KEY_CASTRO_WEBSITE"
 $serviceId = "srv-dam749e1egvs738cppq0"
 $liveBase = "https://keycastro.onrender.com"
-$expectedVersion = "3.6.0"
-$commitMessage = "Release 3.6.0 business model and student housing system"
+$expectedVersion = "3.7.0"
+$commitMessage = "Release 3.7.0 master UX simplification and visual refinement"
 
 function Invoke-Native {
     param(

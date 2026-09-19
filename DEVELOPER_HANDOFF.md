@@ -1,10 +1,10 @@
 # KEY CASTRO WEBSITE — DEVELOPER HANDOFF
 
-**Version:** 3.6.0
+**Version:** 3.7.0
 
 ## Product state
 
-KEY CASTRO is an existing Flask portfolio/business website. Version 3.6.0 preserves the established premium design and infrastructure while updating the commercial model and adding the Student Housing Matching and Placement System to the Systems portfolio.
+KEY CASTRO is an existing Flask portfolio/business website. Version 3.7.0 keeps the established architecture, business model, security boundaries, and brand while applying the master site-wide UX simplification and visual refinement.
 
 ## Current public navigation
 
@@ -43,7 +43,7 @@ Keep it private, absent from public navigation/sitemap, and protected by the exi
 
 ## Design / UX
 
-Preserve the current ivory/navy/sage design, compact information density, controlled screenshot previews, accessible focus states, integrated page intros, five-item navigation, and simple English. This release is not a redesign.
+Preserve the 3.7.0 ivory/navy/sage visual baseline, balanced three-column system presentation, compact information density, controlled screenshot previews, accessible focus states, five-item navigation, and simple English. Do not restore the older oversized layouts or centered odd third card.
 
 ## Deployment
 
