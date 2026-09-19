@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Current version:** 3.2.0
+**Current version:** 3.3.0
 **Official site:** https://keycastro.onrender.com
 **Positioning:** KEY CASTRO — Custom Real Estate Systems Developer
 
@@ -12,11 +12,12 @@ Before changing the website, read:
 2. `docs/FUTURE_TEMPLATE_LIBRARY_ROADMAP.md` (local/private roadmap)
 3. `docs/UX_INFORMATION_ARCHITECTURE.md`
 4. `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`
-5. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
-5. `PROJECT_STATE.json`
-6. `SECURITY_AND_SHARING_NOTES.md`
-7. `docs/DEPLOYMENT_HISTORY.md`
-8. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
+5. `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`
+6. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
+7. `PROJECT_STATE.json`
+8. `SECURITY_AND_SHARING_NOTES.md`
+9. `docs/DEPLOYMENT_HISTORY.md`
+10. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
 
 ## Current architecture
 
@@ -53,7 +54,7 @@ Use **Systems** as the visible public mental model for completed systems. The st
 
 Both are completed systems built by Key Castro and offered through **Managed System Subscription** access. Business-specific changes are **Paid Customization** scoped and priced separately. The normal subscription continues while the managed system remains in use. They are separate applications: never mix their screenshots, features, workflows, databases, or product names.
 
-`app/system_templates.py` remains the source-controlled registry. Contact attribution includes `source_type`, `source_slug`, `source_title`, and `source_action`, allowing the private Inbox to distinguish free-template access from customization requests.
+`app/system_templates.py` remains the source-controlled registry. Contact attribution includes `source_type`, `source_slug`, `source_title`, and `source_action`, allowing the private Inbox to distinguish managed subscription requests, plan-specific subscription context, and customization requests.
 
 Nexus Properties remains removed from current public presentation.
 
@@ -83,11 +84,12 @@ See `docs/VISUAL_PRESENTATION_3_0.md`.
 
 The Systems page includes a lightweight client-side search. It is progressive enhancement: published systems are rendered in normal server HTML and JavaScript only filters existing cards. Search indexing remains metadata-driven through `SystemTemplate.search_text` / `search_terms`; do not add slug-specific JavaScript.
 
-Current commercial rule from 3.2.0:
+Current commercial rule from 3.2.0, with approved pricing added in 3.3.0:
 
-- **Managed System Subscription** = ongoing managed access to an existing published system. Monthly/yearly terms and pricing are discussed before activation.
+- **Managed System Subscription** = ongoing managed access to an existing published system at **$49/month or $490/year per system**. The yearly option saves $98 compared with 12 monthly payments.
 - **Paid Customization** = separately scoped and priced development work when a subscribed system needs business-specific changes. The normal subscription continues while the managed system remains in use.
+- Pricing is rendered from `MANAGED_SUBSCRIPTION_PRICING` in `app/system_templates.py`; do not hardcode competing prices in templates or JavaScript.
 
-Do not invent public prices. Do not imply source-code ownership, lifetime access, unlimited infrastructure, or unlimited support.
+Do not imply source-code ownership, lifetime access, unlimited infrastructure, or unlimited support.
 
-See `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md` and `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`.
+See `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md`, `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`, and `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`.

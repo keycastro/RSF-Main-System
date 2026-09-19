@@ -1,8 +1,8 @@
-# PUBLISHED SYSTEMS — CURRENT PUBLIC POSITIONING (3.2.0)
+# PUBLISHED SYSTEMS — CURRENT PUBLIC POSITIONING (3.3.0)
 
 ## Business model
 
-The two published systems are offered through **Managed System Subscription** access. Subscription terms may be monthly or yearly, but no public price is shown until pricing is finalized. Subscription represents ongoing managed access to the ready-made system; standard hosting/maintenance/support scope is confirmed during the subscription discussion. Access does not transfer ownership of the core software.
+The two published systems are offered through **Managed System Subscription** access at **$49/month or $490/year per system**. Twelve monthly payments total $588, so yearly billing saves $98/year. Subscription represents ongoing managed access to the ready-made system; standard hosting, database operation, updates, maintenance, and basic support are provided within the agreed service scope. Access does not transfer ownership of the core software.
 
 If a subscriber needs business-specific changes, that work is **Paid Customization**. Requirements and development price are discussed separately. The customization fee pays for requested development work; the normal subscription continues while the client keeps using the managed system.
 

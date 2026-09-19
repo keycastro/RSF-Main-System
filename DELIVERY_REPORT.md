@@ -1,23 +1,31 @@
-# DELIVERY REPORT — KEY CASTRO 3.2.0
+# DELIVERY REPORT — KEY CASTRO 3.3.0
 
 ## Scope
 
-Commercial-model migration only. The compact 3.0 presentation, 3.1 metadata-driven Systems search, Flask architecture, PostgreSQL inquiry flow, private owner Inbox, SEO, sitemap, robots, GitHub/Render setup, and desktop launchers are preserved.
+Pricing release only. The existing 3.2 Managed System Subscription + Paid Customization model remains intact. The compact 3.0 presentation, 3.1 metadata-driven Systems search, Flask architecture, PostgreSQL inquiry flow, private owner Inbox, SEO, sitemap, robots, GitHub/Render setup, and desktop launchers are preserved.
 
-## Public model after 3.2.0
+## Approved pricing
 
-- **Managed System Subscription** — ongoing managed access to an existing KEY CASTRO system. Monthly/yearly terms and pricing are discussed before activation.
-- **Paid Customization** — separately scoped and priced development work when a subscriber needs business-specific changes. The normal subscription continues while the managed system remains in use.
-- Visitors needing something completely different can still discuss a custom system.
+- **$49/month per system**
+- **$490/year per system**
+- 12 monthly payments = $588
+- yearly savings = **$98/year**
 
-## Migration
+Pricing is defined once in `app/system_templates.py` and rendered from that trusted metadata.
 
-- Removed current public free-standard/free-template/free-access messaging.
-- New contact intent: `subscribe` -> `System Subscription`.
-- Customization intent: `customize` -> `Paid Customization`.
-- Legacy `free-access` URLs/forms normalize to the new subscription intent; no database schema migration is required.
-- Existing historical inquiry rows are not rewritten.
+## Contact / Inbox plan handling
+
+- Monthly and yearly subscription CTAs use trusted plan keys.
+- The server resolves the official price; browser-submitted price text is ignored.
+- No database schema migration is required.
+- Existing `source_action` stores the trusted plan-specific subscription label when a plan is selected.
+- Private Inbox presentation separates Request and Plan for readability.
+- Existing generic and historical inquiry rows remain backward compatible.
+
+## Paid Customization
+
+Customization remains separately quoted development work. It does not replace the managed subscription. The regular subscription continues while the client uses the managed system.
 
 ## Safety
 
-No public price, source-code ownership, permanent ownership, unlimited hosting/storage/users/support, or lifetime-hosting promise is introduced.
+No new ownership/source-code promise, lifetime plan, setup fee, per-seat tier, unlimited-resource promise, fake checkout, or additional commercial package is introduced.

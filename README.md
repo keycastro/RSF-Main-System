@@ -52,11 +52,11 @@ Version 2.9.0 simplified the public journey to **Home · Systems · Services · 
 
 ## Future system-template foundation
 
-Version 2.7.0 prepared the reusable system-template foundation and 2.8.0 published the first two real systems. Version 3.2.0 keeps the same architecture but changes the commercial model: both systems are offered through **Managed System Subscription** access, with **Paid Customization** scoped and priced separately. See `docs/TEMPLATE_LIBRARY_FOUNDATION.md`, `docs/PUBLISHED_SYSTEM_TEMPLATES.md`, and `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`.
+Version 2.7.0 prepared the reusable system-template foundation and 2.8.0 published the first two real systems. Version 3.2.0 established the **Managed System Subscription + Paid Customization** model. Version 3.3.0 adds the approved public subscription pricing: **$49/month or $490/year per system**, with $98/year savings on the yearly option, while keeping Paid Customization separately quoted. See `docs/TEMPLATE_LIBRARY_FOUNDATION.md`, `docs/PUBLISHED_SYSTEM_TEMPLATES.md`, `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`, and `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`.
 
 
 ## Systems search and access model
 
 Version 3.1.0 adds an accessible, metadata-driven, real-time filter to the server-rendered Systems page. The search is intentionally lightweight: JavaScript filters the normal HTML system cards without changing routes, SEO content, or the Flask architecture. Empty search results lead naturally to the existing custom-system Contact path.
 
-The commercial boundary is explicit: subscription pays for ongoing managed access; customization pays separately for requested development work, and the subscription continues while the managed system remains in use. See `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`.
+The commercial boundary is explicit: subscription pays for ongoing managed access at the approved public price; customization pays separately for requested development work, and the subscription continues while the managed system remains in use. Pricing is centralized in `app/system_templates.py`. See `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md` and `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`.

@@ -11,10 +11,11 @@ Read in order:
 5. `docs/VISUAL_PRESENTATION_3_0.md`
 6. `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md`
 7. `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`
-8. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
-9. `PROJECT_STATE.json`
-10. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
-11. `SECURITY_AND_SHARING_NOTES.md`
+8. `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`
+9. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
+10. `PROJECT_STATE.json`
+11. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
+12. `SECURITY_AND_SHARING_NOTES.md`
 
 Do not split the owner inbox back into a separate project folder. Do not expose owner-only routes or secrets in public UI, GitHub, logs, screenshots, or documentation.
 
@@ -38,4 +39,4 @@ Keep the premium KEY CASTRO identity, but do not return to screenshot-led pages 
 
 Systems search is a compact progressive enhancement over the server-rendered catalog. Search terms come from reusable system metadata, not JavaScript slug branches. Preserve keyboard use, visible focus, result status, clear/reset behavior, and the helpful no-match path to `Discuss a Custom System`.
 
-The previous free-access model is retired. The current model is **Managed System Subscription + Paid Customization**. Subscription provides ongoing managed access; business-specific development is scoped and priced separately, and the normal subscription continues while the managed system remains in use. See `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`.
+The previous free-access model is retired. The current model is **Managed System Subscription + Paid Customization**. Public managed-subscription pricing is **$49/month or $490/year per system**, with $98/year savings on the yearly option. Pricing comes from one trusted source in `app/system_templates.py`. Business-specific development is scoped and priced separately, and the normal subscription continues while the managed system remains in use. See `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md` and `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`.

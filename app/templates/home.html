@@ -61,7 +61,7 @@
   <div class="container access-model-row reveal">
     <div class="access-model-intro"><p class="eyebrow">TWO SIMPLE SERVICES</p><h2>Subscribe to the system. Customize it only when your business needs changes.</h2></div>
     <div class="access-model-options">
-      <div><strong>Managed System Subscription</strong><p>Ongoing monthly or yearly access to a managed ready-made system. Pricing and subscription details are confirmed before access starts.</p><a class="text-link" href="{{ url_for('site.system_templates') }}">Choose a system <span>→</span></a></div>
+      <div><strong>Managed System Subscription</strong><p>{{ subscription_pricing.monthly.price_label }} or {{ subscription_pricing.yearly.price_label }} per system. Choose yearly and save {{ subscription_pricing.currency_symbol }}{{ subscription_pricing.annual_savings }}/year. Managed access includes the subscribed service, standard hosting, database operation, updates, ordinary maintenance, and basic support within the agreed scope.</p><a class="text-link" href="{{ url_for('site.system_templates') }}">Choose a system <span>→</span></a></div>
       <div><strong>Paid Customization</strong><p>Development work is quoted separately when a subscribed system needs business-specific changes. The normal subscription continues while the managed system remains in use.</p><a class="text-link" href="{{ url_for('site.services') }}">See how customization works <span>→</span></a></div>
     </div>
   </div>

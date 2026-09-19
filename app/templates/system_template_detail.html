@@ -12,7 +12,7 @@
       <h1>{{ system_template.name }}</h1>
       <p class="page-lead">{{ system_template.full_description }}</p>
       <div class="hero-actions template-primary-actions">
-        <a class="button primary" href="{{ url_for('site.contact', template=system_template.slug, intent='subscribe') }}">Request Subscription Details</a>
+        <a class="button primary" href="#subscription">View Subscription</a>
         <a class="button secondary" href="{{ url_for('site.contact', template=system_template.slug, intent='customize') }}">Request Paid Customization</a>
         {% if system_template.video.url or system_template.video.embed_url %}<a class="text-link" href="#demo">Watch Demonstration <span>↓</span></a>{% endif %}
       </div>
@@ -76,20 +76,34 @@
 </section>
 {% endif %}
 
-<section class="section section-soft compact-detail-section">
+<section class="section section-soft compact-detail-section" id="subscription">
   <div class="container">
     <div class="section-head compact-head"><div><p class="eyebrow">SUBSCRIPTION + CUSTOMIZATION</p><h2>Managed access for the system. Separate pricing for business-specific changes.</h2></div></div>
     <div class="template-two-column template-choice-panels compact-choice-panels">
-      <div class="template-scope-panel">
+      <div class="template-scope-panel subscription-scope-panel">
         <p class="eyebrow">MANAGED SYSTEM SUBSCRIPTION</p>
-        <h2>Subscribe to use the ready-made system.</h2>
-        <p class="template-choice-summary">Subscription provides ongoing managed access to the standard system. Monthly or yearly terms, pricing, hosting arrangements, and support scope are confirmed before activation. Subscription access does not transfer ownership of the core software.</p>
+        <h2>Choose monthly or yearly access.</h2>
+        <div class="subscription-plan-grid" aria-label="Subscription options">
+          <article class="subscription-plan-option">
+            <span>MONTHLY</span>
+            <div class="subscription-plan-price"><strong>{{ subscription_pricing.currency_symbol }}{{ subscription_pricing.monthly_price }}</strong><small>/month</small></div>
+            <a class="text-link" href="{{ url_for('site.contact', template=system_template.slug, intent='subscribe', plan='monthly') }}">Get monthly access <span>→</span></a>
+          </article>
+          <article class="subscription-plan-option preferred">
+            <span>YEARLY</span>
+            <div class="subscription-plan-price"><strong>{{ subscription_pricing.currency_symbol }}{{ subscription_pricing.yearly_price }}</strong><small>/year</small></div>
+            <em>Save {{ subscription_pricing.currency_symbol }}{{ subscription_pricing.annual_savings }}/year</em>
+            <a class="text-link" href="{{ url_for('site.contact', template=system_template.slug, intent='subscribe', plan='yearly') }}">Get yearly access <span>→</span></a>
+          </article>
+        </div>
+        <p class="template-choice-summary">Pricing is per system. Subscription provides ongoing managed access to the ready-made system, including standard hosting for the subscribed service, database operation, standard updates, ordinary maintenance, and basic support within the agreed service scope. Subscription access does not transfer ownership of the core software.</p>
         <ul class="template-list compact-list">{% for item in system_template.standard_scope %}<li>{{ item }}</li>{% endfor %}</ul>
       </div>
       <div class="template-scope-panel accent">
         <p class="eyebrow">PAID CUSTOMIZATION</p>
         <h2>Change the system when your business needs something different.</h2>
         <p class="template-choice-summary">Requirements and development price are discussed separately. The customization fee pays for the requested development work; the normal subscription continues while your business keeps using the managed system.</p>
+        <a class="text-link customization-link" href="{{ url_for('site.contact', template=system_template.slug, intent='customize') }}">Request a custom quote <span>→</span></a>
         <ul class="template-list compact-list">{% for item in system_template.customization_opportunities %}<li>{{ item }}</li>{% endfor %}</ul>
       </div>
     </div>
@@ -104,5 +118,5 @@
   </div>
 </section>
 
-<section class="section cta-wrap compact-cta-wrap"><div class="container"><div class="cta-panel"><div><p class="eyebrow">NEXT STEP</p><h2>Ask about subscription access or discuss a business-specific change.</h2><p>Subscription pricing is provided after inquiry. Custom development is scoped and priced separately, and the normal subscription continues while the managed system remains in use.</p></div><div class="cta-action-stack"><a class="button light" href="{{ url_for('site.contact', template=system_template.slug, intent='subscribe') }}">Request Subscription Details</a><a class="button outline-light" href="{{ url_for('site.contact', template=system_template.slug, intent='customize') }}">Request Paid Customization</a></div></div></div></section>
+<section class="section cta-wrap compact-cta-wrap"><div class="container"><div class="cta-panel"><div><p class="eyebrow">NEXT STEP</p><h2>Choose managed access or discuss a business-specific change.</h2><p>Managed access is {{ subscription_pricing.monthly.price_label }} or {{ subscription_pricing.yearly.price_label }} per system. Custom development is quoted separately, and the normal subscription continues while the managed system remains in use.</p></div><div class="cta-action-stack"><a class="button light" href="#subscription">View Subscription Options</a><a class="button outline-light" href="{{ url_for('site.contact', template=system_template.slug, intent='customize') }}">Request Paid Customization</a></div></div></div></section>
 {% endblock %}

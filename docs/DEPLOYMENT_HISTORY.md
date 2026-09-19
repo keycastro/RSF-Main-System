@@ -162,3 +162,15 @@ This content update does not claim that Nexus Properties officially hired, paid,
 - No public prices, source-code ownership, unlimited-resource promises, or lifetime-access claims were added.
 - Legacy `free-access` inquiry URLs are normalized server-side to the new subscription intent for backward compatibility.
 - Flask architecture, real-time Systems search, canonical URLs, PostgreSQL inquiry schema, private owner Inbox, GitHub/Render architecture, and compact presentation remain unchanged.
+
+
+## 3.3.0 — Managed subscription pricing
+
+- Added approved public pricing for each existing ready-made system: **$49/month or $490/year per system**.
+- Annual savings are derived from the trusted values: $49 x 12 = $588; yearly $490; savings $98/year.
+- Added one pricing source of truth in `app/system_templates.py`; templates and Contact plan selection render from that source.
+- Added monthly/yearly plan selection through the existing trusted Contact -> PostgreSQL -> private Inbox flow without adding checkout.
+- No database schema migration is required. Plan-specific historical context is stored in the existing `source_action` text field using a trusted server-generated label.
+- Browser-submitted price text is not trusted. Invalid plan keys do not become official pricing.
+- Paid Customization remains separately quoted, and the normal subscription continues while the managed system remains in use.
+- Preserved both independent systems, real-time search, compact 3.0 presentation, SEO architecture, private owner authentication, GitHub/Render workflow, and desktop launchers.

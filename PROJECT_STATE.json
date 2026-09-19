@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-19",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "owner_public_name": "Key Castro",
   "positioning": "Custom Real Estate Systems Developer",
   "framework": "Flask",
@@ -62,7 +62,7 @@
     "template_request_type_active": true
   },
   "secrets_included_in_repository": false,
-  "visual_design": "Premium architectural ivory + navy + sage system; compact 3.0 presentation and metadata-driven 3.1 search preserved. 3.2.0 replaces the former free-access model with managed system subscriptions plus separately priced paid customization.",
+  "visual_design": "Premium architectural ivory + navy + sage system; compact 3.0 presentation and metadata-driven 3.1 search preserved. 3.2.0 established managed subscriptions plus paid customization; 3.3.0 adds compact trusted public pricing without changing architecture.",
   "template_library_foundation": {
     "prepared": true,
     "published_templates": 2,
@@ -155,9 +155,18 @@
       "Managed System Subscription",
       "Paid Customization"
     ],
-    "subscription": "Ongoing managed access to an existing system; monthly or yearly terms/pricing are discussed before activation. No source-code or ownership transfer is implied.",
+    "subscription": "Ongoing managed access to an existing system at $49/month or $490/year per system. Twelve monthly payments total $588, so yearly saves $98. No source-code or ownership transfer is implied.",
     "customization": "Separate paid development for business-specific changes. Requirements and price are agreed separately. The normal subscription continues while the managed system remains in use.",
-    "pricing_public": false,
-    "legacy_free_access": "retired in 3.2.0; legacy free-access URLs are normalized server-side to System Subscription for backward compatibility"
+    "pricing_public": true,
+    "legacy_free_access": "retired in 3.2.0; legacy free-access URLs are normalized server-side to System Subscription for backward compatibility",
+    "pricing": {
+      "currency": "USD",
+      "monthly_per_system": 49,
+      "yearly_per_system": 490,
+      "twelve_monthly_total": 588,
+      "annual_savings": 98,
+      "single_source": "app/system_templates.py::MANAGED_SUBSCRIPTION_PRICING"
+    },
+    "plan_selection": "monthly/yearly plan keys are resolved server-side; official price text is generated from trusted pricing metadata; no checkout is implied"
   }
 }

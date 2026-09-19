@@ -37,6 +37,12 @@
           <h2>{{ item.name }}</h2>
           <p>{{ item.short_description }}</p>
           <p class="system-audience"><strong>For:</strong> {{ item.card_audience }}</p>
+          <div class="compact-price-strip" aria-label="Managed subscription pricing">
+            <span><strong>{{ subscription_pricing.currency_symbol }}{{ subscription_pricing.monthly_price }}</strong><small>/month</small></span>
+            <span class="price-divider" aria-hidden="true">or</span>
+            <span><strong>{{ subscription_pricing.currency_symbol }}{{ subscription_pricing.yearly_price }}</strong><small>/year</small></span>
+            <em>Save {{ subscription_pricing.currency_symbol }}{{ subscription_pricing.annual_savings }}/year</em>
+          </div>
         </div>
         {% if item.screenshots %}
         <a class="template-card-image" href="{{ url_for('site.system_template_detail', slug=item.slug) }}" aria-label="View {{ item.name }}">
@@ -46,7 +52,7 @@
         {% endif %}
         <div class="template-card-actions">
           <a class="button primary" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">View System</a>
-          <a class="text-link" href="{{ url_for('site.contact', template=item.slug, intent='subscribe') }}">Request Subscription Details <span>→</span></a>
+          <a class="text-link" href="{{ url_for('site.system_template_detail', slug=item.slug) }}#subscription">View Subscription <span>→</span></a>
         </div>
       </article>
       {% endfor %}

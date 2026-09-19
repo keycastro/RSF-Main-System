@@ -27,7 +27,7 @@
       {% for item in items %}
         <a class="owner-item" href="{{ url_for('owner.owner_inquiry', inquiry_id=item.id) }}">
           <span class="owner-status {{ item.status }}">{{ item.status }}</span>
-          <div><strong>{{ item.name }}</strong><small>{{ item.email }}{% if item.company %} · {{ item.company }}{% endif %}</small>{% if item.source_title %}<small class="owner-source">Interested in: {{ item.source_title }}</small>{% endif %}{% if item.source_action %}<small class="owner-source owner-request-type">Request: {{ item.source_action }}</small>{% endif %}</div>
+          <div><strong>{{ item.name }}</strong><small>{{ item.email }}{% if item.company %} · {{ item.company }}{% endif %}</small>{% if item.source_title %}<small class="owner-source">Interested in: {{ item.source_title }}</small>{% endif %}{% if item.request_label %}<small class="owner-source owner-request-type">Request: {{ item.request_label }}</small>{% endif %}{% if item.plan_label %}<small class="owner-source owner-plan-label">Plan: {{ item.plan_label }}</small>{% endif %}</div>
           <p>{{ item.preview }}</p>
           <time>{{ item.date_label }}</time>
         </a>

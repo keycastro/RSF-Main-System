@@ -16,3 +16,8 @@ The previous free-standard-system model is retired. Published systems now use:
 - **Paid Customization** for separately scoped and priced business-specific development. The normal subscription continues while the managed system remains in use.
 
 See `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`.
+
+
+## Pricing — authoritative from 3.3.0
+
+Both published systems use the same trusted pricing source: **$49/month or $490/year per system**, with $98/year savings on yearly billing. Search remains independent of pricing and must not hardcode product-specific prices or branch on slugs.

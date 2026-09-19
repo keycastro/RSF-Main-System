@@ -11,9 +11,9 @@ Version 2.9.0 establishes one simple public mental model without changing the Fl
 | Area | Observed problem in the actual 2.8.0 source | 2.9.0 decision |
 | --- | --- | --- |
 | Header/footer | `Projects` and `System Templates` were separate top-level choices but both exposed the same two registry items. | One visible destination: **Systems**. |
-| Homepage | Hero already explained custom systems/templates, then `WHAT I BUILD` repeated Services, `COMPLETED SYSTEMS` repeated the library, and `HOW I WORK` repeated About. | Keep only the homepage decisions: understand the offer, see systems, understand free vs paid, contact. |
+| Homepage | Hero already explained custom systems/templates, then `WHAT I BUILD` repeated Services, `COMPLETED SYSTEMS` repeated the library, and `HOW I WORK` repeated About. | Keep only the homepage decisions: understand the offer, see systems, understand managed subscription vs paid customization, contact. |
 | Projects index | `projects.html` rendered the same two `published_templates()` records with the same View/Request actions as the template library. | Remove duplicate index template; `/projects` becomes a 301 compatibility redirect. |
-| Systems index | Hero explained free vs custom, then a second two-card model explained the same rule before the actual systems. | Keep the rule once in the hero; move directly to systems. |
+| Systems index | Hero explained subscription vs customization, then a second two-card model explained the same rule before the actual systems. | Keep the rule once in the hero; move directly to systems. |
 | System detail | Hero had both CTAs, the next section repeated both options, the scope section repeated them again, and the final CTA repeated them a fourth time. | Keep decision CTAs at the top and bottom only; use the middle for evidence and scope. |
 | Services | Service cards were organized by system/problem categories (property, rental, maintenance, dashboards), overlapping the systems/homepage. | Services now means what a business can **pay Key Castro to do**. |
 | About | Approach cards, specialization, capability list, two secondary pages, and two `View projects` prompts competed for attention. | Keep identity, approach, specialization, secondary credibility links, and one Systems CTA. |
@@ -70,12 +70,12 @@ The homepage no longer repeats the Services page with service cards or the About
 
 The Systems page is the single browse destination. Each card shows only:
 
-- free-standard-system status;
+- managed-subscription status and compact approved pricing;
 - system name;
 - one-sentence purpose;
 - plain-language audience;
 - View System;
-- Request Subscription Details.
+- View Subscription.
 
 The previous standalone free-vs-custom model block was removed from the Systems index because the page hero already explains the rule and the detail pages handle the decision in depth.
 
@@ -123,7 +123,7 @@ The form remains the dominant action.
 
 Generic visitors see one explanation: ask about a managed system subscription, paid customization, or a custom system.
 
-Template-origin visitors see trusted server-side system context and request type. The page does not re-explain the entire template business model. Free-access and customization attribution continue through PostgreSQL into the private KEY CASTRO INBOX.
+Template-origin visitors see trusted server-side system context and request type. The page does not re-explain the entire template business model. Subscription and customization attribution continue through PostgreSQL into the private KEY CASTRO INBOX. From 3.3.0, monthly/yearly plan context is resolved server-side from trusted pricing metadata without accepting browser-supplied prices.
 
 ## Readability and mobile rules
 
@@ -143,4 +143,4 @@ Stable system URLs, canonical metadata, structured data, sitemap coverage, and s
 
 ## 3.0.0 presentation layer
 
-Version 3.0.0 does not change this information architecture. It reduces oversized screenshot treatment and excess vertical spacing while preserving the same navigation, page purposes, visitor flow, SEO routes, and free-access/customization decisions. Presentation-specific constraints now live in `docs/VISUAL_PRESENTATION_3_0.md`.
+Version 3.0.0 does not change this information architecture. It reduces oversized screenshot treatment and excess vertical spacing while preserving the same navigation, page purposes, visitor flow, SEO routes, and subscription/customization decisions. Presentation-specific constraints now live in `docs/VISUAL_PRESENTATION_3_0.md`.

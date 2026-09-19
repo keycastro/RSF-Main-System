@@ -44,7 +44,7 @@ The two systems remain two independent applications. Each catalog card communica
 3. One-sentence purpose
 4. Audience
 5. Compact preview
-6. View System / Request Subscription Details actions
+6. View System / View Subscription actions
 
 ### Detail pages
 
@@ -69,3 +69,8 @@ Predictable sequence remains:
 ## Do not regress
 
 Do not restore full-width natural-ratio screenshots inside catalog cards, full-viewport homepage hero height, 100px+ default section padding, or giant screenshot-led system cards. The site should remain a professional business-system showcase, not an image gallery.
+
+
+## 3.3.0 pricing layer
+
+Pricing is intentionally compact: Systems cards use one small inline monthly/yearly strip, while detail pages use two compact plan options inside the existing Managed System Subscription panel. Do not expand this into giant pricing tables or extra tiers. Mobile collapses plan options to one column without horizontal overflow.

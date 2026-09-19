@@ -14,11 +14,14 @@
       <span class="card-index">{{ '%02d'|format(loop.index) }}</span>
       <h2>{{ service.title }}</h2>
       <p>{{ service.text }}</p>
+      {% if service.kind == 'subscription' %}
+      <div class="service-price-line"><strong>{{ subscription_pricing.monthly.price_label }}</strong><span>or</span><strong>{{ subscription_pricing.yearly.price_label }}</strong><em>Save {{ subscription_pricing.currency_symbol }}{{ subscription_pricing.annual_savings }}/year</em></div>
+      {% endif %}
       <small>{{ service.example }}</small>
     </article>
     {% endfor %}
   </div>
 </section>
 
-<section class="section cta-wrap"><div class="container"><div class="cta-panel reveal"><div><p class="eyebrow">KEEP IT SIMPLE</p><h2>Choose a system, then tell me whether you want access or changes.</h2><p>No public prices are invented here. Subscription details and custom-development scope are discussed before you commit.</p></div><a class="button light" href="{{ url_for('site.contact') }}">Contact Key Castro</a></div></div></section>
+<section class="section cta-wrap"><div class="container"><div class="cta-panel reveal"><div><p class="eyebrow">KEEP IT SIMPLE</p><h2>Choose a system, then choose monthly or yearly managed access.</h2><p>Each ready-made system is {{ subscription_pricing.monthly.price_label }} or {{ subscription_pricing.yearly.price_label }}. Paid customization is quoted separately after requirements are discussed.</p></div><a class="button light" href="{{ url_for('site.system_templates') }}">View Systems</a></div></div></section>
 {% endblock %}

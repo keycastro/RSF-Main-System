@@ -29,17 +29,26 @@ from .seo import (
     core_structured_data,
     software_template_structured_data,
 )
-from .system_templates import get_system_template, published_templates, template_library_enabled
+from .system_templates import (
+    MANAGED_SUBSCRIPTION_PRICING,
+    get_system_template,
+    published_templates,
+    split_subscription_action,
+    subscription_action_for_plan,
+    template_library_enabled,
+)
 
 site = Blueprint("site", __name__)
 
 SERVICES = [
     {
+        "kind": "subscription",
         "title": "Managed System Subscriptions",
         "text": "Subscribe to use an existing KEY CASTRO system through managed access instead of buying or owning the core software.",
-        "example": "Subscription details can be discussed monthly or yearly and may include managed system access, standard hosting, ordinary maintenance, standard updates, and basic support for the subscribed service.",
+        "example": "Managed access includes standard hosting for the subscribed service, database operation, standard updates, ordinary maintenance, and basic support within the agreed service scope.",
     },
     {
+        "kind": "customization",
         "title": "Paid Customization & Custom Development",
         "text": "Change a subscribed system for your business, or discuss a different system when the ready-made options do not fit the workflow you need.",
         "example": "Requirements and price are agreed separately for development work such as workflow changes, branding, roles, dashboards, reports, automation, integrations, or additional modules. The normal subscription continues while the managed system remains in use.",
@@ -119,6 +128,7 @@ def _common_context(
         "technologies": TECHNOLOGIES,
         "published_system_templates": published_templates(),
         "template_library_enabled": template_library_enabled(),
+        "subscription_pricing": MANAGED_SUBSCRIPTION_PRICING,
         "contact_email": current_app.config.get("CONTACT_EMAIL"),
         "socials": socials,
         "environment_label": current_app.config.get("ENVIRONMENT_LABEL", ""),
@@ -252,14 +262,16 @@ def _send_smtp_message(record: dict) -> None:
     message["Reply-To"] = record["email"]
     company = record.get("company") or "Not provided"
     interest = record.get("source_title") or "General custom-system inquiry"
-    request_type = record.get("source_action") or "General inquiry"
+    request_type, plan_label = split_subscription_action(record.get("source_action") or "General inquiry")
+    plan_line = f"Plan: {plan_label}\n" if plan_label else ""
     message.set_content(
         "New website inquiry\n\n"
         f"Name: {record['name']}\n"
         f"Email: {record['email']}\n"
         f"Company: {company}\n"
         f"Interested in: {interest}\n"
-        f"Request type: {request_type}\n\n"
+        f"Request type: {request_type}\n"
+        f"{plan_line}\n"
         "Message:\n"
         f"{record['message']}\n"
     )
@@ -304,15 +316,26 @@ def _requested_template_intent(template_interest) -> tuple[str, str, str]:
     return canonical_intent, label, label
 
 
+def _requested_subscription_plan(template_interest, source_intent: str):
+    if template_interest is None or source_intent != "subscribe":
+        return None
+    raw = (request.form.get("source_plan") if request.method == "POST" else request.args.get("plan")) or ""
+    return MANAGED_SUBSCRIPTION_PRICING.get_plan(raw)
+
+
 @site.route("/contact", methods=["GET", "POST"])
 def contact():
     context = _common_context("contact")
     context["csrf_token"] = _csrf_token()
     template_interest = _requested_system_template()
     source_intent, source_action, source_action_label = _requested_template_intent(template_interest)
+    selected_subscription_plan = _requested_subscription_plan(template_interest, source_intent)
+    if source_intent == "subscribe":
+        source_action = subscription_action_for_plan(selected_subscription_plan)
     context["template_interest"] = template_interest
     context["source_intent"] = source_intent
     context["source_action_label"] = source_action_label
+    context["selected_subscription_plan"] = selected_subscription_plan
 
     if request.method == "POST":
         sent = request.form.get("csrf_token", "")

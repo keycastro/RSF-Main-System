@@ -5,7 +5,73 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 TemplateStatus = Literal["draft", "published"]
+SubscriptionPlanKey = Literal["monthly", "yearly"]
 _SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+
+
+@dataclass(frozen=True)
+class SubscriptionPlan:
+    key: SubscriptionPlanKey
+    label: str
+    amount: int
+    interval: str
+    currency_symbol: str
+
+    @property
+    def price_label(self) -> str:
+        return f"{self.currency_symbol}{self.amount}/{self.interval}"
+
+
+@dataclass(frozen=True)
+class ManagedSubscriptionPricing:
+    """Single trusted pricing source for every published ready-made system."""
+
+    currency_code: str = "USD"
+    currency_symbol: str = "$"
+    monthly_price: int = 49
+    yearly_price: int = 490
+
+    @property
+    def annual_monthly_total(self) -> int:
+        return self.monthly_price * 12
+
+    @property
+    def annual_savings(self) -> int:
+        return self.annual_monthly_total - self.yearly_price
+
+    @property
+    def monthly(self) -> SubscriptionPlan:
+        return SubscriptionPlan("monthly", "Monthly", self.monthly_price, "month", self.currency_symbol)
+
+    @property
+    def yearly(self) -> SubscriptionPlan:
+        return SubscriptionPlan("yearly", "Yearly", self.yearly_price, "year", self.currency_symbol)
+
+    def get_plan(self, key: str) -> SubscriptionPlan | None:
+        normalized = (key or "").strip().lower()
+        if normalized == "monthly":
+            return self.monthly
+        if normalized == "yearly":
+            return self.yearly
+        return None
+
+
+MANAGED_SUBSCRIPTION_PRICING = ManagedSubscriptionPricing()
+_SUBSCRIPTION_ACTION_PREFIX = "System Subscription — "
+
+
+def subscription_action_for_plan(plan: SubscriptionPlan | None) -> str:
+    if plan is None:
+        return "System Subscription"
+    return f"{_SUBSCRIPTION_ACTION_PREFIX}{plan.label} · {plan.price_label}"
+
+
+def split_subscription_action(value: str) -> tuple[str, str]:
+    """Return a stable request label plus an optional historical plan label."""
+    action = (value or "").strip()
+    if action.startswith(_SUBSCRIPTION_ACTION_PREFIX):
+        return "System Subscription", action[len(_SUBSCRIPTION_ACTION_PREFIX) :]
+    return action, ""
 
 
 @dataclass(frozen=True)

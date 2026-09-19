@@ -20,6 +20,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Key Castro Portfolio")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
+        self.assertEqual(data["version"], "3.3.0")
 
     def test_main_pages_and_template_library_render(self):
         routes = [
@@ -168,12 +169,13 @@ class PortfolioSiteTests(unittest.TestCase):
 
         self.assertIn(b'managed subscription access', systems.data)
         self.assertIn(b'paid customization', systems.data)
-        self.assertIn(b'Subscribe to use the ready-made system.', detail.data)
+        self.assertIn(b'Subscription provides ongoing managed access to the ready-made system', detail.data)
         self.assertIn(b'ongoing managed access', detail.data)
         self.assertIn(b'PAID CUSTOMIZATION', detail.data)
         self.assertIn(b'development price are discussed separately', detail.data)
         self.assertIn(b'managed subscription access to Property Operations Command Center', subscription_contact.data)
-        self.assertIn(b'monthly or yearly terms and pricing', subscription_contact.data.lower())
+        self.assertIn(b'$49/month', subscription_contact.data)
+        self.assertIn(b'$490/year', subscription_contact.data)
         self.assertIn(b'paid customization for Property Operations Command Center', custom_contact.data)
         self.assertIn(b'name="source_intent" value="subscribe"', subscription_contact.data)
         self.assertIn(b'name="source_intent" value="customize"', custom_contact.data)
@@ -197,13 +199,116 @@ class PortfolioSiteTests(unittest.TestCase):
 
         systems = self.client.get("/system-templates")
         self.assertIn(b"MANAGED SYSTEM SUBSCRIPTION", systems.data)
-        self.assertIn(b"Request Subscription Details", systems.data)
+        self.assertIn(b"View Subscription", systems.data)
 
         detail = self.client.get("/system-templates/property-operations-command-center")
         self.assertIn(b"PAID CUSTOMIZATION", detail.data)
         self.assertIn(b"normal subscription continues", detail.data)
         self.assertNotIn(b"lifetime", detail.data.lower())
         self.assertNotIn(b"own the source", detail.data.lower())
+
+    def test_managed_subscription_pricing_has_one_trusted_source_and_correct_math(self):
+        from app.system_templates import MANAGED_SUBSCRIPTION_PRICING, published_templates
+
+        pricing = MANAGED_SUBSCRIPTION_PRICING
+        self.assertEqual(pricing.currency_code, "USD")
+        self.assertEqual(pricing.monthly_price, 49)
+        self.assertEqual(pricing.yearly_price, 490)
+        self.assertEqual(pricing.annual_monthly_total, 588)
+        self.assertEqual(pricing.annual_savings, 98)
+        self.assertEqual(pricing.monthly.price_label, "$49/month")
+        self.assertEqual(pricing.yearly.price_label, "$490/year")
+        self.assertEqual(len(published_templates()), 2)
+
+        systems = self.client.get("/system-templates")
+        self.assertEqual(systems.status_code, 200)
+        self.assertEqual(systems.data.count(b'class="compact-price-strip"'), 2)
+        self.assertGreaterEqual(systems.data.count(b"$49"), 2)
+        self.assertGreaterEqual(systems.data.count(b"$490"), 2)
+        self.assertEqual(systems.data.count(b"Save $98/year"), 2)
+        for forbidden in (b"Starter", b"Basic plan", b"Professional plan", b"Enterprise"):
+            self.assertNotIn(forbidden, systems.data)
+
+    def test_monthly_and_yearly_subscription_plan_selection_is_server_resolved(self):
+        monthly = self.client.get(
+            "/contact?template=property-operations-command-center&intent=subscribe&plan=monthly"
+        )
+        self.assertEqual(monthly.status_code, 200)
+        self.assertIn(b"Monthly plan at $49/month", monthly.data)
+        self.assertIn(b'name="source_plan" value="monthly"', monthly.data)
+        self.assertIn(b"Selected plan: Monthly", monthly.data)
+        self.assertIn(b"$49/month", monthly.data)
+
+        yearly = self.client.get(
+            "/contact?template=property-inventory-hub&intent=subscribe&plan=yearly"
+        )
+        self.assertEqual(yearly.status_code, 200)
+        self.assertIn(b"Yearly plan at $490/year", yearly.data)
+        self.assertIn(b'name="source_plan" value="yearly"', yearly.data)
+        self.assertIn(b"Selected plan: Yearly", yearly.data)
+        self.assertIn(b"$490/year", yearly.data)
+
+        invalid = self.client.get(
+            "/contact?template=property-inventory-hub&intent=subscribe&plan=free"
+        )
+        self.assertEqual(invalid.status_code, 200)
+        self.assertNotIn(b'name="source_plan"', invalid.data)
+        self.assertNotIn(b"Selected plan:", invalid.data)
+
+    def test_subscription_plan_and_price_cannot_be_spoofed_in_inquiry(self):
+        from app.inquiries import get_inquiry
+
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "trusted-plan.sqlite3"
+            self.app.config.update(
+                CONTACT_DELIVERY_MODE="database",
+                DATABASE_URL=f"sqlite:///{db_path}",
+                OWNER_INBOX_TOKEN="owner-plan-token",
+                SMTP_HOST="",
+                SMTP_FROM_EMAIL="",
+            )
+            self.client.get(
+                "/contact?template=property-operations-command-center&intent=subscribe&plan=monthly"
+            )
+            with self.client.session_transaction() as sess:
+                token = sess["contact_csrf"]
+
+            response = self.client.post(
+                "/contact",
+                data={
+                    "csrf_token": token,
+                    "source_slug": "property-operations-command-center",
+                    "source_intent": "subscribe",
+                    "source_plan": "monthly",
+                    "source_price": "$1",
+                    "source_title": "FAKE SYSTEM",
+                    "name": "Pricing Prospect",
+                    "email": "pricing@example.com",
+                    "company": "Example Properties",
+                    "message": "We want the monthly managed system subscription for our operations team.",
+                    "website": "",
+                },
+                follow_redirects=False,
+            )
+            self.assertEqual(response.status_code, 302)
+            with self.app.app_context():
+                item = get_inquiry(1)
+
+            self.assertEqual(item["source_title"], "Property Operations Command Center")
+            self.assertEqual(item["source_action"], "System Subscription — Monthly · $49/month")
+            self.assertNotIn("$1", item["source_action"])
+
+            headers = {"Authorization": "Bearer owner-plan-token"}
+            ticket_response = self.client.post("/__owner_api/session-ticket", headers=headers)
+            access_path = urlparse(ticket_response.get_json()["url"]).path
+            self.client.get(access_path, follow_redirects=False)
+            detail = self.client.get("/owner/inbox/1")
+            self.assertIn(b"Request type", detail.data)
+            self.assertIn(b"System Subscription", detail.data)
+            self.assertIn(b"Plan", detail.data)
+            self.assertIn(b"Monthly", detail.data)
+            self.assertIn(b"$49/month", detail.data)
+            self.assertNotIn(b"$1", detail.data)
 
     def test_system_detail_has_truthful_status_boundary_and_dual_ctas(self):
         for slug in ("property-operations-command-center", "property-inventory-hub"):
@@ -212,10 +317,13 @@ class PortfolioSiteTests(unittest.TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertIn(b'aria-label="Breadcrumb"', response.data)
                 self.assertIn(b"MANAGED SYSTEM SUBSCRIPTION", response.data)
-                self.assertIn(b"Request Subscription Details", response.data)
+                self.assertIn(b"View Subscription", response.data)
+                self.assertIn(b"Get monthly access", response.data)
+                self.assertIn(b"Get yearly access", response.data)
                 self.assertIn(b"Request Paid Customization", response.data)
-                self.assertEqual(response.data.count(b"Request Subscription Details"), 2)
-                self.assertEqual(response.data.count(b"Request Paid Customization"), 2)
+                self.assertIn(b"$49", response.data)
+                self.assertIn(b"$490", response.data)
+                self.assertIn(b"Save $98/year", response.data)
                 self.assertIn(b"sample/demo data", response.data)
                 self.assertIn(b"Technical details about this build", response.data)
                 self.assertNotIn(b"Request the existing system", response.data)

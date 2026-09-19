@@ -527,3 +527,37 @@ h3{font-size:22px}
   .system-search-empty>p:not(.eyebrow){margin-left:0;margin-right:0}
   .system-search-empty .button{width:100%}
 }
+
+/* KEY CASTRO — MANAGED SUBSCRIPTION PRICING 3.3.0 */
+.compact-price-strip{display:flex;align-items:baseline;gap:7px 9px;flex-wrap:wrap;margin-top:15px;padding-top:13px;border-top:1px solid var(--line);color:var(--ink-2)}
+.compact-price-strip>span:not(.price-divider){display:inline-flex;align-items:baseline;gap:3px;white-space:nowrap}
+.compact-price-strip strong{color:var(--navy-deep);font-size:19px;line-height:1;font-weight:850}
+.compact-price-strip small{color:var(--muted);font-size:11px;font-weight:700}
+.compact-price-strip .price-divider{color:var(--muted);font-size:11px}
+.compact-price-strip em{margin-left:auto;padding:4px 7px;border-radius:999px;background:var(--surface-blue);color:var(--sage-deep);font-size:10px;font-style:normal;font-weight:850;letter-spacing:.025em;white-space:nowrap}
+#subscription{scroll-margin-top:calc(var(--header) + 20px)}
+.subscription-plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:17px 0 18px}
+.subscription-plan-option{position:relative;padding:15px 16px;border:1px solid var(--line);border-radius:13px;background:var(--surface);min-width:0}
+.subscription-plan-option.preferred{border-color:#b8c9c3;background:linear-gradient(145deg,#fbfcfb,#f1f5f2)}
+.subscription-plan-option>span{display:block;color:var(--sage-deep);font-size:10px;font-weight:850;letter-spacing:.085em}
+.subscription-plan-price{display:flex;align-items:baseline;gap:4px;margin:7px 0 8px}
+.subscription-plan-price strong{color:var(--navy-deep);font-size:30px;line-height:1;font-weight:850;letter-spacing:-.025em}
+.subscription-plan-price small{color:var(--muted);font-size:12px;font-weight:700}
+.subscription-plan-option em{display:block;margin:-1px 0 7px;color:var(--sage-deep);font-size:11px;font-style:normal;font-weight:850}
+.subscription-plan-option .text-link{font-size:12px}
+.customization-link{display:inline-flex;margin:0 0 6px}
+.service-price-line{display:flex;align-items:baseline;gap:8px 10px;flex-wrap:wrap;margin:15px 0 13px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.service-price-line strong{color:var(--navy-deep);font-size:17px}
+.service-price-line span{color:var(--muted);font-size:11px}
+.service-price-line em{margin-left:auto;color:var(--sage-deep);font-size:11px;font-style:normal;font-weight:800}
+.contact-selected-plan{margin-top:4px!important;color:var(--sage-deep)!important}
+.owner-plan-label,.owner-plan-detail{color:var(--sage-deep)!important;font-weight:750}
+
+@media(max-width:680px){
+  .compact-price-strip{gap:6px 8px}
+  .compact-price-strip em{margin-left:0;width:max-content}
+  .subscription-plan-grid{grid-template-columns:1fr}
+  .subscription-plan-option{padding:14px 15px}
+  .subscription-plan-price strong{font-size:28px}
+  .service-price-line em{margin-left:0;width:100%}
+}
