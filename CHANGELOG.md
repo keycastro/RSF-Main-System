@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 3.8.6 — About top profile block refinement
+
+- Redesigned only the About-page top profile area.
+- Kept **About Key Castro.** and the approved intro text on the left.
+- Moved **Custom Business App Developer & Automation Specialist** directly under the existing approved portrait so the portrait and title read as one intentional professional profile block.
+- Rebalanced only About-scoped spacing/alignment and responsive behavior; the portrait asset itself was not changed.
+- Preserved the Problems I Help Solve section and everything below it, plus every unrelated page, route, price, system, backend feature, and private function.
+
 ## 3.8.5 — About profile portrait refinement
 
 - Replaced the prior About portrait with the newly approved user-supplied photo.

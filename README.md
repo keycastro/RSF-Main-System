@@ -4,7 +4,7 @@ Professional portfolio and client-acquisition website for **KEY CASTRO — Custo
 
 Official website: https://keycastro.onrender.com
 
-**Current release version: 3.8.5**
+**Current release version: 3.8.6**
 
 ## One project folder
 
@@ -16,7 +16,7 @@ This single Flask codebase contains the public website, published system pages, 
 
 ## Public design rule
 
-Preserve the premium ivory/navy/sage identity, typography, compact spacing, responsive behavior, and five-item navigation. Version 3.8.5 keeps the approved v3.8.4 site and replaces only the About portrait while refining the same top profile block so the portrait and professional title are organized together; styling remains scoped to the About page.
+Preserve the premium ivory/navy/sage identity, typography, compact spacing, responsive behavior, and five-item navigation. Version 3.8.6 preserves the approved v3.8.5 site and redesigns only the About top profile area so the approved portrait and professional title form one intentional profile block; styling remains scoped to the About page.
 
 Public rule: **Short. Simple. Clear. No unnecessary repetition.**
 
