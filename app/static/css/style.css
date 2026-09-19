@@ -528,23 +528,23 @@ h3{font-size:22px}
   .system-search-empty .button{width:100%}
 }
 
-/* KEY CASTRO — MANAGED SUBSCRIPTION PRICING 3.3.0 */
+/* KEY CASTRO — MANAGED MAINTENANCE PRICING 3.3.0 */
 .compact-price-strip{display:flex;align-items:baseline;gap:7px 9px;flex-wrap:wrap;margin-top:15px;padding-top:13px;border-top:1px solid var(--line);color:var(--ink-2)}
 .compact-price-strip>span:not(.price-divider){display:inline-flex;align-items:baseline;gap:3px;white-space:nowrap}
 .compact-price-strip strong{color:var(--navy-deep);font-size:19px;line-height:1;font-weight:850}
 .compact-price-strip small{color:var(--muted);font-size:11px;font-weight:700}
 .compact-price-strip .price-divider{color:var(--muted);font-size:11px}
 .compact-price-strip em{margin-left:auto;padding:4px 7px;border-radius:999px;background:var(--surface-blue);color:var(--sage-deep);font-size:10px;font-style:normal;font-weight:850;letter-spacing:.025em;white-space:nowrap}
-#subscription{scroll-margin-top:calc(var(--header) + 20px)}
-.subscription-plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:17px 0 18px}
-.subscription-plan-option{position:relative;padding:15px 16px;border:1px solid var(--line);border-radius:13px;background:var(--surface);min-width:0}
-.subscription-plan-option.preferred{border-color:#b8c9c3;background:linear-gradient(145deg,#fbfcfb,#f1f5f2)}
-.subscription-plan-option>span{display:block;color:var(--sage-deep);font-size:10px;font-weight:850;letter-spacing:.085em}
-.subscription-plan-price{display:flex;align-items:baseline;gap:4px;margin:7px 0 8px}
-.subscription-plan-price strong{color:var(--navy-deep);font-size:30px;line-height:1;font-weight:850;letter-spacing:-.025em}
-.subscription-plan-price small{color:var(--muted);font-size:12px;font-weight:700}
-.subscription-plan-option em{display:block;margin:-1px 0 7px;color:var(--sage-deep);font-size:11px;font-style:normal;font-weight:850}
-.subscription-plan-option .text-link{font-size:12px}
+#maintenance{scroll-margin-top:calc(var(--header) + 20px)}
+.maintenance-plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:17px 0 18px}
+.maintenance-plan-option{position:relative;padding:15px 16px;border:1px solid var(--line);border-radius:13px;background:var(--surface);min-width:0}
+.maintenance-plan-option.preferred{border-color:#b8c9c3;background:linear-gradient(145deg,#fbfcfb,#f1f5f2)}
+.maintenance-plan-option>span{display:block;color:var(--sage-deep);font-size:10px;font-weight:850;letter-spacing:.085em}
+.maintenance-plan-price{display:flex;align-items:baseline;gap:4px;margin:7px 0 8px}
+.maintenance-plan-price strong{color:var(--navy-deep);font-size:30px;line-height:1;font-weight:850;letter-spacing:-.025em}
+.maintenance-plan-price small{color:var(--muted);font-size:12px;font-weight:700}
+.maintenance-plan-option em{display:block;margin:-1px 0 7px;color:var(--sage-deep);font-size:11px;font-style:normal;font-weight:850}
+.maintenance-plan-option .text-link{font-size:12px}
 .customization-link{display:inline-flex;margin:0 0 6px}
 .service-price-line{display:flex;align-items:baseline;gap:8px 10px;flex-wrap:wrap;margin:15px 0 13px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .service-price-line strong{color:var(--navy-deep);font-size:17px}
@@ -556,9 +556,9 @@ h3{font-size:22px}
 @media(max-width:680px){
   .compact-price-strip{gap:6px 8px}
   .compact-price-strip em{margin-left:0;width:max-content}
-  .subscription-plan-grid{grid-template-columns:1fr}
-  .subscription-plan-option{padding:14px 15px}
-  .subscription-plan-price strong{font-size:28px}
+  .maintenance-plan-grid{grid-template-columns:1fr}
+  .maintenance-plan-option{padding:14px 15px}
+  .maintenance-plan-price strong{font-size:28px}
   .service-price-line em{margin-left:0;width:100%}
 }
 
@@ -685,7 +685,7 @@ h2{font-size:clamp(27px,2.9vw,39px);line-height:1.1}
 .structured-list-row p{max-width:650px;margin:0;font-size:14px;line-height:1.57}
 .secondary-page-nav{display:flex;justify-content:space-between;gap:20px;padding-top:15px;padding-bottom:22px}
 
-/* System details: business understanding first, one subscription decision area. */
+/* System details: business understanding first, one maintenance decision area. */
 .case-hero.detail-hero-3-4{padding:36px 0 48px}
 .detail-hero-3-4 .breadcrumb{margin-bottom:20px}
 .detail-hero-3-4 .template-hero-grid{grid-template-columns:1.1fr .9fr;gap:46px}
@@ -705,17 +705,17 @@ h2{font-size:clamp(27px,2.9vw,39px);line-height:1.1}
 .compact-gallery-grid{max-width:920px;gap:12px}
 .template-gallery-grid .compact-gallery-item img,.template-gallery-grid .compact-gallery-item:not(:first-child) img{height:190px}
 
-.subscription-section-3-4{padding:58px 0 48px}
-.subscription-heading{display:grid;grid-template-columns:1fr .8fr;gap:58px;align-items:end;margin-bottom:25px}
-.subscription-heading h2{margin:0}
-.subscription-heading>p{margin:0;font-size:14px;line-height:1.58;color:var(--ink-2)}
-.subscription-decision-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(285px,.7fr);gap:22px;align-items:start}
-.subscription-main{min-width:0}
-.subscription-plan-grid{gap:12px;margin:0 0 22px}
-.subscription-plan-option{padding:19px;border-radius:14px}
-.subscription-plan-option p{margin:9px 0 14px;font-size:13px;line-height:1.5}
-.subscription-plan-option .button{width:100%;min-height:42px;padding-inline:12px;font-size:12.5px}
-.subscription-plan-price strong{font-size:29px}
+.maintenance-section-3-4{padding:58px 0 48px}
+.maintenance-heading{display:grid;grid-template-columns:1fr .8fr;gap:58px;align-items:end;margin-bottom:25px}
+.maintenance-heading h2{margin:0}
+.maintenance-heading>p{margin:0;font-size:14px;line-height:1.58;color:var(--ink-2)}
+.maintenance-decision-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(285px,.7fr);gap:22px;align-items:start}
+.maintenance-main{min-width:0}
+.maintenance-plan-grid{gap:12px;margin:0 0 22px}
+.maintenance-plan-option{padding:19px;border-radius:14px}
+.maintenance-plan-option p{margin:9px 0 14px;font-size:13px;line-height:1.5}
+.maintenance-plan-option .button{width:100%;min-height:42px;padding-inline:12px;font-size:12.5px}
+.maintenance-plan-price strong{font-size:29px}
 .scope-inline{padding:19px 0 0;border-top:1px solid var(--line)}
 .scope-inline>strong{font-size:14px;color:var(--navy-deep)}
 .customization-aside{padding:22px 23px;border-left:3px solid var(--sage);background:rgba(255,255,255,.64)}
@@ -750,18 +750,18 @@ h2{font-size:clamp(27px,2.9vw,39px);line-height:1.1}
   .work-path-layout,.editorial-split{gap:48px}
   .service-path{grid-template-columns:42px minmax(0,1fr);gap:24px}
   .service-path-detail{grid-column:2;padding:0;border-left:0}
-  .subscription-decision-grid{grid-template-columns:1fr}
+  .maintenance-decision-grid{grid-template-columns:1fr}
   .customization-aside{border-left:0;border-top:3px solid var(--sage)}
 }
 
 @media(max-width:900px){
   :root{--container:min(100% - 34px,850px)}
   .hero.hero-3-4{padding:50px 0 54px}
-  .hero-grid-3-4,.page-hero-3-4 .page-hero-grid,.work-path-layout,.editorial-split,.service-boundary-grid,.detail-overview-layout,.detail-function-layout,.subscription-heading,.contact-layout-3-4{grid-template-columns:1fr}
+  .hero-grid-3-4,.page-hero-3-4 .page-hero-grid,.work-path-layout,.editorial-split,.service-boundary-grid,.detail-overview-layout,.detail-function-layout,.maintenance-heading,.contact-layout-3-4{grid-template-columns:1fr}
   .hero-grid-3-4{gap:34px}
   .orientation-panel{max-width:720px}
   .page-hero.page-hero-3-4{padding:42px 0 38px}
-  .service-boundary-grid,.subscription-heading{gap:18px}
+  .service-boundary-grid,.maintenance-heading{gap:18px}
   .detail-overview-layout,.detail-function-layout{gap:42px}
   .detail-hero-3-4 .template-hero-grid{grid-template-columns:1fr;gap:25px}
   .detail-hero-3-4 .compact-case-cover{width:min(720px,100%)}
@@ -809,9 +809,9 @@ h2{font-size:clamp(27px,2.9vw,39px);line-height:1.1}
   .detail-hero-3-4 .template-primary-actions .button{width:100%}
   .compact-detail-section{padding:46px 0}
   .template-gallery-grid .compact-gallery-item img,.template-gallery-grid .compact-gallery-item:not(:first-child) img{height:160px}
-  .subscription-section-3-4{padding:48px 0 40px}
-  .subscription-plan-grid{grid-template-columns:1fr}
-  .subscription-plan-option{padding:17px}
+  .maintenance-section-3-4{padding:48px 0 40px}
+  .maintenance-plan-grid{grid-template-columns:1fr}
+  .maintenance-plan-option{padding:17px}
   .customization-aside{padding:19px}
   .contact-section-3-4{padding:44px 0 48px}
   .contact-form{padding:21px 18px}
@@ -895,14 +895,14 @@ h2{font-size:clamp(27px,2.9vw,39px);line-height:1.1}
 .detail-hero-simple .compact-case-cover{max-height:285px}
 .detail-hero-simple .compact-case-cover img{height:262px}
 .detail-overview-simple{padding-top:50px;padding-bottom:50px}
-.subscription-section-simple{padding:52px 0 42px}
-.subscription-heading-simple{max-width:720px;margin-bottom:24px}
-.subscription-heading-simple h2{margin:5px 0 9px}
-.subscription-heading-simple>p:last-child{margin:0;font-size:14px;color:var(--ink-2)}
+.maintenance-section-simple{padding:52px 0 42px}
+.maintenance-heading-simple{max-width:720px;margin-bottom:24px}
+.maintenance-heading-simple h2{margin:5px 0 9px}
+.maintenance-heading-simple>p:last-child{margin:0;font-size:14px;color:var(--ink-2)}
 .simple-plan-layout{grid-template-columns:minmax(0,1.3fr) minmax(260px,.7fr)}
-.subscription-section-simple .subscription-plan-option p{display:none}
-.subscription-section-simple .scope-inline{margin-top:2px}
-.subscription-section-simple .customization-aside .button{margin-top:10px}
+.maintenance-section-simple .maintenance-plan-option p{display:none}
+.maintenance-section-simple .scope-inline{margin-top:2px}
+.maintenance-section-simple .customization-aside .button{margin-top:10px}
 .simple-bottom-nav{justify-content:flex-start}
 
 /* Contact: short instruction + form. */
@@ -947,7 +947,7 @@ h2{font-size:clamp(27px,2.9vw,39px);line-height:1.1}
   .detail-hero-simple .case-intro h1{font-size:35px}
   .detail-hero-simple .compact-case-cover{max-height:220px}
   .detail-hero-simple .compact-case-cover img{height:203px}
-  .subscription-section-simple{padding:45px 0 38px}
+  .maintenance-section-simple{padding:45px 0 38px}
   .contact-section-simple{padding:40px 0 46px}
   .simple-footer{margin-top:28px;padding-top:30px}
 }
@@ -1213,4 +1213,90 @@ h2{font-size:clamp(27px,2.9vw,39px);line-height:1.1}
   .detail-hero-simple .template-primary-actions{margin-top:14px}
   .case-hero.detail-hero-simple + .section{padding-top:22px}
   .error-section{min-height:36vh;padding:40px 0 36px}
+}
+
+
+/* =========================================================
+   3.6.0 — BUSINESS MODEL + THIRD SYSTEM INTEGRATION
+   Preserve the existing design language while making the new
+   Full Handover / Managed by KEY CASTRO model explicit.
+   ========================================================= */
+
+/* Keep an odd third system the same card width instead of stretching it. */
+@media(min-width:901px){
+  .compact-system-grid>.system-choice-card:last-child:nth-child(odd){
+    grid-column:1/-1;
+    width:calc((100% - 24px)/2);
+    justify-self:center;
+  }
+  .compact-library-grid>.system-choice-card:last-child:nth-child(odd){
+    grid-column:1/-1;
+    width:calc((100% - 24px)/2);
+    justify-self:center;
+  }
+}
+
+/* Student Housing — restrained green identity that belongs to the same family. */
+.system-choice-card--student-housing-matching-and-placement-system{
+  background:#f4f8f5;
+  border-color:#bed3c8;
+}
+.system-choice-card--student-housing-matching-and-placement-system::before{background:#4f8a70}
+.system-choice-card--student-housing-matching-and-placement-system .system-type{
+  color:#32644f!important;
+  background:#e4f0e9;
+  border-color:#c7ddd1;
+}
+.system-choice-card--student-housing-matching-and-placement-system .system-showcase-image,
+.system-choice-card--student-housing-matching-and-placement-system .template-card-image{
+  background:#e9f1ed;
+  border-color:#bed3c8;
+}
+
+/* Customization remains a build-stage decision, separate from post-build management. */
+.customization-section-simple .button{margin-top:18px}
+
+/* Two post-build choices only. */
+.maintenance-section-simple{padding:52px 0 42px}
+.maintenance-heading-simple{max-width:760px;margin-bottom:24px}
+.maintenance-heading-simple h2{margin:5px 0 9px}
+.maintenance-heading-simple>p:last-child{margin:0;color:var(--ink-2);font-size:14px;line-height:1.6}
+.delivery-option-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.delivery-option-card{padding:25px;border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:0 8px 24px rgba(15,38,50,.05)}
+.delivery-option-card.managed{border-color:#b8c9c3;background:linear-gradient(145deg,#fbfcfb,#f2f6f3)}
+.delivery-option-number{display:block;color:var(--sage-deep);font-size:10px;font-weight:850;letter-spacing:.085em}
+.delivery-option-card h3{margin:7px 0 7px;color:var(--navy-deep);font-size:25px}
+.delivery-plain-line{display:block;margin-bottom:10px;color:var(--ink);font-size:14px}
+.delivery-option-card>p{margin:0 0 18px;color:var(--ink-2);font-size:14px;line-height:1.6}
+.delivery-option-card>.button{margin-top:4px}
+.maintenance-plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:17px 0 18px}
+.maintenance-plan-option{position:relative;padding:15px 16px;border:1px solid var(--line);border-radius:13px;background:var(--surface);min-width:0}
+.maintenance-plan-option.preferred{border-color:#b8c9c3;background:#f7faf8}
+.maintenance-plan-option>span{display:block;color:var(--sage-deep);font-size:10px;font-weight:850;letter-spacing:.085em}
+.maintenance-plan-price{display:flex;align-items:baseline;gap:4px;margin:7px 0 8px}
+.maintenance-plan-price strong{color:var(--navy-deep);font-size:28px;line-height:1;font-weight:850;letter-spacing:-.025em}
+.maintenance-plan-price small{color:var(--muted);font-size:12px;font-weight:700}
+.maintenance-plan-option em{display:block;margin:-1px 0 8px;color:var(--sage-deep);font-size:11px;font-style:normal;font-weight:850}
+.maintenance-plan-option .button{width:100%;min-height:42px;padding-inline:10px;font-size:12px}
+.delivery-pricing-note{max-width:850px;margin:19px 0 0;color:var(--muted);font-size:13px;line-height:1.6}
+.delivery-services-section .service-simple-list{border-top:1px solid var(--line)}
+.home-delivery-summary .work-path-list>.text-link{margin-top:18px}
+
+@media(max-width:900px){
+  .compact-system-grid>.system-choice-card:last-child:nth-child(odd),
+  .compact-library-grid>.system-choice-card:last-child:nth-child(odd){
+    grid-column:auto;
+    width:auto;
+    justify-self:stretch;
+  }
+  .delivery-option-grid{grid-template-columns:1fr}
+}
+
+@media(max-width:680px){
+  .system-choice-card--student-housing-matching-and-placement-system .system-showcase-image,
+  .system-choice-card--student-housing-matching-and-placement-system .template-card-image{border-top-color:#bed3c8}
+  .delivery-option-card{padding:21px}
+  .delivery-option-card h3{font-size:23px}
+  .maintenance-plan-grid{grid-template-columns:1fr}
+  .maintenance-section-simple{padding:45px 0 38px}
 }

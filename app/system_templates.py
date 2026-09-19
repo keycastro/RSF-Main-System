@@ -5,13 +5,13 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 TemplateStatus = Literal["draft", "published"]
-SubscriptionPlanKey = Literal["monthly", "yearly"]
+MaintenancePlanKey = Literal["monthly", "yearly"]
 _SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 @dataclass(frozen=True)
-class SubscriptionPlan:
-    key: SubscriptionPlanKey
+class MaintenancePlan:
+    key: MaintenancePlanKey
     label: str
     amount: int
     interval: str
@@ -23,8 +23,8 @@ class SubscriptionPlan:
 
 
 @dataclass(frozen=True)
-class ManagedSubscriptionPricing:
-    """Single trusted pricing source for every published ready-made system."""
+class ManagedMaintenancePricing:
+    """Single trusted pricing source for optional managed maintenance."""
 
     currency_code: str = "USD"
     currency_symbol: str = "$"
@@ -40,14 +40,14 @@ class ManagedSubscriptionPricing:
         return self.annual_monthly_total - self.yearly_price
 
     @property
-    def monthly(self) -> SubscriptionPlan:
-        return SubscriptionPlan("monthly", "Monthly", self.monthly_price, "month", self.currency_symbol)
+    def monthly(self) -> MaintenancePlan:
+        return MaintenancePlan("monthly", "Monthly", self.monthly_price, "month", self.currency_symbol)
 
     @property
-    def yearly(self) -> SubscriptionPlan:
-        return SubscriptionPlan("yearly", "Yearly", self.yearly_price, "year", self.currency_symbol)
+    def yearly(self) -> MaintenancePlan:
+        return MaintenancePlan("yearly", "Yearly", self.yearly_price, "year", self.currency_symbol)
 
-    def get_plan(self, key: str) -> SubscriptionPlan | None:
+    def get_plan(self, key: str) -> MaintenancePlan | None:
         normalized = (key or "").strip().lower()
         if normalized == "monthly":
             return self.monthly
@@ -56,22 +56,43 @@ class ManagedSubscriptionPricing:
         return None
 
 
-MANAGED_SUBSCRIPTION_PRICING = ManagedSubscriptionPricing()
-_SUBSCRIPTION_ACTION_PREFIX = "System Subscription — "
+MANAGED_MAINTENANCE_PRICING = ManagedMaintenancePricing()
+_MANAGED_SERVICE_ACTION_PREFIX = "Managed by KEY CASTRO — "
+_LEGACY_SUBSCRIPTION_ACTION_PREFIX = "System Subscription — "
 
 
-def subscription_action_for_plan(plan: SubscriptionPlan | None) -> str:
+def managed_service_action_for_plan(plan: MaintenancePlan | None) -> str:
     if plan is None:
-        return "System Subscription"
-    return f"{_SUBSCRIPTION_ACTION_PREFIX}{plan.label} · {plan.price_label}"
+        return "Managed by KEY CASTRO"
+    return f"{_MANAGED_SERVICE_ACTION_PREFIX}{plan.label} · {plan.price_label}"
 
 
-def split_subscription_action(value: str) -> tuple[str, str]:
-    """Return a stable request label plus an optional historical plan label."""
+def split_managed_service_action(value: str) -> tuple[str, str]:
+    """Return the current request label plus an optional plan label.
+
+    Older stored subscription labels are normalized for display so historical
+    inquiries remain readable after the 3.6.0 business-model change.
+    """
     action = (value or "").strip()
-    if action.startswith(_SUBSCRIPTION_ACTION_PREFIX):
-        return "System Subscription", action[len(_SUBSCRIPTION_ACTION_PREFIX) :]
+    if action.startswith(_MANAGED_SERVICE_ACTION_PREFIX):
+        return "Managed by KEY CASTRO", action[len(_MANAGED_SERVICE_ACTION_PREFIX) :]
+    if action.startswith(_LEGACY_SUBSCRIPTION_ACTION_PREFIX):
+        return "Managed by KEY CASTRO", action[len(_LEGACY_SUBSCRIPTION_ACTION_PREFIX) :]
+    if action == "System Subscription":
+        return "Managed by KEY CASTRO", ""
+    if action == "Paid Customization":
+        return "Customize Existing System", ""
     return action, ""
+
+
+# Backward-compatible names for old internal imports or local tools. Public code
+# uses the managed-maintenance terminology above.
+SubscriptionPlanKey = MaintenancePlanKey
+SubscriptionPlan = MaintenancePlan
+ManagedSubscriptionPricing = ManagedMaintenancePricing
+MANAGED_SUBSCRIPTION_PRICING = MANAGED_MAINTENANCE_PRICING
+subscription_action_for_plan = managed_service_action_for_plan
+split_subscription_action = split_managed_service_action
 
 
 @dataclass(frozen=True)
@@ -94,12 +115,12 @@ class VideoDemo:
 
 @dataclass(frozen=True)
 class SystemTemplate:
-    """Source-controlled metadata for one reusable business-system template.
+    """Source-controlled metadata for one reusable business system.
 
     Keep entries in ``SYSTEM_TEMPLATES`` as ``draft`` until the system, written
-    content, media, managed-subscription scope, CTA flow, SEO metadata, and
-    security review are all ready. Draft entries never become public routes or
-    sitemap entries.
+    content, media, customization scope, delivery/management choices, CTA flow,
+    SEO metadata, and security review are ready. Draft entries never become
+    public routes or sitemap entries.
     """
 
     slug: str
@@ -113,7 +134,7 @@ class SystemTemplate:
     workflow: tuple[str, ...]
     features: tuple[str, ...]
     technologies: tuple[str, ...]
-    standard_scope: tuple[str, ...]
+    managed_scope: tuple[str, ...]
     customization_opportunities: tuple[str, ...]
     search_terms: tuple[str, ...] = field(default_factory=tuple)
     status: TemplateStatus = "draft"
@@ -128,12 +149,6 @@ class SystemTemplate:
 
     @property
     def search_text(self) -> str:
-        """Plain-text search document used by the client-side Systems filter.
-
-        Keep search behavior metadata-driven: future published systems become
-        searchable automatically when their normal metadata and optional
-        ``search_terms`` are added to this registry.
-        """
         parts = (
             self.name,
             self.category,
@@ -166,6 +181,15 @@ class SystemTemplate:
                 raise ValueError(
                     "Published system template is missing required fields: " + ", ".join(missing)
                 )
+
+
+_COMMON_MANAGED_SCOPE = (
+    "Hosting and deployment management",
+    "Routine backups and technical maintenance",
+    "Bug fixes and agreed system updates",
+    "Technical support within the agreed service scope",
+    "Major new features and custom development are quoted separately",
+)
 
 
 SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
@@ -208,13 +232,7 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             "Server-rendered HTML/CSS/JavaScript",
             "Waitress for local Windows runtime",
         ),
-        standard_scope=(
-            "The standard system shown on this page",
-            "Standard roles, property records, task tracking, approvals, rentals, and checklists",
-            "Standard alerts and tasks after checkout",
-            "Hosting, setup, and support details are confirmed before access starts",
-            "Payment processing, accounting, AI, e-signing, and a native mobile app are not included in the standard system",
-        ),
+        managed_scope=_COMMON_MANAGED_SCOPE,
         customization_opportunities=(
             "Company branding and wording",
             "Different roles, permissions, and approval rules",
@@ -251,12 +269,14 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             ),
         ),
         project_note=(
-            "Completed independent implementation developed by Key Castro and offered through managed "
-            "system subscription access. It is not presented as commissioned or adopted client software."
+            "Completed independent implementation developed by Key Castro. It can be customized for a business, "
+            "then delivered through full handover or managed by KEY CASTRO. It is not presented as commissioned "
+            "or adopted client software."
         ),
         seo_title="Property Operations Command Center | Key Castro",
         meta_description=(
-            "Explore Property Operations Command Center by Key Castro: a managed property-operations system for work, deadlines, approvals, guest readiness, tenant placement, SOPs, and automation."
+            "Explore Property Operations Command Center by Key Castro: a customizable property-operations system "
+            "for work, deadlines, approvals, guest readiness, tenant placement, SOPs, and automation."
         ),
         og_image="images/templates/property-operations-command-center/dashboard.png",
         published_date="2026-09-19",
@@ -301,13 +321,7 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             "Flask-Login and Flask-WTF",
             "Server-rendered HTML/CSS/JavaScript",
         ),
-        standard_scope=(
-            "The standard system shown on this page",
-            "Administrator and Agent access",
-            "Dashboard, shared listings, My Listings, History, and Management",
-            "Standard search, filters, listing ownership, checks for old listings, archive, and restore tools",
-            "Hosting, setup, and support details are confirmed before access starts",
-        ),
+        managed_scope=_COMMON_MANAGED_SCOPE,
         customization_opportunities=(
             "Company branding and property fields",
             "Different roles, teams, permissions, or approval steps",
@@ -342,14 +356,109 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             ),
         ),
         project_note=(
-            "Completed reusable system developed by Key Castro and offered through managed system subscription "
-            "access. Client branding is configurable; no claim is made that a specific company commissioned or adopted it."
+            "Completed reusable system developed by Key Castro. It can be customized for a business, then fully "
+            "handed over or managed by KEY CASTRO. No claim is made that a specific company commissioned or adopted it."
         ),
         seo_title="Property Inventory Hub | Key Castro",
         meta_description=(
-            "Explore Property Inventory Hub by Key Castro: a managed private real-estate inventory system with search, listing ownership, reconfirmation, expiry, history, and configurable branding."
+            "Explore Property Inventory Hub by Key Castro: a customizable private real-estate inventory system "
+            "with search, listing ownership, reconfirmation, expiry, history, and configurable branding."
         ),
         og_image="images/templates/property-inventory-hub/dashboard.png",
+        published_date="2026-09-19",
+        updated_date="2026-09-19",
+    ),
+    SystemTemplate(
+        slug="student-housing-matching-and-placement-system",
+        name="Student Housing Matching and Placement System",
+        category="Student Housing Operations",
+        short_description=(
+            "Manage student housing requests, available units, matching, viewings, follow-ups, reservations, "
+            "and placements in one workflow."
+        ),
+        card_audience="Student-housing platforms, placement teams, and off-campus housing operators.",
+        full_description=(
+            "A focused internal system for managing student housing requests, available units, rule-based matching, "
+            "viewings, follow-ups, reservations, and completed placements."
+        ),
+        business_problem=(
+            "Student-housing teams can lose track of what each student needs when requests, availability, viewings, "
+            "follow-ups, and placement status are kept in separate records. This system connects those steps in one workflow."
+        ),
+        target_users=(
+            "Student-housing platforms",
+            "Housing coordinators and placement teams",
+            "Off-campus housing and leasing operations",
+        ),
+        workflow=(
+            "Record the student and housing request.",
+            "Compare suitable available units using rule-based criteria.",
+            "Review options and schedule a viewing when needed.",
+            "Track follow-ups and the next action.",
+            "Reserve the selected unit and prevent double booking.",
+            "Complete placement and update housing availability.",
+        ),
+        features=(
+            "Student and housing-request records",
+            "Property owners, properties, units, and live availability",
+            "Rule-based matching using operational housing criteria",
+            "Viewings and follow-up tracking",
+            "Reservation and placement workflow with double-booking protection",
+            "Administrator and Housing Coordinator hierarchy with Access Code sign-in",
+            "Activity history and dashboard visibility",
+        ),
+        technologies=(
+            "Python",
+            "Flask",
+            "SQLite",
+            "Server-rendered HTML/CSS/JavaScript",
+            "Waitress for local Windows runtime",
+        ),
+        managed_scope=_COMMON_MANAGED_SCOPE,
+        customization_opportunities=(
+            "Business branding and terminology",
+            "Housing-request fields, matching rules, and status flow",
+            "Roles, permissions, dashboards, and reports",
+            "Business-specific property, placement, and follow-up workflows",
+        ),
+        search_terms=(
+            "student housing",
+            "housing placement",
+            "student accommodation",
+            "housing requests",
+            "availability",
+            "matching",
+            "viewings",
+            "follow-ups",
+            "reservations",
+            "placements",
+            "housing coordinator",
+            "off-campus housing",
+        ),
+        status="published",
+        screenshots=(
+            TemplateScreenshot(
+                src="images/templates/student-housing-matching-and-placement-system/dashboard.png",
+                alt="Student Housing Matching and Placement System dashboard preview using synthetic sample data",
+                caption="Dashboard using synthetic sample data — open requests, available units, follow-ups, viewings, reservations, and placements.",
+            ),
+            TemplateScreenshot(
+                src="images/templates/student-housing-matching-and-placement-system/match-center.png",
+                alt="Student Housing Matching and Placement System Find Housing screen using synthetic sample data",
+                caption="Find Housing using synthetic sample data — requests, matching status, budget, location, and move-in timing.",
+            ),
+        ),
+        project_note=(
+            "Independent portfolio project built by Key Castro after studying a publicly visible 2026 student-housing "
+            "system request and the related placement workflow. Not commissioned by, affiliated with, or endorsed by "
+            "the original poster."
+        ),
+        seo_title="Student Housing Matching & Placement System | Key Castro",
+        meta_description=(
+            "Explore Key Castro's Student Housing Matching and Placement System: a customizable internal workflow "
+            "for housing requests, availability, matching, viewings, follow-ups, reservations, and placements."
+        ),
+        og_image="images/templates/student-housing-matching-and-placement-system/dashboard.png",
         published_date="2026-09-19",
         updated_date="2026-09-19",
     ),

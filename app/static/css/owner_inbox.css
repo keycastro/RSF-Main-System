@@ -19,5 +19,5 @@ a,button{font:inherit}a:focus-visible,button:focus-visible{outline:3px solid rgb
 /* 2.7.0 — optional lead-source context for future system-template inquiries */
 .owner-source{margin-top:7px!important;color:var(--navy)!important;font-weight:700}.owner-interest-card{margin-top:24px;padding:17px 18px;border:1px solid #cad4d3;border-left:4px solid var(--sage);border-radius:11px;background:#f4f7f5}.owner-interest-card>span{display:block;font-size:10px;font-weight:800;letter-spacing:.075em;text-transform:uppercase;color:var(--muted)}.owner-interest-card strong{display:block;margin-top:5px;font-size:16px;color:var(--ink)}.owner-interest-card small{display:block;margin-top:4px;color:var(--muted);font-size:12px}
 
-/* 2.8.0 — distinguish free-template access from paid customization leads */
+/* Inquiry badges distinguish managed service, handover, customization, and custom-build context. */
 .owner-request-type{color:#765d3e!important;font-weight:750}.owner-request-detail{color:#765d3e!important;font-weight:750}

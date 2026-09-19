@@ -1,41 +1,30 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Current version:** 3.5.3
+**Current version:** 3.6.0
 **Official site:** https://keycastro.onrender.com
 **Positioning:** KEY CASTRO — Custom Real Estate Systems Developer
 
 ## Read first
 
-Before changing the website, read:
+1. `docs/BUSINESS_MODEL_AND_MANAGED_MAINTENANCE_3_6.md`
+2. `PROJECT_STATE.json`
+3. `README.md`
+4. `SECURITY_AND_SHARING_NOTES.md`
+5. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
+6. `docs/DEPLOYMENT_HISTORY.md`
+7. `docs/PUBLISHED_SYSTEM_TEMPLATES.md`
+8. `docs/UX_INFORMATION_ARCHITECTURE.md`
+9. 3.5.x visual-refinement documents for the preserved design rules
 
-1. `00_FUTURE_DEVELOPER_READ_THIS_PLAN.md` (local/private roadmap)
-2. `docs/FUTURE_TEMPLATE_LIBRARY_ROADMAP.md` (local/private roadmap)
-3. `docs/INTEGRATED_PAGE_INTRO_FLOW_3_5_3.md`
-4. `docs/SITE_WIDE_PAGE_TOP_REFINEMENT_3_5_2.md`
-5. `docs/WEBSITE_SIMPLIFICATION_3_5.md`
-6. `docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md`
-7. `docs/UX_INFORMATION_ARCHITECTURE.md`
-8. `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`
-9. `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`
-10. `docs/TEMPLATE_LIBRARY_FOUNDATION.md`
-11. `PROJECT_STATE.json`
-12. `SECURITY_AND_SHARING_NOTES.md`
-13. `docs/DEPLOYMENT_HISTORY.md`
-14. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
+Historical 3.2/3.3 subscription documents are retained for history only and are **superseded** by 3.6.0. Do not restore the old subscription-access model.
 
-## Current architecture
+## Architecture
 
-This is one Flask codebase in:
+Keep one Flask codebase in `C:\Users\Admin\Documents\KEY_CASTRO_WEBSITE`. It contains the public website/contact flow and the private owner Inbox. Do not split or rewrite the architecture without a real technical reason.
 
-```text
-C:\Users\Admin\Documents\KEY_CASTRO_WEBSITE
-```
+## Public information architecture
 
-It contains the public website/contact flow and the private owner inbox. Do not split them into separate active projects.
-
-## 2.9.0 public information architecture
-
-Primary public navigation is deliberately limited to:
+Primary navigation stays:
 
 ```text
 Home
@@ -45,77 +34,51 @@ About
 Contact
 ```
 
-Use **Systems** as the visible public mental model for completed systems. The stable technical/SEO route remains `/system-templates`.
-
-`/projects` is a permanent legacy redirect to `/system-templates`. Do not rebuild a duplicate Projects index. `/projects/<published-system-slug>` remains a compatibility redirect to the canonical system detail page.
-
-The old `/skills` and `/experience` URLs now permanently redirect to `/about` under the 3.5.0 simplification. They are no longer separate visitor destinations or sitemap entries.
+Use **Systems** as the public mental model. Canonical system routes remain under `/system-templates`. Preserve existing redirects, SEO, sitemap behavior, Contact security, owner Inbox security, and deployment architecture.
 
 ## Published systems
 
-- `Property Operations Command Center` → `/system-templates/property-operations-command-center`
-- `Property Inventory Hub` → `/system-templates/property-inventory-hub`
+- Property Operations Command Center
+- Property Inventory Hub
+- Student Housing Matching and Placement System
 
-Both are completed systems built by Key Castro and offered through **Managed System Subscription** access. Business-specific changes are **Paid Customization** scoped and priced separately. The normal subscription continues while the managed system remains in use. They are separate applications: never mix their screenshots, features, workflows, databases, or product names.
+`app/system_templates.py` is the source-controlled registry. These systems are separate applications. Never mix screenshots, features, workflows, databases, or product names.
 
-`app/system_templates.py` remains the source-controlled registry. Contact attribution includes `source_type`, `source_slug`, `source_title`, and `source_action`, allowing the private Inbox to distinguish managed subscription requests, plan-specific subscription context, and customization requests.
+The Student Housing system is an independent portfolio project. Do not claim that the original market poster hired, paid, approved, adopted, or endorsed it.
 
-Nexus Properties remains removed from current public presentation.
+## Current commercial model — AUTHORITATIVE
 
-## UX rule
+### System creation
 
-Before adding any visible page, card, CTA, or section, ask whether it creates a genuinely new decision or information need. Do not duplicate information already explained more clearly elsewhere. Preserve the visitor flow:
+- **Customize an existing system**
+- **Build a custom system**
+
+Development/customization is quoted separately based on requirements.
+
+### After the system is ready — ONLY TWO OPTIONS
+
+1. **Full Handover** — “I build it. You manage it.” Client handles ongoing hosting, domain, backups, maintenance, updates, and future technical management after handover.
+2. **Managed by KEY CASTRO** — “I build it. I manage it.” KEY CASTRO handles the agreed managed service for **$49/month or $490/year per system**.
+
+The monthly/yearly price is for **managed maintenance**, not software access and not the custom-build price. Pricing comes from `MANAGED_MAINTENANCE_PRICING` in `app/system_templates.py`.
+
+Legacy `subscribe` / `free-access` URLs may normalize to the current managed-service inquiry for compatibility. Do not expose the old wording publicly.
+
+## Visitor flow
 
 ```text
-Home → Systems → System → System Subscription or Paid Customization → Contact
+Home → Systems → System → Customize / Build → Full Handover OR Managed by KEY CASTRO → Contact
 ```
 
+## Design rule
+
+The owner likes the current website design. Preserve the premium ivory/navy/sage identity, typography, spacing philosophy, compact cards, controlled screenshots, integrated inner-page intros, and responsive behavior. Do not redesign just to make the site look different.
+
+## Security
+
+Never expose `.env`, owner tokens, database credentials, Render/GitHub secrets, private access codes, SMTP passwords, secret keys, private Inbox routes, or real private client data.
 
 
-## 3.5.3 integrated page-intro rule
+## Default release rule — automatic live deployment
 
-Do not recreate a separate visual hero band on inner pages. Systems, Services, About, and Contact should align the title with the main content container and flow directly into the first useful content. Use the same page surface, no decorative divider between title and content, and controlled vertical spacing. System detail title/preview areas use the same continuous-surface principle. Home keeps its orientation hero. See `docs/INTEGRATED_PAGE_INTRO_FLOW_3_5_3.md`.
-
-## 3.5.2 page-top proportion rule
-
-Keep public page introductions compact and connected to the first useful content. Avoid large empty hero bands or stacked padding between the hero and first section. Home may retain a stronger opening than inner pages, but its vertical travel should stay intentional. System detail pages should keep the title, preview, and first information section visually connected. See `docs/SITE_WIDE_PAGE_TOP_REFINEMENT_3_5_2.md`.
-
-## 3.5.1 system-card separation rule
-
-Version 3.5.1 is a focused visual patch. Home and Systems must make the two published systems feel like separate selectable choices using subtle identity tints, clear borders, spacing, and accessible focus treatment. Keep all text high-contrast and keep the normal navy View System button. Do not move pricing back into catalog cards. Do not change search, routes, business logic, or merge the two systems. See `docs/SYSTEM_CARD_VISUAL_SEPARATION_3_5_1.md`.
-
-## 3.5.0 simplification rule
-
-Version 3.5.0 makes the public website shorter and easier to understand. Use simple English, short paragraphs, clear buttons, and one purpose per page. Do not repeat pricing or business-model explanations across several pages. Pricing is shown on system detail pages. `/skills` and `/experience` now permanently redirect to `/about` and are not in the sitemap or footer. Preserve the five-item primary navigation, the metadata-driven Systems search, trusted pricing, contact security, private Inbox, and separation of the two systems. See `docs/WEBSITE_SIMPLIFICATION_3_5.md`.
-
-## 3.4.0 organization + hierarchy rule
-
-Version 3.4.0 keeps the established public IA but removes repeated decisions and unnecessary visual mass. Home now has one orientation flow; Systems cards have one dominant action; Services/About/Skills/Experience use lighter editorial structures; System detail pages centralize subscription decisions instead of repeating them in multiple CTA panels. Preserve the compact screenshots, metadata-driven search, trusted pricing, SEO routes, and public/private security boundary. See `docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md`.
-
-## 3.0.0 presentation rule
-
-The 2.9.0 information architecture remains authoritative. Version 3.0.0 changes **presentation density**, not the public mental model.
-
-- Screenshots support the system explanation; they must not dominate a viewport.
-- Systems cards use controlled/cropped previews and concise information.
-- System detail hero screenshots are compact previews with full-size lightbox access.
-- Additional screenshots stay in a controlled gallery.
-- Keep header, hero, sections, CTAs, cards, footer, and mobile spacing intentionally compact.
-- Preserve readable text and obvious buttons; compact does not mean tiny.
-- Do not revert to giant 16:10 screenshots at full card width or full-viewport hero height.
-
-See `docs/VISUAL_PRESENTATION_3_0.md`.
-
-## 3.1.0 system search + 3.2.0 commercial rule
-
-The Systems page includes a lightweight client-side search. It is progressive enhancement: published systems are rendered in normal server HTML and JavaScript only filters existing cards. Search indexing remains metadata-driven through `SystemTemplate.search_text` / `search_terms`; do not add slug-specific JavaScript.
-
-Current commercial rule from 3.2.0, with approved pricing added in 3.3.0:
-
-- **Managed System Subscription** = ongoing managed access to an existing published system at **$49/month or $490/year per system**. The yearly option saves $98 compared with 12 monthly payments.
-- **Paid Customization** = separately scoped and priced development work when a subscribed system needs business-specific changes. The normal subscription continues while the managed system remains in use.
-- Pricing is rendered from `MANAGED_SUBSCRIPTION_PRICING` in `app/system_templates.py`; do not hardcode competing prices in templates or JavaScript.
-
-Do not imply source-code ownership, lifetime access, unlimited infrastructure, or unlimited support.
-
-See `docs/SYSTEM_SEARCH_AND_ACCESS_MODEL_3_1.md`, `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`, and `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`.
+Whenever a KEY CASTRO website release package changes the site, include and use the one-run `APPLY_UPDATE_AND_DEPLOY_LIVE.bat` workflow. A successful update must not stop after local installation: it runs tests, pushes the approved release to both Git remotes, triggers the existing Render service, and verifies the live site before reporting success. Render provider-level auto-deploy remains off; the controlled release script performs the deployment.

@@ -1,64 +1,39 @@
-# Content and Scope — Public Launch Edition
+# Content and Scope — 3.6.0
 
 ## Public identity
 
-**KEY CASTRO**  
+**KEY CASTRO**
 **Custom Real Estate Systems Developer**
 
-Core message:
-
-> I build custom web applications and business systems for real estate and rental-property operations.
+Core message: KEY CASTRO builds practical business systems, can customize existing working systems, and can build a custom system around a client's workflow.
 
 ## Public focus
 
-- Property operations systems
-- Rental management workflows
+- Property and real-estate operations systems
 - Listing and inventory systems
-- Rent / lease / status tracking
-- Maintenance and vendor workflows
-- Dashboards and business visibility
-- Practical workflow automation
+- Student-housing placement operations
+- Workflow/status tracking
+- Dashboards and operational visibility
+- Practical business automation
 
-## Positioning guardrails
+## Commercial clarity
 
-The public website does not position Key Castro mainly as:
+System creation: **Customize Existing System** or **Custom Build**.
 
-- a generic web designer
-- a simple website developer
-- an AI developer
-- a no-code platform builder
+After delivery: **Full Handover** or **Managed by KEY CASTRO** only.
 
-It also does not invent clients, testimonials, employment history, certifications, project results, or official approvals.
+Build/customization is separately quoted. Managed maintenance is $49/month or $490/year per system.
 
-## Nexus project wording
+## Truth guardrails
 
-Nexus Properties is one completed portfolio project. The custom Flask system is presented as completed working development by Key Castro based on real-world property-brokerage workflow requirements. It must not be presented as an official Nexus production deployment or as evidence that Nexus hired, paid, or approved the custom implementation.
+Do not invent clients, testimonials, employment history, certifications, adoption, project results, or official approvals. Portfolio systems are independent proof unless a documented client relationship exists.
 
-## Future content
+The Student Housing Matching and Placement System was built after market research around a publicly visible problem. Do not imply that the original poster commissioned, uses, or endorses it.
 
-Add only verified information for:
+## Navigation
 
-- public business email
-- LinkedIn / GitHub / YouTube / Facebook URLs
-- client engagements
-- testimonials
-- education and certifications
-- measurable project results
-- live demo links
+Primary public navigation: **Home · Systems · Services · About · Contact**. Details belong on system pages; service/delivery explanation belongs primarily on Services and system details.
 
+## Private Inbox boundary
 
-## Navigation and content hierarchy
-
-Version 2.2.0 keeps the public path intentionally simple:
-
-```text
-Home → Projects → Project Detail → Contact
-```
-
-Primary navigation: **Projects · Services · About · Contact**.
-
-The homepage summarizes the offer and one completed project. Detailed project explanation belongs on the individual case-study page. Technical detail remains available under Skills & Technology, while broader development practice remains under Experience.
-
-## 2.4.0 private inbox boundary
-
-The public site remains a normal public portfolio. Owner inbox functionality is part of the same Flask codebase but is not linked or described in visitor-facing navigation, footer, homepage, sitemap, project pages, or case studies. Unauthenticated owner-route access returns 404.
+The owner Inbox is part of the Flask codebase but never linked or described in visitor-facing navigation, footer, homepage, sitemap, or system pages. Unauthenticated access remains protected.

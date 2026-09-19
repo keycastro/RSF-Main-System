@@ -20,7 +20,7 @@ from flask import (
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 from .inquiries import ALLOWED_STATUSES, counts, get_inquiry, list_inquiries, update_status
-from .system_templates import split_subscription_action
+from .system_templates import split_managed_service_action
 
 owner = Blueprint("owner", __name__)
 
@@ -87,7 +87,7 @@ def _prepare_item(item: dict) -> dict:
     prepared["date_label"] = _format_date(prepared.get("created_at"))
     message = prepared.get("message") or ""
     prepared["preview"] = (message[:180] + "…") if len(message) > 180 else message
-    request_label, plan_label = split_subscription_action(prepared.get("source_action") or "")
+    request_label, plan_label = split_managed_service_action(prepared.get("source_action") or "")
     prepared["request_label"] = request_label
     prepared["plan_label"] = plan_label
     prepared["reply_url"] = "mailto:" + urllib.parse.quote(prepared.get("email", ""), safe="@+._-") + "?subject=" + urllib.parse.quote(

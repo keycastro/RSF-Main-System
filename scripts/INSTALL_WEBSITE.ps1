@@ -24,9 +24,10 @@ if ($sourceFull -ne $targetFull) {
     }
     $files = @(
         ".env.example", ".gitignore", "config.py", "run.py", "wsgi.py", "requirements.txt",
-        "requirements-production.txt", "README.md", "DELIVERY_REPORT.md", "VERSION.txt", "KEY_CASTRO_LAUNCHER.ps1",
-        "KEY_CASTRO.ico", "START_KEY_CASTRO_WEBSITE.bat", "SETUP_KEY_CASTRO_WEBSITE.bat",
-        "STOP_KEY_CASTRO_WEBSITE.bat"
+        "requirements-production.txt", "README.md", "CHANGELOG.md", "DELIVERY_REPORT.md", "RELEASE_AUDIT.md", "VERSION.txt", "PROJECT_STATE.json",
+        "DEVELOPER_HANDOFF.md", "NEXT_DEVELOPER_READ_THIS_FIRST.md", "SECURITY_AND_SHARING_NOTES.md",
+        "00_FUTURE_DEVELOPER_READ_THIS_PLAN.md", "KEY_CASTRO_LAUNCHER.ps1", "KEY_CASTRO.ico",
+        "START_KEY_CASTRO_WEBSITE.bat", "SETUP_KEY_CASTRO_WEBSITE.bat", "STOP_KEY_CASTRO_WEBSITE.bat", "APPLY_UPDATE_AND_DEPLOY_LIVE.bat", "AUTO_DEPLOY_README.txt"
     )
     foreach ($file in $files) {
         $srcFile = Join-Path $source $file

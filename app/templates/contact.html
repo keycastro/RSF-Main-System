@@ -4,12 +4,22 @@
   <div class="container simple-page-hero reveal">
     <p class="eyebrow">CONTACT</p>
     <h1>Contact Me.</h1>
-    {% if template_interest and source_intent == 'subscribe' and selected_subscription_plan %}
-    <p>{{ template_interest.name }} · {{ selected_subscription_plan.label }} plan · {{ selected_subscription_plan.price_label }}</p>
-    {% elif template_interest and source_intent == 'subscribe' %}
-    <p>You are asking for access to {{ template_interest.name }}.</p>
+    {% if template_interest and source_intent == 'managed' and selected_maintenance_plan %}
+    <p>{{ template_interest.name }} · {{ selected_maintenance_plan.label }} managed maintenance · {{ selected_maintenance_plan.price_label }}</p>
+    {% elif template_interest and source_intent == 'managed' %}
+    <p>You are asking KEY CASTRO to manage {{ template_interest.name }} after delivery.</p>
+    {% elif template_interest and source_intent == 'handover' %}
+    <p>You are asking about full handover for {{ template_interest.name }}.</p>
     {% elif template_interest and source_intent == 'customize' %}
-    <p>You are asking for changes to {{ template_interest.name }}.</p>
+    <p>You are asking to customize {{ template_interest.name }} for your business.</p>
+    {% elif source_intent == 'custom-build' %}
+    <p>You are asking about a custom system built around your business.</p>
+    {% elif source_intent == 'handover' %}
+    <p>You are asking about the Full Handover option.</p>
+    {% elif source_intent == 'managed' and selected_maintenance_plan %}
+    <p>{{ selected_maintenance_plan.label }} managed maintenance · {{ selected_maintenance_plan.price_label }}</p>
+    {% elif source_intent == 'managed' %}
+    <p>You are asking about ongoing managed maintenance by KEY CASTRO.</p>
     {% else %}
     <p>Tell me what you need. I will reply by email.</p>
     {% endif %}
@@ -27,15 +37,15 @@
 
     <form class="contact-form reveal delay-1" method="post" novalidate>
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-      {% if template_interest %}
-      <input type="hidden" name="source_slug" value="{{ template_interest.slug }}">
+      {% if template_interest %}<input type="hidden" name="source_slug" value="{{ template_interest.slug }}">{% endif %}
       {% if source_intent %}<input type="hidden" name="source_intent" value="{{ source_intent }}">{% endif %}
-      {% if selected_subscription_plan %}<input type="hidden" name="source_plan" value="{{ selected_subscription_plan.key }}">{% endif %}
+      {% if selected_maintenance_plan %}<input type="hidden" name="source_plan" value="{{ selected_maintenance_plan.key }}">{% endif %}
+      {% if template_interest or source_intent %}
       <div class="contact-interest" role="note">
         <span>YOUR REQUEST</span>
-        <strong>{{ template_interest.name }}</strong>
+        {% if template_interest %}<strong>{{ template_interest.name }}</strong>{% else %}<strong>KEY CASTRO Services</strong>{% endif %}
         {% if source_action_label %}<small>{{ source_action_label }}</small>{% endif %}
-        {% if selected_subscription_plan %}<small class="contact-selected-plan">{{ selected_subscription_plan.label }} · {{ selected_subscription_plan.price_label }}</small>{% endif %}
+        {% if selected_maintenance_plan %}<small class="contact-selected-plan">{{ selected_maintenance_plan.label }} · {{ selected_maintenance_plan.price_label }}</small>{% endif %}
       </div>
       {% endif %}
       <div class="honeypot" aria-hidden="true"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
@@ -45,7 +55,14 @@
       </div>
       <label><span>Company <small>optional</small></span><input maxlength="140" name="company" value="{{ form_data.company if form_data else '' }}" placeholder="Company name"></label>
       <label><span>What do you need?</span><textarea required minlength="20" maxlength="3000" name="message" rows="6" placeholder="Briefly tell me what you need.">{{ form_data.message if form_data else '' }}</textarea></label>
-      <button class="button primary full-button" type="submit">{% if source_intent == 'subscribe' and selected_subscription_plan %}Request {{ selected_subscription_plan.label }} Access{% elif source_intent == 'subscribe' %}Request Access{% elif source_intent == 'customize' %}Request Customization{% else %}Send Message{% endif %}</button>
+      <button class="button primary full-button" type="submit">
+        {% if source_intent == 'managed' and selected_maintenance_plan %}Request {{ selected_maintenance_plan.label }} Maintenance
+        {% elif source_intent == 'managed' %}Discuss Managed Service
+        {% elif source_intent == 'handover' %}Discuss Full Handover
+        {% elif source_intent == 'customize' %}Request Customization
+        {% elif source_intent == 'custom-build' %}Discuss Custom Build
+        {% else %}Send Message{% endif %}
+      </button>
       <p class="form-privacy">Do not send passwords or private client data.</p>
       {% if environment_label == 'Local' %}<p class="local-form-note">Local preview: test messages stay on this computer.</p>{% endif %}
     </form>

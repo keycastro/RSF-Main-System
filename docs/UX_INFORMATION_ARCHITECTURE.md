@@ -1,3 +1,5 @@
+> **HISTORICAL NOTE (3.6.0):** Commercial wording in this document reflects an older release and is superseded by `docs/BUSINESS_MODEL_AND_MANAGED_MAINTENANCE_3_6.md`. Do not restore the old subscription-access model.
+
 # KEY CASTRO — Information Architecture and UX Contract (2.9.0)
 
 ## Why this exists

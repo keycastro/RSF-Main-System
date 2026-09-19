@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-19",
-  "version": "3.5.3",
+  "version": "3.6.0",
   "owner_public_name": "Key Castro",
   "positioning": "Custom Real Estate Systems Developer",
   "framework": "Flask",
@@ -62,10 +62,10 @@
     "template_request_type_active": true
   },
   "secrets_included_in_repository": false,
-  "visual_design": "Premium ivory + navy + sage design with 3.5.1 system-card separation and 3.5.3 integrated page-intro flow: inner-page titles align to the main content container, detached hero bands are removed, text stays highly readable, and useful content appears sooner.",
+  "visual_design": "Premium ivory + navy + sage design preserved in 3.6.0. Business-model wording and portfolio content changed without redesigning the established visual system.",
   "template_library_foundation": {
     "prepared": true,
-    "published_templates": 2,
+    "published_templates": 3,
     "public_index_active": true,
     "routes": [
       "/system-templates",
@@ -80,10 +80,11 @@
       "source_title",
       "source_action"
     ],
-    "first_flagship_recommendation": "Completed: Property Operations Command Center and Property Inventory Hub are the first published systems",
+    "first_flagship_recommendation": "Completed: three independent working systems are published and customizable",
     "published_slugs": [
       "property-operations-command-center",
-      "property-inventory-hub"
+      "property-inventory-hub",
+      "student-housing-matching-and-placement-system"
     ]
   },
   "seo_foundation": {
@@ -105,12 +106,18 @@
       {
         "name": "Property Operations Command Center",
         "slug": "property-operations-command-center",
-        "commercial_model": "managed_system_subscription"
+        "commercial_model": "customizable_then_full_handover_or_managed"
       },
       {
         "name": "Property Inventory Hub",
         "slug": "property-inventory-hub",
-        "commercial_model": "managed_system_subscription"
+        "commercial_model": "customizable_then_full_handover_or_managed"
+      },
+      {
+        "name": "Student Housing Matching and Placement System",
+        "slug": "student-housing-matching-and-placement-system",
+        "commercial_model": "customizable_then_full_handover_or_managed",
+        "truth_note": "Independent portfolio project based on market research; no commission, adoption, affiliation, or endorsement claim."
       }
     ],
     "truth_boundary": "Built by Key Castro; no client commission, adoption, or paid engagement is claimed without evidence."
@@ -130,7 +137,7 @@
       "experience": "301 redirect to /about"
     },
     "ux_contract": "Short, simple, clear public content. No unnecessary repetition. One clear purpose per page.",
-    "visitor_flow": "Home -> Systems -> System -> Plan or Customization -> Contact",
+    "visitor_flow": "Home -> Systems -> System -> Customize or Custom Build -> Full Handover or Managed by KEY CASTRO -> Contact",
     "presentation_contract": "3.5.0 keeps Home, Systems, Services, About, and Contact while removing repeated pricing/explanations, simplifying public language, and merging Skills/Experience into About through permanent redirects."
   },
   "system_search": {
@@ -147,27 +154,32 @@
       "target_users",
       "search_terms"
     ],
-    "no_match_conversion": "Contact Me -> generic Contact",
+    "no_match_conversion": "Discuss Custom Build -> Contact",
     "javascript_required_for_content": false
   },
   "commercial_model": {
-    "primary_offers": [
-      "Managed System Subscription",
-      "Paid Customization"
+    "system_creation": [
+      "Customize Existing System",
+      "Custom System Build"
     ],
-    "subscription": "Ongoing managed access to an existing system at $49/month or $490/year per system. Twelve monthly payments total $588, so yearly saves $98. No source-code or ownership transfer is implied.",
-    "customization": "Separate paid development for business-specific changes. Requirements and price are agreed separately. The normal subscription continues while the managed system remains in use.",
+    "development_pricing": "Quoted separately based on requirements; it is not included in managed-maintenance pricing.",
+    "post_build_options": [
+      "Full Handover",
+      "Managed by KEY CASTRO"
+    ],
+    "full_handover": "I build it. You manage it. Client is responsible for ongoing hosting, domain, backups, maintenance, updates, infrastructure accounts, and future technical management after handover.",
+    "managed_by_key_castro": "I build it. I manage it. KEY CASTRO continues the agreed technical management under monthly or yearly managed maintenance.",
     "pricing_public": true,
-    "legacy_free_access": "retired in 3.2.0; legacy free-access URLs are normalized server-side to System Subscription for backward compatibility",
     "pricing": {
       "currency": "USD",
       "monthly_per_system": 49,
       "yearly_per_system": 490,
       "twelve_monthly_total": 588,
       "annual_savings": 98,
-      "single_source": "app/system_templates.py::MANAGED_SUBSCRIPTION_PRICING"
+      "single_source": "app/system_templates.py::MANAGED_MAINTENANCE_PRICING"
     },
-    "plan_selection": "monthly/yearly plan keys are resolved server-side; official price text is generated from trusted pricing metadata; no checkout is implied"
+    "plan_selection": "monthly/yearly plan keys are resolved server-side; official managed-maintenance price text is generated from trusted pricing metadata; no checkout is implied",
+    "legacy_compatibility": "legacy subscribe/free-access URLs and old stored subscription labels are accepted only for compatibility and normalize/display as Managed by KEY CASTRO"
   },
   "ux_refinement_3_4": {
     "document": "docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md",
@@ -230,5 +242,20 @@
       "responsive proportion",
       "preserved accessibility and readability"
     ]
+  },
+  "business_model_3_6": {
+    "document": "docs/BUSINESS_MODEL_AND_MANAGED_MAINTENANCE_3_6.md",
+    "design_changed": false,
+    "published_systems": 3,
+    "student_housing_added": true,
+    "subscription_access_model_retired": true,
+    "managed_maintenance_price_meaning": "ongoing managed technical service only; development/customization is separately quoted"
+  },
+  "release_workflow": {
+    "default": "one-command update + tests + Git pushes + Render deploy + live verification",
+    "launcher": "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
+    "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
+    "provider_auto_deploy": false,
+    "success_condition": "production health reports version 3.6.0 and live Systems page contains Student Housing Matching and Placement System plus exactly 3 published system cards"
   }
 }

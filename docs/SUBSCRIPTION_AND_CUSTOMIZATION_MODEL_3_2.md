@@ -1,3 +1,5 @@
+> **HISTORICAL NOTE (3.6.0):** Commercial wording in this document reflects an older release and is superseded by `docs/BUSINESS_MODEL_AND_MANAGED_MAINTENANCE_3_6.md`. Do not restore the old subscription-access model.
+
 # KEY CASTRO — Managed Subscription + Paid Customization Contract (3.2.0 foundation; pricing updated by 3.3.0)
 
 ## Current commercial model

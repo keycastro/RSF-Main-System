@@ -33,6 +33,8 @@ def core_structured_data(base_url: str, socials: dict[str, str]) -> list[dict]:
             "Rental property workflows",
             "Property maintenance workflows",
             "Real estate listing systems",
+            "Student housing placement systems",
+            "Custom business workflow systems",
         ],
     }
     if same_as:
@@ -44,7 +46,7 @@ def core_structured_data(base_url: str, socials: dict[str, str]) -> list[dict]:
         "@id": f"{base_url}#website",
         "url": base_url,
         "name": "Key Castro",
-        "description": "Custom real estate systems and web applications for property, listing, rental, maintenance, and team workflows.",
+        "description": "Customizable business systems for property, real estate, rental, and student-housing workflows, with full handover or managed maintenance options.",
         "creator": {"@id": f"{base_url}#key-castro"},
     }
     return [person, website]

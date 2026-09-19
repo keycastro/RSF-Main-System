@@ -1,39 +1,44 @@
-# PUBLISHED SYSTEMS — CURRENT PUBLIC POSITIONING (3.3.0)
+# PUBLISHED SYSTEMS — CURRENT PUBLIC POSITIONING (3.6.0)
 
 ## Business model
 
-The two published systems are offered through **Managed System Subscription** access at **$49/month or $490/year per system**. Twelve monthly payments total $588, so yearly billing saves $98/year. Subscription represents ongoing managed access to the ready-made system; standard hosting, database operation, updates, maintenance, and basic support are provided within the agreed service scope. Access does not transfer ownership of the core software.
+Published systems are working starting points that can be customized to fit a client's business. If no published system fits, KEY CASTRO can build a custom system. Development/customization is quoted separately.
 
-If a subscriber needs business-specific changes, that work is **Paid Customization**. Requirements and development price are discussed separately. The customization fee pays for requested development work; the normal subscription continues while the client keeps using the managed system.
+After the system is ready, only two management choices are presented:
 
-If a visitor needs something completely different, the no-match search state and generic Contact path allow a custom-system discussion.
+1. **Full Handover** — client takes responsibility for ongoing hosting, domain, backups, maintenance, updates, and technical management.
+2. **Managed by KEY CASTRO** — KEY CASTRO continues the agreed technical management for **$49/month or $490/year per system**. Twelve monthly payments total $588, so yearly managed maintenance saves $98/year.
 
-Every system-origin inquiry carries trusted server-side context into PostgreSQL and the private KEY CASTRO INBOX.
+Every system-origin inquiry carries trusted server-side context into PostgreSQL and the private KEY CASTRO Inbox.
 
 ## 1. Property Operations Command Center
 
-Stable public slug: `property-operations-command-center`
+Stable slug: `property-operations-command-center`
 
-A completed independent property-operations application built around surfacing operational attention before work is missed. Its source supports role-based access; property/contact records; work items with priorities, due dates, follow-ups and blockers; owner approvals; short-term-rental booking/readiness/turnover workflows; tenant-placement workflow; reusable SOP/checklists; rule-based operational automation; activity history; and reports.
+A completed independent property-operations application for operational attention, work, deadlines, follow-ups, approvals, rental readiness, and team accountability.
 
-Truth boundary: built by Key Castro. Do not claim a specific client commissioned, adopted, paid for, or currently uses it without separate evidence.
+Truth boundary: built by Key Castro. Do not claim a specific client commissioned, adopted, paid for, or currently uses it without evidence.
 
 ## 2. Property Inventory Hub
 
-Stable public slug: `property-inventory-hub`
+Stable slug: `property-inventory-hub`
 
-A completed reusable, brand-neutral internal real-estate inventory application. Its source supports access-code authentication; Administrator and Agent roles; searchable Marketplace; property records; My Listings ownership workflow; freshness/reconfirmation/expiry lifecycle; withdrawal/archive/restore; history; authorized-user/access-code management; freshness settings; and configurable branding.
+A completed brand-neutral internal real-estate inventory application supporting searchable inventory, listing ownership, freshness/reconfirmation, archive/restore, access-code users, and configurable branding.
 
-Truth boundary: built by Key Castro. Do not claim a specific brokerage/company commissioned, adopted, paid for, or currently uses it without separate evidence.
+Truth boundary: built by Key Castro. Do not claim a specific brokerage/company commissioned, adopted, paid for, or currently uses it without evidence.
+
+## 3. Student Housing Matching and Placement System
+
+Stable slug: `student-housing-matching-and-placement-system`
+
+A focused internal student-housing operations system connecting students, housing requests, property/unit availability, rule-based matching, viewings, follow-ups, reservations, placements, staff access, and activity history. Current application hierarchy is **Administrator → Housing Coordinator** with Access Code sign-in.
+
+Truth boundary: independent portfolio project built after studying a real publicly visible student-housing operations problem. **Not commissioned by, affiliated with, or endorsed by the original poster.** Do not claim client use, adoption, paid implementation, revenue, or ROI.
 
 ## Independence rule
 
-These are two separate applications. Never merge feature lists, screenshots, workflows, databases, or product names.
+The three published systems are separate applications. Never merge their feature lists, screenshots, workflows, databases, or product names.
 
-## Public screenshot rule
+## Screenshot rule
 
-Current website media are source-derived interface previews using sample/demo data. Do not present them as live client data or proof of client deployment.
-
-## Nexus Properties
-
-Nexus remains removed from current public presentation.
+Public media must use synthetic/sample/demo-safe data only. Never publish private databases, credentials, access codes, local paths, or client records.

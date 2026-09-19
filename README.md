@@ -1,8 +1,10 @@
 # KEY CASTRO WEBSITE
 
-Professional portfolio for **KEY CASTRO — Custom Real Estate Systems Developer**.
+Professional portfolio and client-acquisition website for **KEY CASTRO — Custom Real Estate Systems Developer**.
 
 Official website: https://keycastro.onrender.com
+
+**Current version: 3.6.0**
 
 ## One project folder
 
@@ -10,55 +12,59 @@ Official website: https://keycastro.onrender.com
 C:\Users\Admin\Documents\KEY_CASTRO_WEBSITE
 ```
 
-This single codebase contains:
+This single Flask codebase contains the public website, published system pages, Contact workflow, inquiry database integration, and the private online owner Inbox.
 
-- Public portfolio and systems website
-- Completed-system detail pages
-- Contact form
-- Inquiry database integration
-- Private online owner inbox
+## Public design rule
 
-## Desktop shortcuts
+Preserve the current premium ivory/navy/sage design, typography, compact spacing, card language, responsive behavior, and five-item navigation. Version 3.6.0 changes the business model and portfolio content without redesigning the site.
 
-- **KEY CASTRO** — opens the public live website.
-- **KEY CASTRO INBOX** — securely opens the private online owner inbox.
+Public rule: **Short. Simple. Clear. No unnecessary repetition.**
 
-The inbox is not linked or advertised anywhere on the public website. It does not run a localhost server.
+Primary navigation remains **Home · Systems · Services · About · Contact**. Stable system routes remain under `/system-templates`.
+
+## Current business model — 3.6.0
+
+A client can:
+
+- **Customize an existing system**, or
+- **Request a custom system**.
+
+After the agreed system is ready, there are only two management choices:
+
+1. **Full Handover — I build it. You manage it.** The client handles ongoing hosting, domain, backups, maintenance, updates, and future technical management after handover.
+2. **Managed by KEY CASTRO — I build it. I manage it.** KEY CASTRO continues the agreed hosting/deployment, backups, maintenance, fixes, updates, monitoring, and technical support for **$49/month or $490/year per system**.
+
+Build/customization pricing is separate and quoted based on requirements. Monthly/yearly pricing is for managed maintenance, not the cost of a custom build.
+
+See `docs/BUSINESS_MODEL_AND_MANAGED_MAINTENANCE_3_6.md`.
+
+## Published systems
+
+- Property Operations Command Center
+- Property Inventory Hub
+- Student Housing Matching and Placement System
+
+All three are independent systems. Never mix their screenshots, workflows, databases, or product claims. Existing systems can be customized for a client's business.
+
+The Student Housing Matching and Placement System is an **independent portfolio project** built after studying a real publicly visible student-housing operations problem. It must not be presented as commissioned by, affiliated with, or endorsed by the original poster.
+
+## Systems architecture
+
+Published systems are registered in `app/system_templates.py` and rendered through:
+
+- `/system-templates`
+- `/system-templates/<slug>`
+
+Systems search remains a metadata-driven client-side enhancement over server-rendered cards. A no-match search should lead to a custom-system discussion.
+
+## Private owner Inbox
+
+The private owner Inbox remains part of this Flask codebase but is not linked, advertised, or indexed publicly. It uses the existing protected online authentication flow and inquiry database.
 
 ## Production
 
-Flask + Gunicorn on the existing Render service. Render auto-deploy is off; use the documented explicit push + deploy workflow.
+Flask + Gunicorn on the existing Render service. Render provider-level auto-deploy remains off, but KEY CASTRO release packages now use the controlled one-run `APPLY_UPDATE_AND_DEPLOY_LIVE.bat` workflow: local update → tests → approved Git commit/push → Render deploy → live verification. See `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`.
 
-## Public design and content rule
+## Security
 
-Version 3.5.3 preserves the 3.5.0 simplification and 3.5.1 system-card separation, and removes the remaining detached inner-page hero bands so titles align with and flow directly into useful content:
-
-- short headings and paragraphs
-- basic, easy-to-understand English
-- fewer repeated explanations
-- fewer buttons and choices
-- pricing shown on system detail pages instead of repeated across Home and Systems
-- simpler Services, About, Contact, and footer content
-- compact screenshots that support the page instead of dominating it
-- one clear purpose per page
-- subtle warm/cool system-card identities with high-contrast text and clear boundaries
-- integrated page introductions on the same page surface, aligned to the main content with no detached hero divider
-
-The public rule is: **Short. Simple. Clear. No unnecessary repetition.**
-
-See `docs/WEBSITE_SIMPLIFICATION_3_5.md`, `docs/SYSTEM_CARD_VISUAL_SEPARATION_3_5_1.md`, `docs/SITE_WIDE_PAGE_TOP_REFINEMENT_3_5_2.md`, and `docs/INTEGRATED_PAGE_INTRO_FLOW_3_5_3.md`.
-
-## Public information architecture
-
-Primary navigation remains **Home · Systems · Services · About · Contact**. `/projects` permanently redirects to `/system-templates`. `/skills` and `/experience` now permanently redirect to `/about` so the normal visitor journey has fewer pages and fewer duplicate explanations.
-
-## Future system-template foundation
-
-Version 2.7.0 prepared the reusable system-template foundation and 2.8.0 published the first two real systems. Version 3.2.0 established the **Managed System Subscription + Paid Customization** model. Version 3.3.0 adds the approved public subscription pricing: **$49/month or $490/year per system**, with $98/year savings on the yearly option, while keeping Paid Customization separately quoted. See `docs/TEMPLATE_LIBRARY_FOUNDATION.md`, `docs/PUBLISHED_SYSTEM_TEMPLATES.md`, `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md`, and `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`.
-
-
-## Systems search and access model
-
-Version 3.1.0 adds an accessible, metadata-driven, real-time filter to the server-rendered Systems page. The search is intentionally lightweight: JavaScript filters the normal HTML system cards without changing routes, SEO content, or the Flask architecture. Empty search results lead naturally to the existing custom-system Contact path.
-
-The commercial boundary is explicit: subscription pays for ongoing managed access at the approved public price; customization pays separately for requested development work, and the subscription continues while the managed system remains in use. Pricing is centralized in `app/system_templates.py`. See `docs/SUBSCRIPTION_AND_CUSTOMIZATION_MODEL_3_2.md` and `docs/MANAGED_SUBSCRIPTION_PRICING_3_3.md`.
+Never include `.env`, `.owner_inbox.json`, logs, private inquiry data, database dumps, access codes, tokens, or other secrets in a distributable release.

@@ -174,3 +174,14 @@ This content update does not claim that Nexus Properties officially hired, paid,
 - Browser-submitted price text is not trusted. Invalid plan keys do not become official pricing.
 - Paid Customization remains separately quoted, and the normal subscription continues while the managed system remains in use.
 - Preserved both independent systems, real-time search, compact 3.0 presentation, SEO architecture, private owner authentication, GitHub/Render workflow, and desktop launchers.
+
+## 3.6.0 — Business model + Student Housing portfolio update prepared
+
+- Preserves the established website design and Flask/Render architecture.
+- Retires public software-subscription-access positioning.
+- Existing systems can be customized; fully custom systems can also be requested.
+- Defines only two post-build choices: **Full Handover** or **Managed by KEY CASTRO**.
+- Reframes $49/month and $490/year as managed-maintenance pricing; build/customization remains separately quoted.
+- Adds Student Housing Matching and Placement System as a third independent portfolio system with synthetic demo-safe screenshots and a no-client-affiliation disclaimer.
+- Preserves legacy inquiry-link compatibility, trusted server-side pricing/context, private Inbox security, SEO, canonical routes, sitemap, and explicit manual Render deployment.
+- This entry records a prepared release. Production should not be marked updated until the commit is pushed and Render deployment is verified.

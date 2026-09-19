@@ -30,11 +30,11 @@ from .seo import (
     software_template_structured_data,
 )
 from .system_templates import (
-    MANAGED_SUBSCRIPTION_PRICING,
+    MANAGED_MAINTENANCE_PRICING,
     get_system_template,
+    managed_service_action_for_plan,
     published_templates,
-    split_subscription_action,
-    subscription_action_for_plan,
+    split_managed_service_action,
     template_library_enabled,
 )
 
@@ -42,16 +42,16 @@ site = Blueprint("site", __name__)
 
 SERVICES = [
     {
-        "kind": "subscription",
-        "title": "Use a ready-made system",
-        "text": "Choose a completed system and pay monthly or yearly for access.",
-        "example": "Plans and prices are shown on each system page.",
+        "kind": "existing-system",
+        "title": "Customize an existing system",
+        "text": "Start with a working Key Castro system and adapt it to your business.",
+        "example": "Workflow, fields, roles, branding, and business rules can be scoped around your needs.",
     },
     {
-        "kind": "customization",
-        "title": "Custom work",
-        "text": "Ask for changes to a system or a new system built for your business.",
-        "example": "Custom work is quoted separately.",
+        "kind": "custom-build",
+        "title": "Build a custom system",
+        "text": "If none of the existing systems fits, I can build around your workflow and requirements.",
+        "example": "Development and customization are quoted separately based on scope.",
     },
 ]
 
@@ -69,7 +69,7 @@ TECHNOLOGIES = [
 PAGE_SEO = {
     "home": {
         "title": "Custom Real Estate Systems Developer | Key Castro",
-        "description": "Key Castro builds simple web systems for real estate and property teams, including property operations, inventory, rentals, and custom workflows.",
+        "description": "Key Castro builds and customizes practical web systems for real estate, property, and student-housing operations, with full handover or managed maintenance options.",
     },
     "about": {
         "title": "About Key Castro | Real Estate Systems Developer",
@@ -77,7 +77,7 @@ PAGE_SEO = {
     },
     "services": {
         "title": "Real Estate System Services | Key Castro",
-        "description": "Use a ready-made Key Castro system or request custom work for your real estate or property business.",
+        "description": "Customize an existing Key Castro system or request a custom build, then choose full handover or managed maintenance.",
     },
     "skills": {
         "title": "Skills & Technology | Key Castro",
@@ -89,11 +89,11 @@ PAGE_SEO = {
     },
     "contact": {
         "title": "Contact Key Castro | Real Estate Systems",
-        "description": "Contact Key Castro to request system access, ask for custom changes, or discuss a new real estate system.",
+        "description": "Contact Key Castro to customize an existing system, request a custom build, choose full handover, or discuss managed maintenance.",
     },
     "system_templates": {
         "title": "Real Estate Systems | Key Castro",
-        "description": "Browse completed real estate systems by Key Castro for property operations, private inventory, rentals, and team workflows.",
+        "description": "Browse working Key Castro systems for property operations, private inventory, and student-housing workflows. Each system can be customized for your business.",
     },
 }
 
@@ -128,7 +128,7 @@ def _common_context(
         "technologies": TECHNOLOGIES,
         "published_system_templates": published_templates(),
         "template_library_enabled": template_library_enabled(),
-        "subscription_pricing": MANAGED_SUBSCRIPTION_PRICING,
+        "maintenance_pricing": MANAGED_MAINTENANCE_PRICING,
         "contact_email": current_app.config.get("CONTACT_EMAIL"),
         "socials": socials,
         "environment_label": current_app.config.get("ENVIRONMENT_LABEL", ""),
@@ -264,7 +264,7 @@ def _send_smtp_message(record: dict) -> None:
     message["Reply-To"] = record["email"]
     company = record.get("company") or "Not provided"
     interest = record.get("source_title") or "General custom-system inquiry"
-    request_type, plan_label = split_subscription_action(record.get("source_action") or "General inquiry")
+    request_type, plan_label = split_managed_service_action(record.get("source_action") or "General inquiry")
     plan_line = f"Plan: {plan_label}\n" if plan_label else ""
     message.set_content(
         "New website inquiry\n\n"
@@ -295,11 +295,13 @@ def _send_smtp_message(record: dict) -> None:
 
 
 _TEMPLATE_INTENTS = {
-    "subscribe": ("subscribe", "System Subscription"),
-    "customize": ("customize", "Paid Customization"),
-    # Backward compatibility for old external links/forms from the previous free-access model.
-    # Never expose the old label publicly; normalize it to the current subscription intent.
-    "free-access": ("subscribe", "System Subscription"),
+    "customize": ("customize", "Customize Existing System"),
+    "custom-build": ("custom-build", "Custom System Build"),
+    "handover": ("handover", "Full Handover"),
+    "managed": ("managed", "Managed by KEY CASTRO"),
+    # Backward compatibility for old public links from the retired access/subscription models.
+    "subscribe": ("managed", "Managed by KEY CASTRO"),
+    "free-access": ("managed", "Managed by KEY CASTRO"),
 }
 
 
@@ -309,20 +311,22 @@ def _requested_system_template() -> object | None:
     return get_system_template(slug) if slug else None
 
 
-def _requested_template_intent(template_interest) -> tuple[str, str, str]:
-    if template_interest is None:
-        return "", "", ""
+def _requested_intent(template_interest) -> tuple[str, str, str]:
     raw = (request.form.get("source_intent") if request.method == "POST" else request.args.get("intent")) or ""
     raw = raw.strip().lower()
-    canonical_intent, label = _TEMPLATE_INTENTS.get(raw, ("", "System Inquiry"))
+    canonical_intent, label = _TEMPLATE_INTENTS.get(raw, ("", ""))
+    if not canonical_intent:
+        return "", "", ""
+    # Customization normally points to a selected system. Keep the generic route usable
+    # for service inquiries, but never trust a browser-supplied title or price.
     return canonical_intent, label, label
 
 
-def _requested_subscription_plan(template_interest, source_intent: str):
-    if template_interest is None or source_intent != "subscribe":
+def _requested_maintenance_plan(source_intent: str):
+    if source_intent != "managed":
         return None
     raw = (request.form.get("source_plan") if request.method == "POST" else request.args.get("plan")) or ""
-    return MANAGED_SUBSCRIPTION_PRICING.get_plan(raw)
+    return MANAGED_MAINTENANCE_PRICING.get_plan(raw)
 
 
 @site.route("/contact", methods=["GET", "POST"])
@@ -330,14 +334,14 @@ def contact():
     context = _common_context("contact")
     context["csrf_token"] = _csrf_token()
     template_interest = _requested_system_template()
-    source_intent, source_action, source_action_label = _requested_template_intent(template_interest)
-    selected_subscription_plan = _requested_subscription_plan(template_interest, source_intent)
-    if source_intent == "subscribe":
-        source_action = subscription_action_for_plan(selected_subscription_plan)
+    source_intent, source_action, source_action_label = _requested_intent(template_interest)
+    selected_maintenance_plan = _requested_maintenance_plan(source_intent)
+    if source_intent == "managed":
+        source_action = managed_service_action_for_plan(selected_maintenance_plan)
     context["template_interest"] = template_interest
     context["source_intent"] = source_intent
     context["source_action_label"] = source_action_label
-    context["selected_subscription_plan"] = selected_subscription_plan
+    context["selected_maintenance_plan"] = selected_maintenance_plan
 
     if request.method == "POST":
         sent = request.form.get("csrf_token", "")
@@ -375,10 +379,10 @@ def contact():
             "email": email,
             "company": company,
             "message": message,
-            "source_type": "system_template" if template_interest else "",
+            "source_type": "system_template" if template_interest else ("service" if source_intent else ""),
             "source_slug": template_interest.slug if template_interest else "",
-            "source_title": template_interest.name if template_interest else "",
-            "source_action": source_action if template_interest else "",
+            "source_title": template_interest.name if template_interest else ("KEY CASTRO Services" if source_intent else ""),
+            "source_action": source_action if source_intent else "",
         }
 
         mode = current_app.config.get("CONTACT_DELIVERY_MODE", "local")

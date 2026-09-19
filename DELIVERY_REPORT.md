@@ -1,36 +1,30 @@
-# DELIVERY REPORT — KEY CASTRO 3.5.3
+# DELIVERY REPORT — KEY CASTRO 3.6.0
 
 ## Scope
 
-Focused correction to the public page-intro composition. This release fixes the remaining detached hero-band problem from 3.5.2 without rebuilding the website or changing business logic.
+Business-model and portfolio update inside the existing Flask website. The established design, navigation, private Inbox, deployment architecture, and public/private security boundary are preserved.
 
-## Public experience changes
+## Public changes
 
-- Inner-page titles now align to the same full content container as the first useful section.
-- The separate gradient hero band and its bottom divider are removed from Systems, Services, About, and Contact.
-- The first useful content now follows the page introduction directly with a controlled gap.
-- System detail title/preview areas use the same page surface and tighter transition into the first information section.
-- 404 vertical space is reduced further.
-- Home keeps its existing orientation hero because it serves a different purpose.
-- Desktop, tablet, and mobile use proportional spacing without becoming cramped.
+- Existing systems are clearly available for customization.
+- Visitors may also request a completely custom system.
+- After a system is ready, only two choices are presented: **Full Handover** or **Managed by KEY CASTRO**.
+- $49/month and $490/year now clearly mean **managed maintenance**, not software access and not custom development.
+- Added the **Student Housing Matching and Placement System** as a third independent portfolio system using synthetic sample screenshots and truthful independent-project wording.
+- Contact/inquiry intents now support customization, custom build, full handover, managed service, monthly maintenance, and yearly maintenance while preserving legacy-link compatibility.
 
-## Preserved contracts
+## Preserved
 
+- premium ivory/navy/sage design
 - Home · Systems · Services · About · Contact navigation
-- two systems remain separate applications
-- 3.5.1 warm/cool system-card identities remain intact
-- pricing and commercial model unchanged
-- trusted server-side pricing and anti-spoof protection
+- Flask architecture
+- canonical system routes and redirects
 - metadata-driven Systems search
-- Contact and PostgreSQL inquiry flow
-- private owner Inbox and authentication
-- SEO, canonical routes, sitemap, robots, and redirects
-- deployment architecture
+- Contact → inquiry database → private Inbox flow
+- CSRF and trusted server-side source/price context
+- SEO, sitemap, structured data, Open Graph/Twitter metadata
+- manual Render deployment architecture
 
 ## Safety
 
-No secrets belong in a distributable update package. `.env`, `.owner_inbox.json`, logs, caches, private inquiry data, and Python bytecode must be excluded.
-
-## Reference
-
-See `docs/INTEGRATED_PAGE_INTRO_FLOW_3_5_3.md`.
+Distributable releases must exclude `.env`, `.owner_inbox.json`, logs, caches, private inquiry data, database dumps, access codes, tokens, and Python bytecode. Student Housing website screenshots use a fresh synthetic demo database.
