@@ -20,7 +20,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Key Castro Portfolio")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.8.2")
+        self.assertEqual(data["version"], "3.8.3")
 
     def test_main_pages_and_template_library_render(self):
         routes = [
@@ -139,6 +139,28 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"I manage it.", services.data)
         self.assertNotIn(b"Two simple decisions", services.data)
         self.assertNotIn(b"FREE STANDARD SYSTEM", services.data)
+
+    def test_about_highlights_business_problems_automation_and_subscription_value(self):
+        about = self.client.get("/about")
+        self.assertEqual(about.status_code, 200)
+        self.assertIn(b"I build custom business systems and automation", about.data)
+        self.assertIn(b"THE PROBLEMS I HELP SOLVE", about.data)
+        self.assertIn(b"Too many tools and subscriptions", about.data)
+        self.assertIn(b"Too much manual work", about.data)
+        self.assertIn(b"Scattered information", about.data)
+        self.assertIn(b"Limited automation", about.data)
+        self.assertIn(b"Automate the repetitive work that should not stay manual.", about.data)
+        self.assertIn(b"One system can reduce the need for too many paid tools.", about.data)
+        self.assertIn(b"may reduce dependence on multiple subscriptions", about.data)
+        self.assertIn(b"The best option depends on the business.", about.data)
+        self.assertIn(b"Better systems for complex business needs.", about.data)
+        self.assertNotIn(b"Simple systems for real estate businesses.", about.data)
+
+        css_path = Path(__file__).resolve().parents[1] / "app" / "static" / "css" / "style.css"
+        css = css_path.read_text(encoding="utf-8")
+        self.assertIn("3.8.3 — ABOUT PROBLEM + AUTOMATION CLARITY", css)
+        self.assertIn(".about-automation-section", css)
+        self.assertIn(".about-cost-section", css)
 
     def test_compact_presentation_keeps_screenshots_supporting_content(self):
         home = self.client.get("/")

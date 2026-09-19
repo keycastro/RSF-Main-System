@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Release version:** 3.8.2
+**Release version:** 3.8.3
 **Official site:** https://keycastro.onrender.com
 **Framework:** Flask
 
@@ -34,7 +34,7 @@ The canonical route remains `/services`; only the public label is **How It Works
 
 Write for a first-time non-technical older business owner. Public copy should use concrete everyday actions before technical/business terminology. A visitor should quickly understand:
 
-- Key Castro builds simple systems for real estate businesses.
+- Key Castro builds custom business systems and automation for real estate, property, and housing businesses.
 - They can choose an existing system or ask for a new one.
 - After the build, they can manage it or Key Castro can manage it.
 - They contact Key Castro to start.
@@ -71,14 +71,14 @@ Public beginner-facing labels are **You Manage It** and **I Manage It**. Keep th
 - Systems shows the systems already built.
 - System detail explains one system.
 - How It Works explains the business process and management options.
-- About explains Key Castro simply.
+- About explains Key Castro, the problems the service solves, automation value, and the potential to reduce dependence on too many separate paid tools.
 - Contact collects the inquiry.
 
 Do not repeat the full management model on every system page.
 
 ## Design rule
 
-Preserve the existing ivory/navy/sage brand and 3.8.0 Human Clarity composition. Version 3.8.2 changes only the How It Works Step 1 action buttons and removes its redundant final CTA; do not expand that scope. Compact must never mean tiny text.
+Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.3 changes only the About page and footer tagline; About-specific CSS is scoped to `.about-*` classes. Do not use this release as permission to redesign unrelated pages. Compact must never mean tiny text.
 
 ## Security
 

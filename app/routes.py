@@ -72,8 +72,8 @@ PAGE_SEO = {
         "description": "Key Castro builds simple web systems for real estate, property, and housing businesses. Choose an existing system or ask for a new one.",
     },
     "about": {
-        "title": "About Key Castro | Business Systems",
-        "description": "Key Castro builds simple web systems for real estate, property, and housing businesses.",
+        "title": "About Key Castro | Custom Systems & Automation",
+        "description": "Key Castro builds custom business systems and automation that organize complex workflows, reduce repetitive work, and bring scattered operations into one place.",
     },
     "services": {
         "title": "How It Works | Key Castro",

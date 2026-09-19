@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 3.8.3 — About problem, automation, and value clarity
+
+- Expanded the About page to clearly explain the operational problems Key Castro helps solve.
+- Made rule-based automation a major About-page focus: reminders, alerts, follow-ups, status changes, recurring tasks, handoffs, dashboards, and reports.
+- Added accurate value wording around reducing dependence on multiple paid tools and subscriptions without claiming a custom system is always cheaper.
+- Replaced the footer tagline with **“Better systems for complex business needs.”**
+- Kept all unrelated pages, routes, pricing, business logic, systems, and private functionality unchanged.
+
 ## 3.8.2 — How It Works action clarity
 
 - Replaced the Step 1 **View Systems** text link with a clear button-style action.

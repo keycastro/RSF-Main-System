@@ -1,11 +1,12 @@
-# KEY CASTRO WEBSITE 3.8.2 — RELEASE AUDIT
+# KEY CASTRO WEBSITE 3.8.3 — RELEASE AUDIT
 
-- Baseline inspected: v3.8.1.
-- Scope limited to the approved How It Works buttons/final-CTA cleanup and direct dependencies.
-- No unrelated visual redesign, route change, business-model change, page edit, or refactor.
-- Final How It Works flow remains exactly Step 1 **Tell me what you need** → Step 2 **Choose who manages it**.
-- Step 1 now has balanced **View Systems** and **Request a System** buttons.
-- The redundant final **Want to get started?** CTA is removed.
-- Pricing remains **$49/month** or **$490/year**.
+- Baseline inspected: v3.8.2 from the user-provided website ZIP.
+- Scope limited to the approved **About** expansion and footer tagline replacement, plus direct dependencies.
+- About now emphasizes common operational problems: too many tools/subscriptions, manual work, scattered information, missed follow-ups, limited automation, and generic-software limitations.
+- Automation is a dedicated highlighted About section with rule-based examples.
+- Subscription-cost wording is intentionally qualified: a custom system **may reduce dependence** on multiple paid tools; it does not claim custom software is always cheaper.
+- Footer tagline is exactly **“Better systems for complex business needs.”**
+- No Home, Systems, How It Works, Contact, system-detail, pricing, route, backend, database, owner-Inbox, or business-model change.
+- About-specific CSS is scoped to `.about-*` classes to avoid unrelated page changes.
 - Release ZIP must exclude `.env`, `.owner_inbox.json`, `.git`, databases, logs, caches, backups, tokens, and private runtime data.
-- Live deployment is valid only after production verification confirms version 3.8.2, the exact How It Works content, and all three published systems.
+- Live deployment is valid only after production verification confirms version 3.8.3, the new About content/tagline, the unchanged approved How It Works content, and all three published systems.

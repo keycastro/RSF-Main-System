@@ -1891,3 +1891,49 @@ body{font-size:17px;line-height:1.68}
 @media(max-width:680px){
   .detail-best-for li{box-sizing:border-box;width:fit-content;max-width:100%;overflow-wrap:anywhere}
 }
+
+/* 3.8.3 — ABOUT PROBLEM + AUTOMATION CLARITY
+   Scoped to the About page so no unrelated page composition changes. */
+.about-page-hero .simple-page-hero>p{max-width:760px}
+.about-detail-section{padding:42px 0;border-top:1px solid var(--line)}
+.about-problem-section{padding-top:24px;border-top:0}
+.about-detail-wrap{max-width:1000px}
+.about-section-intro{max-width:780px}
+.about-kicker{margin:0 0 8px;color:var(--sage-deep);font-size:12px;font-weight:850;letter-spacing:.09em}
+.about-section-intro h2,.about-feature-copy h2,.about-work-copy h2{margin:0 0 12px;font-size:30px;line-height:1.2}
+.about-section-intro>p:last-child,.about-feature-copy>p:not(.about-kicker),.about-work-copy>p:not(.about-kicker){margin:0;color:var(--ink-2);font-size:16px;line-height:1.62}
+.about-feature-copy>p+ p{margin-top:12px!important}
+.about-problem-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:24px}
+.about-problem-card{padding:20px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.55)}
+.about-problem-card h3{margin:0 0 7px;font-size:18px}
+.about-problem-card p{margin:0;color:var(--ink-2);font-size:15px;line-height:1.58}
+.about-feature-layout,.about-work-layout{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start}
+.about-feature-list{border-top:1px solid var(--line)}
+.about-feature-list>div{padding:15px 0;border-bottom:1px solid var(--line)}
+.about-feature-list strong{display:block;margin-bottom:3px;font-size:16px;color:var(--ink)}
+.about-feature-list span{display:block;color:var(--muted);font-size:15px;line-height:1.55}
+.about-automation-section{background:var(--surface-sage)}
+.about-cost-section{background:var(--surface-soft)}
+.about-cost-callout{padding:22px;border:1px solid #cbd7d0;border-radius:14px;background:var(--surface)}
+.about-cost-callout strong{display:block;margin-bottom:7px;font-size:17px;color:var(--ink)}
+.about-cost-callout p{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:14px;line-height:1.55}
+.about-capability-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:23px}
+.about-capability-grid span{display:flex;align-items:center;min-height:54px;padding:12px 14px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--ink);font-size:14px;font-weight:700;line-height:1.4}
+.about-work-copy .button{margin-top:18px}
+.about-work-steps{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.about-work-steps li{display:grid;grid-template-columns:38px 1fr;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)}
+.about-work-steps li>span{padding-top:2px;color:var(--sage-deep);font-size:12px;font-weight:850}
+.about-work-steps strong{display:block;margin-bottom:3px;color:var(--ink);font-size:16px}
+.about-work-steps p{margin:0;color:var(--ink-2);font-size:15.5px;line-height:1.58}
+@media(max-width:900px){
+  .about-feature-layout,.about-work-layout{grid-template-columns:1fr;gap:32px}
+  .about-capability-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:680px){
+  .about-detail-section{padding:34px 0}
+  .about-problem-section{padding-top:20px}
+  .about-section-intro h2,.about-feature-copy h2,.about-work-copy h2{font-size:26px}
+  .about-problem-grid{grid-template-columns:1fr}
+  .about-problem-card{padding:17px}
+  .about-capability-grid{grid-template-columns:1fr}
+}

@@ -1,27 +1,117 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="page-hero page-hero-simple">
+<section class="page-hero page-hero-simple about-page-hero">
   <div class="container simple-page-hero reveal">
     <h1>About Key Castro.</h1>
-    <p>I build simple web systems for real estate, property, and housing businesses.</p>
+    <p>I build custom business systems and automation for real estate, property, and housing businesses.</p>
   </div>
 </section>
 
-<section class="section human-about-section">
-  <div class="container human-about-layout">
-    <div class="human-about-copy reveal">
+<section class="section about-detail-section about-problem-section">
+  <div class="container about-detail-wrap">
+    <div class="about-section-intro reveal">
+      <p class="about-kicker">THE PROBLEMS I HELP SOLVE</p>
+      <h2>Complex work should not depend on scattered tools and repeated manual tasks.</h2>
+      <p>I help businesses organize the work that is hard to track, repeated by hand, spread across different apps, or limited by software that does not fully fit the way the business operates.</p>
+    </div>
+
+    <div class="about-problem-grid">
+      <article class="about-problem-card reveal">
+        <h3>Too many tools and subscriptions</h3>
+        <p>Your team may use several apps, spreadsheets, chats, files, and paid add-ons just to complete one workflow.</p>
+      </article>
+      <article class="about-problem-card reveal delay-1">
+        <h3>Too much manual work</h3>
+        <p>People repeat the same updates, reminders, follow-ups, data entry, and reports again and again.</p>
+      </article>
+      <article class="about-problem-card reveal">
+        <h3>Scattered information</h3>
+        <p>Important records can end up in different places, making them harder to find, update, and trust.</p>
+      </article>
+      <article class="about-problem-card reveal delay-1">
+        <h3>Missed follow-ups and deadlines</h3>
+        <p>Tasks can be delayed when the process depends on someone remembering every next step manually.</p>
+      </article>
+      <article class="about-problem-card reveal">
+        <h3>Limited automation</h3>
+        <p>Work that could move automatically still needs a person to check, remind, update, or pass information to the next step.</p>
+      </article>
+      <article class="about-problem-card reveal delay-1">
+        <h3>Software that does not fully fit</h3>
+        <p>Generic platforms can be useful, but some businesses end up changing their process to fit the tool instead of using a system built around the real workflow.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section about-detail-section about-automation-section">
+  <div class="container about-detail-wrap about-feature-layout">
+    <div class="about-feature-copy reveal">
+      <p class="about-kicker">AUTOMATION</p>
+      <h2>Automate the repetitive work that should not stay manual.</h2>
+      <p>Where it makes sense, I build rule-based automation into the system so routine actions can happen consistently without someone having to remember every step.</p>
+      <p>Automation can reduce repetitive work and help the team focus on decisions, customers, properties, and tasks that actually need human attention.</p>
+    </div>
+    <div class="about-feature-list reveal delay-1">
+      <div><strong>Reminders and deadline alerts</strong><span>Prompt the right person when something needs attention.</span></div>
+      <div><strong>Follow-ups and status changes</strong><span>Move routine workflow steps forward based on clear rules.</span></div>
+      <div><strong>Recurring tasks and handoffs</strong><span>Keep repeated work organized without rebuilding the process every time.</span></div>
+      <div><strong>Dashboards and reports</strong><span>Bring current operational information into one place for faster checking.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section about-detail-section about-cost-section">
+  <div class="container about-detail-wrap about-feature-layout">
+    <div class="about-feature-copy reveal">
+      <p class="about-kicker">FEWER DISCONNECTED PLATFORMS</p>
+      <h2>One system can reduce the need for too many paid tools.</h2>
+      <p>Some businesses pay for several platforms, add-ons, and workarounds because each tool solves only one part of the process.</p>
+      <p>A custom system can bring the functions your business actually needs into one organized workflow and may reduce dependence on multiple subscriptions.</p>
+    </div>
+    <div class="about-cost-callout reveal delay-1">
+      <strong>Fewer separate tools.</strong>
+      <strong>Less duplicated work.</strong>
+      <strong>One workflow built around the business.</strong>
+      <p>The best option depends on the business. I do not replace software that already works well just for the sake of replacing it.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section about-detail-section about-system-section">
+  <div class="container about-detail-wrap">
+    <div class="about-section-intro reveal">
+      <p class="about-kicker">WHAT I BUILD</p>
+      <h2>A system built around how the business actually works.</h2>
+      <p>Instead of forcing the business into a generic template, I can build around the records, people, rules, and steps that the operation actually needs.</p>
+    </div>
+    <div class="about-capability-grid reveal delay-1">
+      <span>Centralized records</span>
+      <span>Clear dashboards</span>
+      <span>Task and status tracking</span>
+      <span>User roles and permissions</span>
+      <span>Workflow automation</span>
+      <span>Reminders and alerts</span>
+      <span>Reports</span>
+      <span>Business-specific rules</span>
+    </div>
+  </div>
+</section>
+
+<section class="section about-detail-section about-work-section">
+  <div class="container about-detail-wrap about-work-layout">
+    <div class="about-work-copy reveal">
+      <p class="about-kicker">HOW I WORK</p>
       <h2>I understand the work first.</h2>
-      <p>I learn how your business works before I build anything. Then I create a system around what your team actually needs.</p>
+      <p>I start with the real business process, identify what is scattered, repetitive, delayed, or limited, and then build only what the business actually needs.</p>
       <a class="button secondary" href="{{ url_for('site.system_templates') }}">View Systems</a>
     </div>
-    <div class="human-about-steps reveal delay-1">
-      <h2>How I work.</h2>
-      <ol>
-        <li><span>1</span><div><strong>Understand</strong><p>I learn how your business works and what problem needs to be solved.</p></div></li>
-        <li><span>2</span><div><strong>Build</strong><p>I create the system around what your team needs.</p></div></li>
-        <li><span>3</span><div><strong>Test</strong><p>I make sure it works properly and is easy to use.</p></div></li>
-      </ol>
-    </div>
+    <ol class="about-work-steps reveal delay-1">
+      <li><span>1</span><div><strong>Understand</strong><p>Learn how the business works, who uses the system, and what problem needs to be solved.</p></div></li>
+      <li><span>2</span><div><strong>Identify</strong><p>Find the manual, scattered, repeated, delayed, or limited parts of the workflow.</p></div></li>
+      <li><span>3</span><div><strong>Build</strong><p>Create the system and automation around the agreed business needs.</p></div></li>
+      <li><span>4</span><div><strong>Test</strong><p>Make sure the workflow works properly and remains clear for the people who will use it.</p></div></li>
+    </ol>
   </div>
 </section>
 {% endblock %}

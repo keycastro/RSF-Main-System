@@ -5,8 +5,8 @@ $documents = [Environment]::GetFolderPath("MyDocuments")
 $target = Join-Path $documents "KEY_CASTRO_WEBSITE"
 $serviceId = "srv-dam749e1egvs738cppq0"
 $liveBase = "https://keycastro.onrender.com"
-$expectedVersion = "3.8.2"
-$commitMessage = "Release 3.8.2 How It Works action clarity"
+$expectedVersion = "3.8.3"
+$commitMessage = "Release 3.8.3 About automation and problem clarity"
 
 function Invoke-Native {
     param(
@@ -213,6 +213,7 @@ try {
             $health = Invoke-RestMethod -Uri "$liveBase/system/health?verify=$stamp" -Method Get -TimeoutSec 30
             $systems = Invoke-WebRequest -Uri "$liveBase/system-templates?verify=$stamp" -UseBasicParsing -TimeoutSec 30
             $how = Invoke-WebRequest -Uri "$liveBase/services?verify=$stamp" -UseBasicParsing -TimeoutSec 30
+            $about = Invoke-WebRequest -Uri "$liveBase/about?verify=$stamp" -UseBasicParsing -TimeoutSec 30
             $hasStudentHousing = $systems.Content -match [regex]::Escape("Student Housing Matching and Placement System")
             $systemCardCount = ([regex]::Matches($systems.Content, "data-system-card")).Count
             $hasThreeSystems = $systemCardCount -eq 3
@@ -226,11 +227,15 @@ try {
             $hasRequestSystemButton = ($how.Content -match [regex]::Escape('href="/contact?intent=custom-build"')) -and ($how.Content -match [regex]::Escape('>Request a System</a>'))
             $finalCtaGone = -not ($how.Content -match [regex]::Escape("Want to get started?"))
             $hasPricing = ($how.Content -match [regex]::Escape('$49/month')) -and ($how.Content -match [regex]::Escape('$490/year'))
-            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems -and $hasAdaptSentence -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasPricing) {
+            $hasAboutAutomation = $about.Content -match [regex]::Escape("Automate the repetitive work that should not stay manual.")
+            $hasAboutSubscriptionValue = $about.Content -match [regex]::Escape("One system can reduce the need for too many paid tools.")
+            $hasNewTagline = $about.Content -match [regex]::Escape("Better systems for complex business needs.")
+            $oldTaglineGone = -not ($about.Content -match [regex]::Escape("Simple systems for real estate businesses."))
+            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems -and $hasAdaptSentence -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasPricing -and $hasAboutAutomation -and $hasAboutSubscriptionValue -and $hasNewTagline -and $oldTaglineGone) {
                 $verified = $true
                 break
             }
-            $lastError = "Health/version/How It Works/Systems content has not refreshed yet."
+            $lastError = "Health/version/About/How It Works/Systems content has not refreshed yet."
         }
         catch {
             $lastError = $_.Exception.Message
@@ -253,6 +258,8 @@ try {
     Write-Host "Live site: $liveBase"
     Write-Host "Systems: 3 published systems confirmed"
     Write-Host "Student Housing system: confirmed LIVE"
+    Write-Host "About automation/problem update: confirmed LIVE"
+    Write-Host "Footer tagline: confirmed LIVE"
     Write-Host "Commit: $sha"
     Write-Host ""
 }
