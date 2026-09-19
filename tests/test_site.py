@@ -20,7 +20,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Key Castro Portfolio")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.8.4")
+        self.assertEqual(data["version"], "3.8.5")
 
     def test_main_pages_and_template_library_render(self):
         routes = [
@@ -168,6 +168,8 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b'class="about-portrait"', about.data)
         self.assertIn(b'alt="Key Castro"', about.data)
         self.assertIn(b'/static/images/about/key-castro.png', about.data)
+        self.assertIn(b'Custom Business App Developer &amp; Automation Specialist', about.data)
+        self.assertIn(b'class="about-professional-title"', about.data)
 
         portrait = self.client.get("/static/images/about/key-castro.png")
         self.assertEqual(portrait.status_code, 200)
@@ -182,8 +184,9 @@ class PortfolioSiteTests(unittest.TestCase):
 
         css_path = Path(__file__).resolve().parents[1] / "app" / "static" / "css" / "style.css"
         css = css_path.read_text(encoding="utf-8")
-        self.assertIn("3.8.4 — ABOUT PORTRAIT", css)
+        self.assertIn("3.8.5 — ABOUT PROFILE PORTRAIT ORGANIZATION", css)
         self.assertIn(".about-page-hero .about-hero-grid", css)
+        self.assertIn(".about-professional-title", css)
         self.assertIn(".about-portrait-frame", css)
 
     def test_compact_presentation_keeps_screenshots_supporting_content(self):

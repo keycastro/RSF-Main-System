@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 3.8.5 — About profile portrait refinement
+
+- Replaced the prior About portrait with the newly approved user-supplied photo.
+- Added **Custom Business App Developer & Automation Specialist** directly under the About heading so the professional identity is visible in the same profile block.
+- Rebalanced only the About top/profile layout so the text and portrait align naturally on desktop and stack cleanly on smaller screens.
+- Preserved every approved About problem/automation/subscription-value section and all unrelated pages, pricing, routes, business logic, backend, and private functionality.
+- Release ZIP continues to exclude private/runtime files.
+
 ## 3.8.4 — About portrait integration
 
 - Added Key Castro’s supplied professional portrait to the About-page introduction only.

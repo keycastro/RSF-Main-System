@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-20",
-  "version": "3.8.4",
+  "version": "3.8.5",
   "owner_public_name": "Key Castro",
   "positioning": "Better systems for complex business needs",
   "framework": "Flask",
@@ -256,7 +256,7 @@
     "launcher": "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
     "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
     "provider_auto_deploy": false,
-    "success_condition": "production health reports version 3.8.4; live About shows the approved automation/problem/subscription-value content, footer tagline Better systems for complex business needs, and the Key Castro portrait with its static asset loading successfully; live How It Works preserves the approved two-step flow, action buttons, and pricing; live Systems contains Student Housing Matching and Placement System plus exactly 3 published system cards"
+    "success_condition": "production health reports version 3.8.5; live About shows the approved automation/problem/subscription-value content, footer tagline Better systems for complex business needs, and the approved Key Castro portrait, visible professional title, and portrait static asset loading successfully; live How It Works preserves the approved two-step flow, action buttons, and pricing; live Systems contains Student Housing Matching and Placement System plus exactly 3 published system cards"
   },
   "ux_master_refinement_3_7": {
     "document": "docs/MASTER_UX_REFINEMENT_3_7.md",
@@ -352,6 +352,19 @@
       "Added responsive About-only portrait styling",
       "Added direct regression and live-deployment checks for the portrait asset",
       "Preserved all unrelated public pages, approved About copy, footer, and private/backend functionality"
+    ]
+  },
+  "minor_change_3_8_5": {
+    "scope": "About portrait replacement and top-profile organization only, plus direct CSS/test/release/deployment dependencies",
+    "routes_changed": false,
+    "business_model_changed": false,
+    "pricing_changed": false,
+    "approved_about_problem_copy_changed": false,
+    "changes": [
+      "Replaced the prior About portrait with the newly approved user-supplied portrait",
+      "Added the approved professional title to the About top profile block",
+      "Adjusted only About-scoped top-profile alignment, sizing, and responsive portrait behavior",
+      "Preserved all About problem/automation/subscription-value messaging and all unrelated public/private functionality"
     ]
   }
 }

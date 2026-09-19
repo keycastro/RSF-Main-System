@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Release version:** 3.8.4
+**Release version:** 3.8.5
 **Official site:** https://keycastro.onrender.com
 **Framework:** Flask
 
@@ -78,7 +78,7 @@ Do not repeat the full management model on every system page.
 
 ## Design rule
 
-Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.4 adds only the supplied professional portrait to the About introduction; its new CSS is scoped to `.about-*` classes. Do not use this release as permission to redesign unrelated pages. Compact must never mean tiny text.
+Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.5 replaces only the About portrait and refines that same top profile block, including the visible professional title; its CSS remains scoped to `.about-*` classes. Do not use this release as permission to redesign unrelated pages. Compact must never mean tiny text.
 
 ## Security
 

@@ -5,8 +5,8 @@ $documents = [Environment]::GetFolderPath("MyDocuments")
 $target = Join-Path $documents "KEY_CASTRO_WEBSITE"
 $serviceId = "srv-dam749e1egvs738cppq0"
 $liveBase = "https://keycastro.onrender.com"
-$expectedVersion = "3.8.4"
-$commitMessage = "Release 3.8.4 About portrait integration"
+$expectedVersion = "3.8.5"
+$commitMessage = "Release 3.8.5 About profile portrait refinement"
 
 function Invoke-Native {
     param(
@@ -233,8 +233,9 @@ try {
             $hasNewTagline = $about.Content -match [regex]::Escape("Better systems for complex business needs.")
             $oldTaglineGone = -not ($about.Content -match [regex]::Escape("Simple systems for real estate businesses."))
             $hasAboutPortrait = ($about.Content -match [regex]::Escape('/static/images/about/key-castro.png')) -and ($about.Content -match [regex]::Escape('alt="Key Castro"'))
+            $hasAboutProfessionalTitle = $about.Content -match [regex]::Escape("Custom Business App Developer &amp; Automation Specialist")
             $portraitLoads = ($portrait.StatusCode -eq 200) -and ($portrait.RawContentLength -gt 100000)
-            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems -and $hasAdaptSentence -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasPricing -and $hasAboutAutomation -and $hasAboutSubscriptionValue -and $hasNewTagline -and $oldTaglineGone -and $hasAboutPortrait -and $portraitLoads) {
+            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems -and $hasAdaptSentence -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasPricing -and $hasAboutAutomation -and $hasAboutSubscriptionValue -and $hasNewTagline -and $oldTaglineGone -and $hasAboutPortrait -and $hasAboutProfessionalTitle -and $portraitLoads) {
                 $verified = $true
                 break
             }
