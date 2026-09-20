@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-21",
-  "version": "3.8.16",
+  "version": "3.8.17",
   "owner_public_name": "Key Castro",
   "positioning": "Better systems for complex business needs",
   "framework": "Flask",
@@ -282,7 +282,7 @@
     "launcher": "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
     "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
     "provider_auto_deploy": false,
-    "success_condition": "production health reports version 3.8.16; Home keeps exactly 3 featured systems and shows the approved Explore All Systems CTA to /system-templates plus See Services & Pricing CTA to /services; the old Home three-step process remains removed; Home navigation and the /services page show Services & Pricing; Home, Systems, system detail, and Services & Pricing show the approved $160 existing-system purchase price; the purchase is separate from upgrades and maintenance; new custom systems use Price by Agreement; maintenance remains $39/month or $390/year; upgrades remain $79 / $149 / New System / Large Expansion Price by Agreement; no PHP/peso pricing is publicly displayed; approved About profile/lower story, footer tagline, and exactly 3 published systems remain unchanged"
+    "success_condition": "production health reports version 3.8.17; Home keeps exactly 3 featured systems and shows the balanced approved Explore All Systems CTA to /system-templates plus See Services & Pricing CTA to /services with PLAN / ORGANIZE / GROW on the left decorative rail and BUILD / ORGANIZE / GROW on the right; the old Home three-step process remains removed; Home navigation and the /services page show Services & Pricing; Home, Systems, system detail, and Services & Pricing show the approved $160 existing-system purchase price; the purchase is separate from upgrades and maintenance; new custom systems use Price by Agreement; maintenance remains $39/month or $390/year; upgrades remain $79 / $149 / New System / Large Expansion Price by Agreement; no PHP/peso pricing is publicly displayed; approved About profile/lower story, footer tagline, and exactly 3 published systems remain unchanged"
   },
   "ux_master_refinement_3_7": {
     "document": "docs/MASTER_UX_REFINEMENT_3_7.md",
@@ -493,7 +493,7 @@
     "business_logic_changed": false,
     "changes": [
       "Removed the lower Home How it works heading, summary, all three numbered steps, and their descriptions",
-      "Kept only See Services & Pricing → linked to /services",
+      "Kept only See Services & Pricing \u2192 linked to /services",
       "Added Home-CTA-scoped styling to center the link, increase its prominence, and keep desktop/mobile spacing balanced",
       "Preserved all other Home content, Services & Pricing content, pricing, systems, footer content, routes, and private functionality"
     ]
@@ -510,9 +510,9 @@
       "path": "/services"
     },
     "approved_microcopy": [
-      "SIMPLE",
+      "PLAN",
       "SYSTEMS",
-      "REAL IMPACT",
+      "GROW",
       "READY TO SEE MORE?",
       "NEED DETAILS?",
       "BUILD",
@@ -532,5 +532,6 @@
       "business logic",
       "private owner Inbox"
     ]
-  }
+  },
+  "current_version": "3.8.17"
 }

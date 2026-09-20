@@ -20,7 +20,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Key Castro Portfolio")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.8.16")
+        self.assertEqual(data["version"], "3.8.17")
 
     def test_main_pages_and_template_library_render(self):
         routes = [
@@ -106,9 +106,9 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(response.data.count(b"See Services & Pricing"), 1)
         self.assertIn(b"READY TO SEE MORE?", response.data)
         self.assertIn(b"NEED DETAILS?", response.data)
-        self.assertIn(b"SIMPLE", response.data)
-        self.assertIn(b"SYSTEMS", response.data)
-        self.assertIn(b"REAL IMPACT", response.data)
+        self.assertIn(b"PLAN", response.data)
+        self.assertNotIn(b"SIMPLE", response.data)
+        self.assertNotIn(b"REAL IMPACT", response.data)
         self.assertIn(b"BUILD", response.data)
         self.assertIn(b"ORGANIZE", response.data)
         self.assertIn(b"GROW", response.data)

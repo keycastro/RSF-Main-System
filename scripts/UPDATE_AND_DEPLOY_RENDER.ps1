@@ -5,8 +5,8 @@ $documents = [Environment]::GetFolderPath("MyDocuments")
 $target = Join-Path $documents "KEY_CASTRO_WEBSITE"
 $serviceId = "srv-dam749e1egvs738cppq0"
 $liveBase = "https://keycastro.onrender.com"
-$expectedVersion = "3.8.16"
-$commitMessage = "Release 3.8.16 Home Featured Systems CTA Redesign"
+$expectedVersion = "3.8.17"
+$commitMessage = "Release 3.8.17 Home CTA Balance Fix"
 
 function Invoke-Native {
     param(
@@ -262,7 +262,7 @@ try {
             $portraitLoads = ($portrait.StatusCode -eq 200) -and ($portrait.RawContentLength -gt 100000)
             $hasServicesPricingName = ($homePage.Content -match [regex]::Escape('>Services & Pricing</a>')) -and ($how.Content -match [regex]::Escape('<h1>Services & Pricing</h1>')) -and ($how.Content -match [regex]::Escape('<title>Services &amp; Pricing | Key Castro</title>'))
             $hasHomeFeaturedCtas = ($homePage.Content -match [regex]::Escape('class="home-featured-action-link home-featured-action-link--primary" href="/system-templates"')) -and ($homePage.Content -match [regex]::Escape('Explore All Systems')) -and ($homePage.Content -match [regex]::Escape('class="home-featured-action-link home-featured-action-link--secondary" href="/services"')) -and ($homePage.Content -match [regex]::Escape('See Services & Pricing'))
-            $hasApprovedHomeCtaMicrocopy = ($homePage.Content -match [regex]::Escape('READY TO SEE MORE?')) -and ($homePage.Content -match [regex]::Escape('NEED DETAILS?')) -and ($homePage.Content -match [regex]::Escape('SIMPLE')) -and ($homePage.Content -match [regex]::Escape('SYSTEMS')) -and ($homePage.Content -match [regex]::Escape('REAL IMPACT')) -and ($homePage.Content -match [regex]::Escape('BUILD')) -and ($homePage.Content -match [regex]::Escape('ORGANIZE')) -and ($homePage.Content -match [regex]::Escape('GROW'))
+            $hasApprovedHomeCtaMicrocopy = ($homePage.Content -match [regex]::Escape('READY TO SEE MORE?')) -and ($homePage.Content -match [regex]::Escape('NEED DETAILS?')) -and ($homePage.Content -match [regex]::Escape('PLAN')) -and ($homePage.Content -match [regex]::Escape('BUILD')) -and ($homePage.Content -match [regex]::Escape('ORGANIZE')) -and ($homePage.Content -match [regex]::Escape('GROW'))
             $hasHomeCtaDesignCss = ($siteCss.Content -match [regex]::Escape('.home-featured-actions-section')) -and ($siteCss.Content -match [regex]::Escape('.home-featured-action-link--primary')) -and ($siteCss.Content -match [regex]::Escape('.home-featured-action-link--secondary')) -and ($siteCss.Content -match [regex]::Escape('.home-featured-edge--left')) -and ($siteCss.Content -match [regex]::Escape('.home-featured-edge--right'))
             $oldHomeCtaGone = -not ($homePage.Content -match [regex]::Escape('home-services-cta-link'))
             $oldHomeProcessGone = -not ($homePage.Content -match [regex]::Escape('How it works.')) -and -not ($homePage.Content -match [regex]::Escape('From your problem to a working system.')) -and -not ($homePage.Content -match [regex]::Escape('Tell me what you need.')) -and -not ($homePage.Content -match [regex]::Escape('Choose your system.')) -and -not ($homePage.Content -match [regex]::Escape('Choose who manages it.')) -and -not ($homePage.Content -match [regex]::Escape('class="home-process-list"'))

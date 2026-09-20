@@ -1,4 +1,4 @@
-# DELIVERY REPORT — KEY CASTRO 3.8.16
+# DELIVERY REPORT — KEY CASTRO 3.8.17
 
 ## Scope
 
@@ -23,4 +23,4 @@ Home featured-systems CTA transition redesign only. The three existing Home syst
 
 ## Release rule
 
-Production is not considered 3.8.16 until the one-run deployer passes the complete automated test suite and verifies the live version, both CTA destinations, approved CTA markup/style hooks, exactly three published systems, preserved pricing/content boundaries, and existing About/footer checks.
+Production is not considered 3.8.17 until the one-run deployer passes the complete automated test suite and verifies the live version, both CTA destinations, approved CTA markup/style hooks, exactly three published systems, preserved pricing/content boundaries, and existing About/footer checks.

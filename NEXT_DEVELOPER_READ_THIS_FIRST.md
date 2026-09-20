@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Release version:** 3.8.16
+**Release version:** 3.8.17
 **Official site:** https://keycastro.onrender.com
 **Framework:** Flask
 
@@ -16,7 +16,7 @@
 8. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
 9. `docs/DEPLOYMENT_HISTORY.md`
 
-Older versioned pricing/business-model documents are historical. Current 3.8.16 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
+Older versioned pricing/business-model documents are historical. Current 3.8.17 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
 
 ## Public information architecture
 
@@ -82,7 +82,7 @@ Do not repeat the full management model on every system page.
 
 ## Design rule
 
-Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.16 changes only the final Home transition after the three featured system cards. The approved CTA band uses **Explore All Systems →** to `/system-templates` as the primary action and **See Services & Pricing →** to `/services` as the secondary action, with restrained decorative microcopy and responsive CTA-only styling. Keep the three cards, hero, navigation, footer content, all other pages, pricing, and private functionality unchanged. Compact must never mean tiny text.
+Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.17 changes only the final Home transition after the three featured system cards. The approved CTA band uses **Explore All Systems →** to `/system-templates` as the primary action and **See Services & Pricing →** to `/services` as the secondary action, with restrained decorative microcopy and responsive CTA-only styling. Keep the three cards, hero, navigation, footer content, all other pages, pricing, and private functionality unchanged. Compact must never mean tiny text.
 
 ## Security
 

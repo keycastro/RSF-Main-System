@@ -1,3 +1,10 @@
+# Changelog
+
+## v3.8.17 - Home CTA Balance Fix
+- Balanced the Home featured-systems CTA band so the left decorative rail now matches the right-side white treatment.
+- Replaced the left decorative microcopy with **PLAN / ORGANIZE / GROW** and kept the approved CTA hierarchy intact.
+- Preserved the 3 featured system cards, CTA destinations, footer, and all pricing/content outside this exact CTA-band adjustment.
+
 ## 3.8.16 — Home Featured Systems CTA Redesign
 
 - Redesigned only the Home-page transition area after the three featured system cards and before the existing footer.
