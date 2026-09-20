@@ -1,12 +1,12 @@
 # KEY CASTRO WEBSITE — DEVELOPER HANDOFF
 
-**Release:** 3.8.10
+**Release:** 3.8.11
 **Live URL:** https://keycastro.onrender.com
 **Framework:** Flask
 
 ## Current direction
 
-Version 3.8.10 is a **targeted How It Works Step 2 clarity update**. The approved business model and prices remain unchanged. Only the Step 2 management/maintenance/upgrade presentation, Step-2-scoped CSS, and direct release dependencies changed. Home, Systems, About, Contact, navigation, footer, backend, routes, forms, database, authentication, and unrelated How It Works content remain unchanged.
+Version 3.8.11 is a **targeted How It Works organization update**. The approved business model and prices remain unchanged. Only the How It Works card organization, the Step 2 management/maintenance/upgrade presentation, closely related Step 1 card organization, and direct release dependencies changed. Home, Systems, About, Contact, navigation, footer, backend, routes, forms, database, authentication, and all unrelated functionality remain unchanged.
 
 Primary navigation: **Home · Systems · How It Works · About · Contact**. The underlying `/services` URL remains unchanged.
 
@@ -41,4 +41,4 @@ A non-technical 50–70 year old business owner should understand the basic offe
 
 ## Release workflow
 
-Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/content/profile-portrait verification for version 3.8.10. Never commit private/runtime files.
+Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/content/profile-portrait verification for version 3.8.11. Never commit private/runtime files.

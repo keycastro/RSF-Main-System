@@ -20,7 +20,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Key Castro Portfolio")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.8.10")
+        self.assertEqual(data["version"], "3.8.11")
 
     def test_main_pages_and_template_library_render(self):
         routes = [
@@ -420,7 +420,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertNotIn(b"$490/year", services.data)
         self.assertIn(b"The price is a custom quote based on what you need.", services.data)
         self.assertIn(b"The price is a custom quote based on the work needed.", services.data)
-        self.assertIn(b"The same maintenance service. Choose monthly or yearly billing.", services.data)
+        self.assertIn(b"Same maintenance service. Choose monthly or yearly billing.", services.data)
         self.assertIn(b"Maintenance can include:", services.data)
         self.assertIn(b"Hosting and deployment", services.data)
         self.assertIn(b"Technical fixes for the current system", services.data)

@@ -5,8 +5,8 @@ $documents = [Environment]::GetFolderPath("MyDocuments")
 $target = Join-Path $documents "KEY_CASTRO_WEBSITE"
 $serviceId = "srv-dam749e1egvs738cppq0"
 $liveBase = "https://keycastro.onrender.com"
-$expectedVersion = "3.8.10"
-$commitMessage = "Release 3.8.10 How It Works Step 2 clarity"
+$expectedVersion = "3.8.11"
+$commitMessage = "Release 3.8.11 How It Works Step 2 clarity"
 
 function Invoke-Native {
     param(
@@ -232,8 +232,8 @@ try {
             $hasPricing = ($how.Content -match [regex]::Escape('$39/month')) -and ($how.Content -match [regex]::Escape('$390/year'))
             $oldPricingGone = -not ($how.Content -match [regex]::Escape('$49/month')) -and -not ($how.Content -match [regex]::Escape('$490/year'))
             $hasBuildQuote = ($how.Content -match [regex]::Escape('The price is a custom quote based on what you need.')) -and ($how.Content -match [regex]::Escape('The price is a custom quote based on the work needed.'))
-            $hasMaintenanceBoundary = ($how.Content -match [regex]::Escape('The same maintenance service. Choose monthly or yearly billing.')) -and ($how.Content -match [regex]::Escape('Maintenance can include:')) -and ($how.Content -match [regex]::Escape('Hosting and deployment')) -and ($how.Content -match [regex]::Escape('Technical fixes for the current system')) -and ($how.Content -match [regex]::Escape('Maintenance does not include:')) -and ($how.Content -match [regex]::Escape('New features')) -and ($how.Content -match [regex]::Escape('Workflow changes')) -and ($how.Content -match [regex]::Escape('Connections to other tools'))
-            $hasUpgradePricing = ($how.Content -match [regex]::Escape('Minor System Upgrade')) -and ($how.Content -match [regex]::Escape('$79')) -and ($how.Content -match [regex]::Escape('Major System Upgrade')) -and ($how.Content -match [regex]::Escape('$149')) -and ($how.Content -match [regex]::Escape('Large Expansion / New System')) -and ($how.Content -match [regex]::Escape('Custom Quote')) -and ($how.Content -match [regex]::Escape('Upgrades are separate from maintenance.')) -and ($how.Content -match [regex]::Escape('You can buy an upgrade later whether you manage the system yourself or I manage it.'))
+            $hasMaintenanceBoundary = ($how.Content -match [regex]::Escape('Same maintenance service. Choose monthly or yearly billing.')) -and ($how.Content -match [regex]::Escape('Maintenance can include:')) -and ($how.Content -match [regex]::Escape('Hosting and deployment')) -and ($how.Content -match [regex]::Escape('Technical fixes for the current system')) -and ($how.Content -match [regex]::Escape('Maintenance does not include:')) -and ($how.Content -match [regex]::Escape('New features')) -and ($how.Content -match [regex]::Escape('Workflow changes')) -and ($how.Content -match [regex]::Escape('Connections to other tools'))
+            $hasUpgradePricing = ($how.Content -match [regex]::Escape('Minor System Upgrade')) -and ($how.Content -match [regex]::Escape('$79')) -and ($how.Content -match [regex]::Escape('Major System Upgrade')) -and ($how.Content -match [regex]::Escape('$149')) -and ($how.Content -match [regex]::Escape('New System / Large Expansion')) -and ($how.Content -match [regex]::Escape('Custom Quote')) -and ($how.Content -match [regex]::Escape('Upgrades are separate from maintenance.')) -and ($how.Content -match [regex]::Escape('You can buy an upgrade later whether you manage the system yourself or I manage it.'))
             $hasAboutAutomation = $about.Content -match [regex]::Escape("Automate the repetitive work that should not stay manual.")
             $hasAboutSubscriptionValue = $about.Content -match [regex]::Escape("One system can reduce the need for too many paid tools.")
             $hasNewTagline = $about.Content -match [regex]::Escape("Better systems for complex business needs.")
