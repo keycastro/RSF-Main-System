@@ -1,3 +1,10 @@
+## 3.8.15 — Home Services & Pricing CTA Simplification
+
+- Removed the lower Home-page **How it works.** heading, supporting sentence, all three numbered steps, and all step descriptions.
+- Retained only **See Services & Pricing →**, still linked to `/services`.
+- Added minimal Home-CTA-scoped styling so the remaining link is centered, slightly larger, balanced on desktop/mobile, and visually intentional before the footer.
+- Preserved all other Home content, navigation, Services & Pricing content, pricing, systems, footer content, backend behavior, Contact flow, owner Inbox, database, and authentication.
+
 ## 3.8.14 — Services & Pricing Naming Update
 
 - Renamed the public `/services` page/navigation label from **How It Works** to **Services & Pricing**.

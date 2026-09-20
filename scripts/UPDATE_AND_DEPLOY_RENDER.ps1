@@ -5,8 +5,8 @@ $documents = [Environment]::GetFolderPath("MyDocuments")
 $target = Join-Path $documents "KEY_CASTRO_WEBSITE"
 $serviceId = "srv-dam749e1egvs738cppq0"
 $liveBase = "https://keycastro.onrender.com"
-$expectedVersion = "3.8.14"
-$commitMessage = "Release 3.8.14 Services & Pricing Naming Update"
+$expectedVersion = "3.8.15"
+$commitMessage = "Release 3.8.15 Home Services & Pricing CTA Simplification"
 
 function Invoke-Native {
     param(
@@ -260,11 +260,13 @@ try {
             $hasAboutPreservedDetails = ($about.Content -match [regex]::Escape("Missed follow-ups and deadlines")) -and ($about.Content -match [regex]::Escape("Software that does not fully fit")) -and ($about.Content -match [regex]::Escape("Recurring tasks and handoffs")) -and ($about.Content -match [regex]::Escape("The best option depends on the business.")) -and ($about.Content -match [regex]::Escape("Business-specific rules")) -and ($about.Content -match [regex]::Escape(">View Systems</a>"))
             $portraitLoads = ($portrait.StatusCode -eq 200) -and ($portrait.RawContentLength -gt 100000)
             $hasServicesPricingName = ($homePage.Content -match [regex]::Escape('>Services & Pricing</a>')) -and ($how.Content -match [regex]::Escape('<h1>Services & Pricing</h1>')) -and ($how.Content -match [regex]::Escape('<title>Services &amp; Pricing | Key Castro</title>'))
-            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasServicesPricingName -and $hasStudentHousing -and $hasThreeSystems -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasExistingSystemPrice -and $hasThreeHomePriceCards -and $hasThreePricedSystemCards -and $hasPurchaseBoundary -and $hasExistingSystemContact -and $hasAgreementPrice -and $oldExistingQuoteGone -and $hasUsdOnlyPublicPricing -and $hasPricing -and $oldPricingGone -and $hasMaintenanceBoundary -and $hasUpgradePricing -and $hasAboutAutomation -and $hasAboutSubscriptionValue -and $hasNewTagline -and $oldTaglineGone -and $hasAboutPortrait -and $hasAboutProfessionalTitle -and $hasAboutProfileBlock -and $hasAboutProfileName -and $hasWhatIDo -and $hasApprovedAboutDescription -and $hasAboutValueRow -and $hasAboutStoryFlow -and $hasAboutPreservedDetails -and $portraitLoads) {
+            $hasHomeServicesCta = ($homePage.Content -match [regex]::Escape('class="text-link home-services-cta-link reveal" href="/services"')) -and ($homePage.Content -match [regex]::Escape('See Services & Pricing'))
+            $oldHomeProcessGone = -not ($homePage.Content -match [regex]::Escape('How it works.')) -and -not ($homePage.Content -match [regex]::Escape('From your problem to a working system.')) -and -not ($homePage.Content -match [regex]::Escape('Tell me what you need.')) -and -not ($homePage.Content -match [regex]::Escape('Choose your system.')) -and -not ($homePage.Content -match [regex]::Escape('Choose who manages it.')) -and -not ($homePage.Content -match [regex]::Escape('class="home-process-list"'))
+            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasServicesPricingName -and $hasHomeServicesCta -and $oldHomeProcessGone -and $hasStudentHousing -and $hasThreeSystems -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasExistingSystemPrice -and $hasThreeHomePriceCards -and $hasThreePricedSystemCards -and $hasPurchaseBoundary -and $hasExistingSystemContact -and $hasAgreementPrice -and $oldExistingQuoteGone -and $hasUsdOnlyPublicPricing -and $hasPricing -and $oldPricingGone -and $hasMaintenanceBoundary -and $hasUpgradePricing -and $hasAboutAutomation -and $hasAboutSubscriptionValue -and $hasNewTagline -and $oldTaglineGone -and $hasAboutPortrait -and $hasAboutProfessionalTitle -and $hasAboutProfileBlock -and $hasAboutProfileName -and $hasWhatIDo -and $hasApprovedAboutDescription -and $hasAboutValueRow -and $hasAboutStoryFlow -and $hasAboutPreservedDetails -and $portraitLoads) {
                 $verified = $true
                 break
             }
-            $lastError = "Health/version/Services & Pricing/About/Systems content has not refreshed yet."
+            $lastError = "Health/version/Home Services & Pricing CTA/Services & Pricing/About/Systems content has not refreshed yet."
         }
         catch {
             $lastError = $_.Exception.Message
@@ -290,6 +292,8 @@ try {
     Write-Host "About automation/problem update: confirmed LIVE"
     Write-Host "Approved About profile: confirmed LIVE"
     Write-Host "About lower story organization: confirmed LIVE"
+    Write-Host "Home Services & Pricing CTA: confirmed LIVE"
+    Write-Host "Old Home three-step process: confirmed removed"
     Write-Host "Pricing/service information: confirmed LIVE"
     Write-Host "Existing system `$160 pricing: confirmed LIVE"
     Write-Host "Price by Agreement wording: confirmed LIVE"

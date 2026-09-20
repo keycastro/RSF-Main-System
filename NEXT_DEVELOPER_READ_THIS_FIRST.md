@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Release version:** 3.8.14
+**Release version:** 3.8.15
 **Official site:** https://keycastro.onrender.com
 **Framework:** Flask
 
@@ -16,7 +16,7 @@
 8. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
 9. `docs/DEPLOYMENT_HISTORY.md`
 
-Older versioned pricing/business-model documents are historical. Current 3.8.14 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
+Older versioned pricing/business-model documents are historical. Current 3.8.15 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
 
 ## Public information architecture
 
@@ -82,7 +82,7 @@ Do not repeat the full management model on every system page.
 
 ## Design rule
 
-Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.14 preserves the approved v3.8.13 design, pricing, content, and behavior and changes only the public page/navigation name from **How It Works** to **Services & Pricing** plus direct dependencies. Keep the site-wide design, navigation, all other page structure, the approved About top profile, and the lower five-part About story unchanged. How-It-Works-scoped CSS may support the approved organization. Compact must never mean tiny text.
+Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.15 changes only the final lower Home area: the old three-step process summary is removed and only the polished **See Services & Pricing →** CTA remains. Keep navigation, all other Home sections, the Services & Pricing page, pricing, systems, footer content, About, Contact, and private functionality unchanged. Compact must never mean tiny text.
 
 ## Security
 

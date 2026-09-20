@@ -20,7 +20,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Key Castro Portfolio")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.8.14")
+        self.assertEqual(data["version"], "3.8.15")
 
     def test_main_pages_and_template_library_render(self):
         routes = [
@@ -93,9 +93,15 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(response.data.count(b"Property Operations Command Center</h3>"), 1)
         self.assertEqual(response.data.count(b"Property Inventory Hub</h3>"), 1)
         self.assertEqual(response.data.count(b"Student Housing Matching and Placement System</h3>"), 1)
-        self.assertIn(b"Tell me what you need.", response.data)
-        self.assertIn(b"Choose your system.", response.data)
-        self.assertIn(b"Choose who manages it.", response.data)
+        self.assertNotIn(b"How it works.", response.data)
+        self.assertNotIn(b"From your problem to a working system.", response.data)
+        self.assertNotIn(b"Tell me what you need.", response.data)
+        self.assertNotIn(b"Choose your system.", response.data)
+        self.assertNotIn(b"Choose who manages it.", response.data)
+        self.assertIn(b'class="text-link home-services-cta-link reveal" href="/services"', response.data)
+        self.assertIn(b"See Services & Pricing", response.data)
+        self.assertEqual(response.data.count(b"See Services & Pricing"), 1)
+        self.assertNotIn(b'class="home-process-list"', response.data)
         self.assertNotIn(b">Adapt<", response.data)
         self.assertNotIn(b">Deliver<", response.data)
         public_shell = response.data.lower()

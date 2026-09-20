@@ -50,18 +50,9 @@
   </div>
 </section>
 
-<section class="section section-soft home-process-section human-process-section">
-  <div class="container home-process-layout">
-    <div class="home-process-heading reveal">
-      <h2>How it works.</h2>
-      <p>From your problem to a working system.</p>
-    </div>
-    <ol class="home-process-list">
-      <li class="reveal"><span>1</span><div><strong>Tell me what you need.</strong><p>Tell me about your business and the problem you want to solve.</p></div></li>
-      <li class="reveal delay-1"><span>2</span><div><strong>Choose your system.</strong><p>Buy an existing system for {{ existing_system_pricing.price_label }}, or ask me to build a new one.</p></div></li>
-      <li class="reveal"><span>3</span><div><strong>Choose who manages it.</strong><p>You can manage it yourself, or I can continue managing it for you.</p></div></li>
-    </ol>
-    <a class="text-link home-process-link reveal" href="{{ url_for('site.services') }}">See Services & Pricing <span>→</span></a>
+<section class="section section-soft home-services-cta-section">
+  <div class="container home-services-cta">
+    <a class="text-link home-services-cta-link reveal" href="{{ url_for('site.services') }}">See Services & Pricing <span>→</span></a>
   </div>
 </section>
 {% endblock %}

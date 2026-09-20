@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-20",
-  "version": "3.8.14",
+  "version": "3.8.15",
   "owner_public_name": "Key Castro",
   "positioning": "Better systems for complex business needs",
   "framework": "Flask",
@@ -282,7 +282,7 @@
     "launcher": "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
     "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
     "provider_auto_deploy": false,
-    "success_condition": "production health reports version 3.8.14; Home navigation and the /services page show Services & Pricing; Home, Systems, system detail, and Services & Pricing show the approved $160 existing-system purchase price; the purchase is separate from upgrades and maintenance; new custom systems use Price by Agreement; maintenance remains $39/month or $390/year; upgrades remain $79 / $149 / New System / Large Expansion Price by Agreement; no PHP/peso pricing is publicly displayed; approved About profile/lower story, footer tagline, and exactly 3 published systems remain unchanged"
+    "success_condition": "production health reports version 3.8.15; Home shows only the final See Services & Pricing CTA in the former process area and no old three-step process; Home navigation and the /services page show Services & Pricing; Home, Systems, system detail, and Services & Pricing show the approved $160 existing-system purchase price; the purchase is separate from upgrades and maintenance; new custom systems use Price by Agreement; maintenance remains $39/month or $390/year; upgrades remain $79 / $149 / New System / Large Expansion Price by Agreement; no PHP/peso pricing is publicly displayed; approved About profile/lower story, footer tagline, and exactly 3 published systems remain unchanged"
   },
   "ux_master_refinement_3_7": {
     "document": "docs/MASTER_UX_REFINEMENT_3_7.md",
@@ -482,6 +482,20 @@
       "Updated the /services page heading and browser/tab title to Services & Pricing",
       "Updated the Home direct link label to See Services & Pricing",
       "Preserved the canonical /services route and all page content, pricing, layout, styling, and behavior"
+    ]
+  },
+  "minor_change_3_8_15": {
+    "scope": "Home final Services & Pricing CTA simplification only, plus direct CSS/test/release/deployment dependencies",
+    "routes_changed": false,
+    "navigation_changed": false,
+    "services_page_changed": false,
+    "pricing_changed": false,
+    "business_logic_changed": false,
+    "changes": [
+      "Removed the lower Home How it works heading, summary, all three numbered steps, and their descriptions",
+      "Kept only See Services & Pricing → linked to /services",
+      "Added Home-CTA-scoped styling to center the link, increase its prominence, and keep desktop/mobile spacing balanced",
+      "Preserved all other Home content, Services & Pricing content, pricing, systems, footer content, routes, and private functionality"
     ]
   }
 }
