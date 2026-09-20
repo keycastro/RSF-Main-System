@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Release version:** 3.8.9
+**Release version:** 3.8.10
 **Official site:** https://keycastro.onrender.com
 **Framework:** Flask
 
@@ -16,7 +16,7 @@
 8. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
 9. `docs/DEPLOYMENT_HISTORY.md`
 
-Older versioned pricing/business-model documents are historical. Current 3.8.9 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
+Older versioned pricing/business-model documents are historical. Current 3.8.10 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
 
 ## Public information architecture
 
@@ -82,7 +82,7 @@ Do not repeat the full management model on every system page.
 
 ## Design rule
 
-Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.9 is information-only: no design, layout, typography, spacing, card, navigation, page-structure, or responsive change is approved. Keep the approved About top profile and lower five-part story unchanged. Compact must never mean tiny text.
+Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.10 changes only the organization of **How It Works Step 2**. Keep the site-wide design, navigation, all other page structure, the approved About top profile, and the lower five-part About story unchanged. Step-2-scoped CSS may support the approved management/maintenance/upgrade organization. Compact must never mean tiny text.
 
 ## Security
 

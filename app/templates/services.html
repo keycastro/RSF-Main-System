@@ -23,24 +23,82 @@
 
     <article class="human-step reveal" id="management-options">
       <div class="human-step-number">2</div>
-      <div class="human-step-body">
+      <div class="human-step-body management-clarity">
         <h2>Choose who manages it.</h2>
-        <p>After the system is ready, there are only two choices.</p>
-        <div class="management-choice-grid">
-          <section class="management-choice">
+        <p>After the system is ready, choose one of these two options.</p>
+
+        <div class="management-choice-grid management-clarity-grid">
+          <section class="management-choice management-clarity-card">
             <p class="choice-label">YOU MANAGE IT</p>
             <h3>I build it. You manage it.</h3>
-            <p>I give the finished system to you. After that, you or someone you hire handles hosting, security, backups, and technical care.</p>
+            <p>I give the finished system to you. You or someone you hire takes care of the technical side.</p>
+            <div class="management-detail-block">
+              <strong class="management-detail-title">You handle:</strong>
+              <ul class="management-detail-list">
+                <li>Hosting</li>
+                <li>Security</li>
+                <li>Backups</li>
+                <li>Technical care</li>
+              </ul>
+            </div>
           </section>
-          <section class="management-choice managed-choice">
+
+          <section class="management-choice managed-choice management-clarity-card">
             <p class="choice-label">I MANAGE IT</p>
             <h3>I build it. I manage it.</h3>
-            <p>I keep your existing live system online, secure, stable, accessible, and properly maintained.</p>
-            <p class="human-price"><strong>{{ maintenance_pricing.currency_symbol }}{{ maintenance_pricing.monthly_price }}/month</strong><span>or</span><strong>{{ maintenance_pricing.currency_symbol }}{{ maintenance_pricing.yearly_price }}/year</strong></p>
-            <p class="human-note">This is the same maintenance service with monthly or yearly billing. It keeps the current system running. It can include hosting, routine checks, backups when used, and technical fixes for the existing system. It does not include new features, workflow changes, new parts of the system, connections to other tools, or other improvements.</p>
+            <p>I keep your current live system online, secure, stable, and working properly.</p>
+            <p class="human-price management-price"><strong>{{ maintenance_pricing.currency_symbol }}{{ maintenance_pricing.monthly_price }}/month</strong><span>or</span><strong>{{ maintenance_pricing.currency_symbol }}{{ maintenance_pricing.yearly_price }}/year</strong></p>
+            <p class="management-billing-note">The same maintenance service. Choose monthly or yearly billing.</p>
+
+            <div class="management-maintenance-grid">
+              <div class="management-detail-block">
+                <strong class="management-detail-title">Maintenance can include:</strong>
+                <ul class="management-detail-list">
+                  <li>Hosting and deployment</li>
+                  <li>Routine checks</li>
+                  <li>Backups when used</li>
+                  <li>Technical fixes for the current system</li>
+                </ul>
+              </div>
+              <div class="management-detail-block management-not-included">
+                <strong class="management-detail-title">Maintenance does not include:</strong>
+                <ul class="management-detail-list">
+                  <li>New features</li>
+                  <li>Workflow changes</li>
+                  <li>New parts of the system</li>
+                  <li>Connections to other tools</li>
+                  <li>Other improvements</li>
+                </ul>
+              </div>
+            </div>
           </section>
         </div>
-        <p class="human-note"><strong>Need changes later?</strong> Minor System Upgrade — $79 for a focused improvement. Major System Upgrade — $149 for a larger improvement. Very large changes or a new system use a custom quote. Upgrades are separate from maintenance. You can buy an upgrade later whether you manage the system yourself or I manage it.</p>
+
+        <section class="management-upgrades" aria-labelledby="changes-later-title">
+          <div class="management-upgrades-intro">
+            <p class="choice-label">NEED CHANGES LATER?</p>
+            <h3 id="changes-later-title">You can improve the system later.</h3>
+            <p>Upgrades are separate from maintenance.</p>
+          </div>
+          <div class="management-upgrade-grid">
+            <article class="management-upgrade-card">
+              <strong>Minor System Upgrade</strong>
+              <span class="management-upgrade-price">$79</span>
+              <p>For a focused feature, automation, report, or workflow improvement.</p>
+            </article>
+            <article class="management-upgrade-card">
+              <strong>Major System Upgrade</strong>
+              <span class="management-upgrade-price">$149</span>
+              <p>For a larger feature, workflow change, automation, or system improvement.</p>
+            </article>
+            <article class="management-upgrade-card">
+              <strong>Large Expansion / New System</strong>
+              <span class="management-upgrade-price">Custom Quote</span>
+              <p>For work that is too large for a normal system upgrade.</p>
+            </article>
+          </div>
+          <p class="management-upgrades-note">You can buy an upgrade later whether you manage the system yourself or I manage it.</p>
+        </section>
       </div>
     </article>
 

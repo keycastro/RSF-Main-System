@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 3.8.10 — How It Works Step 2 clarity
+
+- Reorganized only **Step 2 — Choose who manages it** on the How It Works page.
+- Kept exactly two management choices: **You Manage It** and **I Manage It**.
+- Preserved the approved maintenance price: **$39/month or $390/year**.
+- Replaced the dense maintenance paragraph with clear grouped information: what the client handles, what maintenance can include, and what maintenance does not include.
+- Turned the disconnected **Need changes later?** sentence into a connected three-card upgrade area: **Minor System Upgrade — $79**, **Major System Upgrade — $149**, and **Large Expansion / New System — Custom Quote**.
+- Preserved the rule that upgrades are separate from maintenance and can be bought later whether the client manages the system or Key manages it.
+- Added only Step-2-scoped CSS and direct test/version/release/deployment dependencies. Home, Systems, About, Contact, navigation, footer, backend, routes, forms, database, authentication, pricing, and unrelated How It Works content remain unchanged.
+
 ## 3.8.9 — Pricing and service clarity
 
 - Content and pricing update only; no redesign or restyling.

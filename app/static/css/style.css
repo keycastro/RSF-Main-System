@@ -2404,3 +2404,40 @@ body{font-size:17px;line-height:1.68}
 /* 3.8.8 direct specificity guards against earlier About-list rules. */
 .about-feature-list .about-detail-icon{display:grid;color:var(--navy-deep);font-size:inherit;line-height:normal}
 .about-work-steps li>.about-work-step-icon{padding-top:0;color:var(--navy-deep);font-size:inherit;font-weight:400}
+
+/* 3.8.10 — How It Works Step 2 clarity only.
+   Scoped to the management section; no unrelated page or design changes. */
+#management-options .management-clarity-grid{align-items:start}
+#management-options .management-clarity-card{display:flex;flex-direction:column;gap:0}
+#management-options .management-detail-block{margin-top:18px;padding-top:15px;border-top:1px solid rgba(21,41,52,.12)}
+#management-options .management-detail-title{display:block;margin-bottom:9px;color:var(--ink);font-size:14px}
+#management-options .management-detail-list{margin:0;padding:0;list-style:none;display:grid;gap:7px}
+#management-options .management-detail-list li{position:relative;padding-left:17px;color:var(--ink-2);font-size:14px;line-height:1.48}
+#management-options .management-detail-list li::before{content:"";position:absolute;left:1px;top:.66em;width:6px;height:6px;border-radius:50%;background:var(--sage)}
+#management-options .management-price{margin-top:17px!important}
+#management-options .management-billing-note{margin:9px 0 0;color:var(--muted);font-size:13px;line-height:1.48}
+#management-options .management-maintenance-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:3px}
+#management-options .management-not-included .management-detail-list li::before{background:var(--bronze)}
+#management-options .management-upgrades{margin-top:22px;padding:22px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.55)}
+#management-options .management-upgrades-intro{max-width:720px}
+#management-options .management-upgrades-intro .choice-label{margin:0 0 7px;color:var(--sage-deep);font-size:11px;font-weight:850;letter-spacing:.08em}
+#management-options .management-upgrades-intro h3{margin:0 0 6px;font-size:21px}
+#management-options .management-upgrades-intro>p:last-child{margin:0;color:var(--ink-2);font-size:14px;line-height:1.5}
+#management-options .management-upgrade-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:17px}
+#management-options .management-upgrade-card{padding:16px;border:1px solid var(--line);border-radius:11px;background:var(--surface)}
+#management-options .management-upgrade-card>strong{display:block;color:var(--ink);font-size:14px;line-height:1.35}
+#management-options .management-upgrade-price{display:block;margin-top:8px;color:var(--navy-deep);font-size:18px;font-weight:800}
+#management-options .management-upgrade-card p{margin:8px 0 0;color:var(--muted);font-size:13px;line-height:1.48}
+#management-options .management-upgrades-note{margin:15px 0 0;color:var(--muted);font-size:13px;line-height:1.5}
+@media(max-width:900px){
+  #management-options .management-maintenance-grid{grid-template-columns:1fr}
+  #management-options .management-upgrade-grid{grid-template-columns:1fr}
+}
+@media(max-width:680px){
+  #management-options .management-detail-title{font-size:14.5px}
+  #management-options .management-detail-list li{font-size:14.5px}
+  #management-options .management-upgrades{padding:17px}
+  #management-options .management-upgrade-card{padding:15px}
+  #management-options .management-upgrade-card>strong{font-size:15px}
+  #management-options .management-upgrade-card p,#management-options .management-upgrades-note,#management-options .management-billing-note{font-size:14px}
+}
