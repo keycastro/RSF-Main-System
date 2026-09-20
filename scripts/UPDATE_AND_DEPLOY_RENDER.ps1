@@ -213,7 +213,7 @@ try {
         try {
             $stamp = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
             $health = Invoke-RestMethod -Uri "$liveBase/system/health?verify=$stamp" -Method Get -TimeoutSec 30
-            $home = Invoke-WebRequest -Uri "$liveBase/?verify=$stamp" -UseBasicParsing -TimeoutSec 30
+            $homePage = Invoke-WebRequest -Uri "$liveBase/?verify=$stamp" -UseBasicParsing -TimeoutSec 30
             $systems = Invoke-WebRequest -Uri "$liveBase/system-templates?verify=$stamp" -UseBasicParsing -TimeoutSec 30
             $detail = Invoke-WebRequest -Uri "$liveBase/system-templates/property-operations-command-center?verify=$stamp" -UseBasicParsing -TimeoutSec 30
             $how = Invoke-WebRequest -Uri "$liveBase/services?verify=$stamp" -UseBasicParsing -TimeoutSec 30
@@ -230,8 +230,8 @@ try {
             $hasViewSystemsButton = ($how.Content -match [regex]::Escape('href="/system-templates"')) -and ($how.Content -match [regex]::Escape('>View Systems</a>'))
             $hasRequestSystemButton = ($how.Content -match [regex]::Escape('href="/contact?intent=custom-build"')) -and ($how.Content -match [regex]::Escape('>Request a System</a>'))
             $finalCtaGone = -not ($how.Content -match [regex]::Escape("Want to get started?"))
-            $hasExistingSystemPrice = ($home.Content -match [regex]::Escape('$160')) -and ($systems.Content -match [regex]::Escape('$160')) -and ($detail.Content -match [regex]::Escape('$160')) -and ($how.Content -match [regex]::Escape('$160'))
-            $hasThreeHomePriceCards = (([regex]::Matches($home.Content, 'class="existing-system-card-price"')).Count -eq 3)
+            $hasExistingSystemPrice = ($homePage.Content -match [regex]::Escape('$160')) -and ($systems.Content -match [regex]::Escape('$160')) -and ($detail.Content -match [regex]::Escape('$160')) -and ($how.Content -match [regex]::Escape('$160'))
+            $hasThreeHomePriceCards = (([regex]::Matches($homePage.Content, 'class="existing-system-card-price"')).Count -eq 3)
             $hasThreePricedSystemCards = (([regex]::Matches($systems.Content, 'class="existing-system-card-price"')).Count -eq 3)
             $hasPurchaseBoundary = ($systems.Content -match [regex]::Escape('Changes are priced separately.')) -and ($detail.Content -match [regex]::Escape('This price is for the existing system shown here. Changes are priced separately.')) -and ($how.Content -match [regex]::Escape('If you want changes later, upgrades are priced separately.'))
             $hasExistingSystemContact = ($detail.Content -match [regex]::Escape('intent=existing-system')) -and ($detail.Content -match [regex]::Escape('>Get This System</a>'))
@@ -240,7 +240,7 @@ try {
             $hasPricing = ($how.Content -match [regex]::Escape('$39/month')) -and ($how.Content -match [regex]::Escape('$390/year'))
             $oldPricingGone = -not ($how.Content -match [regex]::Escape('$49/month')) -and -not ($how.Content -match [regex]::Escape('$490/year'))
             $pesoSymbol = [char]0x20B1
-            $combinedPublicPricingPages = $home.Content + $systems.Content + $detail.Content + $how.Content
+            $combinedPublicPricingPages = $homePage.Content + $systems.Content + $detail.Content + $how.Content
             $hasUsdOnlyPublicPricing = -not ($combinedPublicPricingPages -match [regex]::Escape($pesoSymbol)) -and -not ($combinedPublicPricingPages -match 'PHP') -and -not ($combinedPublicPricingPages -match 'Philippine peso')
             $hasMaintenanceBoundary = ($how.Content -match [regex]::Escape('Same maintenance service. Choose monthly or yearly billing.')) -and ($how.Content -match [regex]::Escape('Maintenance can include:')) -and ($how.Content -match [regex]::Escape('Hosting and deployment')) -and ($how.Content -match [regex]::Escape('Technical fixes for the current system')) -and ($how.Content -match [regex]::Escape('Maintenance does not include:')) -and ($how.Content -match [regex]::Escape('New features')) -and ($how.Content -match [regex]::Escape('Workflow changes')) -and ($how.Content -match [regex]::Escape('Connections to other tools'))
             $hasUpgradePricing = ($how.Content -match [regex]::Escape('Minor System Upgrade')) -and ($how.Content -match [regex]::Escape('$79')) -and ($how.Content -match [regex]::Escape('Major System Upgrade')) -and ($how.Content -match [regex]::Escape('$149')) -and ($how.Content -match [regex]::Escape('New System / Large Expansion')) -and ($how.Content -match [regex]::Escape('Custom Quote')) -and ($how.Content -match [regex]::Escape('Upgrades are separate from maintenance.')) -and ($how.Content -match [regex]::Escape('You can buy an upgrade later whether you manage the system yourself or I manage it.'))
