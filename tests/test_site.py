@@ -20,7 +20,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Key Castro Portfolio")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.8.15")
+        self.assertEqual(data["version"], "3.8.16")
 
     def test_main_pages_and_template_library_render(self):
         routes = [
@@ -98,9 +98,21 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertNotIn(b"Tell me what you need.", response.data)
         self.assertNotIn(b"Choose your system.", response.data)
         self.assertNotIn(b"Choose who manages it.", response.data)
-        self.assertIn(b'class="text-link home-services-cta-link reveal" href="/services"', response.data)
+        self.assertIn(b'class="home-featured-action-link home-featured-action-link--primary" href="/system-templates"', response.data)
+        self.assertIn(b"Explore All Systems", response.data)
+        self.assertEqual(response.data.count(b"Explore All Systems"), 1)
+        self.assertIn(b'class="home-featured-action-link home-featured-action-link--secondary" href="/services"', response.data)
         self.assertIn(b"See Services & Pricing", response.data)
         self.assertEqual(response.data.count(b"See Services & Pricing"), 1)
+        self.assertIn(b"READY TO SEE MORE?", response.data)
+        self.assertIn(b"NEED DETAILS?", response.data)
+        self.assertIn(b"SIMPLE", response.data)
+        self.assertIn(b"SYSTEMS", response.data)
+        self.assertIn(b"REAL IMPACT", response.data)
+        self.assertIn(b"BUILD", response.data)
+        self.assertIn(b"ORGANIZE", response.data)
+        self.assertIn(b"GROW", response.data)
+        self.assertNotIn(b"home-services-cta-link", response.data)
         self.assertNotIn(b'class="home-process-list"', response.data)
         self.assertNotIn(b">Adapt<", response.data)
         self.assertNotIn(b">Deliver<", response.data)

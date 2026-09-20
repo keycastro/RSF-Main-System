@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
-  "handoff_date": "2026-09-20",
-  "version": "3.8.15",
+  "handoff_date": "2026-09-21",
+  "version": "3.8.16",
   "owner_public_name": "Key Castro",
   "positioning": "Better systems for complex business needs",
   "framework": "Flask",
@@ -282,7 +282,7 @@
     "launcher": "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
     "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
     "provider_auto_deploy": false,
-    "success_condition": "production health reports version 3.8.15; Home shows only the final See Services & Pricing CTA in the former process area and no old three-step process; Home navigation and the /services page show Services & Pricing; Home, Systems, system detail, and Services & Pricing show the approved $160 existing-system purchase price; the purchase is separate from upgrades and maintenance; new custom systems use Price by Agreement; maintenance remains $39/month or $390/year; upgrades remain $79 / $149 / New System / Large Expansion Price by Agreement; no PHP/peso pricing is publicly displayed; approved About profile/lower story, footer tagline, and exactly 3 published systems remain unchanged"
+    "success_condition": "production health reports version 3.8.16; Home keeps exactly 3 featured systems and shows the approved Explore All Systems CTA to /system-templates plus See Services & Pricing CTA to /services; the old Home three-step process remains removed; Home navigation and the /services page show Services & Pricing; Home, Systems, system detail, and Services & Pricing show the approved $160 existing-system purchase price; the purchase is separate from upgrades and maintenance; new custom systems use Price by Agreement; maintenance remains $39/month or $390/year; upgrades remain $79 / $149 / New System / Large Expansion Price by Agreement; no PHP/peso pricing is publicly displayed; approved About profile/lower story, footer tagline, and exactly 3 published systems remain unchanged"
   },
   "ux_master_refinement_3_7": {
     "document": "docs/MASTER_UX_REFINEMENT_3_7.md",
@@ -496,6 +496,41 @@
       "Kept only See Services & Pricing → linked to /services",
       "Added Home-CTA-scoped styling to center the link, increase its prominence, and keep desktop/mobile spacing balanced",
       "Preserved all other Home content, Services & Pricing content, pricing, systems, footer content, routes, and private functionality"
+    ]
+  },
+  "home_featured_cta_3_8_16": {
+    "scope": "Home lower transition area only",
+    "featured_systems_on_home": 3,
+    "primary_cta": {
+      "label": "Explore All Systems",
+      "path": "/system-templates"
+    },
+    "secondary_cta": {
+      "label": "See Services & Pricing",
+      "path": "/services"
+    },
+    "approved_microcopy": [
+      "SIMPLE",
+      "SYSTEMS",
+      "REAL IMPACT",
+      "READY TO SEE MORE?",
+      "NEED DETAILS?",
+      "BUILD",
+      "ORGANIZE",
+      "GROW"
+    ],
+    "preserved": [
+      "three Home system cards",
+      "Home hero",
+      "navigation",
+      "footer content",
+      "Systems page",
+      "Services & Pricing page",
+      "About",
+      "Contact",
+      "pricing",
+      "business logic",
+      "private owner Inbox"
     ]
   }
 }

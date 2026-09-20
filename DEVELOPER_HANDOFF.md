@@ -1,12 +1,12 @@
 # KEY CASTRO WEBSITE — DEVELOPER HANDOFF
 
-**Release:** 3.8.15
+**Release:** 3.8.16
 **Live URL:** https://keycastro.onrender.com
 **Framework:** Flask
 
 ## Current direction
 
-Version 3.8.15 is a **Home final-CTA simplification**. It removes only the lower Home three-step process summary and retains one polished **See Services & Pricing →** link to `/services`, with minimal CTA-scoped styling. All other design, prices, routes, page content, systems, footer content, and behavior remain unchanged.
+Version 3.8.16 is a **Home featured-systems CTA redesign**. It changes only the transition after the three existing Home system cards: **Explore All Systems →** links to `/system-templates` as the primary action and **See Services & Pricing →** links to `/services` as the secondary action, using the approved compact editorial CTA composition. The three cards and all other design, prices, routes, pages, footer content, and behavior remain unchanged.
 
 Primary navigation: **Home · Systems · Services & Pricing · About · Contact**. The underlying `/services` URL remains unchanged.
 
@@ -45,4 +45,4 @@ A non-technical 50–70 year old business owner should understand the basic offe
 
 ## Release workflow
 
-Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/Home CTA/content/profile-portrait verification for version 3.8.15. Never commit private/runtime files.
+Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/Home featured-CTA/content/profile-portrait verification for version 3.8.16. Never commit private/runtime files.

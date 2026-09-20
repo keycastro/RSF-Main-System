@@ -1,3 +1,12 @@
+## 3.8.16 — Home Featured Systems CTA Redesign
+
+- Redesigned only the Home-page transition area after the three featured system cards and before the existing footer.
+- Added the primary **Explore All Systems →** CTA to `/system-templates` and retained **See Services & Pricing →** to `/services` as the quieter secondary action.
+- Recreated the approved editorial CTA direction with restrained navy/bronze/sage accents, a subtle divider, compact angular edge treatments, and approved decorative microcopy.
+- Tightened only CTA-transition spacing so the three cards flow naturally into the action band and then directly into the unchanged footer.
+- Added responsive CTA behavior: side decoration is removed on narrower screens and the two actions stack cleanly on mobile without horizontal overflow.
+- Preserved the three featured system cards, hero, navigation, footer content, Systems page, Services & Pricing page, About, Contact, pricing, backend behavior, owner Inbox, database, authentication, and inquiry flow.
+
 ## 3.8.15 — Home Services & Pricing CTA Simplification
 
 - Removed the lower Home-page **How it works.** heading, supporting sentence, all three numbered steps, and all step descriptions.

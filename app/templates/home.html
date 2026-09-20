@@ -50,9 +50,37 @@
   </div>
 </section>
 
-<section class="section section-soft home-services-cta-section">
-  <div class="container home-services-cta">
-    <a class="text-link home-services-cta-link reveal" href="{{ url_for('site.services') }}">See Services & Pricing <span>→</span></a>
+<section class="home-featured-actions-section" aria-label="More ways to continue">
+  <div class="home-featured-actions-shell">
+    <div class="home-featured-edge home-featured-edge--left" aria-hidden="true">
+      <span>SIMPLE</span>
+      <span>SYSTEMS</span>
+      <span>REAL IMPACT</span>
+    </div>
+
+    <div class="container home-featured-actions">
+      <div class="home-featured-action home-featured-action--primary reveal">
+        <span class="home-featured-action-kicker">READY TO SEE MORE?</span>
+        <a class="home-featured-action-link home-featured-action-link--primary" href="{{ url_for('site.system_templates') }}">
+          <span>Explore All Systems</span><span class="home-featured-action-arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <span class="home-featured-action-divider" aria-hidden="true"></span>
+
+      <div class="home-featured-action home-featured-action--secondary reveal">
+        <span class="home-featured-action-kicker home-featured-action-kicker--secondary">NEED DETAILS?</span>
+        <a class="home-featured-action-link home-featured-action-link--secondary" href="{{ url_for('site.services') }}">
+          <span>See Services & Pricing</span><span class="home-featured-action-arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="home-featured-edge home-featured-edge--right" aria-hidden="true">
+      <span>BUILD</span>
+      <span>ORGANIZE</span>
+      <span>GROW</span>
+    </div>
   </div>
 </section>
 {% endblock %}
