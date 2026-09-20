@@ -15,8 +15,8 @@
         <h2>Tell me what you need.</h2>
         <p>Tell me about your business and what you want the system to help with.</p>
         <div class="human-simple-options" aria-label="Ways I can build your system">
-          <div><strong>Use one of my existing systems</strong><span>I can adapt one of my existing systems to fit your business.</span><a class="button primary human-option-button" href="{{ url_for('site.system_templates') }}">View Systems</a></div>
-          <div><strong>Build a new system</strong><span>If none of the existing systems fit, I can build a new one for you.</span><a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Request a System</a></div>
+          <div><strong>Use one of my existing systems</strong><span>I can adapt one of my existing systems to fit your business. The price is a custom quote based on what you need.</span><a class="button primary human-option-button" href="{{ url_for('site.system_templates') }}">View Systems</a></div>
+          <div><strong>Build a new system</strong><span>If none of the existing systems fit, I can build a new one for you. The price is a custom quote based on the work needed.</span><a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Request a System</a></div>
         </div>
       </div>
     </article>
@@ -30,15 +30,17 @@
           <section class="management-choice">
             <p class="choice-label">YOU MANAGE IT</p>
             <h3>I build it. You manage it.</h3>
-            <p>I give the finished system to you. After that, you or someone you hire keeps it online, safe, and updated.</p>
+            <p>I give the finished system to you. After that, you or someone you hire handles hosting, security, backups, and technical care.</p>
           </section>
           <section class="management-choice managed-choice">
             <p class="choice-label">I MANAGE IT</p>
             <h3>I build it. I manage it.</h3>
-            <p>I keep the system online, safe, fixed, and updated for you.</p>
+            <p>I keep your existing live system online, secure, stable, accessible, and properly maintained.</p>
             <p class="human-price"><strong>{{ maintenance_pricing.currency_symbol }}{{ maintenance_pricing.monthly_price }}/month</strong><span>or</span><strong>{{ maintenance_pricing.currency_symbol }}{{ maintenance_pricing.yearly_price }}/year</strong></p>
+            <p class="human-note">This is the same maintenance service with monthly or yearly billing. It keeps the current system running. It can include hosting, routine checks, backups when used, and technical fixes for the existing system. It does not include new features, workflow changes, new parts of the system, connections to other tools, or other improvements.</p>
           </section>
         </div>
+        <p class="human-note"><strong>Need changes later?</strong> Minor System Upgrade — $79 for a focused improvement. Major System Upgrade — $149 for a larger improvement. Very large changes or a new system use a custom quote. Upgrades are separate from maintenance. You can buy an upgrade later whether you manage the system yourself or I manage it.</p>
       </div>
     </article>
 

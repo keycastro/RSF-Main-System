@@ -1,4 +1,4 @@
-# Content and Scope — 3.8.1
+# Content and Scope — current through 3.8.9
 
 ## Public identity
 
@@ -29,9 +29,9 @@ Step 1 already explains that an existing system can be adapted or a new system c
 Beginner-facing post-build choices:
 
 - **You Manage It** — “I build it. You manage it.”
-- **I Manage It** — “I build it. I manage it.” — $49/month or $490/year.
+- **I Manage It** — “I build it. I manage it.” — **$39/month or $390/year**.
 
-Internally these map to Full Handover and Managed by KEY CASTRO. Build/customization pricing is separate.
+Internally these map to Full Handover and Managed by KEY CASTRO. Build/customization pricing is a **Custom Quote**. Maintenance keeps the current system running and does not include future features or workflow changes. Future improvements are separate purchases: **Minor System Upgrade — $79**, **Major System Upgrade — $149**, and **very large expansion / new system — Custom Quote**.
 
 ## Truth guardrails
 

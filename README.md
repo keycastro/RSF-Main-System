@@ -4,7 +4,7 @@ Professional portfolio and client-acquisition website for **KEY CASTRO — Custo
 
 Official website: https://keycastro.onrender.com
 
-**Current release version: 3.8.8**
+**Current release version: 3.8.9**
 
 ## One project folder
 
@@ -16,7 +16,7 @@ This single Flask codebase contains the public website, published system pages, 
 
 ## Public design rule
 
-Preserve the premium ivory/navy/sage identity, typography, compact spacing, responsive behavior, and five-item navigation. Version 3.8.8 keeps the approved v3.8.7 About top profile exactly as-is and reorganizes only the lower About content into a consistent five-part story while preserving every approved detail; styling remains scoped to the About page.
+Preserve the premium ivory/navy/sage identity, typography, compact spacing, responsive behavior, cards, page structure, and five-item navigation. Version 3.8.9 is a content-and-pricing update only. It does not redesign or restyle the public website.
 
 Public rule: **Short. Simple. Clear. No unnecessary repetition.**
 
@@ -31,12 +31,10 @@ A client can:
 
 After the agreed system is ready, there are only two management choices:
 
-1. **Full Handover — I build it. You manage it.** The client handles ongoing hosting, domain, backups, maintenance, updates, and future technical management after handover.
-2. **Managed by KEY CASTRO — I build it. I manage it.** KEY CASTRO continues the agreed hosting/deployment, backups, maintenance, fixes, updates, monitoring, and technical support for **$49/month or $490/year per system**.
+1. **Full Handover — I build it. You manage it.** The client handles hosting, security, backups, and technical upkeep after handover.
+2. **Managed by KEY CASTRO — I build it. I manage it.** KEY CASTRO keeps the existing live system online, secure, stable, accessible, and technically maintained for **$39/month or $390/year per system**.
 
-Build/customization pricing is separate and quoted based on requirements. Monthly/yearly pricing is for managed maintenance, not the cost of a custom build.
-
-See `docs/BUSINESS_MODEL_AND_MANAGED_MAINTENANCE_3_6.md`.
+Build/customization pricing is a **custom quote** based on what the business needs. Maintenance keeps the current system running; it does not include new features, workflow changes, new modules, integrations, or other improvements. Future improvements are paid separately: **Minor System Upgrade — $79**, **Major System Upgrade — $149**, and a **very large expansion or new system — Custom Quote**.
 
 ## Published systems
 

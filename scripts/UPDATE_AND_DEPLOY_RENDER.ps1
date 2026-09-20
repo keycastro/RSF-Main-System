@@ -5,8 +5,8 @@ $documents = [Environment]::GetFolderPath("MyDocuments")
 $target = Join-Path $documents "KEY_CASTRO_WEBSITE"
 $serviceId = "srv-dam749e1egvs738cppq0"
 $liveBase = "https://keycastro.onrender.com"
-$expectedVersion = "3.8.8"
-$commitMessage = "Release 3.8.8 About lower story organization"
+$expectedVersion = "3.8.9"
+$commitMessage = "Release 3.8.9 pricing and service clarity"
 
 function Invoke-Native {
     param(
@@ -78,6 +78,7 @@ try {
         "README.md", "CHANGELOG.md", "DELIVERY_REPORT.md", "RELEASE_AUDIT.md",
         "VERSION.txt", "PROJECT_STATE.json", "DEVELOPER_HANDOFF.md",
         "NEXT_DEVELOPER_READ_THIS_FIRST.md", "SECURITY_AND_SHARING_NOTES.md",
+        "00_FUTURE_DEVELOPER_READ_THIS_PLAN.md",
         "KEY_CASTRO_LAUNCHER.ps1", "KEY_CASTRO.ico",
         "START_KEY_CASTRO_WEBSITE.bat", "SETUP_KEY_CASTRO_WEBSITE.bat",
         "STOP_KEY_CASTRO_WEBSITE.bat", "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
@@ -117,6 +118,7 @@ try {
         "README.md", "CHANGELOG.md", "DELIVERY_REPORT.md", "RELEASE_AUDIT.md",
         "VERSION.txt", "PROJECT_STATE.json", "DEVELOPER_HANDOFF.md",
         "NEXT_DEVELOPER_READ_THIS_FIRST.md", "SECURITY_AND_SHARING_NOTES.md",
+        "00_FUTURE_DEVELOPER_READ_THIS_PLAN.md",
         "KEY_CASTRO_LAUNCHER.ps1", "KEY_CASTRO.ico", "START_KEY_CASTRO_WEBSITE.bat",
         "SETUP_KEY_CASTRO_WEBSITE.bat", "STOP_KEY_CASTRO_WEBSITE.bat",
         "APPLY_UPDATE_AND_DEPLOY_LIVE.bat", "AUTO_DEPLOY_README.txt"
@@ -227,7 +229,11 @@ try {
             $hasViewSystemsButton = ($how.Content -match [regex]::Escape('href="/system-templates"')) -and ($how.Content -match [regex]::Escape('>View Systems</a>'))
             $hasRequestSystemButton = ($how.Content -match [regex]::Escape('href="/contact?intent=custom-build"')) -and ($how.Content -match [regex]::Escape('>Request a System</a>'))
             $finalCtaGone = -not ($how.Content -match [regex]::Escape("Want to get started?"))
-            $hasPricing = ($how.Content -match [regex]::Escape('$49/month')) -and ($how.Content -match [regex]::Escape('$490/year'))
+            $hasPricing = ($how.Content -match [regex]::Escape('$39/month')) -and ($how.Content -match [regex]::Escape('$390/year'))
+            $oldPricingGone = -not ($how.Content -match [regex]::Escape('$49/month')) -and -not ($how.Content -match [regex]::Escape('$490/year'))
+            $hasBuildQuote = ($how.Content -match [regex]::Escape('The price is a custom quote based on what you need.')) -and ($how.Content -match [regex]::Escape('The price is a custom quote based on the work needed.'))
+            $hasMaintenanceBoundary = ($how.Content -match [regex]::Escape('This is the same maintenance service with monthly or yearly billing.')) -and ($how.Content -match [regex]::Escape('It keeps the current system running.')) -and ($how.Content -match [regex]::Escape('It does not include new features, workflow changes, new parts of the system, connections to other tools, or other improvements.'))
+            $hasUpgradePricing = ($how.Content -match [regex]::Escape('Minor System Upgrade')) -and ($how.Content -match [regex]::Escape('$79')) -and ($how.Content -match [regex]::Escape('Major System Upgrade')) -and ($how.Content -match [regex]::Escape('$149')) -and ($how.Content -match [regex]::Escape('Upgrades are separate from maintenance.'))
             $hasAboutAutomation = $about.Content -match [regex]::Escape("Automate the repetitive work that should not stay manual.")
             $hasAboutSubscriptionValue = $about.Content -match [regex]::Escape("One system can reduce the need for too many paid tools.")
             $hasNewTagline = $about.Content -match [regex]::Escape("Better systems for complex business needs.")
@@ -243,7 +249,7 @@ try {
             $hasAboutStoryFlow = (($about.Content | Select-String -Pattern 'class="about-story-index"' -AllMatches).Matches.Count -eq 5) -and ($about.Content -match [regex]::Escape("THE PROBLEMS I HELP SOLVE")) -and ($about.Content -match [regex]::Escape("AUTOMATION")) -and ($about.Content -match [regex]::Escape("FEWER DISCONNECTED PLATFORMS")) -and ($about.Content -match [regex]::Escape("WHAT I BUILD")) -and ($about.Content -match [regex]::Escape("HOW I WORK"))
             $hasAboutPreservedDetails = ($about.Content -match [regex]::Escape("Missed follow-ups and deadlines")) -and ($about.Content -match [regex]::Escape("Software that does not fully fit")) -and ($about.Content -match [regex]::Escape("Recurring tasks and handoffs")) -and ($about.Content -match [regex]::Escape("The best option depends on the business.")) -and ($about.Content -match [regex]::Escape("Business-specific rules")) -and ($about.Content -match [regex]::Escape(">View Systems</a>"))
             $portraitLoads = ($portrait.StatusCode -eq 200) -and ($portrait.RawContentLength -gt 100000)
-            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems -and $hasAdaptSentence -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasPricing -and $hasAboutAutomation -and $hasAboutSubscriptionValue -and $hasNewTagline -and $oldTaglineGone -and $hasAboutPortrait -and $hasAboutProfessionalTitle -and $hasAboutProfileBlock -and $hasAboutProfileName -and $hasWhatIDo -and $hasApprovedAboutDescription -and $hasAboutValueRow -and $hasAboutStoryFlow -and $hasAboutPreservedDetails -and $portraitLoads) {
+            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems -and $hasAdaptSentence -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasPricing -and $oldPricingGone -and $hasBuildQuote -and $hasMaintenanceBoundary -and $hasUpgradePricing -and $hasAboutAutomation -and $hasAboutSubscriptionValue -and $hasNewTagline -and $oldTaglineGone -and $hasAboutPortrait -and $hasAboutProfessionalTitle -and $hasAboutProfileBlock -and $hasAboutProfileName -and $hasWhatIDo -and $hasApprovedAboutDescription -and $hasAboutValueRow -and $hasAboutStoryFlow -and $hasAboutPreservedDetails -and $portraitLoads) {
                 $verified = $true
                 break
             }
@@ -273,6 +279,7 @@ try {
     Write-Host "About automation/problem update: confirmed LIVE"
     Write-Host "Approved About profile: confirmed LIVE"
     Write-Host "About lower story organization: confirmed LIVE"
+    Write-Host "Pricing/service information: confirmed LIVE"
     Write-Host "Footer tagline: confirmed LIVE"
     Write-Host "Commit: $sha"
     Write-Host ""

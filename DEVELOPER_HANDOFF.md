@@ -1,12 +1,12 @@
 # KEY CASTRO WEBSITE — DEVELOPER HANDOFF
 
-**Release:** 3.8.8
+**Release:** 3.8.9
 **Live URL:** https://keycastro.onrender.com
 **Framework:** Flask
 
 ## Current direction
 
-Version 3.8.8 preserves the approved v3.8.7 top profile area exactly and reorganizes only the lower About page from THE PROBLEMS I HELP SOLVE through HOW I WORK. Every approved lower-page detail remains present, but the sections now use one consistent numbered story flow, restrained icon language, unified spacing, and responsive organization. Navigation, footer, pricing, systems, backend, routes, portrait, and private functionality remain unchanged.
+Version 3.8.9 is a **content and pricing update only — not a redesign**. The current visual design, layout, spacing, cards, navigation, page structure, responsive behavior, About page, Systems pages, Contact page, routes, backend, and private functionality remain unchanged. Only approved service/pricing wording on How It Works, the trusted maintenance-price source, and direct release dependencies changed.
 
 Primary navigation: **Home · Systems · How It Works · About · Contact**. The underlying `/services` URL remains unchanged.
 
@@ -29,7 +29,9 @@ Creation: customize an existing system OR build a new system.
 After build there are exactly two options:
 
 - Full Handover — “I build it. You manage it.”
-- Managed by KEY CASTRO — “I build it. I manage it.” — $49/month or $490/year.
+- Managed by KEY CASTRO — “I build it. I manage it.” — **$39/month or $390/year**.
+
+Build/customization is a **Custom Quote**. Maintenance keeps the current system running; new features, workflow changes, new modules, integrations, and other improvements are paid upgrades. **Minor System Upgrade — $79. Major System Upgrade — $149. Very large expansion / new system — Custom Quote.**
 
 The customer-facing page uses **You Manage It** / **I Manage It** so the visitor does not need to learn internal terminology.
 
@@ -39,4 +41,4 @@ A non-technical 50–70 year old business owner should understand the basic offe
 
 ## Release workflow
 
-Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/content/profile-portrait verification for version 3.8.8. Never commit private/runtime files.
+Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/content/profile-portrait verification for version 3.8.9. Never commit private/runtime files.

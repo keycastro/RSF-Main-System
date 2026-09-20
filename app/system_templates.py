@@ -28,8 +28,8 @@ class ManagedMaintenancePricing:
 
     currency_code: str = "USD"
     currency_symbol: str = "$"
-    monthly_price: int = 49
-    yearly_price: int = 490
+    monthly_price: int = 39
+    yearly_price: int = 390
 
     @property
     def annual_monthly_total(self) -> int:

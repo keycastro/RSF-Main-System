@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-20",
-  "version": "3.8.8",
+  "version": "3.8.9",
   "owner_public_name": "Key Castro",
   "positioning": "Better systems for complex business needs",
   "framework": "Flask",
@@ -162,24 +162,41 @@
       "Customize Existing System",
       "Custom System Build"
     ],
-    "development_pricing": "Quoted separately based on requirements; it is not included in managed-maintenance pricing.",
+    "development_pricing": "Custom quote based on requirements; it is separate from maintenance.",
     "post_build_options": [
       "Full Handover",
       "Managed by KEY CASTRO"
     ],
-    "full_handover": "I build it. You manage it. Client is responsible for ongoing hosting, domain, backups, maintenance, updates, infrastructure accounts, and future technical management after handover.",
-    "managed_by_key_castro": "I build it. I manage it. KEY CASTRO continues the agreed technical management under monthly or yearly managed maintenance.",
+    "full_handover": "I build it. You manage it. Client or someone they hire handles hosting, security, backups, and technical upkeep after handover.",
+    "managed_by_key_castro": "I build it. I manage it. KEY CASTRO keeps the existing live system online, secure, stable, accessible, and technically maintained.",
     "pricing_public": true,
     "pricing": {
       "currency": "USD",
-      "monthly_per_system": 49,
-      "yearly_per_system": 490,
-      "twelve_monthly_total": 588,
-      "annual_savings": 98,
+      "monthly_per_system": 39,
+      "yearly_per_system": 390,
+      "twelve_monthly_total": 468,
+      "annual_savings": 78,
       "single_source": "app/system_templates.py::MANAGED_MAINTENANCE_PRICING"
     },
     "plan_selection": "monthly/yearly plan keys are resolved server-side; official managed-maintenance price text is generated from trusted pricing metadata; no checkout is implied",
-    "legacy_compatibility": "legacy subscribe/free-access URLs and old stored subscription labels are accepted only for compatibility and normalize/display as Managed by KEY CASTRO"
+    "legacy_compatibility": "legacy subscribe/free-access URLs and old stored subscription labels are accepted only for compatibility and normalize/display as Managed by KEY CASTRO",
+    "maintenance_boundary": "Maintenance keeps the current system running. It does not include new features, workflow changes, new modules, integrations, or other improvements.",
+    "system_upgrades": {
+      "minor": {
+        "price": 79,
+        "meaning": "Focused improvement to an existing Key Castro-built system."
+      },
+      "major": {
+        "price": 149,
+        "meaning": "Larger improvement to an existing Key Castro-built system."
+      },
+      "huge_expansion_or_new_system": {
+        "price": "Custom Quote",
+        "meaning": "Work beyond a normal system upgrade."
+      },
+      "separate_from_maintenance": true,
+      "available_to_self_managed_or_key_managed_clients": true
+    }
   },
   "ux_refinement_3_4": {
     "document": "docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md",
@@ -256,7 +273,7 @@
     "launcher": "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
     "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
     "provider_auto_deploy": false,
-    "success_condition": "production health reports version 3.8.8; live About preserves the approved v3.8.7 portrait/name/title and ABOUT / What I do. top profile; the lower About page presents the five-section organized story Problems, Automation, Fewer Disconnected Platforms, What I Build, and How I Work while preserving all approved details; footer tagline Better systems for complex business needs remains present; live How It Works preserves the approved two-step flow, action buttons, and pricing; live Systems contains Student Housing Matching and Placement System plus exactly 3 published system cards"
+    "success_condition": "production health reports version 3.8.9; live How It Works preserves the approved two-step layout and exactly two management choices while showing $39/month or $390/year maintenance, $79 Minor System Upgrade, $149 Major System Upgrade, Custom Quote build/large expansion wording, and the maintenance-versus-upgrade boundary; the old $49/month and $490/year public prices are absent; approved About profile/lower story, footer tagline, and exactly 3 published systems remain unchanged"
   },
   "ux_master_refinement_3_7": {
     "document": "docs/MASTER_UX_REFINEMENT_3_7.md",
@@ -408,6 +425,24 @@
       "Added restrained inline icons and unified card/list hierarchy using About-scoped CSS",
       "Improved section width, spacing, alignment, column balance, and responsive stacking",
       "Preserved the approved v3.8.7 top profile, every lower-About detail, footer, and all unrelated public/private functionality"
+    ]
+  },
+  "minor_change_3_8_9": {
+    "scope": "How It Works service/pricing wording plus trusted maintenance pricing source and direct test/release/deployment dependencies only",
+    "design_changed": false,
+    "layout_changed": false,
+    "routes_changed": false,
+    "forms_changed": false,
+    "database_changed": false,
+    "pricing_changed": true,
+    "business_model_clarified": true,
+    "changes": [
+      "Changed managed maintenance to $39/month or $390/year",
+      "Kept build/customization as a Custom Quote based on need",
+      "Clarified maintenance as keeping the existing live system running and separated it from future development",
+      "Added Minor System Upgrade at $79 and Major System Upgrade at $149",
+      "Kept very large expansion/new system as Custom Quote",
+      "Used simple professional English while preserving the existing visual design and page structure"
     ]
   }
 }

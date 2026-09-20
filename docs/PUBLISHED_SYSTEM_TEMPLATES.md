@@ -1,4 +1,4 @@
-# PUBLISHED SYSTEMS — CURRENT PUBLIC POSITIONING (3.8.0)
+# PUBLISHED SYSTEMS — CURRENT PUBLIC POSITIONING (through 3.8.9)
 
 ## Business model
 
@@ -7,7 +7,9 @@ Published systems are working starting points that can be customized to fit a cl
 After the system is ready, only two management choices are presented:
 
 1. **Full Handover** — client takes responsibility for ongoing hosting, domain, backups, maintenance, updates, and technical management.
-2. **Managed by KEY CASTRO** — KEY CASTRO continues the agreed technical management for **$49/month or $490/year per system**. Twelve monthly payments total $588, so yearly managed maintenance saves $98/year.
+2. **Managed by KEY CASTRO** — KEY CASTRO keeps the existing live system online, secure, stable, accessible, and technically maintained for **$39/month or $390/year per system**. Twelve monthly payments total $468, so yearly maintenance saves $78/year.
+
+Maintenance and future development are separate. Maintenance does not include new features, workflow changes, new modules, integrations, or other later improvements. Future improvements can be purchased as **Minor System Upgrade — $79** or **Major System Upgrade — $149**; very large expansion or a new system uses a **Custom Quote**.
 
 Every system-origin inquiry carries trusted server-side context into PostgreSQL and the private KEY CASTRO Inbox.
 

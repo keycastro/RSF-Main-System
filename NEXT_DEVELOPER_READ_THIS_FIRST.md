@@ -1,20 +1,22 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Release version:** 3.8.8
+**Release version:** 3.8.9
 **Official site:** https://keycastro.onrender.com
 **Framework:** Flask
 
 ## Read first
 
-1. `docs/HUMAN_CLARITY_AND_OLDER_USER_UX_3_8.md`
-2. `docs/BUSINESS_MODEL_AND_MANAGED_MAINTENANCE_3_6.md`
-3. `PROJECT_STATE.json`
-4. `README.md`
-5. `SECURITY_AND_SHARING_NOTES.md`
-6. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
-7. `docs/DEPLOYMENT_HISTORY.md`
+1. `README.md`
+2. `PROJECT_STATE.json`
+3. `DEVELOPER_HANDOFF.md`
+4. `00_FUTURE_DEVELOPER_READ_THIS_PLAN.md`
+5. `docs/CONTENT_AND_SCOPE.md`
+6. `docs/HUMAN_CLARITY_AND_OLDER_USER_UX_3_8.md`
+7. `SECURITY_AND_SHARING_NOTES.md`
+8. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
+9. `docs/DEPLOYMENT_HISTORY.md`
 
-Historical subscription-access documents are superseded. Do not restore the old subscription/free-access model.
+Older versioned pricing/business-model documents are historical. Current 3.8.9 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
 
 ## Public information architecture
 
@@ -61,9 +63,11 @@ Build/customization pricing is quoted separately.
 ### After build — EXACTLY TWO OPTIONS
 
 1. **Full Handover** — “I build it. You manage it.”
-2. **Managed by KEY CASTRO** — “I build it. I manage it.” — **$49/month or $490/year**.
+2. **Managed by KEY CASTRO** — “I build it. I manage it.” — **$39/month or $390/year**.
 
-Public beginner-facing labels are **You Manage It** and **I Manage It**. Keep the formal terms internal/secondary where necessary. Do not add a third option.
+Public beginner-facing labels are **You Manage It** and **I Manage It**. Keep the formal terms internal/secondary where necessary. Do not add a third management option.
+
+Current price rules: build/customization = **Custom Quote**; maintenance = **$39/month or $390/year**; Minor System Upgrade = **$79**; Major System Upgrade = **$149**; very large expansion/new system = **Custom Quote**. Maintenance and upgrades are separate. Maintenance keeps the existing live system running. It does not include new features or other future improvements.
 
 ## Page responsibility
 
@@ -78,7 +82,7 @@ Do not repeat the full management model on every system page.
 
 ## Design rule
 
-Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.8 keeps the approved About top profile layout unchanged and reorganizes only the lower About content into one five-part story: Problems → Automation → Fewer Disconnected Platforms → What I Build → How I Work. All approved information remains visible; styling stays scoped to `.about-*` classes. Do not use this release as permission to redesign unrelated pages. Compact must never mean tiny text.
+Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.9 is information-only: no design, layout, typography, spacing, card, navigation, page-structure, or responsive change is approved. Keep the approved About top profile and lower five-part story unchanged. Compact must never mean tiny text.
 
 ## Security
 

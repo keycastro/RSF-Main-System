@@ -1,15 +1,9 @@
-KEY CASTRO WEBSITE v3.8.8 - ONE CMD AUTO DEPLOY
+KEY CASTRO WEBSITE v3.8.9 - ONE CMD AUTO DEPLOY
 
 This package updates the local website, preserves private configuration, runs the full test suite,
 stages only approved release files, creates a release commit when needed, pushes origin and
 renderdeploy, triggers the existing Render service, and verifies the live site before reporting success.
 
-Release safety includes recovery for earlier stopped updater attempts:
-- ignored release-note files no longer block deployment
-- new approved Git files such as CHANGELOG.md are handled safely even when not previously tracked
-- approved staged files left by a stopped updater are safely reset and restaged
-- release Markdown whitespace is cleaned so Git diff --check remains a real safety gate
+This release is a CONTENT AND PRICING UPDATE ONLY — NOT A REDESIGN.
 
-Success is reported only after the live health endpoint reports v3.8.8, the approved About top profile remains present,
-the lower About page shows the five-section organized story (Problems, Automation, Fewer Disconnected Platforms, What I Build, How I Work),
-all approved lower-page details and the footer tagline remain present, and the approved portrait static asset loads successfully; the live How It Works page still shows the approved two-step flow and unchanged pricing; and the live Systems page contains Student Housing Matching and Placement System with exactly three published system cards.
+Success is reported only after the live health endpoint reports v3.8.9; How It Works still has the approved two-step flow and exactly two management choices; maintenance shows $39/month or $390/year; Minor System Upgrade shows $79; Major System Upgrade shows $149; the maintenance limit wording is present; the old $49/month and $490/year public prices are gone; the approved About profile and lower story remain present; the footer tagline remains present; and the live Systems page still contains exactly three published systems.

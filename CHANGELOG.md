@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 3.8.9 — Pricing and service clarity
+
+- Content and pricing update only; no redesign or restyling.
+- Changed managed maintenance to **$39/month or $390/year**.
+- Kept build/customization as a **Custom Quote** based on what the business needs.
+- Clarified in simple English that maintenance keeps the existing live system running and does not include new features, workflow changes, new modules, integrations, or other improvements.
+- Added the approved future-improvement prices: **Minor System Upgrade — $79**, **Major System Upgrade — $149**, and **very large expansion / new system — Custom Quote**.
+- Preserved the existing How It Works layout, colors, typography, spacing, cards, navigation, page structure, responsive behavior, two management choices, and every unrelated page/function.
+
 ## 3.8.8 — About lower-page story organization
 
 - Reorganized only the About-page content from **THE PROBLEMS I HELP SOLVE** through **HOW I WORK** into one consistent visual story.
