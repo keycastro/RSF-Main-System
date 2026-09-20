@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Release version:** 3.8.13
+**Release version:** 3.8.14
 **Official site:** https://keycastro.onrender.com
 **Framework:** Flask
 
@@ -16,7 +16,7 @@
 8. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
 9. `docs/DEPLOYMENT_HISTORY.md`
 
-Older versioned pricing/business-model documents are historical. Current 3.8.13 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
+Older versioned pricing/business-model documents are historical. Current 3.8.14 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
 
 ## Public information architecture
 
@@ -25,12 +25,12 @@ Primary navigation:
 ```text
 Home
 Systems
-How It Works
+Services & Pricing
 About
 Contact
 ```
 
-The canonical route remains `/services`; only the public label is **How It Works**. Keep `/system-templates` as the canonical systems route.
+The canonical route remains `/services`; only the public label is **Services & Pricing**. Keep `/system-templates` as the canonical systems route.
 
 ## Visitor language rule
 
@@ -74,7 +74,7 @@ Current price rules: existing published system = **$160 one-time**; Minor System
 - Home explains what KEY CASTRO does.
 - Systems shows the systems already built.
 - System detail explains one system.
-- How It Works explains the business process and management options.
+- Services & Pricing explains the business process, pricing, and management options.
 - About explains Key Castro, the problems the service solves, automation value, and the potential to reduce dependence on too many separate paid tools.
 - Contact collects the inquiry.
 
@@ -82,7 +82,7 @@ Do not repeat the full management model on every system page.
 
 ## Design rule
 
-Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.13 preserves the approved v3.8.12 pricing and design and changes only the customer-facing pricing wording from **Custom Quote** to **Price by Agreement** where the price is agreed with the client. Keep the site-wide design, navigation, all other page structure, the approved About top profile, and the lower five-part About story unchanged. How-It-Works-scoped CSS may support the approved organization. Compact must never mean tiny text.
+Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.14 preserves the approved v3.8.13 design, pricing, content, and behavior and changes only the public page/navigation name from **How It Works** to **Services & Pricing** plus direct dependencies. Keep the site-wide design, navigation, all other page structure, the approved About top profile, and the lower five-part About story unchanged. How-It-Works-scoped CSS may support the approved organization. Compact must never mean tiny text.
 
 ## Security
 

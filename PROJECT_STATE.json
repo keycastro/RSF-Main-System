@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-20",
-  "version": "3.8.13",
+  "version": "3.8.14",
   "owner_public_name": "Key Castro",
   "positioning": "Better systems for complex business needs",
   "framework": "Flask",
@@ -126,7 +126,7 @@
     "primary_navigation": [
       "Home",
       "Systems",
-      "How It Works",
+      "Services & Pricing",
       "About",
       "Contact"
     ],
@@ -137,8 +137,8 @@
       "experience": "301 redirect to /about"
     },
     "ux_contract": "Short, simple, clear public content. No unnecessary repetition. One clear purpose per page.",
-    "visitor_flow": "Home -> Systems -> System -> Contact, with How It Works explaining the build process and the two post-build management choices.",
-    "presentation_contract": "One main job per page: Home explains the offer; Systems shows existing systems; each System page explains that system; How It Works explains the business process and management choices; About explains Key Castro, the business problems solved, automation value, and workflow consolidation; Contact collects one inquiry."
+    "visitor_flow": "Home -> Systems -> System -> Contact, with Services & Pricing explaining the build process, pricing, and the two post-build management choices.",
+    "presentation_contract": "One main job per page: Home explains the offer; Systems shows existing systems; each System page explains that system; Services & Pricing explains the business process, pricing, and management choices; About explains Key Castro, the business problems solved, automation value, and workflow consolidation; Contact collects one inquiry."
   },
   "system_search": {
     "active": true,
@@ -282,7 +282,7 @@
     "launcher": "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
     "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
     "provider_auto_deploy": false,
-    "success_condition": "production health reports version 3.8.13; Home, Systems, system detail, and How It Works show the approved $160 existing-system purchase price; the purchase is separate from upgrades and maintenance; new custom systems use Price by Agreement; maintenance remains $39/month or $390/year; upgrades remain $79 / $149 / New System / Large Expansion Price by Agreement; no PHP/peso pricing is publicly displayed; approved About profile/lower story, footer tagline, and exactly 3 published systems remain unchanged"
+    "success_condition": "production health reports version 3.8.14; Home navigation and the /services page show Services & Pricing; Home, Systems, system detail, and Services & Pricing show the approved $160 existing-system purchase price; the purchase is separate from upgrades and maintenance; new custom systems use Price by Agreement; maintenance remains $39/month or $390/year; upgrades remain $79 / $149 / New System / Large Expansion Price by Agreement; no PHP/peso pricing is publicly displayed; approved About profile/lower story, footer tagline, and exactly 3 published systems remain unchanged"
   },
   "ux_master_refinement_3_7": {
     "document": "docs/MASTER_UX_REFINEMENT_3_7.md",
@@ -469,5 +469,19 @@
     "maintenance_yearly_usd": 390,
     "published_systems": 3,
     "contact_intent": "Existing System Purchase"
+  },
+  "minor_change_3_8_14": {
+    "scope": "Services page/navigation naming only, plus direct tests/release/deployment dependencies",
+    "route_changed": false,
+    "design_changed": false,
+    "layout_changed": false,
+    "pricing_changed": false,
+    "business_logic_changed": false,
+    "changes": [
+      "Renamed the public page/navigation label from How It Works to Services & Pricing",
+      "Updated the /services page heading and browser/tab title to Services & Pricing",
+      "Updated the Home direct link label to See Services & Pricing",
+      "Preserved the canonical /services route and all page content, pricing, layout, styling, and behavior"
+    ]
   }
 }

@@ -77,7 +77,7 @@ PAGE_SEO = {
         "description": "Key Castro builds custom business systems and automation that organize complex workflows, reduce repetitive work, and bring scattered operations into one place.",
     },
     "services": {
-        "title": "How It Works | Key Castro",
+        "title": "Services & Pricing | Key Castro",
         "description": "See how working with Key Castro works: tell me what you need, I build the system, then you choose who manages it.",
     },
     "skills": {
@@ -159,7 +159,7 @@ def about():
 
 @site.get("/services")
 def services():
-    return render_template("services.html", title="How It Works", **_common_context("services"))
+    return render_template("services.html", title="Services & Pricing", **_common_context("services"))
 
 
 @site.get("/projects")

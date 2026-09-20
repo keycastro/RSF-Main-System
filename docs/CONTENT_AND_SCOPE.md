@@ -19,7 +19,7 @@ Technical implementation details stay secondary unless the visitor actually need
 
 ## Public commercial explanation
 
-The full process belongs primarily on **How It Works**:
+The full process belongs primarily on **Services & Pricing**:
 
 1. Tell me what you need.
 2. Choose who manages it.
@@ -39,16 +39,16 @@ Do not invent clients, testimonials, employment history, certifications, adoptio
 
 ## Navigation
 
-Primary public navigation: **Home · Systems · How It Works · About · Contact**.
+Primary public navigation: **Home · Systems · Services & Pricing · About · Contact**.
 
-The `/services` URL remains stable; its visible label is **How It Works**.
+The `/services` URL remains stable; its visible label is **Services & Pricing**.
 
 One page = one main job:
 
 - Home: what KEY CASTRO does
 - Systems: existing systems
 - System detail: what that system does
-- How It Works: the business process
+- Services & Pricing: the business process
 - About: who/how KEY CASTRO works
 - Contact: send a message
 

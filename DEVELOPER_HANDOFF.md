@@ -1,14 +1,14 @@
 # KEY CASTRO WEBSITE — DEVELOPER HANDOFF
 
-**Release:** 3.8.13
+**Release:** 3.8.14
 **Live URL:** https://keycastro.onrender.com
 **Framework:** Flask
 
 ## Current direction
 
-Version 3.8.13 is a **text-only pricing wording update**. It preserves the complete v3.8.12 design, prices, and behavior, and changes only **Custom Quote** to **Price by Agreement** for new custom systems and New System / Large Expansion pricing.
+Version 3.8.14 is a **page naming update**. It preserves the complete v3.8.13 design, prices, content, routes, and behavior, and changes only **How It Works** to **Services & Pricing** where that wording directly names the page.
 
-Primary navigation: **Home · Systems · How It Works · About · Contact**. The underlying `/services` URL remains unchanged.
+Primary navigation: **Home · Systems · Services & Pricing · About · Contact**. The underlying `/services` URL remains unchanged.
 
 ## Architecture and private boundary
 
@@ -41,8 +41,8 @@ The customer-facing page uses **You Manage It** / **I Manage It** so the visitor
 
 ## UX rule
 
-A non-technical 50–70 year old business owner should understand the basic offer after one reading. Keep the complete management model on How It Works; system pages should explain the system itself. Use concrete actions such as “Your team signs in” and “Search for the property you need.”
+A non-technical 50–70 year old business owner should understand the basic offer after one reading. Keep the complete management model on Services & Pricing; system pages should explain the system itself. Use concrete actions such as “Your team signs in” and “Search for the property you need.”
 
 ## Release workflow
 
-Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/content/profile-portrait verification for version 3.8.13. Never commit private/runtime files.
+Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/content/profile-portrait verification for version 3.8.14. Never commit private/runtime files.

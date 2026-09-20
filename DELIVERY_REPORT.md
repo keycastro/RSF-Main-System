@@ -1,33 +1,24 @@
-# DELIVERY REPORT — KEY CASTRO 3.8.13
+# DELIVERY REPORT — KEY CASTRO 3.8.14
 
 ## Scope
 
-Text-only wording update: **Custom Quote** → **Price by Agreement** where the price is agreed with the client. No redesign, pricing change, or backend change.
-
-## Approved business model
-
-- **Existing published system — $160 one-time.**
-- The $160 price is for the existing system as shown; changes are separate paid upgrades.
-- **Minor System Upgrade — $79.**
-- **Major System Upgrade — $149.**
-- **New System / Large Expansion — Price by Agreement.**
-- Optional maintenance remains **$39/month or $390/year**.
-- A completely new custom system uses **Price by Agreement**.
-- Public pricing uses USD only.
+Naming-only update: **How It Works** → **Services & Pricing** where the wording directly names the `/services` page. No redesign, pricing change, content rewrite, or backend change.
 
 ## Public changes
 
-- **Build a New System** now shows **Price by Agreement**.
-- **New System / Large Expansion** now shows **Price by Agreement**.
-- No other public content, layout, prices, or behavior changed.
+- Top navigation: **How It Works** → **Services & Pricing**.
+- Footer navigation: **How It Works** → **Services & Pricing**.
+- `/services` page heading: **How it works.** → **Services & Pricing**.
+- Browser/tab title: **How It Works | Key Castro** → **Services & Pricing | Key Castro**.
+- Home direct page link: **See How It Works** → **See Services & Pricing**.
 
 ## Preserved
 
-- Three published systems.
-- Current How It Works Step 2 management/maintenance organization.
-- About page, navigation, footer, screenshots, owner Inbox, database, authentication, CSRF, and inquiry storage.
+- Canonical `/services` route.
+- All current pricing: $160 existing system, $79 minor upgrade, $149 major upgrade, Price by Agreement for New System / Large Expansion, and $39/month or $390/year maintenance.
+- All descriptions, buttons, layout, CSS/styling, page structure, business logic, maintenance/upgrade information, About page, Contact flow, footer tagline, owner Inbox, database, authentication, CSRF, and inquiry storage.
 - Existing Render/GitHub one-command deployment workflow.
 
 ## Release rule
 
-Production is not considered 3.8.13 until the one-run deployer verifies the live version, $160 existing-system pricing, USD-only public pricing, purchase/upgrade/maintenance separation, approved upgrade and maintenance prices, preserved About content, footer, and exactly three published systems.
+Production is not considered 3.8.14 until the one-run deployer verifies the live version, **Services & Pricing** naming, approved pricing/content boundaries, preserved About content, footer, and exactly three published systems.

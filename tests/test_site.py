@@ -20,7 +20,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Key Castro Portfolio")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.8.13")
+        self.assertEqual(data["version"], "3.8.14")
 
     def test_main_pages_and_template_library_render(self):
         routes = [
@@ -80,7 +80,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b">Home</a>", response.data)
         self.assertIn(b">Systems</a>", response.data)
-        self.assertIn(b">How It Works</a>", response.data)
+        self.assertIn(b">Services & Pricing</a>", response.data)
         self.assertIn(b">About</a>", response.data)
         self.assertIn(b">Contact</a>", response.data)
         self.assertNotIn(b">Projects</a>", response.data)
@@ -110,11 +110,13 @@ class PortfolioSiteTests(unittest.TestCase):
         about = self.client.get("/about")
 
         self.assertIn(b">Systems</a>", home.data)
-        self.assertIn(b">How It Works</a>", home.data)
+        self.assertIn(b">Services & Pricing</a>", home.data)
         self.assertNotIn(b">Projects</a>", home.data)
         self.assertNotIn(b">System Templates</a>", home.data)
         self.assertIn(b"Systems I already built.", systems.data)
         self.assertIn(b"closest to what your business needs", systems.data)
+        self.assertIn(b"<h1>Services & Pricing</h1>", services.data)
+        self.assertIn(b"<title>Services &amp; Pricing | Key Castro</title>", services.data)
         self.assertNotIn(b"Free access by request</strong>", systems.data)
 
         header = home.data.split(b"</header>", 1)[0]
@@ -491,7 +493,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"New System / Large Expansion", services.data)
         self.assertEqual(services.data.count(b'<section class="management-choice'), 2)
 
-        # System pages explain the system; the management model lives on How It Works.
+        # System pages explain the system; the management model lives on Services & Pricing.
         detail = self.client.get("/system-templates/property-operations-command-center")
         self.assertIn(b"Want this system for your business?", detail.data)
         self.assertIn(b"$160", detail.data)

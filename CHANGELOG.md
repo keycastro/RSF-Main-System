@@ -1,3 +1,9 @@
+## 3.8.14 — Services & Pricing Naming Update
+
+- Renamed the public `/services` page/navigation label from **How It Works** to **Services & Pricing**.
+- Updated only the top/footer navigation labels, `/services` page heading, browser/tab title, Home direct page link, and necessary direct test/release/deployment dependencies.
+- Preserved the canonical `/services` route, all pricing, descriptions, buttons, layout, styling, business logic, maintenance information, upgrade information, and unrelated content.
+
 # CHANGELOG
 
 ## 3.8.13 — Price by Agreement Wording Update

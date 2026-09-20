@@ -5,8 +5,8 @@ $documents = [Environment]::GetFolderPath("MyDocuments")
 $target = Join-Path $documents "KEY_CASTRO_WEBSITE"
 $serviceId = "srv-dam749e1egvs738cppq0"
 $liveBase = "https://keycastro.onrender.com"
-$expectedVersion = "3.8.13"
-$commitMessage = "Release 3.8.13 Price by Agreement Wording Update"
+$expectedVersion = "3.8.14"
+$commitMessage = "Release 3.8.14 Services & Pricing Naming Update"
 
 function Invoke-Native {
     param(
@@ -259,11 +259,12 @@ try {
             $hasAboutStoryFlow = (($about.Content | Select-String -Pattern 'class="about-story-index"' -AllMatches).Matches.Count -eq 5) -and ($about.Content -match [regex]::Escape("THE PROBLEMS I HELP SOLVE")) -and ($about.Content -match [regex]::Escape("AUTOMATION")) -and ($about.Content -match [regex]::Escape("FEWER DISCONNECTED PLATFORMS")) -and ($about.Content -match [regex]::Escape("WHAT I BUILD")) -and ($about.Content -match [regex]::Escape("HOW I WORK"))
             $hasAboutPreservedDetails = ($about.Content -match [regex]::Escape("Missed follow-ups and deadlines")) -and ($about.Content -match [regex]::Escape("Software that does not fully fit")) -and ($about.Content -match [regex]::Escape("Recurring tasks and handoffs")) -and ($about.Content -match [regex]::Escape("The best option depends on the business.")) -and ($about.Content -match [regex]::Escape("Business-specific rules")) -and ($about.Content -match [regex]::Escape(">View Systems</a>"))
             $portraitLoads = ($portrait.StatusCode -eq 200) -and ($portrait.RawContentLength -gt 100000)
-            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasExistingSystemPrice -and $hasThreeHomePriceCards -and $hasThreePricedSystemCards -and $hasPurchaseBoundary -and $hasExistingSystemContact -and $hasAgreementPrice -and $oldExistingQuoteGone -and $hasUsdOnlyPublicPricing -and $hasPricing -and $oldPricingGone -and $hasMaintenanceBoundary -and $hasUpgradePricing -and $hasAboutAutomation -and $hasAboutSubscriptionValue -and $hasNewTagline -and $oldTaglineGone -and $hasAboutPortrait -and $hasAboutProfessionalTitle -and $hasAboutProfileBlock -and $hasAboutProfileName -and $hasWhatIDo -and $hasApprovedAboutDescription -and $hasAboutValueRow -and $hasAboutStoryFlow -and $hasAboutPreservedDetails -and $portraitLoads) {
+            $hasServicesPricingName = ($homePage.Content -match [regex]::Escape('>Services & Pricing</a>')) -and ($how.Content -match [regex]::Escape('<h1>Services & Pricing</h1>')) -and ($how.Content -match [regex]::Escape('<title>Services &amp; Pricing | Key Castro</title>'))
+            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasServicesPricingName -and $hasStudentHousing -and $hasThreeSystems -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasExistingSystemPrice -and $hasThreeHomePriceCards -and $hasThreePricedSystemCards -and $hasPurchaseBoundary -and $hasExistingSystemContact -and $hasAgreementPrice -and $oldExistingQuoteGone -and $hasUsdOnlyPublicPricing -and $hasPricing -and $oldPricingGone -and $hasMaintenanceBoundary -and $hasUpgradePricing -and $hasAboutAutomation -and $hasAboutSubscriptionValue -and $hasNewTagline -and $oldTaglineGone -and $hasAboutPortrait -and $hasAboutProfessionalTitle -and $hasAboutProfileBlock -and $hasAboutProfileName -and $hasWhatIDo -and $hasApprovedAboutDescription -and $hasAboutValueRow -and $hasAboutStoryFlow -and $hasAboutPreservedDetails -and $portraitLoads) {
                 $verified = $true
                 break
             }
-            $lastError = "Health/version/About/How It Works/Systems content has not refreshed yet."
+            $lastError = "Health/version/Services & Pricing/About/Systems content has not refreshed yet."
         }
         catch {
             $lastError = $_.Exception.Message
