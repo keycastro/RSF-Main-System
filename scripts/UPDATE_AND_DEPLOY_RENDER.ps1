@@ -5,8 +5,8 @@ $documents = [Environment]::GetFolderPath("MyDocuments")
 $target = Join-Path $documents "KEY_CASTRO_WEBSITE"
 $serviceId = "srv-dam749e1egvs738cppq0"
 $liveBase = "https://keycastro.onrender.com"
-$expectedVersion = "3.8.7"
-$commitMessage = "Release 3.8.7 approved About profile redesign"
+$expectedVersion = "3.8.8"
+$commitMessage = "Release 3.8.8 About lower story organization"
 
 function Invoke-Native {
     param(
@@ -240,8 +240,10 @@ try {
             $approvedAboutDescription = "I build custom business systems and automation for real estate, property, and housing businesses. I help reduce manual work, organize scattered tasks and information, and create workflows that fit how the business really works. When useful, I also help reduce the need for too many separate tools and subscriptions by bringing key work into one system."
             $hasApprovedAboutDescription = $about.Content -match [regex]::Escape($approvedAboutDescription)
             $hasAboutValueRow = ($about.Content -match [regex]::Escape("Custom Systems")) -and ($about.Content -match [regex]::Escape("Built around your workflow")) -and ($about.Content -match [regex]::Escape("Automation")) -and ($about.Content -match [regex]::Escape("Less manual work")) -and ($about.Content -match [regex]::Escape("Real Results")) -and ($about.Content -match [regex]::Escape("More time for what matters"))
+            $hasAboutStoryFlow = (($about.Content | Select-String -Pattern 'class="about-story-index"' -AllMatches).Matches.Count -eq 5) -and ($about.Content -match [regex]::Escape("THE PROBLEMS I HELP SOLVE")) -and ($about.Content -match [regex]::Escape("AUTOMATION")) -and ($about.Content -match [regex]::Escape("FEWER DISCONNECTED PLATFORMS")) -and ($about.Content -match [regex]::Escape("WHAT I BUILD")) -and ($about.Content -match [regex]::Escape("HOW I WORK"))
+            $hasAboutPreservedDetails = ($about.Content -match [regex]::Escape("Missed follow-ups and deadlines")) -and ($about.Content -match [regex]::Escape("Software that does not fully fit")) -and ($about.Content -match [regex]::Escape("Recurring tasks and handoffs")) -and ($about.Content -match [regex]::Escape("The best option depends on the business.")) -and ($about.Content -match [regex]::Escape("Business-specific rules")) -and ($about.Content -match [regex]::Escape(">View Systems</a>"))
             $portraitLoads = ($portrait.StatusCode -eq 200) -and ($portrait.RawContentLength -gt 100000)
-            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems -and $hasAdaptSentence -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasPricing -and $hasAboutAutomation -and $hasAboutSubscriptionValue -and $hasNewTagline -and $oldTaglineGone -and $hasAboutPortrait -and $hasAboutProfessionalTitle -and $hasAboutProfileBlock -and $hasAboutProfileName -and $hasWhatIDo -and $hasApprovedAboutDescription -and $hasAboutValueRow -and $portraitLoads) {
+            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems -and $hasAdaptSentence -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasPricing -and $hasAboutAutomation -and $hasAboutSubscriptionValue -and $hasNewTagline -and $oldTaglineGone -and $hasAboutPortrait -and $hasAboutProfessionalTitle -and $hasAboutProfileBlock -and $hasAboutProfileName -and $hasWhatIDo -and $hasApprovedAboutDescription -and $hasAboutValueRow -and $hasAboutStoryFlow -and $hasAboutPreservedDetails -and $portraitLoads) {
                 $verified = $true
                 break
             }
@@ -269,7 +271,8 @@ try {
     Write-Host "Systems: 3 published systems confirmed"
     Write-Host "Student Housing system: confirmed LIVE"
     Write-Host "About automation/problem update: confirmed LIVE"
-    Write-Host "Approved About profile redesign: confirmed LIVE"
+    Write-Host "Approved About profile: confirmed LIVE"
+    Write-Host "About lower story organization: confirmed LIVE"
     Write-Host "Footer tagline: confirmed LIVE"
     Write-Host "Commit: $sha"
     Write-Host ""

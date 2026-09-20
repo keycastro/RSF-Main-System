@@ -20,7 +20,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Key Castro Portfolio")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.8.7")
+        self.assertEqual(data["version"], "3.8.8")
 
     def test_main_pages_and_template_library_render(self):
         routes = [
@@ -205,6 +205,57 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(".about-profile-block", css)
         self.assertIn(".about-professional-title", css)
         self.assertIn(".about-portrait-frame", css)
+
+
+    def test_about_lower_story_is_organized_without_losing_approved_details(self):
+        about = self.client.get("/about")
+        self.assertEqual(about.status_code, 200)
+        self.assertEqual(about.data.count(b'class="about-story-index"'), 5)
+        for expected in (
+            b"THE PROBLEMS I HELP SOLVE",
+            b"Too many tools and subscriptions",
+            b"Too much manual work",
+            b"Scattered information",
+            b"Missed follow-ups and deadlines",
+            b"Limited automation",
+            b"Software that does not fully fit",
+            b"AUTOMATION",
+            b"Reminders and deadline alerts",
+            b"Follow-ups and status changes",
+            b"Recurring tasks and handoffs",
+            b"Dashboards and reports",
+            b"FEWER DISCONNECTED PLATFORMS",
+            b"Fewer separate tools.",
+            b"Less duplicated work.",
+            b"One workflow built around the business.",
+            b"The best option depends on the business.",
+            b"WHAT I BUILD",
+            b"Centralized records",
+            b"Clear dashboards",
+            b"Task and status tracking",
+            b"User roles and permissions",
+            b"Workflow automation",
+            b"Reminders and alerts",
+            b"Reports",
+            b"Business-specific rules",
+            b"HOW I WORK",
+            b"Understand",
+            b"Identify",
+            b"Build",
+            b"Test",
+            b">View Systems</a>",
+        ):
+            with self.subTest(expected=expected):
+                self.assertIn(expected, about.data)
+
+        css_path = Path(__file__).resolve().parents[1] / "app" / "static" / "css" / "style.css"
+        css = css_path.read_text(encoding="utf-8")
+        self.assertIn("3.8.8 — ABOUT LOWER STORY ORGANIZATION", css)
+        self.assertIn(".about-story-shell", css)
+        self.assertIn(".about-problem-grid", css)
+        self.assertIn(".about-feature-panel", css)
+        self.assertIn(".about-system-layout", css)
+        self.assertIn(".about-work-steps", css)
 
     def test_compact_presentation_keeps_screenshots_supporting_content(self):
         home = self.client.get("/")

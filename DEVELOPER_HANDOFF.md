@@ -1,12 +1,12 @@
 # KEY CASTRO WEBSITE — DEVELOPER HANDOFF
 
-**Release:** 3.8.7
+**Release:** 3.8.8
 **Live URL:** https://keycastro.onrender.com
 **Framework:** Flask
 
 ## Current direction
 
-Version 3.8.7 preserves the approved v3.8.6 site and implements only the user-approved About top profile area: the unchanged portrait, Key Castro name, and professional title form the left profile block; the right side contains ABOUT, What I do., the exact approved service description, and the compact Custom Systems / Automation / Real Results value row. Existing About content from THE PROBLEMS I HELP SOLVE onward, footer tagline, navigation, pricing, systems, backend, and private functionality remain unchanged.
+Version 3.8.8 preserves the approved v3.8.7 top profile area exactly and reorganizes only the lower About page from THE PROBLEMS I HELP SOLVE through HOW I WORK. Every approved lower-page detail remains present, but the sections now use one consistent numbered story flow, restrained icon language, unified spacing, and responsive organization. Navigation, footer, pricing, systems, backend, routes, portrait, and private functionality remain unchanged.
 
 Primary navigation: **Home · Systems · How It Works · About · Contact**. The underlying `/services` URL remains unchanged.
 
@@ -39,4 +39,4 @@ A non-technical 50–70 year old business owner should understand the basic offe
 
 ## Release workflow
 
-Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/content/profile-portrait verification for version 3.8.7. Never commit private/runtime files.
+Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/content/profile-portrait verification for version 3.8.8. Never commit private/runtime files.

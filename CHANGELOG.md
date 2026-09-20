@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 3.8.8 — About lower-page story organization
+
+- Reorganized only the About-page content from **THE PROBLEMS I HELP SOLVE** through **HOW I WORK** into one consistent visual story.
+- Preserved every approved heading, explanation, problem, automation example, subscription/tool value statement, capability, workflow step, disclaimer, and the **View Systems** button.
+- Added consistent section numbering, restrained inline icons, unified card/list treatment, balanced column proportions, and tighter vertical rhythm using About-scoped CSS only.
+- Kept the approved v3.8.7 top profile area, portrait asset, navigation, footer, all other pages, pricing, business model, routes, backend, systems, and private functionality unchanged.
+
 ## 3.8.7 — Approved About profile redesign
 
 - Implemented only the user-approved About-page top profile composition.
