@@ -1,13 +1,12 @@
-# KEY CASTRO WEBSITE 3.8.11 — RELEASE AUDIT
+# KEY CASTRO WEBSITE 3.8.12 — RELEASE AUDIT
 
-- Baseline inspected: user-provided authoritative v3.8.9 project ZIP.
-- Scope: **How It Works Step 2 clarity and organization only**.
-- Step 1, Home, Systems, About, Contact, navigation, footer, backend, routes, forms, database, authentication, and published systems are unchanged.
-- Exactly two management choices remain: **You Manage It** and **I Manage It**.
-- Approved maintenance price remains **$39/month or $390/year**.
-- Maintenance information is now grouped into **You handle**, **Maintenance can include**, and **Maintenance does not include** for faster scanning.
-- **Need changes later?** remains connected to the management section through three clear upgrade cards: **$79 Minor**, **$149 Major**, and **Custom Quote New System / Large Expansion**.
-- Upgrades remain separate from maintenance and remain available later whether the client self-manages or Key manages the system.
-- CSS changes are appended and scoped under `#management-options` only.
-- Release ZIP must exclude `.env`, `.owner_inbox.json`, `.git`, databases, logs, caches, backups, tokens, and private runtime data.
-- Live deployment is valid only after production verification confirms version 3.8.11 and the approved Step 2 wording/structure while preserved site checks still pass.
+- Scope: **Existing System Pricing Clarity** only, plus direct Contact/test/release/deployment dependencies.
+- Every published existing system uses one trusted **$160 USD one-time** base purchase price.
+- $160 is the existing system as shown; requested changes are separate upgrades.
+- Home, Systems, system detail pages, and How It Works expose the price consistently.
+- New custom systems remain **Custom Quote**.
+- Upgrades remain **$79 Minor**, **$149 Major**, and **New System / Large Expansion — Custom Quote**.
+- Maintenance remains separate at **$39/month or $390/year**.
+- Public pricing is USD only; no PHP/peso pricing is intentionally introduced.
+- Existing three-system catalog, About content, footer, private owner Inbox, database, authentication, and unrelated functionality remain preserved.
+- Live deployment is valid only after production verification confirms version 3.8.12 and all pricing/separation checks pass.

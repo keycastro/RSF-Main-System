@@ -18,13 +18,21 @@
           <article class="human-option-card">
             <p class="choice-label choice-label-pill">USE AN EXISTING SYSTEM</p>
             <strong>Use one of my existing systems</strong>
-            <span>I can adapt one of my existing systems to fit your business. The price is a custom quote based on what you need.</span>
+            <div class="system-choice-price" aria-label="Existing system price">
+              <b>{{ existing_system_pricing.price_label }}</b>
+              <span>One-time payment</span>
+            </div>
+            <p class="human-option-explanation">Choose one of the systems I already built. The price is for the existing system. If you want changes later, upgrades are priced separately.</p>
             <a class="button primary human-option-button" href="{{ url_for('site.system_templates') }}">View Systems</a>
           </article>
           <article class="human-option-card">
             <p class="choice-label choice-label-pill">BUILD A NEW SYSTEM</p>
             <strong>Build a new system</strong>
-            <span>If none of the existing systems fit, I can build a new one for you. The price is a custom quote based on the work needed.</span>
+            <div class="system-choice-price system-choice-price--quote" aria-label="New custom system price">
+              <b>Custom Quote</b>
+              <span>Based on the work needed</span>
+            </div>
+            <p class="human-option-explanation">If none of the existing systems fit what your business needs, I can build a new system for you.</p>
             <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Request a System</a>
           </article>
         </div>

@@ -30,6 +30,7 @@ from .seo import (
     software_template_structured_data,
 )
 from .system_templates import (
+    EXISTING_SYSTEM_PRICING,
     MANAGED_MAINTENANCE_PRICING,
     get_system_template,
     managed_service_action_for_plan,
@@ -43,9 +44,9 @@ site = Blueprint("site", __name__)
 SERVICES = [
     {
         "kind": "existing-system",
-        "title": "Customize an existing system",
-        "text": "Start with a working Key Castro system and adapt it to your business.",
-        "example": "Workflow, fields, roles, branding, and business rules can be scoped around your needs.",
+        "title": "Buy an existing system",
+        "text": "Choose a working Key Castro system. Changes are priced separately.",
+        "example": "Changes are priced separately as upgrades.",
     },
     {
         "kind": "custom-build",
@@ -93,7 +94,7 @@ PAGE_SEO = {
     },
     "system_templates": {
         "title": "Real Estate Systems | Key Castro",
-        "description": "See working Key Castro systems for property operations, property listings, and student housing. Each one can be changed to fit your business.",
+        "description": "See working Key Castro systems for property operations, property listings, and student housing. Existing systems have a clear one-time price; changes are priced separately.",
     },
 }
 
@@ -128,6 +129,7 @@ def _common_context(
         "technologies": TECHNOLOGIES,
         "published_system_templates": published_templates(),
         "template_library_enabled": template_library_enabled(),
+        "existing_system_pricing": EXISTING_SYSTEM_PRICING,
         "maintenance_pricing": MANAGED_MAINTENANCE_PRICING,
         "contact_email": current_app.config.get("CONTACT_EMAIL"),
         "socials": socials,
@@ -295,6 +297,7 @@ def _send_smtp_message(record: dict) -> None:
 
 
 _TEMPLATE_INTENTS = {
+    "existing-system": ("existing-system", "Existing System Purchase"),
     "customize": ("customize", "Customize Existing System"),
     "custom-build": ("custom-build", "Custom System Build"),
     "handover": ("handover", "Full Handover"),
@@ -317,8 +320,8 @@ def _requested_intent(template_interest) -> tuple[str, str, str]:
     canonical_intent, label = _TEMPLATE_INTENTS.get(raw, ("", ""))
     if not canonical_intent:
         return "", "", ""
-    # Customization normally points to a selected system. Keep the generic route usable
-    # for service inquiries, but never trust a browser-supplied title or price.
+    # System purchase/customization may point to a selected system. Keep legacy
+    # customization links readable, but never trust browser-supplied titles or prices.
     return canonical_intent, label, label
 
 

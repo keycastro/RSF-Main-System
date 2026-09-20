@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-20",
-  "version": "3.8.11",
+  "version": "3.8.12",
   "owner_public_name": "Key Castro",
   "positioning": "Better systems for complex business needs",
   "framework": "Flask",
@@ -159,10 +159,17 @@
   },
   "commercial_model": {
     "system_creation": [
-      "Customize Existing System",
+      "Buy Existing System",
       "Custom System Build"
     ],
-    "development_pricing": "Custom quote based on requirements; it is separate from maintenance.",
+    "existing_system_purchase": {
+      "currency": "USD",
+      "price": 160,
+      "billing": "one-time",
+      "meaning": "Purchase of the published existing system as shown; customization and maintenance are not included.",
+      "single_source": "app/system_templates.py::EXISTING_SYSTEM_PRICING"
+    },
+    "new_custom_system_pricing": "Custom Quote",
     "post_build_options": [
       "Full Handover",
       "Managed by KEY CASTRO"
@@ -170,7 +177,8 @@
     "full_handover": "I build it. You manage it. Client or someone they hire handles hosting, security, backups, and technical upkeep after handover.",
     "managed_by_key_castro": "I build it. I manage it. KEY CASTRO keeps the existing live system online, secure, stable, accessible, and technically maintained.",
     "pricing_public": true,
-    "pricing": {
+    "pricing_currency_public": "USD only",
+    "maintenance_pricing": {
       "currency": "USD",
       "monthly_per_system": 39,
       "yearly_per_system": 390,
@@ -179,7 +187,7 @@
       "single_source": "app/system_templates.py::MANAGED_MAINTENANCE_PRICING"
     },
     "plan_selection": "monthly/yearly plan keys are resolved server-side; official managed-maintenance price text is generated from trusted pricing metadata; no checkout is implied",
-    "legacy_compatibility": "legacy subscribe/free-access URLs and old stored subscription labels are accepted only for compatibility and normalize/display as Managed by KEY CASTRO",
+    "legacy_compatibility": "legacy subscribe/free-access URLs and old customization links are accepted only for compatibility; new public existing-system CTAs use the Existing System Purchase intent",
     "maintenance_boundary": "Maintenance keeps the current system running. It does not include new features, workflow changes, new modules, integrations, or other improvements.",
     "system_upgrades": {
       "minor": {
@@ -190,10 +198,11 @@
         "price": 149,
         "meaning": "Larger improvement to an existing Key Castro-built system."
       },
-      "huge_expansion_or_new_system": {
+      "new_system_or_large_expansion": {
         "price": "Custom Quote",
         "meaning": "Work beyond a normal system upgrade."
       },
+      "separate_from_system_purchase": true,
       "separate_from_maintenance": true,
       "available_to_self_managed_or_key_managed_clients": true
     }
@@ -273,7 +282,7 @@
     "launcher": "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
     "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
     "provider_auto_deploy": false,
-    "success_condition": "production health reports version 3.8.11; live How It Works preserves the approved two-step layout and exactly two management choices while showing $39/month or $390/year maintenance, $79 Minor System Upgrade, $149 Major System Upgrade, Custom Quote build/large expansion wording, and the maintenance-versus-upgrade boundary; the old $49/month and $490/year public prices are absent; approved About profile/lower story, footer tagline, and exactly 3 published systems remain unchanged"
+    "success_condition": "production health reports version 3.8.12; Home, Systems, system detail, and How It Works show the approved $160 existing-system purchase price; the purchase is separate from upgrades and maintenance; new custom systems remain Custom Quote; maintenance remains $39/month or $390/year; upgrades remain $79 / $149 / New System / Large Expansion Custom Quote; no PHP/peso pricing is publicly displayed; approved About profile/lower story, footer tagline, and exactly 3 published systems remain unchanged"
   },
   "ux_master_refinement_3_7": {
     "document": "docs/MASTER_UX_REFINEMENT_3_7.md",
@@ -444,5 +453,21 @@
       "Kept very large expansion/new system as Custom Quote",
       "Used simple professional English while preserving the existing visual design and page structure"
     ]
+  },
+  "pricing_clarity_3_8_12": {
+    "scope": "Existing-system purchase pricing plus direct Contact/test/release/deployment dependencies",
+    "existing_system_price_usd": 160,
+    "existing_system_billing": "one-time",
+    "customization_included": false,
+    "maintenance_included": false,
+    "public_currency": "USD only",
+    "new_custom_system": "Custom Quote",
+    "minor_upgrade_usd": 79,
+    "major_upgrade_usd": 149,
+    "new_system_or_large_expansion": "Custom Quote",
+    "maintenance_monthly_usd": 39,
+    "maintenance_yearly_usd": 390,
+    "published_systems": 3,
+    "contact_intent": "Existing System Purchase"
   }
 }

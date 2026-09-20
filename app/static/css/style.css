@@ -2648,3 +2648,96 @@ body{font-size:17px;line-height:1.68}
   #management-options .management-upgrades-note,
   #management-options .management-billing-note{font-size:14px}
 }
+
+/* 3.8.12 — Existing System Pricing Clarity.
+   Adds only the approved $160 existing-system purchase presentation and direct responsive support. */
+.existing-system-card-price{
+  display:flex;
+  align-items:baseline;
+  gap:9px;
+  flex-wrap:wrap;
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid rgba(21,41,52,.10);
+}
+.existing-system-card-price strong{
+  color:var(--navy-deep);
+  font-size:21px;
+  line-height:1;
+}
+.existing-system-card-price span{
+  color:var(--muted);
+  font-size:12.5px;
+  line-height:1.35;
+}
+.system-detail-purchase{
+  width:max-content;
+  max-width:100%;
+  margin-top:18px;
+  padding:13px 15px;
+  border:1px solid #cbd7d0;
+  border-radius:11px;
+  background:var(--surface-sage);
+}
+.system-detail-purchase>strong{
+  display:inline-block;
+  margin-right:8px;
+  color:var(--navy-deep);
+  font-size:24px;
+  line-height:1;
+}
+.system-detail-purchase>span{
+  color:var(--sage-deep);
+  font-size:13px;
+  font-weight:750;
+}
+.system-detail-purchase>p{
+  max-width:510px;
+  margin:8px 0 0;
+  color:var(--ink-2);
+  font-size:13.5px;
+  line-height:1.48;
+}
+.human-simple-options .human-option-card .system-choice-price{
+  display:flex;
+  align-items:baseline;
+  gap:9px;
+  flex-wrap:wrap;
+  width:100%;
+  margin:12px 0 11px;
+  padding:12px 14px;
+  border:1px solid rgba(21,41,52,.11);
+  border-radius:10px;
+  background:rgba(255,255,255,.78);
+}
+.human-simple-options .human-option-card .system-choice-price b{
+  color:var(--navy-deep);
+  font-size:22px;
+  line-height:1;
+}
+.human-simple-options .human-option-card .system-choice-price span{
+  display:inline;
+  margin:0;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.35;
+}
+.human-simple-options .human-option-card .system-choice-price--quote b{font-size:19px}
+.human-simple-options .human-option-card .human-option-explanation{
+  margin:0 0 18px;
+  color:var(--ink-2);
+  font-size:14.5px;
+  line-height:1.5;
+}
+
+@media(max-width:680px){
+  .existing-system-card-price strong{font-size:20px}
+  .existing-system-card-price span{font-size:13px}
+  .system-detail-purchase{width:100%;padding:13px 14px}
+  .system-detail-purchase>strong{font-size:22px}
+  .system-detail-purchase>span{font-size:13.5px}
+  .system-detail-purchase>p{font-size:14px}
+  .human-simple-options .human-option-card .system-choice-price b{font-size:21px}
+  .human-simple-options .human-option-card .system-choice-price span{font-size:13.5px}
+  .human-simple-options .human-option-card .human-option-explanation{font-size:15px}
+}

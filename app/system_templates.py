@@ -23,6 +23,26 @@ class MaintenancePlan:
 
 
 @dataclass(frozen=True)
+class ExistingSystemPricing:
+    """Single trusted price for every published existing system."""
+
+    currency_code: str = "USD"
+    currency_symbol: str = "$"
+    one_time_price: int = 160
+
+    @property
+    def price_label(self) -> str:
+        return f"{self.currency_symbol}{self.one_time_price}"
+
+    @property
+    def one_time_label(self) -> str:
+        return f"{self.price_label} one-time"
+
+
+EXISTING_SYSTEM_PRICING = ExistingSystemPricing()
+
+
+@dataclass(frozen=True)
 class ManagedMaintenancePricing:
     """Single trusted pricing source for optional managed maintenance."""
 
@@ -186,9 +206,9 @@ class SystemTemplate:
 _COMMON_MANAGED_SCOPE = (
     "Hosting and deployment management",
     "Routine backups and technical maintenance",
-    "Bug fixes and agreed system updates",
+    "Technical fixes for the current system",
     "Technical support within the agreed service scope",
-    "Major new features and custom development are quoted separately",
+    "New features, workflow changes, and other upgrades are priced separately",
 )
 
 

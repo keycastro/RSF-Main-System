@@ -9,7 +9,7 @@ After the system is ready, only two management choices are presented:
 1. **Full Handover** — client takes responsibility for ongoing hosting, domain, backups, maintenance, updates, and technical management.
 2. **Managed by KEY CASTRO** — KEY CASTRO keeps the existing live system online, secure, stable, accessible, and technically maintained for **$39/month or $390/year per system**. Twelve monthly payments total $468, so yearly maintenance saves $78/year.
 
-Maintenance and future development are separate. Maintenance does not include new features, workflow changes, new modules, integrations, or other later improvements. Future improvements can be purchased as **Minor System Upgrade — $79** or **Major System Upgrade — $149**; very large expansion or a new system uses a **Custom Quote**.
+Every published existing system uses the same **$160 one-time** purchase price. That price is for the existing system as shown; requested changes are separate upgrades. Maintenance and future development are separate. Maintenance does not include new features, workflow changes, new modules, integrations, or other later improvements. Future improvements can be purchased as **Minor System Upgrade — $79** or **Major System Upgrade — $149**; **New System / Large Expansion** uses a **Custom Quote**.
 
 Every system-origin inquiry carries trusted server-side context into PostgreSQL and the private KEY CASTRO Inbox.
 

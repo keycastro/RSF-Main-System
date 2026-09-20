@@ -103,7 +103,7 @@ Services means **paid work**. It is not another system catalog.
 Current service groups:
 
 - Custom System Development
-- Customize an Existing KEY CASTRO System
+- Buy an Existing KEY CASTRO System — $160 one-time
 - Workflow & Data Configuration
 - Integrations, Automation & Deployment
 

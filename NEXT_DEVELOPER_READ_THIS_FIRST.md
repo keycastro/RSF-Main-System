@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Release version:** 3.8.11
+**Release version:** 3.8.12
 **Official site:** https://keycastro.onrender.com
 **Framework:** Flask
 
@@ -16,7 +16,7 @@
 8. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
 9. `docs/DEPLOYMENT_HISTORY.md`
 
-Older versioned pricing/business-model documents are historical. Current 3.8.11 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
+Older versioned pricing/business-model documents are historical. Current 3.8.12 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
 
 ## Public information architecture
 
@@ -37,8 +37,8 @@ The canonical route remains `/services`; only the public label is **How It Works
 Write for a first-time non-technical older business owner. Public copy should use concrete everyday actions before technical/business terminology. A visitor should quickly understand:
 
 - Key Castro builds custom business systems and automation for real estate, property, and housing businesses.
-- They can choose an existing system or ask for a new one.
-- After the build, they can manage it or Key Castro can manage it.
+- They can buy a published existing system for **$160 one-time**, or ask for a completely new system at a **Custom Quote**.
+- Changes to an existing system are separate upgrades; after the system is ready, they can manage it or Key Castro can manage it.
 - They contact Key Castro to start.
 
 Do not restore abstract homepage process words such as **Choose / Adapt / Deliver**. Do not force visitors to understand **Full Handover**, **managed maintenance**, **workflow**, **roles**, **deployment**, or similar terms to understand the basic offer.
@@ -53,12 +53,12 @@ Keep all three separate. Student Housing is an independent portfolio project, no
 
 ## Commercial model — AUTHORITATIVE
 
-### Creation
+### Purchase / creation
 
-1. Customize an existing KEY CASTRO system.
-2. Build a new custom system.
+1. Buy a published existing KEY CASTRO system — **$160 one-time**.
+2. Build a completely new custom system — **Custom Quote**.
 
-Build/customization pricing is quoted separately.
+The $160 existing-system price is for the system as shown. Requested changes are separate upgrades.
 
 ### After build — EXACTLY TWO OPTIONS
 
@@ -67,7 +67,7 @@ Build/customization pricing is quoted separately.
 
 Public beginner-facing labels are **You Manage It** and **I Manage It**. Keep the formal terms internal/secondary where necessary. Do not add a third management option.
 
-Current price rules: build/customization = **Custom Quote**; maintenance = **$39/month or $390/year**; Minor System Upgrade = **$79**; Major System Upgrade = **$149**; very large expansion/new system = **Custom Quote**. Maintenance and upgrades are separate. Maintenance keeps the existing live system running. It does not include new features or other future improvements.
+Current price rules: existing published system = **$160 one-time**; Minor System Upgrade = **$79**; Major System Upgrade = **$149**; New System / Large Expansion = **Custom Quote**; maintenance = **$39/month or $390/year**; completely new custom system = **Custom Quote**. Purchase, upgrades, maintenance, and new custom builds are separate. Public pricing uses USD only.
 
 ## Page responsibility
 
@@ -82,7 +82,7 @@ Do not repeat the full management model on every system page.
 
 ## Design rule
 
-Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.11 changes only the organization of the **How It Works** cards and the Step 2 management/maintenance/upgrade story. Keep the site-wide design, navigation, all other page structure, the approved About top profile, and the lower five-part About story unchanged. How-It-Works-scoped CSS may support the approved organization. Compact must never mean tiny text.
+Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.12 adds the approved existing-system price and direct pricing clarity across Home, Systems, system detail pages, and How It Works while preserving the existing site-wide design. Keep the site-wide design, navigation, all other page structure, the approved About top profile, and the lower five-part About story unchanged. How-It-Works-scoped CSS may support the approved organization. Compact must never mean tiny text.
 
 ## Security
 

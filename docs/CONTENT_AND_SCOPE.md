@@ -31,7 +31,7 @@ Beginner-facing post-build choices:
 - **You Manage It** — “I build it. You manage it.”
 - **I Manage It** — “I build it. I manage it.” — **$39/month or $390/year**.
 
-Internally these map to Full Handover and Managed by KEY CASTRO. Build/customization pricing is a **Custom Quote**. Maintenance keeps the current system running and does not include future features or workflow changes. Future improvements are separate purchases: **Minor System Upgrade — $79**, **Major System Upgrade — $149**, and **very large expansion / new system — Custom Quote**.
+Internally these map to Full Handover and Managed by KEY CASTRO. Every published existing system is **$160 one-time**. That price is for the existing system as shown; changes are separate upgrades. A completely new custom system is **Custom Quote**. Maintenance remains **$39/month or $390/year** and does not include future features or workflow changes. Future improvements are separate purchases: **Minor System Upgrade — $79**, **Major System Upgrade — $149**, and **New System / Large Expansion — Custom Quote**. Public pricing uses USD only.
 
 ## Truth guardrails
 

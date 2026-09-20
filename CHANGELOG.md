@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 3.8.12 — Existing System Pricing Clarity
+
+- Added one trusted **$160 USD one-time** purchase price for every published existing system.
+- Displayed the existing-system price on Home system cards, the Systems catalog, individual system pages, and How It Works Step 1.
+- Clarified that the $160 price is for the existing system as shown; changes are separate upgrades.
+- Kept **Minor System Upgrade — $79**, **Major System Upgrade — $149**, and **New System / Large Expansion — Custom Quote** separate from the system purchase.
+- Kept optional maintenance separate at **$39/month or $390/year**.
+- Kept completely new custom systems at **Custom Quote**.
+- Added a direct **Existing System Purchase** Contact intent while preserving legacy customization links for compatibility.
+- Kept public customer-facing pricing in **USD only** and preserved the existing visual identity, published system count, About page, footer, owner Inbox, database, and authentication.
+
 ## 3.8.11 — How It Works organization polish
 
 - Reorganized only the approved **How It Works** content so Step 1 and Step 2 follow the same card structure and Step 2 is easier to scan.

@@ -3,7 +3,7 @@
 <section class="page-hero page-hero-simple">
   <div class="container simple-page-hero reveal">
     <h1>Systems I already built.</h1>
-    <p>Choose the one that is closest to what your business needs. I can change it to fit your business.</p>
+    <p>Choose the one that is closest to what your business needs. Each existing system is {{ existing_system_pricing.price_label }} one-time. Changes are priced separately.</p>
   </div>
 </section>
 
@@ -27,6 +27,10 @@
         <div class="template-card-copy">
           <h2>{{ item.name }}</h2>
           <p>{{ item.short_description }}</p>
+          <div class="existing-system-card-price" aria-label="One-time system price">
+            <strong>{{ existing_system_pricing.price_label }}</strong>
+            <span>One-time system price</span>
+          </div>
         </div>
         {% if item.screenshots %}
         <a class="template-card-image" href="{{ url_for('site.system_template_detail', slug=item.slug) }}" aria-label="View {{ item.name }}">
