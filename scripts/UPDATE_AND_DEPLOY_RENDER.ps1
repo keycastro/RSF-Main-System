@@ -5,8 +5,8 @@ $documents = [Environment]::GetFolderPath("MyDocuments")
 $target = Join-Path $documents "KEY_CASTRO_WEBSITE"
 $serviceId = "srv-dam749e1egvs738cppq0"
 $liveBase = "https://keycastro.onrender.com"
-$expectedVersion = "3.8.12"
-$commitMessage = "Release 3.8.12 Existing System Pricing Clarity"
+$expectedVersion = "3.8.13"
+$commitMessage = "Release 3.8.13 Price by Agreement Wording Update"
 
 function Invoke-Native {
     param(
@@ -235,15 +235,15 @@ try {
             $hasThreePricedSystemCards = (([regex]::Matches($systems.Content, 'class="existing-system-card-price"')).Count -eq 3)
             $hasPurchaseBoundary = ($systems.Content -match [regex]::Escape('Changes are priced separately.')) -and ($detail.Content -match [regex]::Escape('This price is for the existing system shown here. Changes are priced separately.')) -and ($how.Content -match [regex]::Escape('If you want changes later, upgrades are priced separately.'))
             $hasExistingSystemContact = ($detail.Content -match [regex]::Escape('intent=existing-system')) -and ($detail.Content -match [regex]::Escape('>Get This System</a>'))
-            $hasCustomBuildQuote = ($how.Content -match [regex]::Escape('BUILD A NEW SYSTEM')) -and ($how.Content -match [regex]::Escape('Custom Quote')) -and ($how.Content -match [regex]::Escape('Based on the work needed'))
-            $oldExistingQuoteGone = -not ($how.Content -match [regex]::Escape('The price is a custom quote based on what you need.')) -and -not ($how.Content -match [regex]::Escape('I can adapt one of my existing systems to fit your business.'))
+            $hasAgreementPrice = ($how.Content -match [regex]::Escape('BUILD A NEW SYSTEM')) -and ($how.Content -match [regex]::Escape('Price by Agreement')) -and ($how.Content -match [regex]::Escape('Based on the work needed'))
+            $oldExistingQuoteGone = -not ($how.Content -match [regex]::Escape('Custom Quote')) -and -not ($how.Content -match [regex]::Escape('The price is a custom quote based on what you need.')) -and -not ($how.Content -match [regex]::Escape('I can adapt one of my existing systems to fit your business.'))
             $hasPricing = ($how.Content -match [regex]::Escape('$39/month')) -and ($how.Content -match [regex]::Escape('$390/year'))
             $oldPricingGone = -not ($how.Content -match [regex]::Escape('$49/month')) -and -not ($how.Content -match [regex]::Escape('$490/year'))
             $pesoSymbol = [char]0x20B1
             $combinedPublicPricingPages = $homePage.Content + $systems.Content + $detail.Content + $how.Content
             $hasUsdOnlyPublicPricing = -not ($combinedPublicPricingPages -match [regex]::Escape($pesoSymbol)) -and -not ($combinedPublicPricingPages -match 'PHP') -and -not ($combinedPublicPricingPages -match 'Philippine peso')
             $hasMaintenanceBoundary = ($how.Content -match [regex]::Escape('Same maintenance service. Choose monthly or yearly billing.')) -and ($how.Content -match [regex]::Escape('Maintenance can include:')) -and ($how.Content -match [regex]::Escape('Hosting and deployment')) -and ($how.Content -match [regex]::Escape('Technical fixes for the current system')) -and ($how.Content -match [regex]::Escape('Maintenance does not include:')) -and ($how.Content -match [regex]::Escape('New features')) -and ($how.Content -match [regex]::Escape('Workflow changes')) -and ($how.Content -match [regex]::Escape('Connections to other tools'))
-            $hasUpgradePricing = ($how.Content -match [regex]::Escape('Minor System Upgrade')) -and ($how.Content -match [regex]::Escape('$79')) -and ($how.Content -match [regex]::Escape('Major System Upgrade')) -and ($how.Content -match [regex]::Escape('$149')) -and ($how.Content -match [regex]::Escape('New System / Large Expansion')) -and ($how.Content -match [regex]::Escape('Custom Quote')) -and ($how.Content -match [regex]::Escape('Upgrades are separate from maintenance.')) -and ($how.Content -match [regex]::Escape('You can buy an upgrade later whether you manage the system yourself or I manage it.'))
+            $hasUpgradePricing = ($how.Content -match [regex]::Escape('Minor System Upgrade')) -and ($how.Content -match [regex]::Escape('$79')) -and ($how.Content -match [regex]::Escape('Major System Upgrade')) -and ($how.Content -match [regex]::Escape('$149')) -and ($how.Content -match [regex]::Escape('New System / Large Expansion')) -and ($how.Content -match [regex]::Escape('Price by Agreement')) -and ($how.Content -match [regex]::Escape('Upgrades are separate from maintenance.')) -and ($how.Content -match [regex]::Escape('You can buy an upgrade later whether you manage the system yourself or I manage it.'))
             $hasAboutAutomation = $about.Content -match [regex]::Escape("Automate the repetitive work that should not stay manual.")
             $hasAboutSubscriptionValue = $about.Content -match [regex]::Escape("One system can reduce the need for too many paid tools.")
             $hasNewTagline = $about.Content -match [regex]::Escape("Better systems for complex business needs.")
@@ -259,7 +259,7 @@ try {
             $hasAboutStoryFlow = (($about.Content | Select-String -Pattern 'class="about-story-index"' -AllMatches).Matches.Count -eq 5) -and ($about.Content -match [regex]::Escape("THE PROBLEMS I HELP SOLVE")) -and ($about.Content -match [regex]::Escape("AUTOMATION")) -and ($about.Content -match [regex]::Escape("FEWER DISCONNECTED PLATFORMS")) -and ($about.Content -match [regex]::Escape("WHAT I BUILD")) -and ($about.Content -match [regex]::Escape("HOW I WORK"))
             $hasAboutPreservedDetails = ($about.Content -match [regex]::Escape("Missed follow-ups and deadlines")) -and ($about.Content -match [regex]::Escape("Software that does not fully fit")) -and ($about.Content -match [regex]::Escape("Recurring tasks and handoffs")) -and ($about.Content -match [regex]::Escape("The best option depends on the business.")) -and ($about.Content -match [regex]::Escape("Business-specific rules")) -and ($about.Content -match [regex]::Escape(">View Systems</a>"))
             $portraitLoads = ($portrait.StatusCode -eq 200) -and ($portrait.RawContentLength -gt 100000)
-            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasExistingSystemPrice -and $hasThreeHomePriceCards -and $hasThreePricedSystemCards -and $hasPurchaseBoundary -and $hasExistingSystemContact -and $hasCustomBuildQuote -and $oldExistingQuoteGone -and $hasUsdOnlyPublicPricing -and $hasPricing -and $oldPricingGone -and $hasMaintenanceBoundary -and $hasUpgradePricing -and $hasAboutAutomation -and $hasAboutSubscriptionValue -and $hasNewTagline -and $oldTaglineGone -and $hasAboutPortrait -and $hasAboutProfessionalTitle -and $hasAboutProfileBlock -and $hasAboutProfileName -and $hasWhatIDo -and $hasApprovedAboutDescription -and $hasAboutValueRow -and $hasAboutStoryFlow -and $hasAboutPreservedDetails -and $portraitLoads) {
+            if ($health.status -eq "ok" -and $health.version -eq $expectedVersion -and $hasStudentHousing -and $hasThreeSystems -and $hasStep1 -and $hasStep2 -and $hasNoStep3 -and $oldBuildStepGone -and $hasManagementStep -and $hasViewSystemsButton -and $hasRequestSystemButton -and $finalCtaGone -and $hasExistingSystemPrice -and $hasThreeHomePriceCards -and $hasThreePricedSystemCards -and $hasPurchaseBoundary -and $hasExistingSystemContact -and $hasAgreementPrice -and $oldExistingQuoteGone -and $hasUsdOnlyPublicPricing -and $hasPricing -and $oldPricingGone -and $hasMaintenanceBoundary -and $hasUpgradePricing -and $hasAboutAutomation -and $hasAboutSubscriptionValue -and $hasNewTagline -and $oldTaglineGone -and $hasAboutPortrait -and $hasAboutProfessionalTitle -and $hasAboutProfileBlock -and $hasAboutProfileName -and $hasWhatIDo -and $hasApprovedAboutDescription -and $hasAboutValueRow -and $hasAboutStoryFlow -and $hasAboutPreservedDetails -and $portraitLoads) {
                 $verified = $true
                 break
             }
@@ -291,6 +291,7 @@ try {
     Write-Host "About lower story organization: confirmed LIVE"
     Write-Host "Pricing/service information: confirmed LIVE"
     Write-Host "Existing system `$160 pricing: confirmed LIVE"
+    Write-Host "Price by Agreement wording: confirmed LIVE"
     Write-Host "Footer tagline: confirmed LIVE"
     Write-Host "Commit: $sha"
     Write-Host ""

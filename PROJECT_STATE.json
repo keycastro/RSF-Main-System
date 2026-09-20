@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-20",
-  "version": "3.8.12",
+  "version": "3.8.13",
   "owner_public_name": "Key Castro",
   "positioning": "Better systems for complex business needs",
   "framework": "Flask",
@@ -169,7 +169,7 @@
       "meaning": "Purchase of the published existing system as shown; customization and maintenance are not included.",
       "single_source": "app/system_templates.py::EXISTING_SYSTEM_PRICING"
     },
-    "new_custom_system_pricing": "Custom Quote",
+    "new_custom_system_pricing": "Price by Agreement",
     "post_build_options": [
       "Full Handover",
       "Managed by KEY CASTRO"
@@ -199,7 +199,7 @@
         "meaning": "Larger improvement to an existing Key Castro-built system."
       },
       "new_system_or_large_expansion": {
-        "price": "Custom Quote",
+        "price": "Price by Agreement",
         "meaning": "Work beyond a normal system upgrade."
       },
       "separate_from_system_purchase": true,
@@ -282,7 +282,7 @@
     "launcher": "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
     "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
     "provider_auto_deploy": false,
-    "success_condition": "production health reports version 3.8.12; Home, Systems, system detail, and How It Works show the approved $160 existing-system purchase price; the purchase is separate from upgrades and maintenance; new custom systems remain Custom Quote; maintenance remains $39/month or $390/year; upgrades remain $79 / $149 / New System / Large Expansion Custom Quote; no PHP/peso pricing is publicly displayed; approved About profile/lower story, footer tagline, and exactly 3 published systems remain unchanged"
+    "success_condition": "production health reports version 3.8.13; Home, Systems, system detail, and How It Works show the approved $160 existing-system purchase price; the purchase is separate from upgrades and maintenance; new custom systems use Price by Agreement; maintenance remains $39/month or $390/year; upgrades remain $79 / $149 / New System / Large Expansion Price by Agreement; no PHP/peso pricing is publicly displayed; approved About profile/lower story, footer tagline, and exactly 3 published systems remain unchanged"
   },
   "ux_master_refinement_3_7": {
     "document": "docs/MASTER_UX_REFINEMENT_3_7.md",
@@ -461,10 +461,10 @@
     "customization_included": false,
     "maintenance_included": false,
     "public_currency": "USD only",
-    "new_custom_system": "Custom Quote",
+    "new_custom_system": "Price by Agreement",
     "minor_upgrade_usd": 79,
     "major_upgrade_usd": 149,
-    "new_system_or_large_expansion": "Custom Quote",
+    "new_system_or_large_expansion": "Price by Agreement",
     "maintenance_monthly_usd": 39,
     "maintenance_yearly_usd": 390,
     "published_systems": 3,

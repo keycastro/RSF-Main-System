@@ -1,8 +1,8 @@
-# DELIVERY REPORT — KEY CASTRO 3.8.12
+# DELIVERY REPORT — KEY CASTRO 3.8.13
 
 ## Scope
 
-Focused existing-system pricing clarity update. No unrelated redesign or backend rewrite.
+Text-only wording update: **Custom Quote** → **Price by Agreement** where the price is agreed with the client. No redesign, pricing change, or backend change.
 
 ## Approved business model
 
@@ -10,17 +10,16 @@ Focused existing-system pricing clarity update. No unrelated redesign or backend
 - The $160 price is for the existing system as shown; changes are separate paid upgrades.
 - **Minor System Upgrade — $79.**
 - **Major System Upgrade — $149.**
-- **New System / Large Expansion — Custom Quote.**
+- **New System / Large Expansion — Price by Agreement.**
 - Optional maintenance remains **$39/month or $390/year**.
-- A completely new custom system remains **Custom Quote**.
+- A completely new custom system uses **Price by Agreement**.
 - Public pricing uses USD only.
 
 ## Public changes
 
-- Home cards show the $160 one-time price.
-- Systems cards show the $160 one-time price and the page explains that changes are separate.
-- System detail pages show the $160 one-time price and use **Get This System** for the purchase inquiry path.
-- How It Works Step 1 now separates **$160 existing system** from **Custom Quote new system** while Step 2 maintenance and later upgrades remain separate.
+- **Build a New System** now shows **Price by Agreement**.
+- **New System / Large Expansion** now shows **Price by Agreement**.
+- No other public content, layout, prices, or behavior changed.
 
 ## Preserved
 
@@ -31,4 +30,4 @@ Focused existing-system pricing clarity update. No unrelated redesign or backend
 
 ## Release rule
 
-Production is not considered 3.8.12 until the one-run deployer verifies the live version, $160 existing-system pricing, USD-only public pricing, purchase/upgrade/maintenance separation, approved upgrade and maintenance prices, preserved About content, footer, and exactly three published systems.
+Production is not considered 3.8.13 until the one-run deployer verifies the live version, $160 existing-system pricing, USD-only public pricing, purchase/upgrade/maintenance separation, approved upgrade and maintenance prices, preserved About content, footer, and exactly three published systems.

@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 3.8.13 — Price by Agreement Wording Update
+
+- Text-only update: replaced customer-facing **Custom Quote** with **Price by Agreement** for new custom systems and **New System / Large Expansion**.
+- Preserved all approved prices, layout, styling, routes, backend behavior, Contact flow, owner Inbox, system descriptions, screenshots, navigation, and footer.
+- Updated only direct tests, release metadata, and live deployment verification required by the wording change.
+
 ## 3.8.12 — Existing System Pricing Clarity
 
 - Added one trusted **$160 USD one-time** purchase price for every published existing system.

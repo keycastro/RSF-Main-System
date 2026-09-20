@@ -4,7 +4,7 @@ Professional portfolio and client-acquisition website for **KEY CASTRO — Custo
 
 Official website: https://keycastro.onrender.com
 
-**Current release version: 3.8.12**
+**Current release version: 3.8.13**
 
 ## One project folder
 
@@ -16,7 +16,7 @@ This single Flask codebase contains the public website, published system pages, 
 
 ## Public design rule
 
-Preserve the premium ivory/navy/sage identity, typography, compact spacing, responsive behavior, cards, page structure, and five-item navigation. Version 3.8.12 keeps the same site-wide design and adds clear, consistent pricing for existing systems across Home, Systems, system detail pages, and How It Works.
+Preserve the premium ivory/navy/sage identity, typography, compact spacing, responsive behavior, cards, page structure, and five-item navigation. Version 3.8.13 keeps the exact v3.8.12 design and pricing, changing only the customer-facing pricing label from **Custom Quote** to **Price by Agreement** where the price is agreed with the client.
 
 Public rule: **Short. Simple. Clear. No unnecessary repetition.**
 
@@ -27,9 +27,9 @@ Primary navigation remains **Home · Systems · How It Works · About · Contact
 A client can:
 
 - **Buy an existing published system for $160 one-time**, or
-- **Request a completely new custom system — Custom Quote**.
+- **Request a completely new custom system — Price by Agreement**.
 
-The **$160 existing-system price is for the system as currently shown**. Changes are separate paid upgrades: **Minor System Upgrade — $79**, **Major System Upgrade — $149**, and **New System / Large Expansion — Custom Quote**.
+The **$160 existing-system price is for the system as currently shown**. Changes are separate paid upgrades: **Minor System Upgrade — $79**, **Major System Upgrade — $149**, and **New System / Large Expansion — Price by Agreement**.
 
 After the system is ready, there are only two management choices:
 

@@ -1,12 +1,12 @@
 # KEY CASTRO WEBSITE — DEVELOPER HANDOFF
 
-**Release:** 3.8.12
+**Release:** 3.8.13
 **Live URL:** https://keycastro.onrender.com
 **Framework:** Flask
 
 ## Current direction
 
-Version 3.8.12 is a **targeted existing-system pricing clarity update**. Every published existing system is **$160 one-time**. That price is for the existing system as shown; requested changes are separate upgrades. Maintenance and new custom builds remain separate. No unrelated redesign or backend rewrite is part of this release.
+Version 3.8.13 is a **text-only pricing wording update**. It preserves the complete v3.8.12 design, prices, and behavior, and changes only **Custom Quote** to **Price by Agreement** for new custom systems and New System / Large Expansion pricing.
 
 Primary navigation: **Home · Systems · How It Works · About · Contact**. The underlying `/services` URL remains unchanged.
 
@@ -26,9 +26,9 @@ Never merge their codebases, screenshots, or claims. Student Housing remains ind
 
 Purchase: every published existing system is **$160 one-time**. The purchase does not include customization or maintenance.
 
-Changes: **Minor System Upgrade — $79**, **Major System Upgrade — $149**, **New System / Large Expansion — Custom Quote**.
+Changes: **Minor System Upgrade — $79**, **Major System Upgrade — $149**, **New System / Large Expansion — Price by Agreement**.
 
-New custom system from scratch: **Custom Quote**.
+New custom system from scratch: **Price by Agreement**.
 
 After the system is ready there are exactly two management options:
 
@@ -45,4 +45,4 @@ A non-technical 50–70 year old business owner should understand the basic offe
 
 ## Release workflow
 
-Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/content/profile-portrait verification for version 3.8.12. Never commit private/runtime files.
+Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/content/profile-portrait verification for version 3.8.13. Never commit private/runtime files.

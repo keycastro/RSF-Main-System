@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Release version:** 3.8.12
+**Release version:** 3.8.13
 **Official site:** https://keycastro.onrender.com
 **Framework:** Flask
 
@@ -16,7 +16,7 @@
 8. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
 9. `docs/DEPLOYMENT_HISTORY.md`
 
-Older versioned pricing/business-model documents are historical. Current 3.8.12 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
+Older versioned pricing/business-model documents are historical. Current 3.8.13 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
 
 ## Public information architecture
 
@@ -37,7 +37,7 @@ The canonical route remains `/services`; only the public label is **How It Works
 Write for a first-time non-technical older business owner. Public copy should use concrete everyday actions before technical/business terminology. A visitor should quickly understand:
 
 - Key Castro builds custom business systems and automation for real estate, property, and housing businesses.
-- They can buy a published existing system for **$160 one-time**, or ask for a completely new system at a **Custom Quote**.
+- They can buy a published existing system for **$160 one-time**, or ask for a completely new system at **Price by Agreement**.
 - Changes to an existing system are separate upgrades; after the system is ready, they can manage it or Key Castro can manage it.
 - They contact Key Castro to start.
 
@@ -56,7 +56,7 @@ Keep all three separate. Student Housing is an independent portfolio project, no
 ### Purchase / creation
 
 1. Buy a published existing KEY CASTRO system — **$160 one-time**.
-2. Build a completely new custom system — **Custom Quote**.
+2. Build a completely new custom system — **Price by Agreement**.
 
 The $160 existing-system price is for the system as shown. Requested changes are separate upgrades.
 
@@ -67,7 +67,7 @@ The $160 existing-system price is for the system as shown. Requested changes are
 
 Public beginner-facing labels are **You Manage It** and **I Manage It**. Keep the formal terms internal/secondary where necessary. Do not add a third management option.
 
-Current price rules: existing published system = **$160 one-time**; Minor System Upgrade = **$79**; Major System Upgrade = **$149**; New System / Large Expansion = **Custom Quote**; maintenance = **$39/month or $390/year**; completely new custom system = **Custom Quote**. Purchase, upgrades, maintenance, and new custom builds are separate. Public pricing uses USD only.
+Current price rules: existing published system = **$160 one-time**; Minor System Upgrade = **$79**; Major System Upgrade = **$149**; New System / Large Expansion = **Price by Agreement**; maintenance = **$39/month or $390/year**; completely new custom system = **Price by Agreement**. Purchase, upgrades, maintenance, and new custom builds are separate. Public pricing uses USD only.
 
 ## Page responsibility
 
@@ -82,7 +82,7 @@ Do not repeat the full management model on every system page.
 
 ## Design rule
 
-Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.12 adds the approved existing-system price and direct pricing clarity across Home, Systems, system detail pages, and How It Works while preserving the existing site-wide design. Keep the site-wide design, navigation, all other page structure, the approved About top profile, and the lower five-part About story unchanged. How-It-Works-scoped CSS may support the approved organization. Compact must never mean tiny text.
+Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.13 preserves the approved v3.8.12 pricing and design and changes only the customer-facing pricing wording from **Custom Quote** to **Price by Agreement** where the price is agreed with the client. Keep the site-wide design, navigation, all other page structure, the approved About top profile, and the lower five-part About story unchanged. How-It-Works-scoped CSS may support the approved organization. Compact must never mean tiny text.
 
 ## Security
 
