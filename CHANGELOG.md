@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.8.20 - Existing System Price Update to $199
+- Changed only the published existing ready-built system price from **$290** to **$199 one-time**.
+- Kept self-managed technical care at **$0/month management fee**.
+- Kept optional managed-care pricing unchanged at **$39/month or $390/year**.
+- Preserved upgrades, Price by Agreement rules, layout, colors, cards, fonts, spacing, navigation, pages, backend, and overall visual identity.
+
 ## v3.8.19 - Existing System Price + Optional Management Clarity
 - Changed the published existing ready-built system price from **$160** to **$290 one-time**.
 - Kept managed-care pricing unchanged at **$39/month or $390/year**.

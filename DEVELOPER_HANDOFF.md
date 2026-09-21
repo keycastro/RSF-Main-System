@@ -1,12 +1,12 @@
 # KEY CASTRO WEBSITE — DEVELOPER HANDOFF
 
-**Release:** 3.8.19
+**Release:** 3.8.20
 **Live URL:** https://keycastro.onrender.com
 **Framework:** Flask
 
 ## Current direction
 
-Version 3.8.19 is a **pricing and management-clarity update**. Existing ready-built systems are now **$290 one-time**. The Services & Pricing page makes the existing two-option model explicit: self-management has **$0/month management fee**, while optional KEY CASTRO management remains unchanged at **$39/month or $390/year**. The current visual identity, cards, typography, routes, pages, footer, systems, backend, and private functionality are preserved.
+Version 3.8.20 changes only the existing ready-built system price to **$199 one-time**. The Services & Pricing management model remains exactly as approved: self-management has **$0/month management fee**, while optional KEY CASTRO management remains **$39/month or $390/year**. The current visual identity, cards, typography, routes, pages, footer, systems, backend, and private functionality are preserved.
 
 Primary navigation: **Home · Systems · Services & Pricing · About · Contact**. The underlying `/services` URL remains unchanged.
 
@@ -24,7 +24,7 @@ Never merge their codebases, screenshots, or claims. Student Housing remains ind
 
 ## Business rules
 
-Purchase: every published existing system is **$290 one-time**. The purchase does not include customization or maintenance.
+Purchase: every published existing system is **$199 one-time**. The purchase does not include customization or maintenance.
 
 Changes: **Minor System Upgrade — $79**, **Major System Upgrade — $149**, **New System / Large Expansion — Price by Agreement**.
 
@@ -45,12 +45,16 @@ A non-technical 50–70 year old business owner should understand the basic offe
 
 ## Release workflow
 
-Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/Home featured-CTA/content/profile-portrait verification for version 3.8.19. Never commit private/runtime files.
+Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/Home featured-CTA/content/profile-portrait verification for version 3.8.20. Never commit private/runtime files.
 
 
 ### v3.8.18 direct change
 Home hero secondary CTA label: **Create a New System** (destination remains `/contact`). No other public content or behavior is changed by this release.
 
+
+
+### v3.8.20 direct change
+Existing ready-built system price: **$199 one-time**. This release changes price only. Self-managed technical care remains **$0/month management fee**; optional KEY CASTRO managed care remains **$39/month / $390/year**. No redesign.
 
 ### v3.8.19 direct change
 Existing ready-built system price: **$290 one-time**. Services & Pricing now clearly states that technical management is optional: **$0/month management fee** if the client manages it, or the unchanged **$39/month / $390/year** if KEY CASTRO manages it. No overall redesign.

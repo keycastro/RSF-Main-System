@@ -5,8 +5,8 @@ $documents = [Environment]::GetFolderPath("MyDocuments")
 $target = Join-Path $documents "KEY_CASTRO_WEBSITE"
 $serviceId = "srv-dam749e1egvs738cppq0"
 $liveBase = "https://keycastro.onrender.com"
-$expectedVersion = "3.8.19"
-$commitMessage = "Release 3.8.19 Existing System Price and Optional Management Clarity"
+$expectedVersion = "3.8.20"
+$commitMessage = "Release 3.8.20 Existing System Price Update to $199"
 
 function Invoke-Native {
     param(
@@ -231,7 +231,7 @@ try {
             $hasViewSystemsButton = ($how.Content -match [regex]::Escape('href="/system-templates"')) -and ($how.Content -match [regex]::Escape('>View Systems</a>'))
             $hasRequestSystemButton = ($how.Content -match [regex]::Escape('href="/contact?intent=custom-build"')) -and ($how.Content -match [regex]::Escape('>Request a System</a>'))
             $finalCtaGone = -not ($how.Content -match [regex]::Escape("Want to get started?"))
-            $hasExistingSystemPrice = ($homePage.Content -match [regex]::Escape('$290')) -and ($systems.Content -match [regex]::Escape('$290')) -and ($detail.Content -match [regex]::Escape('$290')) -and ($how.Content -match [regex]::Escape('$290'))
+            $hasExistingSystemPrice = ($homePage.Content -match [regex]::Escape('$199')) -and ($systems.Content -match [regex]::Escape('$199')) -and ($detail.Content -match [regex]::Escape('$199')) -and ($how.Content -match [regex]::Escape('$199'))
             $hasThreeHomePriceCards = (([regex]::Matches($homePage.Content, 'class="existing-system-card-price"')).Count -eq 3)
             $hasThreePricedSystemCards = (([regex]::Matches($systems.Content, 'class="existing-system-card-price"')).Count -eq 3)
             $hasPurchaseBoundary = ($systems.Content -match [regex]::Escape('Changes are priced separately.')) -and ($detail.Content -match [regex]::Escape('This price is for the existing system shown here. Changes are priced separately.')) -and ($how.Content -match [regex]::Escape('If you want changes later, upgrades are priced separately.'))
@@ -302,7 +302,7 @@ try {
     Write-Host "Explore All Systems + Services & Pricing CTA destinations: confirmed LIVE"
     Write-Host "Old Home three-step process: confirmed removed"
     Write-Host "Pricing/service information: confirmed LIVE"
-    Write-Host "Existing system `$290 pricing: confirmed LIVE"
+    Write-Host "Existing system `$199 pricing: confirmed LIVE"
     Write-Host "Price by Agreement wording: confirmed LIVE"
     Write-Host "Footer tagline: confirmed LIVE"
     Write-Host "Commit: $sha"
