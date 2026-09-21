@@ -15,18 +15,28 @@ def absolute_url(base_url: str, path: str) -> str:
 
 
 def core_structured_data(base_url: str, socials: dict[str, str]) -> list[dict]:
-    """Truthful site/person entities shared by public pages."""
+    """Truthful company, founder, and website entities shared by public pages."""
     if not base_url:
         return []
 
     same_as = [url for url in socials.values() if url]
+    organization = {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": f"{base_url}#realty-systems-foundry",
+        "name": "Realty Systems Foundry",
+        "url": base_url,
+        "description": "Custom software systems and technology for real estate businesses.",
+        "founder": {"@id": f"{base_url}#key-castro"},
+    }
     person = {
         "@context": "https://schema.org",
         "@type": "Person",
         "@id": f"{base_url}#key-castro",
         "name": "Key Castro",
         "url": base_url,
-        "jobTitle": "Custom Real Estate Systems Developer",
+        "jobTitle": "Founder, Realty Systems Foundry",
+        "worksFor": {"@id": f"{base_url}#realty-systems-foundry"},
         "knowsAbout": [
             "Custom real estate software",
             "Property operations systems",
@@ -45,11 +55,11 @@ def core_structured_data(base_url: str, socials: dict[str, str]) -> list[dict]:
         "@type": "WebSite",
         "@id": f"{base_url}#website",
         "url": base_url,
-        "name": "Key Castro",
-        "description": "Simple web systems for real estate, property, rental, and student-housing businesses.",
-        "creator": {"@id": f"{base_url}#key-castro"},
+        "name": "Realty Systems Foundry",
+        "description": "Custom software systems and technology for real estate businesses.",
+        "publisher": {"@id": f"{base_url}#realty-systems-foundry"},
     }
-    return [person, website]
+    return [organization, person, website]
 
 
 def breadcrumb_structured_data(base_url: str, items: Iterable[tuple[str, str]]) -> dict | None:
@@ -86,7 +96,7 @@ def software_template_structured_data(base_url: str, template) -> list[dict]:
         "url": page_url,
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "Web browser",
-        "creator": {"@id": f"{base_url}#key-castro"},
+        "creator": {"@id": f"{base_url}#realty-systems-foundry"},
     }
     data = [software]
 

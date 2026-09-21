@@ -1,9 +1,9 @@
 {
-  "project": "KEY_CASTRO_WEBSITE",
+  "project": "REALTY_SYSTEMS_FOUNDRY_WEBSITE",
   "handoff_date": "2026-09-21",
-  "version": "3.8.20",
+  "version": "3.9.0",
   "owner_public_name": "Key Castro",
-  "positioning": "Better systems for complex business needs",
+  "positioning": "Technology built for real estate operations",
   "framework": "Flask",
   "production_entrypoint": "wsgi:app",
   "official_live_url": "https://keycastro.onrender.com",
@@ -62,7 +62,7 @@
     "template_request_type_active": true
   },
   "secrets_included_in_repository": false,
-  "visual_design": "Premium ivory + navy + sage design retained. Version 3.8.0 adds larger everyday text, fewer micro-labels, simpler public wording, fewer competing CTAs, and older-user-friendly readability while preserving the compact 3.7 composition.",
+  "visual_design": "Premium ivory + navy + sage design retained. Version 3.9.0 rebrands the public website as Realty Systems Foundry with company-first wording and Key Castro shown as founder; no visual redesign.",
   "template_library_foundation": {
     "prepared": true,
     "published_templates": 3,
@@ -120,7 +120,7 @@
         "truth_note": "Independent portfolio project based on market research; no commission, adoption, affiliation, or endorsement claim."
       }
     ],
-    "truth_boundary": "Built by Key Castro; no client commission, adoption, or paid engagement is claimed without evidence."
+    "truth_boundary": "Published systems are presented under Realty Systems Foundry, founded by Key Castro; no client commission, adoption, or paid engagement is claimed without evidence."
   },
   "information_architecture": {
     "primary_navigation": [
@@ -138,7 +138,7 @@
     },
     "ux_contract": "Short, simple, clear public content. No unnecessary repetition. One clear purpose per page.",
     "visitor_flow": "Home -> Systems -> System -> Contact, with Services & Pricing explaining the build process, pricing, and the two post-build management choices.",
-    "presentation_contract": "One main job per page: Home explains the offer; Systems shows existing systems; each System page explains that system; Services & Pricing explains the business process, pricing, and management choices; About explains Key Castro, the business problems solved, automation value, and workflow consolidation; Contact collects one inquiry."
+    "presentation_contract": "One main job per page: Home explains Realty Systems Foundry; Systems shows existing systems; each System page explains that system; Services & Pricing explains the business process, pricing, and management choices; About explains the company first and Key Castro as founder; Contact collects one inquiry."
   },
   "system_search": {
     "active": true,
@@ -172,10 +172,9 @@
     "new_custom_system_pricing": "Price by Agreement",
     "post_build_options": [
       "Full Handover",
-      "Managed by KEY CASTRO"
+      "Managed by Realty Systems Foundry"
     ],
-    "full_handover": "I build it. You manage it. Client or someone they hire handles hosting/deployment, security/updates, backups, and technical fixes after handover; no monthly management fee is charged by KEY CASTRO.",
-    "managed_by_key_castro": "I build it. I manage it. Optional managed care remains $39/month or $390/year; KEY CASTRO handles hosting/deployment, routine technical checks, backups when used, and technical fixes for the current system.",
+    "full_handover": "We build it. You manage it. Client or someone they hire handles hosting/deployment, security/updates, backups, and technical fixes after handover; no monthly management fee is charged by Realty Systems Foundry.",
     "pricing_public": true,
     "pricing_currency_public": "USD only",
     "maintenance_pricing": {
@@ -192,11 +191,11 @@
     "system_upgrades": {
       "minor": {
         "price": 79,
-        "meaning": "Focused improvement to an existing Key Castro-built system."
+        "meaning": "Focused improvement to an existing Realty Systems Foundry system."
       },
       "major": {
         "price": 149,
-        "meaning": "Larger improvement to an existing Key Castro-built system."
+        "meaning": "Larger improvement to an existing Realty Systems Foundry system."
       },
       "new_system_or_large_expansion": {
         "price": "Price by Agreement",
@@ -205,7 +204,8 @@
       "separate_from_system_purchase": true,
       "separate_from_maintenance": true,
       "available_to_self_managed_or_key_managed_clients": true
-    }
+    },
+    "managed_by_realty_systems_foundry": "We build it. We manage it. Optional managed care remains $39/month or $390/year; Realty Systems Foundry handles hosting/deployment, routine technical checks, backups when used, and technical fixes for the current system."
   },
   "ux_refinement_3_4": {
     "document": "docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md",
@@ -282,7 +282,7 @@
     "launcher": "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
     "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
     "provider_auto_deploy": false,
-    "success_condition": "production health reports version 3.8.20; Home hero secondary CTA reads Create a New System and still links to /contact; Home keeps exactly 3 featured systems and shows the balanced approved Explore All Systems CTA to /system-templates plus See Services & Pricing CTA to /services with PLAN / ORGANIZE / GROW on the left decorative rail and BUILD / ORGANIZE / GROW on the right; the old Home three-step process remains removed; Home navigation and the /services page show Services & Pricing; Home, Systems, system detail, and Services & Pricing show the approved $199 existing-system purchase price; the purchase is separate from upgrades and maintenance; new custom systems use Price by Agreement; maintenance remains $39/month or $390/year; upgrades remain $79 / $149 / New System / Large Expansion Price by Agreement; no PHP/peso pricing is publicly displayed; approved About profile/lower story, footer tagline, and exactly 3 published systems remain unchanged; Services & Pricing clearly states management is optional, self-managed technical care has $0/month management fee, and KEY CASTRO managed care remains $39/month or $390/year"
+    "success_condition": "production health reports version 3.9.0; public branding is Realty Systems Foundry; Home headline reads We Build Custom Systems for Real Estate Businesses.; Key Castro is presented as Founder, Realty Systems Foundry; Home hero secondary CTA remains Create a New System and links to /contact; Home keeps exactly 3 featured systems and the approved Explore All Systems / Services & Pricing CTA band; Home, Systems, system detail, and Services & Pricing show the approved $199 existing-system purchase price; new custom systems use Price by Agreement; management remains optional at $0/month self-managed or $39/month / $390/year managed care; upgrades remain $79 / $149 / Price by Agreement; no PHP/peso pricing is publicly displayed; existing design and exactly 3 published systems remain preserved."
   },
   "ux_master_refinement_3_7": {
     "document": "docs/MASTER_UX_REFINEMENT_3_7.md",
@@ -533,7 +533,7 @@
       "private owner Inbox"
     ]
   },
-  "current_version": "3.8.20",
+  "current_version": "3.9.0",
   "pricing_and_management_clarity_3_8_19": {
     "scope": "Existing-system price plus Services & Pricing management clarity and direct tests/release/deployment dependencies",
     "existing_system_price_usd": 290,
@@ -556,5 +556,34 @@
     "managed_care_price_changed": false,
     "design_redesigned": false,
     "visual_scope": "No redesign; current colors, cards, fonts, spacing style, and visual identity preserved."
+  },
+  "company_public_name": "Realty Systems Foundry",
+  "founder": "Key Castro",
+  "primary_niche": "Real estate businesses",
+  "preferred_public_domain": "https://realtysystemsfoundry.com",
+  "domain_status": "Preferred custom domain; current Render URL remains the live deployment URL until DNS/domain connection is completed.",
+  "rebrand_3_9_0": {
+    "status": "executed in release package",
+    "company": "Realty Systems Foundry",
+    "founder": "Key Castro",
+    "headline": "We Build Custom Systems for Real Estate Businesses.",
+    "brand_language": "Custom Systems / Purpose-Built Systems / Real Estate Technology Systems",
+    "forbidden_primary_positioning": "simple systems",
+    "design_changed": false,
+    "pricing_changed": false,
+    "current_live_host_preserved": "https://keycastro.onrender.com",
+    "preferred_domain": "https://realtysystemsfoundry.com"
+  },
+  "release_3_9_0": {
+    "date": "2026-09-21",
+    "scope": "Public rebrand only: company identity, company voice, founder role, SEO/structured data, managed-service labels, tests, and deploy verification.",
+    "pricing": {
+      "existing_system": 199,
+      "managed_monthly": 39,
+      "managed_yearly": 390,
+      "minor_upgrade": 79,
+      "major_upgrade": 149,
+      "new_system_or_large_expansion": "Price by Agreement"
+    }
   }
 }

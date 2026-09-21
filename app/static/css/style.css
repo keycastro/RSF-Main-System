@@ -2883,3 +2883,10 @@ body{font-size:17px;line-height:1.68}
   .human-simple-options .human-option-card .system-choice-price span{font-size:13.5px}
   .human-simple-options .human-option-card .human-option-explanation{font-size:15px}
 }
+
+
+/* 3.9.0 — REALTY SYSTEMS FOUNDRY REBRAND
+   Brand-name fit only. Existing colors, typography system, spacing, cards, and layout are preserved. */
+.brand-copy strong{letter-spacing:.075em}
+@media(min-width:901px){.brand-copy strong{font-size:10.75px}}
+@media(max-width:430px){.brand-copy strong{font-size:10.5px;letter-spacing:.055em}}

@@ -1,7 +1,9 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Release version:** 3.8.20
-**Official site:** https://keycastro.onrender.com
+**Release version:** 3.9.0
+**Current live site:** https://keycastro.onrender.com
+**Preferred custom domain:** https://realtysystemsfoundry.com
+**Founder:** Key Castro
 **Framework:** Flask
 
 ## Read first
@@ -16,11 +18,11 @@
 8. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
 9. `docs/DEPLOYMENT_HISTORY.md`
 
-Older versioned pricing/business-model documents are historical. Current 3.8.20 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
+Older versioned pricing/business-model documents are historical. Current 3.9.0 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
 
 ## Current release change
 
-Version 3.8.20 sets the existing ready-built system price to **$199 one-time**. The Services & Pricing management choice remains unchanged: self-managed technical care is **$0/month management fee**; optional KEY CASTRO managed care remains **$39/month or $390/year**.
+Version 3.9.0 rebrands the public website as **Realty Systems Foundry**. The Home headline is **“We Build Custom Systems for Real Estate Businesses.”** Key Castro is shown as **Founder, Realty Systems Foundry**. Existing ready-built systems remain **$199 one-time**. The Services & Pricing management choice remains unchanged: self-managed technical care is **$0/month management fee**; optional Realty Systems Foundry managed care remains **$39/month or $390/year**.
 
 ## Public information architecture
 
@@ -40,10 +42,10 @@ The canonical route remains `/services`; only the public label is **Services & P
 
 Write for a first-time non-technical older business owner. Public copy should use concrete everyday actions before technical/business terminology. A visitor should quickly understand:
 
-- Key Castro builds custom business systems and automation for real estate, property, and housing businesses.
+- Realty Systems Foundry builds custom software systems and automation for real estate businesses.
 - They can buy a published existing system for **$199 one-time**, or ask for a completely new system at **Price by Agreement**.
-- Changes to an existing system are separate upgrades; after the system is ready, they can manage it or Key Castro can manage it.
-- They contact Key Castro to start.
+- Changes to an existing system are separate upgrades; after the system is ready, they can manage it or Realty Systems Foundry can manage it.
+- They contact Realty Systems Foundry to start.
 
 Do not restore abstract homepage process words such as **Choose / Adapt / Deliver**. Do not force visitors to understand **Full Handover**, **managed maintenance**, **workflow**, **roles**, **deployment**, or similar terms to understand the basic offer.
 
@@ -59,27 +61,27 @@ Keep all three separate. Student Housing is an independent portfolio project, no
 
 ### Purchase / creation
 
-1. Buy a published existing KEY CASTRO system — **$199 one-time**.
+1. Buy a published existing Realty Systems Foundry system — **$199 one-time**.
 2. Build a completely new custom system — **Price by Agreement**.
 
 The $199 existing-system price is for the system as shown. Requested changes are separate upgrades.
 
 ### After build — EXACTLY TWO OPTIONS
 
-1. **Full Handover** — “I build it. You manage it.” — **$0/month management fee**; the client handles the technical side.
-2. **Managed by KEY CASTRO** — “I build it. I manage it.” — optional **$39/month or $390/year**; KEY CASTRO handles the technical side.
+1. **Full Handover** — “We build it. You manage it.” — **$0/month management fee**; the client handles the technical side.
+2. **Managed by Realty Systems Foundry** — “We build it. We manage it.” — optional **$39/month or $390/year**; Realty Systems Foundry handles the technical side.
 
-Public beginner-facing labels are **You Manage It** and **I Manage It**. Keep the formal terms internal/secondary where necessary. Do not add a third management option.
+Public beginner-facing labels are **You Manage It** and **We Manage It**. Keep the formal terms internal/secondary where necessary. Do not add a third management option.
 
 Current price rules: existing published system = **$199 one-time**; Minor System Upgrade = **$79**; Major System Upgrade = **$149**; New System / Large Expansion = **Price by Agreement**; maintenance = **$39/month or $390/year**; completely new custom system = **Price by Agreement**. Purchase, upgrades, maintenance, and new custom builds are separate. Public pricing uses USD only.
 
 ## Page responsibility
 
-- Home explains what KEY CASTRO does.
+- Home explains what Realty Systems Foundry does.
 - Systems shows the systems already built.
 - System detail explains one system.
 - Services & Pricing explains the business process, pricing, and management options.
-- About explains Key Castro, the problems the service solves, automation value, and the potential to reduce dependence on too many separate paid tools.
+- About explains Realty Systems Foundry first, then Key Castro as founder, plus the problems the company solves, automation value, and the potential to reduce dependence on too many separate paid tools.
 - Contact collects the inquiry.
 
 Do not repeat the full management model on every system page.
@@ -98,6 +100,9 @@ Use `APPLY_UPDATE_AND_DEPLOY_LIVE.bat`. It must update locally, preserve `.env`,
 
 `LIVE DEPLOYMENT VERIFIED SUCCESSFULLY`
 
+
+### v3.9.0 direct change
+Public rebrand to **Realty Systems Foundry**. Main headline: **We Build Custom Systems for Real Estate Businesses.** Key Castro is shown as founder. Use company-first `we/our` language. Preserve the current design, three-system catalog, and all approved pricing. Internal `KEY_CASTRO`/`keycastro` folder/repository/Render identifiers remain until a separate infrastructure migration is approved.
 
 ### v3.8.18 direct change
 Home hero secondary CTA label: **Create a New System** (destination remains `/contact`). No other public content or behavior is changed by this release.

@@ -11,7 +11,7 @@
   {% if bing_site_verification %}<meta name="msvalidate.01" content="{{ bing_site_verification }}">{% endif %}
 
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Key Castro">
+  <meta property="og:site_name" content="Realty Systems Foundry">
   <meta property="og:title" content="{{ seo_title }}">
   <meta property="og:description" content="{{ meta_description }}">
   {% if canonical_url %}<meta property="og:url" content="{{ canonical_url }}">{% endif %}
@@ -23,7 +23,7 @@
   {% if og_image_url %}<meta name="twitter:image" content="{{ og_image_url }}"><meta name="twitter:image:alt" content="{{ og_image_alt }}">{% endif %}
 
   <title>{{ seo_title }}</title>
-  <link rel="icon" href="{{ url_for('static', filename='images/brand/KEY_CASTRO.ico') }}">
+  <link rel="icon" href="{{ url_for('static', filename='images/brand/REALTY_SYSTEMS_FOUNDRY.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
   {% for item in structured_data %}<script type="application/ld+json">{{ item|tojson }}</script>{% endfor %}
@@ -33,11 +33,11 @@
 
   <header class="site-header" data-header>
     <div class="container nav-shell">
-      <a class="brand" href="{{ url_for('site.home') }}" aria-label="Key Castro home">
-        <span class="brand-mark" aria-hidden="true">KC</span>
+      <a class="brand" href="{{ url_for('site.home') }}" aria-label="Realty Systems Foundry home">
+        <span class="brand-mark" aria-hidden="true">RSF</span>
         <span class="brand-copy">
-          <strong>KEY CASTRO</strong>
-          <small>Real Estate &amp; Housing Systems</small>
+          <strong>REALTY SYSTEMS FOUNDRY</strong>
+          <small>Technology for Real Estate Operations</small>
         </span>
       </a>
 
@@ -74,10 +74,10 @@
     <div class="container simple-footer-row">
       <div class="footer-brand-block">
         <a class="brand" href="{{ url_for('site.home') }}">
-          <span class="brand-mark" aria-hidden="true">KC</span>
-          <span class="brand-copy"><strong>KEY CASTRO</strong><small>Real Estate &amp; Housing Systems</small></span>
+          <span class="brand-mark" aria-hidden="true">RSF</span>
+          <span class="brand-copy"><strong>REALTY SYSTEMS FOUNDRY</strong><small>Technology for Real Estate Operations</small></span>
         </a>
-        <p>Better systems for complex business needs.</p>
+        <p>Technology built for real estate operations.</p>
       </div>
       <nav class="simple-footer-nav" aria-label="Footer navigation">
         <a href="{{ url_for('site.home') }}">Home</a>
@@ -88,7 +88,7 @@
       </nav>
     </div>
     <div class="container footer-bottom">
-      <span>© <span data-year></span> Key Castro. All rights reserved.</span>
+      <span>© <span data-year></span> Realty Systems Foundry. All rights reserved.</span>
       {% if environment_label == 'Local' %}<span class="local-pill">LOCAL PREVIEW · 127.0.0.1</span>{% endif %}
     </div>
   </footer>

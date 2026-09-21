@@ -77,13 +77,14 @@ class ManagedMaintenancePricing:
 
 
 MANAGED_MAINTENANCE_PRICING = ManagedMaintenancePricing()
-_MANAGED_SERVICE_ACTION_PREFIX = "Managed by KEY CASTRO — "
+_MANAGED_SERVICE_ACTION_PREFIX = "Managed by Realty Systems Foundry — "
+_LEGACY_KEY_CASTRO_MANAGED_PREFIX = "Managed by KEY CASTRO — "
 _LEGACY_SUBSCRIPTION_ACTION_PREFIX = "System Subscription — "
 
 
 def managed_service_action_for_plan(plan: MaintenancePlan | None) -> str:
     if plan is None:
-        return "Managed by KEY CASTRO"
+        return "Managed by Realty Systems Foundry"
     return f"{_MANAGED_SERVICE_ACTION_PREFIX}{plan.label} · {plan.price_label}"
 
 
@@ -95,11 +96,13 @@ def split_managed_service_action(value: str) -> tuple[str, str]:
     """
     action = (value or "").strip()
     if action.startswith(_MANAGED_SERVICE_ACTION_PREFIX):
-        return "Managed by KEY CASTRO", action[len(_MANAGED_SERVICE_ACTION_PREFIX) :]
+        return "Managed by Realty Systems Foundry", action[len(_MANAGED_SERVICE_ACTION_PREFIX) :]
+    if action.startswith(_LEGACY_KEY_CASTRO_MANAGED_PREFIX):
+        return "Managed by Realty Systems Foundry", action[len(_LEGACY_KEY_CASTRO_MANAGED_PREFIX) :]
     if action.startswith(_LEGACY_SUBSCRIPTION_ACTION_PREFIX):
-        return "Managed by KEY CASTRO", action[len(_LEGACY_SUBSCRIPTION_ACTION_PREFIX) :]
-    if action == "System Subscription":
-        return "Managed by KEY CASTRO", ""
+        return "Managed by Realty Systems Foundry", action[len(_LEGACY_SUBSCRIPTION_ACTION_PREFIX) :]
+    if action in {"Managed by KEY CASTRO", "System Subscription"}:
+        return "Managed by Realty Systems Foundry", ""
     if action == "Paid Customization":
         return "Customize Existing System", ""
     return action, ""
@@ -289,11 +292,11 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             ),
         ),
         project_note=(
-            "Independent system built by Key Castro. It is not presented as software commissioned or used by a specific client."
+            "Independent system from Realty Systems Foundry, founded by Key Castro. It is not presented as software commissioned or used by a specific client."
         ),
-        seo_title="Property Operations Command Center | Key Castro",
+        seo_title="Property Operations Command Center | Realty Systems Foundry",
         meta_description=(
-            "Explore Property Operations Command Center by Key Castro: a customizable property-operations system "
+            "Explore Property Operations Command Center by Realty Systems Foundry: a customizable property-operations system "
             "for work, deadlines, approvals, guest readiness, tenant placement, SOPs, and automation."
         ),
         og_image="images/templates/property-operations-command-center/dashboard.png",
@@ -374,11 +377,11 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             ),
         ),
         project_note=(
-            "Independent system built by Key Castro. It is not presented as software commissioned or used by a specific client."
+            "Independent system from Realty Systems Foundry, founded by Key Castro. It is not presented as software commissioned or used by a specific client."
         ),
-        seo_title="Property Inventory Hub | Key Castro",
+        seo_title="Property Inventory Hub | Realty Systems Foundry",
         meta_description=(
-            "Explore Property Inventory Hub by Key Castro: a customizable private real-estate inventory system "
+            "Explore Property Inventory Hub by Realty Systems Foundry: a customizable private real-estate inventory system "
             "with search, listing ownership, reconfirmation, expiry, history, and configurable branding."
         ),
         og_image="images/templates/property-inventory-hub/dashboard.png",
@@ -464,13 +467,13 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             ),
         ),
         project_note=(
-            "Independent portfolio project built by Key Castro after studying a publicly visible 2026 student-housing "
+            "Independent portfolio project from Realty Systems Foundry, founded by Key Castro, after studying a publicly visible 2026 student-housing "
             "system request and how the housing placement process works. Not commissioned by, affiliated with, or endorsed by "
             "the original poster."
         ),
-        seo_title="Student Housing Matching & Placement System | Key Castro",
+        seo_title="Student Housing Matching & Placement System | Realty Systems Foundry",
         meta_description=(
-            "Explore Key Castro's Student Housing Matching and Placement System for housing requests, availability, "
+            "Explore Realty Systems Foundry's Student Housing Matching and Placement System for housing requests, availability, "
             "matching, viewings, follow-ups, reservations, and placements."
         ),
         og_image="images/templates/student-housing-matching-and-placement-system/dashboard.png",

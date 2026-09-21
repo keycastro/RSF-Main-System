@@ -17,10 +17,10 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.get_json()
         self.assertEqual(data["status"], "ok")
-        self.assertEqual(data["app"], "Key Castro Portfolio")
+        self.assertEqual(data["app"], "Realty Systems Foundry")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.8.20")
+        self.assertEqual(data["version"], "3.9.0")
 
     def test_main_pages_and_template_library_render(self):
         routes = [
@@ -37,7 +37,7 @@ class PortfolioSiteTests(unittest.TestCase):
             with self.subTest(route=route):
                 response = self.client.get(route)
                 self.assertEqual(response.status_code, 200)
-                self.assertIn(b"KEY CASTRO", response.data)
+                self.assertIn(b"REALTY SYSTEMS FOUNDRY", response.data)
 
         for route in ("/skills", "/experience"):
             with self.subTest(route=route):
@@ -85,7 +85,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b">Contact</a>", response.data)
         self.assertNotIn(b">Projects</a>", response.data)
         self.assertNotIn(b">System Templates</a>", response.data)
-        self.assertIn(b"I build simple systems for real estate businesses.", response.data)
+        self.assertIn(b"We Build Custom Systems for Real Estate Businesses.", response.data)
         self.assertIn(b"View Systems", response.data)
         self.assertIn(b"Create a New System", response.data)
         self.assertNotIn(b"Tell Me What You Need", response.data)
@@ -96,7 +96,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(response.data.count(b"Student Housing Matching and Placement System</h3>"), 1)
         self.assertNotIn(b"How it works.", response.data)
         self.assertNotIn(b"From your problem to a working system.", response.data)
-        self.assertNotIn(b"Tell me what you need.", response.data)
+        self.assertNotIn(b"Tell us what you need.", response.data)
         self.assertNotIn(b"Choose your system.", response.data)
         self.assertNotIn(b"Choose who manages it.", response.data)
         self.assertIn(b'class="home-featured-action-link home-featured-action-link--primary" href="/system-templates"', response.data)
@@ -117,6 +117,8 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertNotIn(b'class="home-process-list"', response.data)
         self.assertNotIn(b">Adapt<", response.data)
         self.assertNotIn(b">Deliver<", response.data)
+        self.assertIn(b"REALTY_SYSTEMS_FOUNDRY.svg", response.data)
+        self.assertNotIn(b"images/brand/KEY_CASTRO.ico", response.data)
         public_shell = response.data.lower()
         self.assertNotIn(b"key castro inbox", public_shell)
         self.assertNotIn(b"owner dashboard", public_shell)
@@ -132,10 +134,10 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b">Services & Pricing</a>", home.data)
         self.assertNotIn(b">Projects</a>", home.data)
         self.assertNotIn(b">System Templates</a>", home.data)
-        self.assertIn(b"Systems I already built.", systems.data)
+        self.assertIn(b"Systems We Already Built.", systems.data)
         self.assertIn(b"closest to what your business needs", systems.data)
         self.assertIn(b"<h1>Services & Pricing</h1>", services.data)
-        self.assertIn(b"<title>Services &amp; Pricing | Key Castro</title>", services.data)
+        self.assertIn(b"<title>Services &amp; Pricing | Realty Systems Foundry</title>", services.data)
         self.assertNotIn(b"Free access by request</strong>", systems.data)
 
         header = home.data.split(b"</header>", 1)[0]
@@ -144,9 +146,9 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertNotIn(b"Skills &amp; technology", about.data)
         self.assertNotIn(b">Experience</a>", about.data)
 
-        self.assertIn(b"Tell me what you need.", services.data)
-        self.assertIn(b"Choose one of the systems I already built.", services.data)
-        self.assertNotIn(b"<h2>I build the system.</h2>", services.data)
+        self.assertIn(b"Tell us what you need.", services.data)
+        self.assertIn(b"Choose one of the systems we already built.", services.data)
+        self.assertNotIn(b"<h2>We build the system.</h2>", services.data)
         self.assertEqual(services.data.count(b'class="human-step reveal'), 2)
         self.assertIn(b'<div class="human-step-number">1</div>', services.data)
         self.assertIn(b'<div class="human-step-number">2</div>', services.data)
@@ -157,15 +159,15 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertNotIn(b"Want to get started?", services.data)
         self.assertNotIn(b"You do not need to know which option is right yet. Just tell me what you need.", services.data)
         self.assertIn(b"You manage it.", services.data)
-        self.assertIn(b"I manage it.", services.data)
+        self.assertIn(b"We manage it.", services.data)
         self.assertNotIn(b"Two simple decisions", services.data)
         self.assertNotIn(b"FREE STANDARD SYSTEM", services.data)
 
     def test_about_highlights_business_problems_automation_and_subscription_value(self):
         about = self.client.get("/about")
         self.assertEqual(about.status_code, 200)
-        self.assertIn(b"I build custom business systems and automation", about.data)
-        self.assertIn(b"THE PROBLEMS I HELP SOLVE", about.data)
+        self.assertIn(b"Realty Systems Foundry designs, builds, and manages custom software systems", about.data)
+        self.assertIn(b"THE PROBLEMS WE HELP SOLVE", about.data)
         self.assertIn(b"Too many tools and subscriptions", about.data)
         self.assertIn(b"Too much manual work", about.data)
         self.assertIn(b"Scattered information", about.data)
@@ -174,7 +176,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"One system can reduce the need for too many paid tools.", about.data)
         self.assertIn(b"may reduce dependence on multiple subscriptions", about.data)
         self.assertIn(b"The best option depends on the business.", about.data)
-        self.assertIn(b"Better systems for complex business needs.", about.data)
+        self.assertIn(b"Technology built for real estate operations.", about.data)
         self.assertNotIn(b"Simple systems for real estate businesses.", about.data)
 
         css_path = Path(__file__).resolve().parents[1] / "app" / "static" / "css" / "style.css"
@@ -189,15 +191,15 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b'class="about-portrait"', about.data)
         self.assertIn(b'alt="Key Castro"', about.data)
         self.assertIn(b'/static/images/about/key-castro.png', about.data)
-        self.assertIn(b'Custom Business App Developer &amp; Automation Specialist', about.data)
+        self.assertIn(b'Founder, Realty Systems Foundry', about.data)
         self.assertIn(b'class="about-profile-block"', about.data)
         self.assertIn(b'class="about-profile-name">Key Castro</p>', about.data)
         self.assertIn(b'class="about-professional-title"', about.data)
-        self.assertEqual(about.data.count(b'<h1>What I do.</h1>'), 1)
+        self.assertEqual(about.data.count(b'<h1>Technology built for real estate operations.</h1>'), 1)
         approved_description = (
-            b"I build custom business systems and automation for real estate, property, and housing businesses. "
-            b"I help reduce manual work, organize scattered tasks and information, and create workflows that fit how the business really works. "
-            b"When useful, I also help reduce the need for too many separate tools and subscriptions by bringing key work into one system."
+            b"Realty Systems Foundry designs, builds, and manages custom software systems for real estate businesses. "
+            b"We help brokerages, teams, agents, property companies, and property managers organize operations, reduce manual work, "
+            b"and bring important workflows into one system."
         )
         self.assertIn(approved_description, about.data)
         self.assertIn(b"Custom Systems", about.data)
@@ -206,7 +208,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"Less manual work", about.data)
         self.assertIn(b"Real Results", about.data)
         self.assertIn(b"More time for what matters", about.data)
-        self.assertIn(b"THE PROBLEMS I HELP SOLVE", about.data)
+        self.assertIn(b"THE PROBLEMS WE HELP SOLVE", about.data)
 
         portrait = self.client.get("/static/images/about/key-castro.png")
         self.assertEqual(portrait.status_code, 200)
@@ -233,7 +235,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(about.status_code, 200)
         self.assertEqual(about.data.count(b'class="about-story-index"'), 5)
         for expected in (
-            b"THE PROBLEMS I HELP SOLVE",
+            b"THE PROBLEMS WE HELP SOLVE",
             b"Too many tools and subscriptions",
             b"Too much manual work",
             b"Scattered information",
@@ -250,7 +252,7 @@ class PortfolioSiteTests(unittest.TestCase):
             b"Less duplicated work.",
             b"One workflow built around the business.",
             b"The best option depends on the business.",
-            b"WHAT I BUILD",
+            b"WHAT WE BUILD",
             b"Centralized records",
             b"Clear dashboards",
             b"Task and status tracking",
@@ -259,7 +261,7 @@ class PortfolioSiteTests(unittest.TestCase):
             b"Reminders and alerts",
             b"Reports",
             b"Business-specific rules",
-            b"HOW I WORK",
+            b"HOW WE WORK",
             b"Understand",
             b"Identify",
             b"Build",
@@ -368,8 +370,8 @@ class PortfolioSiteTests(unittest.TestCase):
             self.assertIn(b"system-choice-card--student-housing-matching-and-placement-system", response.data)
             self.assertIn(b"View System", response.data)
 
-        self.assertIn(b"Systems I already built.", home.data)
-        self.assertIn(b"Systems I already built.", systems.data)
+        self.assertIn(b"Systems We Already Built.", home.data)
+        self.assertIn(b"Systems We Already Built.", systems.data)
         self.assertIn(b"portfolio-system-grid", home.data)
         self.assertIn(b"portfolio-system-grid", systems.data)
 
@@ -432,11 +434,11 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertNotIn(b"$39", systems.data)
         self.assertNotIn(b"$390", systems.data)
         self.assertNotIn(b"Full Handover", detail.data)
-        self.assertNotIn(b"Managed by KEY CASTRO", detail.data)
+        self.assertNotIn(b"Managed by Realty Systems Foundry", detail.data)
         self.assertIn(b"$199", detail.data)
         self.assertNotIn(b"$39", detail.data)
-        self.assertIn(b"I build it. You manage it.", services.data)
-        self.assertIn(b"I build it. I manage it.", services.data)
+        self.assertIn(b"We build it. You manage it.", services.data)
+        self.assertIn(b"We build it. We manage it.", services.data)
         self.assertIn(b"$199", services.data)
         self.assertIn(b"$39/month", services.data)
         self.assertIn(b"$390/year", services.data)
@@ -449,10 +451,10 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"Management is optional.", services.data)
         self.assertIn(b"$0/month", services.data)
         self.assertIn(b"No management fee", services.data)
-        self.assertIn("I MANAGE IT — OPTIONAL".encode("utf-8"), services.data)
+        self.assertIn("WE MANAGE IT — OPTIONAL".encode("utf-8"), services.data)
         self.assertIn(b"Optional managed care. Same service; choose monthly or yearly billing.", services.data)
-        self.assertIn(b"What I manage", services.data)
-        self.assertIn(b"I handle:", services.data)
+        self.assertIn(b"What we manage", services.data)
+        self.assertIn(b"We handle:", services.data)
         self.assertIn(b"Hosting and deployment", services.data)
         self.assertIn(b"Technical fixes for the current system", services.data)
         self.assertIn(b"Managed care does not include:", services.data)
@@ -468,7 +470,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(services.data.count(b'class="management-upgrade-card"'), 3)
         self.assertIn(b"You handle:", services.data)
         self.assertIn(b"You always manage your business.", services.data)
-        self.assertIn(b"You can buy an upgrade later whether you manage the system yourself or I manage it.", services.data)
+        self.assertIn(b"You can buy an upgrade later whether you manage the system yourself or we manage it.", services.data)
         self.assertIn(b"You are asking about:", managed_contact.data)
         self.assertIn(b"Property Operations Command Center", managed_contact.data)
         self.assertNotIn(b"$39/month", managed_contact.data)
@@ -506,10 +508,10 @@ class PortfolioSiteTests(unittest.TestCase):
                     self.assertNotIn(phrase, response.data)
 
         services = self.client.get("/services")
-        self.assertIn(b"Use one of my existing systems", services.data)
+        self.assertIn(b"Use one of our existing systems", services.data)
         self.assertIn(b"Build a new system", services.data)
-        self.assertIn(b"I build it. You manage it.", services.data)
-        self.assertIn(b"I build it. I manage it.", services.data)
+        self.assertIn(b"We build it. You manage it.", services.data)
+        self.assertIn(b"We build it. We manage it.", services.data)
         self.assertIn(b"$199", services.data)
         self.assertIn(b"$39/month", services.data)
         self.assertIn(b"$390/year", services.data)
@@ -524,7 +526,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"$199", detail.data)
         self.assertIn(b"Get This System", detail.data)
         self.assertNotIn(b"Full Handover", detail.data)
-        self.assertNotIn(b"Managed by KEY CASTRO", detail.data)
+        self.assertNotIn(b"Managed by Realty Systems Foundry", detail.data)
         self.assertNotIn(b"$39/month", detail.data)
         self.assertNotIn(b"$390/year", detail.data)
 
@@ -695,7 +697,7 @@ class PortfolioSiteTests(unittest.TestCase):
                 item = get_inquiry(1)
 
             self.assertEqual(item["source_title"], "Property Operations Command Center")
-            self.assertEqual(item["source_action"], "Managed by KEY CASTRO — Monthly · $39/month")
+            self.assertEqual(item["source_action"], "Managed by Realty Systems Foundry — Monthly · $39/month")
             self.assertNotIn("$1", item["source_action"])
 
             headers = {"Authorization": "Bearer owner-plan-token"}
@@ -704,7 +706,7 @@ class PortfolioSiteTests(unittest.TestCase):
             self.client.get(access_path, follow_redirects=False)
             detail = self.client.get("/owner/inbox/1")
             self.assertIn(b"Request type", detail.data)
-            self.assertIn(b"Managed by KEY CASTRO", detail.data)
+            self.assertIn(b"Managed by Realty Systems Foundry", detail.data)
             self.assertIn(b"Plan", detail.data)
             self.assertIn(b"Monthly", detail.data)
             self.assertIn(b"$39/month", detail.data)
@@ -890,26 +892,29 @@ class PortfolioSiteTests(unittest.TestCase):
         )
         home = self.client.get("/")
         self.assertEqual(home.status_code, 200)
-        self.assertIn(b"<title>Simple Real Estate Business Systems | Key Castro</title>", home.data)
+        self.assertIn(b"<title>Custom Real Estate Systems | Realty Systems Foundry</title>", home.data)
         self.assertIn(b'rel="canonical" href="https://keycastro.onrender.com/"', home.data)
         self.assertIn(b'name="twitter:card" content="summary_large_image"', home.data)
         self.assertIn(b'name="google-site-verification" content="google-proof"', home.data)
         self.assertIn(b'name="msvalidate.01" content="bing-proof"', home.data)
+        self.assertIn(b'"@type": "Organization"', home.data)
+        self.assertIn(b'"name": "Realty Systems Foundry"', home.data)
         self.assertIn(b'"@type": "Person"', home.data)
+        self.assertIn(b'"jobTitle": "Founder, Realty Systems Foundry"', home.data)
         self.assertIn(b'"@type": "WebSite"', home.data)
 
         for slug, expected_title in (
             (
                 "property-operations-command-center",
-                b"Property Operations Command Center | Key Castro",
+                b"Property Operations Command Center | Realty Systems Foundry",
             ),
             (
                 "property-inventory-hub",
-                b"Property Inventory Hub | Key Castro",
+                b"Property Inventory Hub | Realty Systems Foundry",
             ),
             (
                 "student-housing-matching-and-placement-system",
-                b"Student Housing Matching &amp; Placement System | Key Castro",
+                b"Student Housing Matching &amp; Placement System | Realty Systems Foundry",
             ),
         ):
             case = self.client.get(f"/system-templates/{slug}")
@@ -1059,7 +1064,7 @@ class PortfolioSiteTests(unittest.TestCase):
             self.assertEqual(item["source_type"], "system_template")
             self.assertEqual(item["source_slug"], "property-inventory-hub")
             self.assertEqual(item["source_title"], "Property Inventory Hub")
-            self.assertEqual(item["source_action"], "Managed by KEY CASTRO — Yearly · $390/year")
+            self.assertEqual(item["source_action"], "Managed by Realty Systems Foundry — Yearly · $390/year")
 
             headers = {"Authorization": "Bearer owner-template-token"}
             ticket_response = self.client.post("/__owner_api/session-ticket", headers=headers)
@@ -1067,11 +1072,11 @@ class PortfolioSiteTests(unittest.TestCase):
             self.client.get(access_path, follow_redirects=False)
             inbox = self.client.get("/owner/inbox")
             self.assertIn(b"Interested in: Property Inventory Hub", inbox.data)
-            self.assertIn(b"Request: Managed by KEY CASTRO", inbox.data)
+            self.assertIn(b"Request: Managed by Realty Systems Foundry", inbox.data)
             self.assertIn(b"Plan: Yearly", inbox.data)
             detail = self.client.get("/owner/inbox/1")
             self.assertIn(b"Request type", detail.data)
-            self.assertIn(b"Managed by KEY CASTRO", detail.data)
+            self.assertIn(b"Managed by Realty Systems Foundry", detail.data)
             self.assertIn(b"$390/year", detail.data)
 
     def test_legacy_free_access_intent_normalizes_to_managed_service_without_free_wording(self):
@@ -1095,10 +1100,13 @@ class PortfolioSiteTests(unittest.TestCase):
         contact = self.client.get("/contact")
         detail = self.client.get("/system-templates/property-inventory-hub")
 
-        self.assertIn(b"I build simple systems for real estate businesses.", home.data)
-        self.assertIn(b"Systems I already built.", systems.data)
-        self.assertIn(b"Tell me what you need. I build the system.", how.data)
-        self.assertIn(b"Tell me what you need.", contact.data)
+        self.assertIn(b"We Build Custom Systems for Real Estate Businesses.", home.data)
+        self.assertIn(b"Systems We Already Built.", systems.data)
+        self.assertIn(b"Tell us what you need. We build the system.", how.data)
+        self.assertIn(b"Tell us what you need.", contact.data)
+        self.assertIn(b"We will reply to the email you provide.", contact.data)
+        if self.app.config.get("CONTACT_EMAIL"):
+            self.assertIn(b"Or email us directly:", contact.data)
         self.assertIn(b"Your team signs in.", detail.data)
         self.assertIn(b"Search for the property you need.", detail.data)
         self.assertNotIn(b"Authorized users sign in.", detail.data)
@@ -1108,7 +1116,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertNotIn(b"Discuss Full Handover", how.data)
         self.assertNotIn(b"Discuss Managed Service", how.data)
         self.assertNotIn(b"Full handover", how.data)
-        self.assertNotIn(b"Managed by KEY CASTRO", how.data)
+        self.assertNotIn(b"Managed by Realty Systems Foundry", how.data)
         self.assertNotIn(b"Authorized users", detail.data)
         self.assertNotIn(b"system-type", systems.data)
 

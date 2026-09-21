@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.9.0 - Realty Systems Foundry Rebrand
+- Rebranded the public website from Key Castro to **Realty Systems Foundry**.
+- Changed the Home headline to **“We Build Custom Systems for Real Estate Businesses.”**
+- Shifted service copy to company-first **we/our** language.
+- Positioned **Key Castro** as **Founder, Realty Systems Foundry** on About.
+- Updated SEO and structured data to make Realty Systems Foundry the organization and software creator while retaining Key Castro as founder.
+- Preserved the approved visual design and all approved pricing.
+- Kept the current Render host/repository/local folder names intact for safe deployment compatibility.
+
 ## v3.8.20 - Existing System Price Update to $199
 - Changed only the published existing ready-built system price from **$290** to **$199 one-time**.
 - Kept self-managed technical care at **$0/month management fee**.

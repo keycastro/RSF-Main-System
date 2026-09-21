@@ -1,11 +1,11 @@
 @echo off
 setlocal EnableExtensions
 cd /d "%~dp0"
-title KEY CASTRO - UPDATE AND DEPLOY LIVE
+title REALTY SYSTEMS FOUNDRY - UPDATE AND DEPLOY LIVE
 
 echo.
 echo ======================================================
-echo   KEY CASTRO - ONE RUN UPDATE + LIVE DEPLOY
+echo   REALTY SYSTEMS FOUNDRY - ONE RUN UPDATE + LIVE DEPLOY
 echo ======================================================
 echo.
 echo Local setup, tests, Git pushes, Render deployment,
@@ -16,9 +16,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\UPDATE_AND
 if errorlevel 1 goto :fail
 
 echo.
-echo SUCCESS: The updated KEY CASTRO website is LIVE and verified.
+echo SUCCESS: The updated REALTY SYSTEMS FOUNDRY website is LIVE and verified.
 echo.
-pause
 exit /b 0
 
 :fail
@@ -27,5 +26,4 @@ echo DEPLOYMENT STOPPED OR FAILED.
 echo Read the exact error above. The script does not report success unless
 echo the live Render website passes the final verification.
 echo.
-pause
 exit /b 1

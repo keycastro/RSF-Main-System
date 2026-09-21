@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Realty Systems Foundry">
+  <rect x="22" y="22" width="212" height="212" rx="36" fill="#102b39" stroke="#d9bc7a" stroke-width="8"/>
+  <text x="128" y="148" text-anchor="middle" fill="#ead39b" font-family="Georgia, 'Times New Roman', serif" font-size="67" font-weight="700" letter-spacing="2">RSF</text>
+  <circle cx="191" cy="75" r="9" fill="#7fc0a8"/>
+  <circle cx="210" cy="96" r="9" fill="#7fc0a8"/>
+  <circle cx="191" cy="117" r="9" fill="#7fc0a8"/>
+</svg>

@@ -13,7 +13,7 @@ def _env_bool(name: str, default: str = "0") -> bool:
 
 
 class BaseConfig:
-    APP_NAME = "Key Castro Portfolio"
+    APP_NAME = "Realty Systems Foundry"
     SECRET_KEY = os.getenv("SECRET_KEY", "local-dev-change-me")
     SESSION_COOKIE_NAME = "key_castro_portfolio_session"
     SESSION_COOKIE_HTTPONLY = True

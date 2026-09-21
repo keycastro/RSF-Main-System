@@ -45,13 +45,13 @@ SERVICES = [
     {
         "kind": "existing-system",
         "title": "Buy an existing system",
-        "text": "Choose a working Key Castro system. Changes are priced separately.",
+        "text": "Choose a working Realty Systems Foundry system. Changes are priced separately.",
         "example": "Changes are priced separately as upgrades.",
     },
     {
         "kind": "custom-build",
         "title": "Build a custom system",
-        "text": "If none of the existing systems fits, I can build around your workflow and requirements.",
+        "text": "If none of the existing systems fits, we can build around your workflow and requirements.",
         "example": "Development and customization are quoted separately based on scope.",
     },
 ]
@@ -69,32 +69,32 @@ TECHNOLOGIES = [
 
 PAGE_SEO = {
     "home": {
-        "title": "Simple Real Estate Business Systems | Key Castro",
-        "description": "Key Castro builds simple web systems for real estate, property, and housing businesses. Choose an existing system or ask for a new one.",
+        "title": "Custom Real Estate Systems | Realty Systems Foundry",
+        "description": "Realty Systems Foundry builds custom software systems for real estate businesses. Choose an existing system or request a purpose-built system for your operation.",
     },
     "about": {
-        "title": "About Key Castro | Custom Systems & Automation",
-        "description": "Key Castro builds custom business systems and automation that organize complex workflows, reduce repetitive work, and bring scattered operations into one place.",
+        "title": "About Realty Systems Foundry | Real Estate Technology",
+        "description": "Realty Systems Foundry designs, builds, and manages custom software systems and automation for real estate businesses.",
     },
     "services": {
-        "title": "Services & Pricing | Key Castro",
-        "description": "See how working with Key Castro works: tell me what you need, I build the system, then you choose who manages it.",
+        "title": "Services & Pricing | Realty Systems Foundry",
+        "description": "See Realty Systems Foundry services and pricing: choose an existing system or request a custom build, then choose who manages the technical side.",
     },
     "skills": {
-        "title": "Skills & Technology | Key Castro",
-        "description": "Technologies and development skills used by Key Castro to build custom real estate web applications and business systems.",
+        "title": "Technology Capabilities | Realty Systems Foundry",
+        "description": "Technology capabilities used by Realty Systems Foundry to build custom real estate software systems and business workflows.",
     },
     "experience": {
-        "title": "Development Experience | Key Castro",
+        "title": "Development Experience | Realty Systems Foundry",
         "description": "Development experience focused on complete real estate systems, testing, documentation, and reliable delivery.",
     },
     "contact": {
-        "title": "Contact Key Castro | Real Estate Systems",
-        "description": "Tell Key Castro what your business needs help with and get a reply by email.",
+        "title": "Contact Realty Systems Foundry | Real Estate Systems",
+        "description": "Tell Realty Systems Foundry what your real estate business needs and get a reply by email.",
     },
     "system_templates": {
-        "title": "Real Estate Systems | Key Castro",
-        "description": "See working Key Castro systems for property operations, property listings, and student housing. Existing systems have a clear one-time price; changes are priced separately.",
+        "title": "Real Estate Systems | Realty Systems Foundry",
+        "description": "See working Realty Systems Foundry systems for property operations, property listings, and housing workflows. Existing systems have a clear one-time price; changes are priced separately.",
     },
 }
 
@@ -139,7 +139,7 @@ def _common_context(
         "canonical_url": canonical_url,
         "public_base_url": base_url,
         "og_image_url": og_image_url,
-        "og_image_alt": og_image_alt or "Key Castro custom real estate systems portfolio",
+        "og_image_alt": og_image_alt or "Realty Systems Foundry custom real estate systems",
         "structured_data": structured_data,
         "robots_meta": "" if indexable else "noindex,nofollow",
         "google_site_verification": current_app.config.get("GOOGLE_SITE_VERIFICATION", ""),
@@ -149,7 +149,7 @@ def _common_context(
 
 @site.get("/")
 def home():
-    return render_template("home.html", title="Simple Real Estate Business Systems", **_common_context("home"))
+    return render_template("home.html", title="Custom Real Estate Systems", **_common_context("home"))
 
 
 @site.get("/about")
@@ -301,10 +301,10 @@ _TEMPLATE_INTENTS = {
     "customize": ("customize", "Customize Existing System"),
     "custom-build": ("custom-build", "Custom System Build"),
     "handover": ("handover", "Full Handover"),
-    "managed": ("managed", "Managed by KEY CASTRO"),
+    "managed": ("managed", "Managed by Realty Systems Foundry"),
     # Backward compatibility for old public links from the retired access/subscription models.
-    "subscribe": ("managed", "Managed by KEY CASTRO"),
-    "free-access": ("managed", "Managed by KEY CASTRO"),
+    "subscribe": ("managed", "Managed by Realty Systems Foundry"),
+    "free-access": ("managed", "Managed by Realty Systems Foundry"),
 }
 
 
@@ -384,7 +384,7 @@ def contact():
             "message": message,
             "source_type": "system_template" if template_interest else ("service" if source_intent else ""),
             "source_slug": template_interest.slug if template_interest else "",
-            "source_title": template_interest.name if template_interest else ("KEY CASTRO Services" if source_intent else ""),
+            "source_title": template_interest.name if template_interest else ("Realty Systems Foundry Services" if source_intent else ""),
             "source_action": source_action if source_intent else "",
         }
 
@@ -399,10 +399,10 @@ def contact():
                         _send_smtp_message(record)
                     except Exception:
                         current_app.logger.exception("Optional SMTP notification failed for inquiry %s", inquiry_id)
-                flash("Message received. I’ll reply by email.", "success")
+                flash("Message received. We’ll reply by email.", "success")
             elif mode == "smtp":
                 _send_smtp_message(record)
-                flash("Message sent. I’ll reply by email.", "success")
+                flash("Message sent. We’ll reply by email.", "success")
             elif current_app.config.get("ENABLE_LOCAL_CONTACT_STORAGE"):
                 _store_local_message(record)
                 current_app.logger.info("Local contact message stored for %s", email)
@@ -430,7 +430,7 @@ def health():
         version = "unknown"
     return jsonify(
         status="ok",
-        app=current_app.config.get("APP_NAME", "Key Castro Portfolio"),
+        app=current_app.config.get("APP_NAME", "Realty Systems Foundry"),
         environment=current_app.config.get("ENVIRONMENT_LABEL", "unknown"),
         version=version,
     )

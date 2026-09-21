@@ -91,7 +91,7 @@ def _prepare_item(item: dict) -> dict:
     prepared["request_label"] = request_label
     prepared["plan_label"] = plan_label
     prepared["reply_url"] = "mailto:" + urllib.parse.quote(prepared.get("email", ""), safe="@+._-") + "?subject=" + urllib.parse.quote(
-        "Re: Your project inquiry to Key Castro"
+        "Re: Your project inquiry to Realty Systems Foundry"
     )
     return prepared
 

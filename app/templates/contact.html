@@ -2,8 +2,8 @@
 {% block content %}
 <section class="page-hero page-hero-simple contact-hero-simple">
   <div class="container simple-page-hero reveal">
-    <h1>Tell me what you need.</h1>
-    <p>Tell me about your business and what you want help with. I will reply by email.</p>
+    <h1>Tell us what you need.</h1>
+    <p>Tell us about your business and what you want help with. We will reply by email.</p>
   </div>
 </section>
 
@@ -23,7 +23,7 @@
       {% elif source_intent %}
       <div class="human-request-note" role="note">
         <strong>You are asking about:</strong>
-        <span>{% if source_intent == 'custom-build' %}a new system for your business{% elif source_intent == 'handover' %}managing the system yourself after it is built{% elif source_intent == 'managed' %}having KEY CASTRO continue managing the system{% else %}a system for your business{% endif %}</span>
+        <span>{% if source_intent == 'custom-build' %}a new system for your business{% elif source_intent == 'handover' %}managing the system yourself after it is built{% elif source_intent == 'managed' %}having Realty Systems Foundry continue managing the system{% else %}a system for your business{% endif %}</span>
       </div>
       {% endif %}
 
@@ -33,11 +33,11 @@
         <label><span>Email</span><input required maxlength="160" type="email" name="email" value="{{ form_data.email if form_data else '' }}" placeholder="you@company.com"></label>
       </div>
       <label><span>Company <small>optional</small></span><input maxlength="140" name="company" value="{{ form_data.company if form_data else '' }}" placeholder="Company name"></label>
-      <label><span>What do you need help with?</span><textarea required minlength="20" maxlength="3000" name="message" rows="6" placeholder="Tell me what you want the system to help with.">{{ form_data.message if form_data else '' }}</textarea></label>
+      <label><span>What do you need help with?</span><textarea required minlength="20" maxlength="3000" name="message" rows="6" placeholder="Tell us what you want the system to help with.">{{ form_data.message if form_data else '' }}</textarea></label>
       <button class="button primary full-button" type="submit">Send Message</button>
       <div class="human-contact-foot">
-        <p>I will reply to the email you provide.</p>
-        {% if contact_email %}<p>Or email me directly: <a class="text-link" href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>{% endif %}
+        <p>We will reply to the email you provide.</p>
+        {% if contact_email %}<p>Or email us directly: <a class="text-link" href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>{% endif %}
       </div>
       <p class="form-privacy">Do not send passwords or private client data.</p>
       {% if environment_label == 'Local' %}<p class="local-form-note">Local preview: test messages stay on this computer.</p>{% endif %}

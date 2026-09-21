@@ -1,12 +1,14 @@
-# KEY CASTRO WEBSITE — DEVELOPER HANDOFF
+# REALTY SYSTEMS FOUNDRY WEBSITE — DEVELOPER HANDOFF
 
-**Release:** 3.8.20
-**Live URL:** https://keycastro.onrender.com
+**Release:** 3.9.0
+**Current live URL:** https://keycastro.onrender.com
+**Preferred domain:** https://realtysystemsfoundry.com
+**Founder:** Key Castro
 **Framework:** Flask
 
 ## Current direction
 
-Version 3.8.20 changes only the existing ready-built system price to **$199 one-time**. The Services & Pricing management model remains exactly as approved: self-management has **$0/month management fee**, while optional KEY CASTRO management remains **$39/month or $390/year**. The current visual identity, cards, typography, routes, pages, footer, systems, backend, and private functionality are preserved.
+Version 3.9.0 rebrands the public website as **Realty Systems Foundry**, a real-estate technology systems company. The Home headline is **“We Build Custom Systems for Real Estate Businesses.”** Key Castro is presented as **Founder, Realty Systems Foundry**. Existing-system pricing remains **$199 one-time**; self-management remains **$0/month management fee**; optional company-managed care remains **$39/month or $390/year**. The current visual identity, cards, typography, routes, pages, footer style, systems, backend, and private functionality are preserved.
 
 Primary navigation: **Home · Systems · Services & Pricing · About · Contact**. The underlying `/services` URL remains unchanged.
 
@@ -32,12 +34,12 @@ New custom system from scratch: **Price by Agreement**.
 
 After the system is ready there are exactly two management options:
 
-- Full Handover — “I build it. You manage it.” — **$0/month management fee**; client handles the technical side.
-- Managed by KEY CASTRO — “I build it. I manage it.” — optional **$39/month or $390/year**; KEY CASTRO handles the technical side.
+- Full Handover — “We build it. You manage it.” — **$0/month management fee**; client handles the technical side.
+- Managed by Realty Systems Foundry — “We build it. We manage it.” — optional **$39/month or $390/year**; Realty Systems Foundry handles the technical side.
 
 Maintenance keeps the current system running; it does not include new features, workflow changes, new modules, integrations, or other improvements. Public customer-facing pricing uses USD only.
 
-The customer-facing page uses **You Manage It** / **I Manage It** so the visitor does not need to learn internal terminology.
+The customer-facing page uses **You Manage It** / **We Manage It** so the visitor does not need to learn internal terminology.
 
 ## UX rule
 
@@ -45,8 +47,11 @@ A non-technical 50–70 year old business owner should understand the basic offe
 
 ## Release workflow
 
-Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/Home featured-CTA/content/profile-portrait verification for version 3.8.20. Never commit private/runtime files.
+Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/Home featured-CTA/content/profile-portrait/rebrand verification for version 3.9.0. Never commit private/runtime files.
 
+
+### v3.9.0 direct change
+Public rebrand to **Realty Systems Foundry**. Main headline: **We Build Custom Systems for Real Estate Businesses.** Key Castro is shown as founder. Company-first `we/our` language replaces personal service language where appropriate. Current design and approved pricing remain unchanged. Internal `KEY_CASTRO`/`keycastro` infrastructure identifiers remain for deployment compatibility.
 
 ### v3.8.18 direct change
 Home hero secondary CTA label: **Create a New System** (destination remains `/contact`). No other public content or behavior is changed by this release.

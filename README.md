@@ -1,10 +1,12 @@
-# KEY CASTRO WEBSITE
+# REALTY SYSTEMS FOUNDRY WEBSITE
 
-Professional portfolio and client-acquisition website for **KEY CASTRO — Custom Real Estate Systems Developer**.
+Company website for **Realty Systems Foundry**, a specialized technology company that builds custom software systems for real estate businesses. **Founded by Key Castro.**
 
-Official website: https://keycastro.onrender.com
+Current live website: https://keycastro.onrender.com
 
-**Current release version: 3.8.20**
+Preferred custom domain: https://realtysystemsfoundry.com
+
+**Current release version: 3.9.0**
 
 ## One project folder
 
@@ -16,7 +18,7 @@ This single Flask codebase contains the public website, published system pages, 
 
 ## Public design rule
 
-Preserve the premium ivory/navy/sage identity, typography, compact spacing, responsive behavior, cards, page structure, and five-item navigation. Version 3.8.20 sets the existing ready-built system price to **$199 one-time**. The Services & Pricing management model remains unchanged: **$0/month** when the client manages the technical side, or **$39/month / $390/year** when KEY CASTRO manages it. No redesign or layout change is part of this release.
+Preserve the premium ivory/navy/sage identity, typography, compact spacing, responsive behavior, cards, page structure, and five-item navigation. Version 3.9.0 rebrands the public website as **Realty Systems Foundry** with the headline **“We Build Custom Systems for Real Estate Businesses.”** Key Castro is presented as the founder. Existing systems remain **$199 one-time**; self-managed technical care remains **$0/month management fee**; optional company-managed care remains **$39/month / $390/year**. No redesign or layout change is part of this release.
 
 Public rule: **Short. Simple. Clear. No unnecessary repetition.**
 
@@ -33,8 +35,8 @@ The **$199 existing-system price is for the system as currently shown**. Changes
 
 After the system is ready, there are only two management choices:
 
-1. **Full Handover — I build it. You manage it.** **$0/month management fee.** The client handles hosting/deployment, security/updates, backups, and technical fixes after handover.
-2. **Managed by KEY CASTRO — I build it. I manage it.** This is optional managed care. KEY CASTRO handles the technical side for **$39/month or $390/year per system**.
+1. **Full Handover — We build it. You manage it.** **$0/month management fee.** The client handles hosting/deployment, security/updates, backups, and technical fixes after handover.
+2. **Managed by Realty Systems Foundry — We build it. We manage it.** This is optional managed care. Realty Systems Foundry handles the technical side for **$39/month or $390/year per system**.
 
 System purchase, upgrades, maintenance, and a new custom build are separate charges. Public customer-facing pricing uses **USD only**.
 
@@ -63,7 +65,7 @@ The private owner Inbox remains part of this Flask codebase but is not linked, a
 
 ## Production
 
-Flask + Gunicorn on the existing Render service. Render provider-level auto-deploy remains off, but KEY CASTRO release packages now use the controlled one-run `APPLY_UPDATE_AND_DEPLOY_LIVE.bat` workflow: local update → tests → approved Git commit/push → Render deploy → live verification. See `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`.
+Flask + Gunicorn on the existing Render service. Render provider-level auto-deploy remains off, and Realty Systems Foundry release packages use the controlled one-run `APPLY_UPDATE_AND_DEPLOY_LIVE.bat` workflow: local update → tests → approved Git commit/push → Render deploy → live verification. The internal local folder, repository, and current Render service identifiers may still contain `KEY_CASTRO`/`keycastro` for deployment compatibility until a separate infrastructure migration is approved. See `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`.
 
 ## Security
 
