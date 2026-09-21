@@ -1,4 +1,4 @@
-# Key Castro Website — Deployment Notes
+# Realty Systems Foundry — Deployment Notes
 
 Version 2.2.0 is designed so the same Flask website can run locally on Windows now and later be deployed publicly.
 
@@ -6,10 +6,10 @@ Version 2.2.0 is designed so the same Flask website can run locally on Windows n
 
 Local Windows tools are separate from the website itself:
 
-- `KEY_CASTRO_LAUNCHER.ps1`
-- Desktop shortcut
-- `START_KEY_CASTRO_WEBSITE.bat`
-- `STOP_KEY_CASTRO_WEBSITE.bat`
+- `REALTY_SYSTEMS_FOUNDRY_LAUNCHER.ps1`
+- Desktop shortcuts `REALTY SYSTEMS FOUNDRY` and `RSF INBOX`
+- `START_REALTY_SYSTEMS_FOUNDRY.bat`
+- `STOP_REALTY_SYSTEMS_FOUNDRY.bat`
 
 The deployable web entry point is:
 

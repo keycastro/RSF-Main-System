@@ -6,12 +6,12 @@ Current live website: https://keycastro.onrender.com
 
 Preferred custom domain: https://realtysystemsfoundry.com
 
-**Current release version: 3.9.0**
+**Current release version: 3.9.1**
 
 ## One project folder
 
 ```text
-C:\Users\Admin\Documents\KEY_CASTRO_WEBSITE
+C:\Users\Admin\Documents\REALTY_SYSTEMS_FOUNDRY
 ```
 
 This single Flask codebase contains the public website, published system pages, Contact workflow, inquiry database integration, and the private online owner Inbox.
@@ -65,7 +65,7 @@ The private owner Inbox remains part of this Flask codebase but is not linked, a
 
 ## Production
 
-Flask + Gunicorn on the existing Render service. Render provider-level auto-deploy remains off, and Realty Systems Foundry release packages use the controlled one-run `APPLY_UPDATE_AND_DEPLOY_LIVE.bat` workflow: local update → tests → approved Git commit/push → Render deploy → live verification. The internal local folder, repository, and current Render service identifiers may still contain `KEY_CASTRO`/`keycastro` for deployment compatibility until a separate infrastructure migration is approved. See `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`.
+Flask + Gunicorn on the existing Render service. Render provider-level auto-deploy remains off, and Realty Systems Foundry release packages use the controlled one-run `APPLY_UPDATE_AND_DEPLOY_LIVE.bat` workflow: local update → tests → approved Git commit/push → Render deploy → live verification. The local workspace now uses `Documents\REALTY_SYSTEMS_FOUNDRY`, with desktop shortcuts `REALTY SYSTEMS FOUNDRY` and `RSF INBOX`. GitHub repository names and the current Render service/URL still retain their existing identifiers for deployment compatibility. See `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`.
 
 ## Security
 

@@ -1,6 +1,6 @@
 # Update and Deploy Workflow — One Run Is the Default
 
-From this release forward, a KEY CASTRO website update package should include:
+From this release forward, a Realty Systems Foundry website update package should include:
 
 ```text
 APPLY_UPDATE_AND_DEPLOY_LIVE.bat
@@ -9,7 +9,7 @@ scripts/UPDATE_AND_DEPLOY_RENDER.ps1
 
 The normal workflow is no longer "install locally now, deploy later." The release launcher performs the sequence automatically:
 
-1. Copy/update the website in `Documents\KEY_CASTRO_WEBSITE` while preserving the private `.env`.
+1. Safely migrate `Documents\KEY_CASTRO_WEBSITE` to `Documents\REALTY_SYSTEMS_FOUNDRY` when needed, then copy/update approved website files while preserving private local configuration and Git metadata.
 2. Install dependencies and run the complete automated test suite.
 3. Confirm the existing Git repo is on `main` and has the required `origin` and `renderdeploy` remotes.
 4. Stage only the approved source/release paths and block private/runtime files.

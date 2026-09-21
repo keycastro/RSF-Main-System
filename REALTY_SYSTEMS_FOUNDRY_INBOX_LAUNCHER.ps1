@@ -30,8 +30,8 @@ catch {
     try { Add-Type -AssemblyName PresentationFramework -ErrorAction SilentlyContinue | Out-Null } catch {}
     try {
         [System.Windows.MessageBox]::Show(
-            "Could not open the private KEY CASTRO INBOX.`n`n" + $_.Exception.Message,
-            "KEY CASTRO INBOX",
+            "Could not open the private REALTY SYSTEMS FOUNDRY INBOX.`n`n" + $_.Exception.Message,
+            "RSF INBOX",
             "OK",
             "Error"
         ) | Out-Null

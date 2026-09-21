@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.9.1 - Local Workspace Rebrand
+- Renamed the local Documents project folder from **KEY_CASTRO_WEBSITE** to **REALTY_SYSTEMS_FOUNDRY** through a safe in-place migration.
+- Renamed the main desktop shortcut to **REALTY SYSTEMS FOUNDRY**.
+- Renamed the private inbox shortcut to **RSF INBOX**.
+- Renamed local launcher/setup helper filenames to the Realty Systems Foundry identity.
+- Preserved `.git`, `.env`, `.owner_inbox.json`, `.venv`, logs, and other private/local state during migration.
+- Kept the existing GitHub repositories, Render service, current Render URL, public website design, and approved pricing unchanged.
+
 ## v3.9.0 - Realty Systems Foundry Rebrand
 - Rebranded the public website from Key Castro to **Realty Systems Foundry**.
 - Changed the Home headline to **“We Build Custom Systems for Real Estate Businesses.”**

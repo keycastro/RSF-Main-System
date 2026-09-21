@@ -1,14 +1,14 @@
 {
   "project": "REALTY_SYSTEMS_FOUNDRY_WEBSITE",
   "handoff_date": "2026-09-21",
-  "version": "3.9.0",
+  "version": "3.9.1",
   "owner_public_name": "Key Castro",
   "positioning": "Technology built for real estate operations",
   "framework": "Flask",
   "production_entrypoint": "wsgi:app",
   "official_live_url": "https://keycastro.onrender.com",
   "health_path": "/system/health",
-  "local_project_path": "C:\\Users\\Admin\\Documents\\KEY_CASTRO_WEBSITE",
+  "local_project_path": "C:\\Users\\Admin\\Documents\\REALTY_SYSTEMS_FOUNDRY",
   "render": {
     "workspace": "Key Castro",
     "service_name": "keycastro",
@@ -38,12 +38,12 @@
       "archived"
     ],
     "local_secret_config": ".owner_inbox.json",
-    "desktop_launcher": "KEY CASTRO INBOX",
+    "desktop_launcher": "RSF INBOX",
     "localhost_required": false
   },
   "desktop_launchers": {
-    "KEY CASTRO": "https://keycastro.onrender.com/",
-    "KEY CASTRO INBOX": "private authenticated online owner inbox"
+    "REALTY SYSTEMS FOUNDRY": "https://keycastro.onrender.com/",
+    "RSF INBOX": "private authenticated online owner inbox"
   },
   "separate_inbox_project_folder_required": false,
   "retired_host": {
@@ -282,7 +282,7 @@
     "launcher": "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
     "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
     "provider_auto_deploy": false,
-    "success_condition": "production health reports version 3.9.0; public branding is Realty Systems Foundry; Home headline reads We Build Custom Systems for Real Estate Businesses.; Key Castro is presented as Founder, Realty Systems Foundry; Home hero secondary CTA remains Create a New System and links to /contact; Home keeps exactly 3 featured systems and the approved Explore All Systems / Services & Pricing CTA band; Home, Systems, system detail, and Services & Pricing show the approved $199 existing-system purchase price; new custom systems use Price by Agreement; management remains optional at $0/month self-managed or $39/month / $390/year managed care; upgrades remain $79 / $149 / Price by Agreement; no PHP/peso pricing is publicly displayed; existing design and exactly 3 published systems remain preserved."
+    "success_condition": "production health reports version 3.9.1; public branding is Realty Systems Foundry; Home headline reads We Build Custom Systems for Real Estate Businesses.; Key Castro is presented as Founder, Realty Systems Foundry; Home hero secondary CTA remains Create a New System and links to /contact; Home keeps exactly 3 featured systems and the approved Explore All Systems / Services & Pricing CTA band; Home, Systems, system detail, and Services & Pricing show the approved $199 existing-system purchase price; new custom systems use Price by Agreement; management remains optional at $0/month self-managed or $39/month / $390/year managed care; upgrades remain $79 / $149 / Price by Agreement; no PHP/peso pricing is publicly displayed; existing design and exactly 3 published systems remain preserved."
   },
   "ux_master_refinement_3_7": {
     "document": "docs/MASTER_UX_REFINEMENT_3_7.md",
@@ -308,11 +308,11 @@
     "public_private_boundary_changed": false,
     "primary_test": "first-time non-technical older visitor can understand the basic offer without learning internal terminology",
     "page_responsibilities": {
-      "home": "what KEY CASTRO does",
+      "home": "what Realty Systems Foundry does",
       "systems": "systems already built",
       "system_detail": "what one system does",
       "how_it_works": "build process and exactly two post-build management choices",
-      "about": "who KEY CASTRO is, the business problems solved, automation value, and workflow consolidation benefits",
+      "about": "what Realty Systems Foundry does, who Key Castro is as founder, the business problems solved, automation value, and workflow consolidation benefits",
       "contact": "send one inquiry"
     },
     "public_management_labels": [
@@ -321,7 +321,7 @@
     ],
     "formal_management_terms_preserved_internally": [
       "Full Handover",
-      "Managed by KEY CASTRO"
+      "Managed by Realty Systems Foundry"
     ],
     "readability": [
       "larger everyday text",
@@ -533,7 +533,7 @@
       "private owner Inbox"
     ]
   },
-  "current_version": "3.9.0",
+  "current_version": "3.9.1",
   "pricing_and_management_clarity_3_8_19": {
     "scope": "Existing-system price plus Services & Pricing management clarity and direct tests/release/deployment dependencies",
     "existing_system_price_usd": 290,
@@ -585,5 +585,30 @@
       "major_upgrade": 149,
       "new_system_or_large_expansion": "Price by Agreement"
     }
+  },
+  "local_workspace_rebrand_3_9_1": {
+    "status": "approved and implemented",
+    "old_local_folder": "C:\\Users\\Admin\\Documents\\KEY_CASTRO_WEBSITE",
+    "new_local_folder": "C:\\Users\\Admin\\Documents\\REALTY_SYSTEMS_FOUNDRY",
+    "website_desktop_launcher": "REALTY SYSTEMS FOUNDRY",
+    "inbox_desktop_launcher": "RSF INBOX",
+    "migration": "Installer renames the existing local folder in place when safe, preserving .git, .env, .owner_inbox.json, .venv, logs, and other local state.",
+    "repositories_changed": false,
+    "render_service_changed": false,
+    "live_url_changed": false,
+    "website_design_changed": false,
+    "pricing_changed": false
+  },
+  "release_3_9_1": {
+    "date": "2026-09-21",
+    "scope": "Local workspace identity migration only: Documents folder, desktop launchers, launcher filenames, installer/updater paths, tests/deployment metadata.",
+    "public_brand": "Realty Systems Foundry",
+    "local_folder": "REALTY_SYSTEMS_FOUNDRY",
+    "desktop_shortcuts": [
+      "REALTY SYSTEMS FOUNDRY",
+      "RSF INBOX"
+    ],
+    "pricing_changed": false,
+    "design_changed": false
   }
 }

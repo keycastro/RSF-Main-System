@@ -2,11 +2,11 @@ $ErrorActionPreference = "Stop"
 
 $packageRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $documents = [Environment]::GetFolderPath("MyDocuments")
-$target = Join-Path $documents "KEY_CASTRO_WEBSITE"
+$target = Join-Path $documents "REALTY_SYSTEMS_FOUNDRY"
 $serviceId = "srv-dam749e1egvs738cppq0"
 $liveBase = "https://keycastro.onrender.com"
-$expectedVersion = "3.9.0"
-$commitMessage = "Release 3.9.0 Realty Systems Foundry Rebrand"
+$expectedVersion = "3.9.1"
+$commitMessage = "Release 3.9.1 Local Workspace Rebrand"
 
 function Invoke-Native {
     param(
@@ -79,9 +79,11 @@ try {
         "VERSION.txt", "PROJECT_STATE.json", "DEVELOPER_HANDOFF.md",
         "NEXT_DEVELOPER_READ_THIS_FIRST.md", "SECURITY_AND_SHARING_NOTES.md",
         "00_FUTURE_DEVELOPER_READ_THIS_PLAN.md",
-        "KEY_CASTRO_LAUNCHER.ps1", "KEY_CASTRO.ico",
-        "START_KEY_CASTRO_WEBSITE.bat", "SETUP_KEY_CASTRO_WEBSITE.bat",
-        "STOP_KEY_CASTRO_WEBSITE.bat", "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
+        "REALTY_SYSTEMS_FOUNDRY_LAUNCHER.ps1", "REALTY_SYSTEMS_FOUNDRY_INBOX_LAUNCHER.ps1", "REALTY_SYSTEMS_FOUNDRY.ico",
+        "START_REALTY_SYSTEMS_FOUNDRY.bat", "SETUP_REALTY_SYSTEMS_FOUNDRY.bat", "STOP_REALTY_SYSTEMS_FOUNDRY.bat",
+        "KEY_CASTRO_LAUNCHER.ps1", "KEY_CASTRO_INBOX_LAUNCHER.ps1", "KEY_CASTRO.ico",
+        "START_KEY_CASTRO_WEBSITE.bat", "SETUP_KEY_CASTRO_WEBSITE.bat", "STOP_KEY_CASTRO_WEBSITE.bat",
+        "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
         "AUTO_DEPLOY_README.txt"
     )
 
@@ -119,8 +121,10 @@ try {
         "VERSION.txt", "PROJECT_STATE.json", "DEVELOPER_HANDOFF.md",
         "NEXT_DEVELOPER_READ_THIS_FIRST.md", "SECURITY_AND_SHARING_NOTES.md",
         "00_FUTURE_DEVELOPER_READ_THIS_PLAN.md",
-        "KEY_CASTRO_LAUNCHER.ps1", "KEY_CASTRO.ico", "START_KEY_CASTRO_WEBSITE.bat",
-        "SETUP_KEY_CASTRO_WEBSITE.bat", "STOP_KEY_CASTRO_WEBSITE.bat",
+        "REALTY_SYSTEMS_FOUNDRY_LAUNCHER.ps1", "REALTY_SYSTEMS_FOUNDRY_INBOX_LAUNCHER.ps1", "REALTY_SYSTEMS_FOUNDRY.ico",
+        "START_REALTY_SYSTEMS_FOUNDRY.bat", "SETUP_REALTY_SYSTEMS_FOUNDRY.bat", "STOP_REALTY_SYSTEMS_FOUNDRY.bat",
+        "KEY_CASTRO_LAUNCHER.ps1", "KEY_CASTRO_INBOX_LAUNCHER.ps1", "KEY_CASTRO.ico",
+        "START_KEY_CASTRO_WEBSITE.bat", "SETUP_KEY_CASTRO_WEBSITE.bat", "STOP_KEY_CASTRO_WEBSITE.bat",
         "APPLY_UPDATE_AND_DEPLOY_LIVE.bat", "AUTO_DEPLOY_README.txt"
     )
     foreach ($path in $approvedPaths) {

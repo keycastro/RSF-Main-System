@@ -20,7 +20,22 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Realty Systems Foundry")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.9.0")
+        self.assertEqual(data["version"], "3.9.1")
+
+    def test_local_workspace_rebrand_paths_and_shortcuts(self):
+        root = Path(__file__).resolve().parents[1]
+        installer = (root / "scripts" / "INSTALL_WEBSITE.ps1").read_text(encoding="utf-8-sig")
+        updater = (root / "scripts" / "UPDATE_AND_DEPLOY_RENDER.ps1").read_text(encoding="utf-8-sig")
+        website_shortcut = (root / "scripts" / "CREATE_DESKTOP_SHORTCUT.ps1").read_text(encoding="utf-8-sig")
+        inbox_shortcut = (root / "scripts" / "CREATE_INBOX_SHORTCUT.ps1").read_text(encoding="utf-8-sig")
+
+        self.assertIn('"REALTY_SYSTEMS_FOUNDRY"', installer)
+        self.assertIn('"KEY_CASTRO_WEBSITE"', installer)  # safe legacy migration source
+        self.assertIn('REALTY_SYSTEMS_FOUNDRY_LAUNCHER.ps1', installer)
+        self.assertIn('REALTY_SYSTEMS_FOUNDRY_INBOX_LAUNCHER.ps1', installer)
+        self.assertIn('"REALTY_SYSTEMS_FOUNDRY"', updater)
+        self.assertIn('REALTY SYSTEMS FOUNDRY.lnk', website_shortcut)
+        self.assertIn('RSF INBOX.lnk', inbox_shortcut)
 
     def test_main_pages_and_template_library_render(self):
         routes = [
