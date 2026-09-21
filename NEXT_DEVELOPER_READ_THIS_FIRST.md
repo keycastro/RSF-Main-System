@@ -1,6 +1,16 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Release version:** 3.9.2
+**Release version:** 3.9.8
+
+## Critical v3.9.8 Render migration rule
+
+Do not rely on `render services create --from` alone for this production service. The clone flow currently omits direct service environment variables. The approved updater copies the source service environment variables and secret files with the official Render API in memory before the replacement service's verified deploy. Keep the original service as rollback until the new hostname and private inbox are confirmed.
+
+---
+
+# NEXT DEVELOPER — READ THIS FIRST
+
+**Historical previous release:** 3.9.3
 **Current live site:** https://realtysystemsfoundry.onrender.com
 **Preferred custom domain:** https://realtysystemsfoundry.com
 **Founder:** Key Castro
@@ -18,11 +28,11 @@
 8. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
 9. `docs/DEPLOYMENT_HISTORY.md`
 
-Older versioned pricing/business-model documents are historical. Current 3.9.2 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
+Older versioned pricing/business-model documents are historical. Current 3.9.8 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
 
 ## Current release change
 
-Version 3.9.2 renames the existing Render service to `realtysystemsfoundry`, making `https://realtysystemsfoundry.onrender.com` the official Render URL. It preserves the existing service ID, GitHub repositories, local workspace identity, public design, content, systems, database, and pricing.
+Version 3.9.3 migrates the public Render hostname by cloning the original service configuration into a newly created service named `realtysystemsfoundry`. The replacement service gets a new service ID; the original service is retained as `realtysystemsfoundry-legacy` for rollback. GitHub repositories, local workspace identity, public design, content, systems, database connection, and pricing are preserved.
 
 Version 3.9.0 rebrands the public website as **Realty Systems Foundry**. The Home headline is **“We Build Custom Systems for Real Estate Businesses.”** Key Castro is shown as **Founder, Realty Systems Foundry**. Existing ready-built systems remain **$199 one-time**. The Services & Pricing management choice remains unchanged: self-managed technical care is **$0/month management fee**; optional Realty Systems Foundry managed care remains **$39/month or $390/year**.
 
@@ -117,5 +127,15 @@ Existing ready-built system price is **$199 one-time**. Management pricing is un
 ### v3.8.19 direct change
 Existing ready-built system price is **$290 one-time**. On Services & Pricing, make it unmistakable that management is optional: **You Manage It = $0/month management fee**; **I Manage It = $39/month or $390/year**, unchanged. Preserve the current design and keep the two-option model.
 
-## v3.9.2 local workspace identity
-The active local project path is `C:\Users\Admin\Documents\REALTY_SYSTEMS_FOUNDRY`. The desktop shortcuts are `REALTY SYSTEMS FOUNDRY` and `RSF INBOX`. The installer migrates the previous `KEY_CASTRO_WEBSITE` folder in place when safe so `.git`, `.env`, `.owner_inbox.json`, `.venv`, and other local state are preserved. GitHub repository names and the Render service ID remain unchanged; the Render service name/URL are now `realtysystemsfoundry` / `https://realtysystemsfoundry.onrender.com`.
+## v3.9.3 local workspace identity
+The active local project path is `C:\Users\Admin\Documents\REALTY_SYSTEMS_FOUNDRY`. The desktop shortcuts are `REALTY SYSTEMS FOUNDRY` and `RSF INBOX`. The installer migrates the previous `KEY_CASTRO_WEBSITE` folder in place when safe so `.git`, `.env`, `.owner_inbox.json`, `.venv`, and other local state are preserved. GitHub repository names remain unchanged. The active Render service is the new cloned `realtysystemsfoundry` service, and its service ID is recorded into `PROJECT_STATE.json` by the migration workflow. The original service ID remains recorded as the legacy rollback service.
+
+
+## v3.9.3 Render hostname migration correction
+
+Production testing proved that changing the original Render service name did not reassign its existing `onrender.com` hostname. The approved target remains `https://realtysystemsfoundry.onrender.com`. v3.9.3 therefore creates a new Render service by cloning the original service configuration with Render CLI `services create --from`, verifies the new public host and the private RSF Inbox/database continuity, then records the replacement service ID for future deployments. The original service is retained as `realtysystemsfoundry-legacy` for rollback and is not deleted automatically. Public design, systems, and pricing are unchanged.
+
+
+## v3.9.8 Render env-var key validation
+
+The updater validates and sanitizes environment-variable keys before any Render API write. Malformed legacy keys are skipped without printing secret values. Critical production variables remain mandatory, and the original service remains the rollback until the exact new hostname and private inbox/database continuity are verified.

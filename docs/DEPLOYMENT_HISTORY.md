@@ -1,3 +1,15 @@
+## 2026-09-22 — v3.9.8 Render Collection Handling Recovery
+
+The v3.9.6 migration resolved the required production values and filtered the malformed legacy env key, but Windows PowerShell 5.1 then rejected an empty intermediate collection during helper-function parameter binding. v3.9.8 removes mandatory collection binding from the migration helpers, normalizes empty collections internally, and builds the final resolved production env array directly before the Render API write.
+
+## 2026-09-22 — v3.9.6 Render Env-Key Validation Recovery
+
+The v3.9.5 migration successfully reconstructed the required production configuration but Render rejected the env-var PUT because the outgoing collection contained at least one malformed key. v3.9.6 validates/sanitizes all keys before the API write, skips malformed legacy keys, and still requires all critical RSF production variables before allowing deployment.
+
+## 2026-09-21 — v3.9.5 Secure Production Configuration Migration
+
+The v3.9.3 clone attempt proved that the replacement service can be created with the exact desired name but fails its deploy when the production environment variables are absent. v3.9.5 copies the original service's direct environment variables and secret files through the official Render API before the authoritative replacement deploy, validates the RSF Inbox/database continuity, and retains the original service as rollback until migration success.
+
 # Deployment History — Key Castro Website
 
 ## Current state
@@ -212,3 +224,8 @@ This content update does not claim that Nexus Properties officially hired, paid,
 - Public Render URL changed to `https://realtysystemsfoundry.onrender.com`.
 - GitHub repository names remain unchanged.
 - Public design and pricing remain unchanged.
+
+
+## 2026-09-21 — v3.9.3 Render Hostname Migration Correction
+
+Production attempts showed that renaming the original Render service to `realtysystemsfoundry` did not move its existing `onrender.com` hostname; the requested host continued to return 404 even after a successful deploy. v3.9.3 changes the migration strategy to clone the original service configuration into a newly created service named `realtysystemsfoundry`, verify the exact new hostname and private inbox/database continuity, and retain the original service as `realtysystemsfoundry-legacy` for rollback.

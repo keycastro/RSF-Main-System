@@ -1,3 +1,9 @@
+# SECURITY AND SHARING NOTES — v3.9.8
+
+The Render hostname migration may ask for a Render API key using hidden PowerShell input. The updater uses that key only in the running process to read/copy production configuration. It must never be printed, saved into `.env`, `.owner_inbox.json`, project files, Git, logs, or the release ZIP. Production environment-variable and secret-file values are likewise never printed.
+
+---
+
 # Security and Sharing Notes
 
 Private/runtime files must not be committed or shared:

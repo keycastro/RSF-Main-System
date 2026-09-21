@@ -20,7 +20,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Realty Systems Foundry")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.9.2")
+        self.assertEqual(data["version"], "3.9.8")
 
     def test_local_workspace_rebrand_paths_and_shortcuts(self):
         root = Path(__file__).resolve().parents[1]
@@ -41,11 +41,37 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn('RSF INBOX.lnk', inbox_shortcut)
         self.assertIn('https://realtysystemsfoundry.onrender.com', updater)
         self.assertIn('--name', updater)
+        self.assertIn('--from', updater)
+        self.assertIn('@("services", "create"', updater)
+        self.assertIn('realtysystemsfoundry-legacy', updater)
         self.assertIn('realtysystemsfoundry', updater)
         self.assertIn('RENDER_EXTERNAL_URL', config_text)
         self.assertIn('RENDER_EXTERNAL_HOSTNAME', config_text)
         self.assertIn('.owner_inbox.json', updater)
         self.assertIn('$liveBase/__owner_api', updater)
+        self.assertIn('RENDER_API_KEY', updater)
+        self.assertIn('https://api.render.com/v1', updater)
+        self.assertIn('/env-vars', updater)
+        self.assertIn('/secret-files', updater)
+        self.assertIn('/env-groups', updater)
+        self.assertIn('Ensure-EnvironmentGroupsLinked', updater)
+        self.assertIn('Invoke-RenderApi', updater)
+        self.assertIn('Copy-ProductionConfigurationToService', updater)
+        self.assertIn('SECRET_KEY', updater)
+        self.assertIn('DATABASE_URL', updater)
+        self.assertIn('OWNER_INBOX_TOKEN', updater)
+        self.assertIn('Production configuration copied securely', updater)
+        self.assertIn('/postgres?limit=100&includeReplicas=false', updater)
+        self.assertIn('/connection-info', updater)
+        self.assertIn('Resolve-ProductionEnvVars', updater)
+        self.assertIn('Get-LocalOwnerToken', updater)
+        self.assertIn('Get-ProjectContactEmail', updater)
+        self.assertIn('Write-RenderDeployDiagnostics', updater)
+        self.assertIn('Production environment resolution unexpectedly produced zero variables', updater)
+        self.assertIn('$Items = @()', updater)
+        self.assertNotIn('[Parameter(Mandatory=$true)][AllowEmptyCollection()][object[]]$Items', updater)
+        self.assertNotIn('[Parameter(Mandatory=$true)][System.Collections.ArrayList]$Items', updater)
+        self.assertNotIn('Set-Content -LiteralPath $targetApi', updater)
 
     def test_main_pages_and_template_library_render(self):
         routes = [

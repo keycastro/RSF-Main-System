@@ -17,10 +17,11 @@ def _resolve_public_base_url() -> str:
     render_url = os.getenv("RENDER_EXTERNAL_URL", "").strip().rstrip("/")
     on_render = os.getenv("RENDER", "").strip().lower() == "true"
 
-    # v3.9.2 migrates the Render service from the former keycastro subdomain.
-    # If Render still has the old PUBLIC_BASE_URL value, trust Render's own
-    # current external URL so canonical links immediately follow the rename.
-    if on_render and render_url and (not explicit or explicit == "https://keycastro.onrender.com"):
+    # For Render-hosted deployments, trust Render's own external URL whenever
+    # PUBLIC_BASE_URL is blank or still points to an onrender.com address. This
+    # keeps canonical links correct across service-hostname migrations while
+    # still allowing a future custom domain to override the Render URL.
+    if on_render and render_url and (not explicit or explicit.endswith(".onrender.com")):
         return render_url
     return explicit or render_url
 

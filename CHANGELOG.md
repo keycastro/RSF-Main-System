@@ -1,3 +1,65 @@
+# CHANGELOG
+
+## 3.9.8 - Resume After Healthy Render Migration
+
+- Detects and reuses the already healthy `realtysystemsfoundry` replacement service created by the previous run.
+- Skips the Render API-key/configuration-copy step when the existing replacement passes public health plus private RSF Inbox/database continuity checks.
+- Cleans release-file trailing whitespace and extra EOF blank lines so Git preflight can complete.
+- Continues with the approved commit, both GitHub pushes, exact Render deploy, and final live verification without creating another replacement service.
+- Preserves the legacy Render service as rollback and makes no public design or pricing changes.
+
+## 3.9.8 - Render Collection Handling Recovery
+
+- Fixes the Windows PowerShell 5.1 empty-collection binding failure encountered after all required production settings were resolved.
+- Removes mandatory typed-array binding from Render migration helper functions and normalizes optional collections internally.
+- Builds the resolved production environment array directly after required settings and key validity are confirmed.
+- Preserves API key handling, database continuity, RSF Inbox token, website design, pricing, and rollback behavior.
+
+## 3.9.6 - Render Env-Key Validation Recovery
+
+- Fixes the failed hostname migration caused by a malformed environment-variable key being sent to Render.
+- Validates and sanitizes every environment-variable key before the Render API write.
+- Skips malformed legacy keys without printing secret values.
+- Still requires SECRET_KEY, CONTACT_EMAIL, DATABASE_URL, OWNER_INBOX_TOKEN, PUBLIC_BASE_URL, and TRUSTED_HOSTS before deployment.
+- Preserves the existing website design, pricing, local project, database, and rollback service.
+
+# Changelog
+
+## 3.9.5 - Render Hostname Migration Recovery
+
+- Corrects the failed hostname migration without changing the public website design or pricing.
+- Stops assuming the legacy Render service has directly copyable production environment variables.
+- Reconstructs the required replacement-service configuration from trusted sources: the preserved local RSF Inbox token, approved public contact email, Render Postgres connection info, and a strong generated SECRET_KEY when the old service does not expose one.
+- Keeps secrets in memory only and never adds them to Git or the release ZIP.
+- Keeps the original Render service as rollback until `https://realtysystemsfoundry.onrender.com` and the private RSF Inbox/database continuity check both pass.
+
+# CHANGELOG
+
+## v3.9.4 - Secure Render Production Configuration Migration
+
+- Fixes the v3.9.3 clone deployment failure caused by Render CLI `services create --from` not copying direct service environment variables.
+- Reads the current production environment variables and secret files from the original Render service through Render's official API before any service rename.
+- Copies those values only in memory to the replacement service, then deploys and verifies the new hostname.
+- Requires a Render API key for this one migration. If `RENDER_API_KEY` is not already set, the updater asks for it with hidden input and never writes it to disk or Git.
+- Verifies required production settings and the local RSF Inbox token before changing Render resources.
+- On a failed replacement deploy, prints Render deployment diagnostics, deletes only the failed replacement, and restores the original service name.
+- Website design, 3 systems, pricing, GitHub repository names, and local workspace identity remain unchanged.
+
+---
+
+# CHANGELOG
+
+## v3.9.3 - Render Hostname Migration
+
+- Corrects the Render migration model after production evidence showed that renaming the existing service did not reassign its original `onrender.com` hostname.
+- Uses Render CLI's supported `services create --from` clone flow to create a replacement service named `realtysystemsfoundry`.
+- Keeps the original service as `realtysystemsfoundry-legacy` for rollback instead of deleting it automatically.
+- Requires the exact `https://realtysystemsfoundry.onrender.com` host to become healthy before the release proceeds.
+- Verifies the private RSF Inbox bearer token and database continuity on the replacement service before switching the local inbox endpoint.
+- Records the newly created active Render service ID in `PROJECT_STATE.json` before committing the release.
+- Future deployment uses the replacement service ID and deploys the exact Git commit.
+- Public design, systems, and approved pricing remain unchanged.
+
 # Changelog
 
 ## v3.9.2 - Render Subdomain Rebrand
@@ -210,3 +272,8 @@
 
 ### v3.9.2 deployment-sequence hotfix
 The one-run deploy workflow now waits until the Render deployment has applied the service rename before verifying `https://realtysystemsfoundry.onrender.com`. The private RSF Inbox endpoint is switched only after the new hostname is verified.
+
+## v3.9.4 migration hotfix — empty Render collections
+
+- Fixed the Render migration script so accounts with zero linked Environment Groups, zero direct environment variables, or zero secret files are valid inputs instead of PowerShell binding errors.
+- No website design, pricing, database, or public content changes.
