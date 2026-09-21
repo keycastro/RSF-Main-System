@@ -4,9 +4,10 @@ $packageRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $documents = [Environment]::GetFolderPath("MyDocuments")
 $target = Join-Path $documents "REALTY_SYSTEMS_FOUNDRY"
 $serviceId = "srv-dam749e1egvs738cppq0"
-$liveBase = "https://keycastro.onrender.com"
-$expectedVersion = "3.9.1"
-$commitMessage = "Release 3.9.1 Local Workspace Rebrand"
+$newServiceName = "realtysystemsfoundry"
+$liveBase = "https://realtysystemsfoundry.onrender.com"
+$expectedVersion = "3.9.2"
+$commitMessage = "Release 3.9.2 Render Subdomain Rebrand"
 
 function Invoke-Native {
     param(
@@ -38,19 +39,20 @@ Write-Host "  REALTY SYSTEMS FOUNDRY - UPDATE + AUTOMATIC LIVE DEPLOY" -Foregrou
 Write-Host "======================================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "This single run will:" -ForegroundColor Gray
-Write-Host "  1. update the local website"
-Write-Host "  2. preserve private local configuration"
-Write-Host "  3. run the full automated test suite"
-Write-Host "  4. commit approved website files only"
-Write-Host "  5. push the private repo and Render deployment mirror"
-Write-Host "  6. trigger the Render deployment"
-Write-Host "  7. verify the LIVE website before reporting success"
+Write-Host "  1. update the local website and preserve private configuration"
+Write-Host "  2. run the full automated test suite"
+Write-Host "  3. check Git and Render tooling"
+Write-Host "  4. rename the existing Render service to realtysystemsfoundry"
+Write-Host "  5. commit approved website files"
+Write-Host "  6. push both GitHub repositories"
+Write-Host "  7. trigger the Render deployment"
+Write-Host "  8. verify https://realtysystemsfoundry.onrender.com"
 Write-Host ""
 
-Write-Host "[A/7] Applying the website update and running local tests..." -ForegroundColor Yellow
+Write-Host "[A/8] Applying the website update and running local tests..." -ForegroundColor Yellow
 $installer = Join-Path $packageRoot "scripts\INSTALL_WEBSITE.ps1"
 if (!(Test-Path $installer)) { throw "Installer not found: $installer" }
-& $installer
+& $installer -SkipLaunch
 
 if (!(Test-Path $target)) { throw "Installed website folder was not found: $target" }
 if (!(Test-Path (Join-Path $target ".git"))) {
@@ -59,7 +61,7 @@ if (!(Test-Path (Join-Path $target ".git"))) {
 
 Push-Location $target
 try {
-    Write-Host "[B/7] Checking Git repository and deployment remotes..." -ForegroundColor Yellow
+    Write-Host "[B/8] Checking Git repository and deployment remotes..." -ForegroundColor Yellow
     $git = Get-Command git.exe -ErrorAction SilentlyContinue
     if (!$git) { $git = Get-Command git -ErrorAction SilentlyContinue }
     if (!$git) { throw "Git was not found. Install Git for Windows or restore the existing Git installation." }
@@ -112,7 +114,26 @@ try {
     if ($remotes -notcontains "origin") { throw "Git remote 'origin' is missing." }
     if ($remotes -notcontains "renderdeploy") { throw "Git remote 'renderdeploy' is missing." }
 
-    Write-Host "[C/7] Staging only approved website release files..." -ForegroundColor Yellow
+    Write-Host "[C/8] Renaming the existing Render service and switching its public subdomain..." -ForegroundColor Yellow
+    $render = Get-Command render.exe -ErrorAction SilentlyContinue
+    if (!$render) { $render = Get-Command render -ErrorAction SilentlyContinue }
+    if (!$render) {
+        throw "Render CLI was not found. Nothing was renamed or deployed. Restore the Render CLI and rerun this updater."
+    }
+
+    try {
+        Invoke-Native -Command $render.Source -Arguments @("services", "update", $serviceId, "--name", $newServiceName, "--confirm", "-o", "text")
+    }
+    catch {
+        throw "Render could not rename the existing service to '$newServiceName'. The exact onrender.com name may already be unavailable, or Render authentication may need attention. No Git release was pushed. Original error: $($_.Exception.Message)"
+    }
+
+    # Important: Render service updates are applied by the next deploy. Do not
+    # probe the new onrender.com hostname yet; it can legitimately return 404
+    # until the deployment below applies the renamed service configuration.
+    Write-Host "      Render accepted the service name. The new hostname will be verified after deployment." -ForegroundColor DarkGray
+
+    Write-Host "[D/8] Staging only approved website release files..." -ForegroundColor Yellow
     $approvedPaths = @(
         "app", "scripts", "tests", "docs",
         ".env.example", ".gitignore", "config.py", "run.py", "wsgi.py",
@@ -184,7 +205,7 @@ try {
 
     Invoke-Native -Command $git.Source -Arguments @("diff", "--cached", "--check")
 
-    Write-Host "[D/7] Creating the release commit when needed..." -ForegroundColor Yellow
+    Write-Host "[E/8] Creating the release commit when needed..." -ForegroundColor Yellow
     & $git.Source diff --cached --quiet
     $diffExit = $LASTEXITCODE
     if ($diffExit -eq 1) {
@@ -198,19 +219,14 @@ try {
     $sha = Get-NativeText -Command $git.Source -Arguments @("rev-parse", "HEAD")
     Write-Host "      Release commit: $sha" -ForegroundColor DarkGray
 
-    Write-Host "[E/7] Pushing GitHub repositories..." -ForegroundColor Yellow
+    Write-Host "[F/8] Pushing GitHub repositories..." -ForegroundColor Yellow
     Invoke-Native -Command $git.Source -Arguments @("push", "origin", "main")
     Invoke-Native -Command $git.Source -Arguments @("push", "renderdeploy", "main")
 
-    Write-Host "[F/7] Triggering Render deployment..." -ForegroundColor Yellow
-    $render = Get-Command render.exe -ErrorAction SilentlyContinue
-    if (!$render) { $render = Get-Command render -ErrorAction SilentlyContinue }
-    if (!$render) {
-        throw "Render CLI was not found. The Git pushes succeeded, but the live deployment could not be triggered. Restore the Render CLI and rerun this same updater."
-    }
+    Write-Host "[G/8] Triggering Render deployment..." -ForegroundColor Yellow
     Invoke-Native -Command $render.Source -Arguments @("deploys", "create", $serviceId, "--wait", "--confirm", "-o", "text")
 
-    Write-Host "[G/7] Verifying the LIVE website..." -ForegroundColor Yellow
+    Write-Host "[H/8] Verifying the LIVE website..." -ForegroundColor Yellow
     $verified = $false
     $lastError = ""
     for ($attempt = 1; $attempt -le 12; $attempt++) {
@@ -291,12 +307,30 @@ try {
         throw "Render deployment command completed, but live verification failed after retries. Last result: $lastError"
     }
 
+    # Switch the private local inbox endpoint only after the new public hostname
+    # has been verified. The private token itself is never changed.
+    $ownerConfigPath = Join-Path $target ".owner_inbox.json"
+    if (Test-Path $ownerConfigPath) {
+        try {
+            $ownerConfig = Get-Content -LiteralPath $ownerConfigPath -Raw -Encoding UTF8 | ConvertFrom-Json
+            if ($ownerConfig.token) {
+                $ownerConfig.api_base = "$liveBase/__owner_api"
+                $ownerConfig | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $ownerConfigPath -Encoding UTF8
+                Write-Host "      Private RSF Inbox endpoint updated; token preserved." -ForegroundColor DarkGray
+            }
+        }
+        catch {
+            throw "The new Render hostname is live, but the private RSF Inbox endpoint could not be updated safely: $($_.Exception.Message)"
+        }
+    }
+
     Write-Host ""
     Write-Host "======================================================" -ForegroundColor Green
     Write-Host "  LIVE DEPLOYMENT VERIFIED SUCCESSFULLY" -ForegroundColor Green
     Write-Host "======================================================" -ForegroundColor Green
     Write-Host "Version: $expectedVersion"
     Write-Host "Live site: $liveBase"
+    Write-Host "Render service: $newServiceName"
     Write-Host "Systems: 3 published systems confirmed"
     Write-Host "Student Housing system: confirmed LIVE"
     Write-Host "About automation/problem update: confirmed LIVE"

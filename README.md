@@ -2,11 +2,11 @@
 
 Company website for **Realty Systems Foundry**, a specialized technology company that builds custom software systems for real estate businesses. **Founded by Key Castro.**
 
-Current live website: https://keycastro.onrender.com
+Current live website: https://realtysystemsfoundry.onrender.com
 
 Preferred custom domain: https://realtysystemsfoundry.com
 
-**Current release version: 3.9.1**
+**Current release version: 3.9.2**
 
 ## One project folder
 
@@ -70,3 +70,6 @@ Flask + Gunicorn on the existing Render service. Render provider-level auto-depl
 ## Security
 
 Never include `.env`, `.owner_inbox.json`, logs, private inquiry data, database dumps, access codes, tokens, or other secrets in a distributable release.
+
+### v3.9.2 deployment-sequence hotfix
+The one-run deploy workflow now waits until the Render deployment has applied the service rename before verifying `https://realtysystemsfoundry.onrender.com`. The private RSF Inbox endpoint is switched only after the new hostname is verified.

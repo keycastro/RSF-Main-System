@@ -20,12 +20,13 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Realty Systems Foundry")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.9.1")
+        self.assertEqual(data["version"], "3.9.2")
 
     def test_local_workspace_rebrand_paths_and_shortcuts(self):
         root = Path(__file__).resolve().parents[1]
         installer = (root / "scripts" / "INSTALL_WEBSITE.ps1").read_text(encoding="utf-8-sig")
         updater = (root / "scripts" / "UPDATE_AND_DEPLOY_RENDER.ps1").read_text(encoding="utf-8-sig")
+        config_text = (root / "config.py").read_text(encoding="utf-8-sig")
         website_shortcut = (root / "scripts" / "CREATE_DESKTOP_SHORTCUT.ps1").read_text(encoding="utf-8-sig")
         inbox_shortcut = (root / "scripts" / "CREATE_INBOX_SHORTCUT.ps1").read_text(encoding="utf-8-sig")
 
@@ -33,9 +34,18 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn('"KEY_CASTRO_WEBSITE"', installer)  # safe legacy migration source
         self.assertIn('REALTY_SYSTEMS_FOUNDRY_LAUNCHER.ps1', installer)
         self.assertIn('REALTY_SYSTEMS_FOUNDRY_INBOX_LAUNCHER.ps1', installer)
+        self.assertIn('SkipLaunch', installer)
+        self.assertIn('& $installer -SkipLaunch', updater)
         self.assertIn('"REALTY_SYSTEMS_FOUNDRY"', updater)
         self.assertIn('REALTY SYSTEMS FOUNDRY.lnk', website_shortcut)
         self.assertIn('RSF INBOX.lnk', inbox_shortcut)
+        self.assertIn('https://realtysystemsfoundry.onrender.com', updater)
+        self.assertIn('--name', updater)
+        self.assertIn('realtysystemsfoundry', updater)
+        self.assertIn('RENDER_EXTERNAL_URL', config_text)
+        self.assertIn('RENDER_EXTERNAL_HOSTNAME', config_text)
+        self.assertIn('.owner_inbox.json', updater)
+        self.assertIn('$liveBase/__owner_api', updater)
 
     def test_main_pages_and_template_library_render(self):
         routes = [
@@ -901,14 +911,14 @@ class PortfolioSiteTests(unittest.TestCase):
 
     def test_seo_foundation_and_structured_data(self):
         self.app.config.update(
-            PUBLIC_BASE_URL="https://keycastro.onrender.com",
+            PUBLIC_BASE_URL="https://realtysystemsfoundry.onrender.com",
             GOOGLE_SITE_VERIFICATION="google-proof",
             BING_SITE_VERIFICATION="bing-proof",
         )
         home = self.client.get("/")
         self.assertEqual(home.status_code, 200)
         self.assertIn(b"<title>Custom Real Estate Systems | Realty Systems Foundry</title>", home.data)
-        self.assertIn(b'rel="canonical" href="https://keycastro.onrender.com/"', home.data)
+        self.assertIn(b'rel="canonical" href="https://realtysystemsfoundry.onrender.com/"', home.data)
         self.assertIn(b'name="twitter:card" content="summary_large_image"', home.data)
         self.assertIn(b'name="google-site-verification" content="google-proof"', home.data)
         self.assertIn(b'name="msvalidate.01" content="bing-proof"', home.data)

@@ -1,9 +1,9 @@
-REALTY SYSTEMS FOUNDRY WEBSITE v3.9.1 - ONE CMD AUTO DEPLOY
+REALTY SYSTEMS FOUNDRY WEBSITE v3.9.2 - ONE CMD AUTO DEPLOY
 
 1. Extract the release ZIP.
 2. Open CMD.
 3. Run the single command provided with the release.
 
-The included updater copies approved files into Documents\REALTY_SYSTEMS_FOUNDRY, preserves private .env/runtime data, installs dependencies, runs the complete test suite, commits approved files, pushes GitHub remotes, triggers the existing Render service, and verifies the live v3.9.1 rebrand before reporting success.
+The included updater preserves private local data, runs the complete test suite, renames the EXISTING Render service to realtysystemsfoundry, confirms the new hostname, commits approved files, pushes both GitHub remotes, triggers Render deployment, updates the private RSF Inbox API base while preserving its token, and verifies https://realtysystemsfoundry.onrender.com before reporting success.
 
-The updater safely migrates the old KEY_CASTRO_WEBSITE folder to REALTY_SYSTEMS_FOUNDRY when needed, preserving private local state and Git metadata.
+The local project remains Documents\REALTY_SYSTEMS_FOUNDRY. GitHub repository names and the Render service ID remain unchanged.

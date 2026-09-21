@@ -12,6 +12,27 @@ def _env_bool(name: str, default: str = "0") -> bool:
     return os.getenv(name, default).strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _resolve_public_base_url() -> str:
+    explicit = os.getenv("PUBLIC_BASE_URL", "").strip().rstrip("/")
+    render_url = os.getenv("RENDER_EXTERNAL_URL", "").strip().rstrip("/")
+    on_render = os.getenv("RENDER", "").strip().lower() == "true"
+
+    # v3.9.2 migrates the Render service from the former keycastro subdomain.
+    # If Render still has the old PUBLIC_BASE_URL value, trust Render's own
+    # current external URL so canonical links immediately follow the rename.
+    if on_render and render_url and (not explicit or explicit == "https://keycastro.onrender.com"):
+        return render_url
+    return explicit or render_url
+
+
+def _production_trusted_hosts() -> list[str]:
+    hosts = [host.strip() for host in os.getenv("TRUSTED_HOSTS", "").split(",") if host.strip()]
+    render_host = os.getenv("RENDER_EXTERNAL_HOSTNAME", "").strip()
+    if render_host and render_host not in hosts:
+        hosts.append(render_host)
+    return hosts
+
+
 class BaseConfig:
     APP_NAME = "Realty Systems Foundry"
     SECRET_KEY = os.getenv("SECRET_KEY", "local-dev-change-me")
@@ -21,7 +42,7 @@ class BaseConfig:
     PERMANENT_SESSION_LIFETIME = timedelta(hours=8)
     MAX_CONTENT_LENGTH = 256 * 1024
 
-    PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "").strip().rstrip("/")
+    PUBLIC_BASE_URL = _resolve_public_base_url()
     CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "").strip()
     LINKEDIN_URL = os.getenv("LINKEDIN_URL", "").strip()
     GITHUB_URL = os.getenv("GITHUB_URL", "").strip()
@@ -74,7 +95,7 @@ class ProductionConfig(BaseConfig):
     TESTING = False
     SESSION_COOKIE_SECURE = True
     PREFERRED_URL_SCHEME = "https"
-    TRUSTED_HOSTS = [host.strip() for host in os.getenv("TRUSTED_HOSTS", "").split(",") if host.strip()]
+    TRUSTED_HOSTS = _production_trusted_hosts()
 
 
 CONFIG_MAP = {

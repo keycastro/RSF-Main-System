@@ -204,3 +204,11 @@ This content update does not claim that Nexus Properties officially hired, paid,
 - Uses beginner-facing **You Manage It** / **I Manage It** labels while retaining formal business terms internally.
 - Enlarges everyday text and controls and removes unnecessary system-card micro-labels.
 - The release is only considered live after the one-run deployer verifies production health version 3.8.0 and all three published systems.
+
+
+## 2026-09-21 — v3.9.2 Render Subdomain Rebrand
+- Existing Render service ID preserved.
+- Service name changed from `keycastro` to `realtysystemsfoundry`.
+- Public Render URL changed to `https://realtysystemsfoundry.onrender.com`.
+- GitHub repository names remain unchanged.
+- Public design and pricing remain unchanged.

@@ -1,32 +1,26 @@
-# DELIVERY REPORT — REALTY SYSTEMS FOUNDRY 3.9.1
+# DELIVERY REPORT — REALTY SYSTEMS FOUNDRY 3.9.2
 
 ## Approved change
-Version **3.9.1** rebrands the local Windows workspace so it matches the already-approved Realty Systems Foundry public identity.
+The existing Render-hosted website is migrated from the former `keycastro.onrender.com` identity to:
 
-- Local project folder: `C:\Users\Admin\Documents\REALTY_SYSTEMS_FOUNDRY`
-- Main desktop shortcut: **REALTY SYSTEMS FOUNDRY**
-- Private inbox shortcut: **RSF INBOX**
-- Local launcher/setup helper filenames now use the Realty Systems Foundry identity.
-- The desktop shortcuts use the existing approved **RSF** brand mark.
+**https://realtysystemsfoundry.onrender.com**
 
-## Safe migration
-The installer detects the former `Documents\KEY_CASTRO_WEBSITE` folder and renames it **in place** when the new folder does not already exist. This preserves the existing `.git`, `.env`, `.owner_inbox.json`, `.venv`, logs, and other local/private state. If both old and new folders exist, migration stops instead of overwriting either folder.
+This is a rename of the existing Render service, not a second website or a new hosting stack. The service ID, GitHub repositories, database, public design, three published systems, and approved pricing remain unchanged.
 
-After the full website tests pass, the installer removes the former `KEY CASTRO` / `Key Inbox` desktop shortcuts and creates the new shortcuts.
+## Local integrations
+- `REALTY SYSTEMS FOUNDRY` desktop launcher opens the new Render URL.
+- `RSF INBOX` keeps its private token and automatically changes only its API base to the new host after Render confirms the hostname is reachable.
+- Local project folder remains `C:\Users\Admin\Documents\REALTY_SYSTEMS_FOUNDRY`.
 
-## Public website preserved
-This release does **not** redesign or reposition the public website. The approved Realty Systems Foundry v3.9.0 brand/content remains intact, including the three published systems and current visual identity.
+## Production URL handling
+The application now recognizes Render's built-in external URL/hostname variables during the migration, preventing a stale former Render URL from controlling canonical links or trusted-host validation. A future paid/custom `.com` domain can still override the Render URL through `PUBLIC_BASE_URL`.
 
 ## Pricing preserved
-- Existing ready-built system: **$199 one-time**
-- Self-managed: **$0/month management fee**
+- Existing Ready-Built System: **$199 one-time**
 - Optional managed care: **$39/month or $390/year**
 - Minor Upgrade: **$79**
 - Major Upgrade: **$149**
 - New System / Large Expansion: **Price by Agreement**
 
-## Infrastructure intentionally preserved
-The current GitHub repository names, Render service identifiers, and live Render URL remain unchanged. The preferred future public domain remains **realtysystemsfoundry.com** until its DNS/Render connection is completed.
-
-## Release validation
-The release package contains no `.env`, private owner token file, databases, logs, `.git`, `.venv`, backups, or cache files. The one-run deployment workflow preserves local private configuration, runs the complete automated test suite, stages only approved files, pushes both Git repositories, triggers Render, and verifies the live **3.9.1** site before reporting success.
+### v3.9.2 deployment-sequence hotfix
+The one-run deploy workflow now waits until the Render deployment has applied the service rename before verifying `https://realtysystemsfoundry.onrender.com`. The private RSF Inbox endpoint is switched only after the new hostname is verified.

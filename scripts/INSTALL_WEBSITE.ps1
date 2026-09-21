@@ -1,3 +1,5 @@
+param([switch]$SkipLaunch)
+
 $ErrorActionPreference = "Stop"
 
 $source = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
@@ -123,10 +125,12 @@ try {
     Write-Host "Desktop shortcuts: REALTY SYSTEMS FOUNDRY and RSF INBOX"
     Write-Host ""
 
-    Start-Process powershell.exe -ArgumentList @(
-        "-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden",
-        "-File", ('"' + (Join-Path $target "REALTY_SYSTEMS_FOUNDRY_LAUNCHER.ps1") + '"')
-    )
+    if (-not $SkipLaunch) {
+        Start-Process powershell.exe -ArgumentList @(
+            "-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden",
+            "-File", ('"' + (Join-Path $target "REALTY_SYSTEMS_FOUNDRY_LAUNCHER.ps1") + '"')
+        )
+    }
 }
 finally {
     Pop-Location

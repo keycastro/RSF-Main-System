@@ -1,14 +1,14 @@
 # REALTY SYSTEMS FOUNDRY WEBSITE — DEVELOPER HANDOFF
 
-**Release:** 3.9.1
-**Current live URL:** https://keycastro.onrender.com
+**Release:** 3.9.2
+**Current live URL:** https://realtysystemsfoundry.onrender.com
 **Preferred domain:** https://realtysystemsfoundry.com
 **Founder:** Key Castro
 **Framework:** Flask
 
 ## Current direction
 
-Version 3.9.1 keeps the approved public v3.9.0 rebrand and migrates the local workspace identity to `Documents\REALTY_SYSTEMS_FOUNDRY`, with desktop shortcuts `REALTY SYSTEMS FOUNDRY` and `RSF INBOX`. GitHub repository names, Render service identifiers, current Render URL, design, and pricing remain unchanged.
+Version 3.9.2 keeps the approved public rebrand and local workspace identity, and renames the existing Render service to `realtysystemsfoundry` so the official Render URL becomes `https://realtysystemsfoundry.onrender.com`. The Render service ID, GitHub repository names, database, design, systems, and pricing remain unchanged.
 
 Version 3.9.0 rebrands the public website as **Realty Systems Foundry**, a real-estate technology systems company. The Home headline is **“We Build Custom Systems for Real Estate Businesses.”** Key Castro is presented as **Founder, Realty Systems Foundry**. Existing-system pricing remains **$199 one-time**; self-management remains **$0/month management fee**; optional company-managed care remains **$39/month or $390/year**. The current visual identity, cards, typography, routes, pages, footer style, systems, backend, and private functionality are preserved.
 
@@ -49,7 +49,7 @@ A non-technical 50–70 year old business owner should understand the basic offe
 
 ## Release workflow
 
-Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/Home featured-CTA/content/profile-portrait/rebrand verification for version 3.9.1. Never commit private/runtime files.
+Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/Home featured-CTA/content/profile-portrait/rebrand verification for version 3.9.2. Never commit private/runtime files.
 
 
 ### v3.9.0 direct change
@@ -66,5 +66,5 @@ Existing ready-built system price: **$199 one-time**. This release changes price
 ### v3.8.19 direct change
 Existing ready-built system price: **$290 one-time**. Services & Pricing now clearly states that technical management is optional: **$0/month management fee** if the client manages it, or the unchanged **$39/month / $390/year** if KEY CASTRO manages it. No overall redesign.
 
-## v3.9.1 local workspace identity
-The active local project path is `C:\Users\Admin\Documents\REALTY_SYSTEMS_FOUNDRY`. The desktop shortcuts are `REALTY SYSTEMS FOUNDRY` and `RSF INBOX`. The installer migrates the previous `KEY_CASTRO_WEBSITE` folder in place when safe so `.git`, `.env`, `.owner_inbox.json`, `.venv`, and other local state are preserved. GitHub repository names and the Render service/current URL are intentionally unchanged.
+## v3.9.2 local workspace identity
+The active local project path is `C:\Users\Admin\Documents\REALTY_SYSTEMS_FOUNDRY`. The desktop shortcuts are `REALTY SYSTEMS FOUNDRY` and `RSF INBOX`. The installer migrates the previous `KEY_CASTRO_WEBSITE` folder in place when safe so `.git`, `.env`, `.owner_inbox.json`, `.venv`, and other local state are preserved. GitHub repository names and the Render service ID remain unchanged; the Render service name/URL are updated to `realtysystemsfoundry` / `https://realtysystemsfoundry.onrender.com`.

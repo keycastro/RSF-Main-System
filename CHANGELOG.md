@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.9.2 - Render Subdomain Rebrand
+- Renamed the existing Render service target from **keycastro** to **realtysystemsfoundry**.
+- New intended Render URL: **https://realtysystemsfoundry.onrender.com**.
+- Preserved the existing Render service ID, GitHub repositories, database, website design, three published systems, and approved pricing.
+- Updated the main desktop launcher, deployment verifier, SEO/canonical base, trusted-host handling, and private RSF Inbox API base migration.
+- Kept `realtysystemsfoundry.com` as a future optional custom-domain step.
+
 ## v3.9.1 - Local Workspace Rebrand
 - Renamed the local Documents project folder from **KEY_CASTRO_WEBSITE** to **REALTY_SYSTEMS_FOUNDRY** through a safe in-place migration.
 - Renamed the main desktop shortcut to **REALTY SYSTEMS FOUNDRY**.
@@ -200,3 +207,6 @@
 - Updated local installer documentation copying so current handoff/state files travel with the installed project.
 - Expanded automated regression coverage for the new commercial model, Student Housing system, sitemap, SEO, inquiry trust boundary, and public wording.
 - Added controlled one-run release automation: local update and tests now continue through approved Git pushes, explicit Render deployment, and live production verification before success is reported.
+
+### v3.9.2 deployment-sequence hotfix
+The one-run deploy workflow now waits until the Render deployment has applied the service rename before verifying `https://realtysystemsfoundry.onrender.com`. The private RSF Inbox endpoint is switched only after the new hostname is verified.

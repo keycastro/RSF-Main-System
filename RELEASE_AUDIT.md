@@ -1,33 +1,28 @@
-# REALTY SYSTEMS FOUNDRY WEBSITE 3.9.1 — RELEASE AUDIT
+# REALTY SYSTEMS FOUNDRY WEBSITE 3.9.2 — RELEASE AUDIT
 
 ## Scope
-- Local project folder changes from **KEY_CASTRO_WEBSITE** to **REALTY_SYSTEMS_FOUNDRY**.
-- Main desktop shortcut becomes **REALTY SYSTEMS FOUNDRY**.
-- Private inbox desktop shortcut becomes **RSF INBOX**.
-- Local launcher/setup helper filenames are aligned to the Realty Systems Foundry identity.
-- Desktop shortcut icon uses the already-approved RSF brand mark.
+- Rename the existing Render web service to **realtysystemsfoundry**.
+- Target public Render URL: `https://realtysystemsfoundry.onrender.com`.
+- Preserve service ID, GitHub repositories, database, design, systems, and approved pricing.
+- Update the main desktop website launcher and private RSF Inbox endpoint to the new Render host.
+- Update SEO/canonical configuration and trusted-host handling for the renamed Render service.
 
-## Migration safety
-- Existing local folder is renamed in place so `.git`, `.env`, `.owner_inbox.json`, `.venv`, and other local state are preserved.
-- If both old and new local folders already exist, automatic migration stops safely instead of overwriting either one.
-- Old desktop shortcuts are removed only as part of successful shortcut recreation.
+## Safety
+- The updater uses the existing Render service ID; it does **not** create a second hosting service.
+- If Render rejects the exact service name, deployment stops before Git staging/push.
+- The private `.owner_inbox.json` token is preserved; only its `api_base` is changed after the new hostname responds successfully.
+- Production configuration can use Render's `RENDER_EXTERNAL_URL` and `RENDER_EXTERNAL_HOSTNAME` so a stale former Render URL does not break canonical URLs or host validation after the rename.
 
-## Public website and business rules preserved
-- Public company brand remains **Realty Systems Foundry**.
-- **Key Castro** remains **Founder, Realty Systems Foundry**.
-- Home headline remains **“We Build Custom Systems for Real Estate Businesses.”**
-- Existing design, routes, cards, typography, three-system catalog, and business logic remain unchanged.
-- Existing ready-built system price remains **$199 one-time**.
-- Self-managed technical care remains **$0/month management fee**.
-- Optional managed care remains **$39/month or $390/year**.
-- Minor Upgrade remains **$79**; Major Upgrade remains **$149**; New System / Large Expansion remains **Price by Agreement**.
+## Business rules preserved
+- Ready-built system: **$199 one-time**
+- Self-managed: **$0/month management fee**
+- Optional managed care: **$39/month or $390/year**
+- Minor Upgrade: **$79**
+- Major Upgrade: **$149**
+- New System / Large Expansion: **Price by Agreement**
 
-## Infrastructure preserved
-- GitHub repository names are unchanged.
-- Render service identifiers are unchanged.
-- Current live URL remains `https://keycastro.onrender.com` until the preferred custom domain is connected.
+## Security
+Safe release ZIP excludes `.env`, `.owner_inbox.json`, `.git`, `.venv`, backups, logs, databases, and cache files. Full local tests must pass before Git push/deployment, and the new live hostname must pass final verification.
 
-## Release security
-- Safe release ZIP excludes `.env`, `.owner_inbox.json`, `.git`, `.venv`, backups, caches, logs, and database files.
-- Exact sensitive values from the authoritative local configuration were checked and are not present in the release archive.
-- Production success requires the complete test suite and final live verification for version **3.9.1**.
+### v3.9.2 deployment-sequence hotfix
+The one-run deploy workflow now waits until the Render deployment has applied the service rename before verifying `https://realtysystemsfoundry.onrender.com`. The private RSF Inbox endpoint is switched only after the new hostname is verified.

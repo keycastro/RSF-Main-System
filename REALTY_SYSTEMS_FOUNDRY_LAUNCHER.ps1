@@ -1,5 +1,18 @@
 $ErrorActionPreference = "Stop"
-$liveUrl = "https://keycastro.onrender.com/"
+$newLiveUrl = "https://realtysystemsfoundry.onrender.com/"
+$legacyLiveUrl = "https://keycastro.onrender.com/"
+$liveUrl = $newLiveUrl
+
+try {
+    $health = Invoke-RestMethod -Uri ($newLiveUrl.TrimEnd('/') + "/system/health") -Method Get -TimeoutSec 8
+    if ($health.status -ne "ok" -or $health.app -ne "Realty Systems Foundry") {
+        $liveUrl = $legacyLiveUrl
+    }
+}
+catch {
+    # Temporary safety fallback only if the Render rename has not completed yet.
+    $liveUrl = $legacyLiveUrl
+}
 
 try {
     Start-Process $liveUrl
