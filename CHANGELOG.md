@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.8.19 - Existing System Price + Optional Management Clarity
+- Changed the published existing ready-built system price from **$160** to **$290 one-time**.
+- Kept managed-care pricing unchanged at **$39/month or $390/year**.
+- Clarified on Services & Pricing that managed care is optional and self-management has **$0/month management fee**.
+- Clarified exactly what the client handles versus what KEY CASTRO handles, while keeping upgrades/new features separate.
+- Preserved the current site design; only minimal management-section layout support was added for the new clarification.
+
 ## v3.8.18 - Home Hero CTA Label Update
 - Changed only the Home hero secondary button label from **Tell Me What You Need** to **Create a New System**.
 - Preserved the existing `/contact` destination, hero layout, styling, system cards, pricing, pages, and business logic.

@@ -5,8 +5,8 @@ $documents = [Environment]::GetFolderPath("MyDocuments")
 $target = Join-Path $documents "KEY_CASTRO_WEBSITE"
 $serviceId = "srv-dam749e1egvs738cppq0"
 $liveBase = "https://keycastro.onrender.com"
-$expectedVersion = "3.8.18"
-$commitMessage = "Release 3.8.18 Home Hero CTA Label Update"
+$expectedVersion = "3.8.19"
+$commitMessage = "Release 3.8.19 Existing System Price and Optional Management Clarity"
 
 function Invoke-Native {
     param(
@@ -231,7 +231,7 @@ try {
             $hasViewSystemsButton = ($how.Content -match [regex]::Escape('href="/system-templates"')) -and ($how.Content -match [regex]::Escape('>View Systems</a>'))
             $hasRequestSystemButton = ($how.Content -match [regex]::Escape('href="/contact?intent=custom-build"')) -and ($how.Content -match [regex]::Escape('>Request a System</a>'))
             $finalCtaGone = -not ($how.Content -match [regex]::Escape("Want to get started?"))
-            $hasExistingSystemPrice = ($homePage.Content -match [regex]::Escape('$160')) -and ($systems.Content -match [regex]::Escape('$160')) -and ($detail.Content -match [regex]::Escape('$160')) -and ($how.Content -match [regex]::Escape('$160'))
+            $hasExistingSystemPrice = ($homePage.Content -match [regex]::Escape('$290')) -and ($systems.Content -match [regex]::Escape('$290')) -and ($detail.Content -match [regex]::Escape('$290')) -and ($how.Content -match [regex]::Escape('$290'))
             $hasThreeHomePriceCards = (([regex]::Matches($homePage.Content, 'class="existing-system-card-price"')).Count -eq 3)
             $hasThreePricedSystemCards = (([regex]::Matches($systems.Content, 'class="existing-system-card-price"')).Count -eq 3)
             $hasPurchaseBoundary = ($systems.Content -match [regex]::Escape('Changes are priced separately.')) -and ($detail.Content -match [regex]::Escape('This price is for the existing system shown here. Changes are priced separately.')) -and ($how.Content -match [regex]::Escape('If you want changes later, upgrades are priced separately.'))
@@ -243,7 +243,7 @@ try {
             $pesoSymbol = [char]0x20B1
             $combinedPublicPricingPages = $homePage.Content + $systems.Content + $detail.Content + $how.Content
             $hasUsdOnlyPublicPricing = -not ($combinedPublicPricingPages -match [regex]::Escape($pesoSymbol)) -and -not ($combinedPublicPricingPages -match 'PHP') -and -not ($combinedPublicPricingPages -match 'Philippine peso')
-            $hasMaintenanceBoundary = ($how.Content -match [regex]::Escape('Same maintenance service. Choose monthly or yearly billing.')) -and ($how.Content -match [regex]::Escape('Maintenance can include:')) -and ($how.Content -match [regex]::Escape('Hosting and deployment')) -and ($how.Content -match [regex]::Escape('Technical fixes for the current system')) -and ($how.Content -match [regex]::Escape('Maintenance does not include:')) -and ($how.Content -match [regex]::Escape('New features')) -and ($how.Content -match [regex]::Escape('Workflow changes')) -and ($how.Content -match [regex]::Escape('Connections to other tools'))
+            $hasMaintenanceBoundary = ($how.Content -match [regex]::Escape('Management is optional.')) -and ($how.Content -match [regex]::Escape('$0/month')) -and ($how.Content -match [regex]::Escape('No management fee')) -and ($how.Content -match [regex]::Escape('Optional managed care. Same service; choose monthly or yearly billing.')) -and ($how.Content -match [regex]::Escape('What I manage')) -and ($how.Content -match [regex]::Escape('I handle:')) -and ($how.Content -match [regex]::Escape('Hosting and deployment')) -and ($how.Content -match [regex]::Escape('Technical fixes for the current system')) -and ($how.Content -match [regex]::Escape('Managed care does not include:')) -and ($how.Content -match [regex]::Escape('New features')) -and ($how.Content -match [regex]::Escape('Workflow changes')) -and ($how.Content -match [regex]::Escape('Connections to other tools'))
             $hasUpgradePricing = ($how.Content -match [regex]::Escape('Minor System Upgrade')) -and ($how.Content -match [regex]::Escape('$79')) -and ($how.Content -match [regex]::Escape('Major System Upgrade')) -and ($how.Content -match [regex]::Escape('$149')) -and ($how.Content -match [regex]::Escape('New System / Large Expansion')) -and ($how.Content -match [regex]::Escape('Price by Agreement')) -and ($how.Content -match [regex]::Escape('Upgrades are separate from maintenance.')) -and ($how.Content -match [regex]::Escape('You can buy an upgrade later whether you manage the system yourself or I manage it.'))
             $hasAboutAutomation = $about.Content -match [regex]::Escape("Automate the repetitive work that should not stay manual.")
             $hasAboutSubscriptionValue = $about.Content -match [regex]::Escape("One system can reduce the need for too many paid tools.")
@@ -302,7 +302,7 @@ try {
     Write-Host "Explore All Systems + Services & Pricing CTA destinations: confirmed LIVE"
     Write-Host "Old Home three-step process: confirmed removed"
     Write-Host "Pricing/service information: confirmed LIVE"
-    Write-Host "Existing system `$160 pricing: confirmed LIVE"
+    Write-Host "Existing system `$290 pricing: confirmed LIVE"
     Write-Host "Price by Agreement wording: confirmed LIVE"
     Write-Host "Footer tagline: confirmed LIVE"
     Write-Host "Commit: $sha"

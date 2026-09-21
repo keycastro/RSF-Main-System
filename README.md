@@ -4,7 +4,7 @@ Professional portfolio and client-acquisition website for **KEY CASTRO — Custo
 
 Official website: https://keycastro.onrender.com
 
-**Current release version: 3.8.18**
+**Current release version: 3.8.19**
 
 ## One project folder
 
@@ -16,7 +16,7 @@ This single Flask codebase contains the public website, published system pages, 
 
 ## Public design rule
 
-Preserve the premium ivory/navy/sage identity, typography, compact spacing, responsive behavior, cards, page structure, and five-item navigation. Version 3.8.18 changes only the Home hero secondary CTA label from **Tell Me What You Need** to **Create a New System** while preserving its existing `/contact` destination and all layout, styling, cards, pricing, pages, footer content, and business behavior.
+Preserve the premium ivory/navy/sage identity, typography, compact spacing, responsive behavior, cards, page structure, and five-item navigation. Version 3.8.19 changes the existing ready-built system price to **$290 one-time** and clarifies on Services & Pricing that management is optional: **$0/month** when the client manages the technical side, or the unchanged **$39/month / $390/year** when KEY CASTRO manages it. Layout/style changes are minimal and scoped only to fitting this clarification cleanly.
 
 Public rule: **Short. Simple. Clear. No unnecessary repetition.**
 
@@ -26,15 +26,15 @@ Primary navigation is **Home · Systems · Services & Pricing · About · Contac
 
 A client can:
 
-- **Buy an existing published system for $160 one-time**, or
+- **Buy an existing published system for $290 one-time**, or
 - **Request a completely new custom system — Price by Agreement**.
 
-The **$160 existing-system price is for the system as currently shown**. Changes are separate paid upgrades: **Minor System Upgrade — $79**, **Major System Upgrade — $149**, and **New System / Large Expansion — Price by Agreement**.
+The **$290 existing-system price is for the system as currently shown**. Changes are separate paid upgrades: **Minor System Upgrade — $79**, **Major System Upgrade — $149**, and **New System / Large Expansion — Price by Agreement**.
 
 After the system is ready, there are only two management choices:
 
-1. **Full Handover — I build it. You manage it.** The client handles hosting, security, backups, and technical upkeep after handover.
-2. **Managed by KEY CASTRO — I build it. I manage it.** KEY CASTRO keeps the current live system online, secure, stable, accessible, and technically maintained for **$39/month or $390/year per system**.
+1. **Full Handover — I build it. You manage it.** **$0/month management fee.** The client handles hosting/deployment, security/updates, backups, and technical fixes after handover.
+2. **Managed by KEY CASTRO — I build it. I manage it.** This is optional managed care. KEY CASTRO handles the technical side for **$39/month or $390/year per system**.
 
 System purchase, upgrades, maintenance, and a new custom build are separate charges. Public customer-facing pricing uses **USD only**.
 
@@ -44,7 +44,7 @@ System purchase, upgrades, maintenance, and a new custom build are separate char
 - Property Inventory Hub
 - Student Housing Matching and Placement System
 
-All three are independent systems. Never mix their screenshots, workflows, databases, or product claims. Each published existing system uses the same **$160 one-time** purchase price; requested changes are priced separately as upgrades.
+All three are independent systems. Never mix their screenshots, workflows, databases, or product claims. Each published existing system uses the same **$290 one-time** purchase price; requested changes are priced separately as upgrades.
 
 The Student Housing Matching and Placement System is an **independent portfolio project** built after studying a real publicly visible student-housing operations problem. It must not be presented as commissioned by, affiliated with, or endorsed by the original poster.
 

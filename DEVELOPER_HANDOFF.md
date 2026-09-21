@@ -1,12 +1,12 @@
 # KEY CASTRO WEBSITE — DEVELOPER HANDOFF
 
-**Release:** 3.8.18
+**Release:** 3.8.19
 **Live URL:** https://keycastro.onrender.com
 **Framework:** Flask
 
 ## Current direction
 
-Version 3.8.18 is a **Home hero CTA label update**. It changes only the Home hero secondary button from **Tell Me What You Need** to **Create a New System**. The destination remains `/contact`. The v3.8.17 lower featured-systems CTA balance design, three Home system cards, pricing, routes, pages, footer content, and business behavior remain unchanged.
+Version 3.8.19 is a **pricing and management-clarity update**. Existing ready-built systems are now **$290 one-time**. The Services & Pricing page makes the existing two-option model explicit: self-management has **$0/month management fee**, while optional KEY CASTRO management remains unchanged at **$39/month or $390/year**. The current visual identity, cards, typography, routes, pages, footer, systems, backend, and private functionality are preserved.
 
 Primary navigation: **Home · Systems · Services & Pricing · About · Contact**. The underlying `/services` URL remains unchanged.
 
@@ -24,7 +24,7 @@ Never merge their codebases, screenshots, or claims. Student Housing remains ind
 
 ## Business rules
 
-Purchase: every published existing system is **$160 one-time**. The purchase does not include customization or maintenance.
+Purchase: every published existing system is **$290 one-time**. The purchase does not include customization or maintenance.
 
 Changes: **Minor System Upgrade — $79**, **Major System Upgrade — $149**, **New System / Large Expansion — Price by Agreement**.
 
@@ -32,8 +32,8 @@ New custom system from scratch: **Price by Agreement**.
 
 After the system is ready there are exactly two management options:
 
-- Full Handover — “I build it. You manage it.”
-- Managed by KEY CASTRO — “I build it. I manage it.” — **$39/month or $390/year**.
+- Full Handover — “I build it. You manage it.” — **$0/month management fee**; client handles the technical side.
+- Managed by KEY CASTRO — “I build it. I manage it.” — optional **$39/month or $390/year**; KEY CASTRO handles the technical side.
 
 Maintenance keeps the current system running; it does not include new features, workflow changes, new modules, integrations, or other improvements. Public customer-facing pricing uses USD only.
 
@@ -45,8 +45,12 @@ A non-technical 50–70 year old business owner should understand the basic offe
 
 ## Release workflow
 
-Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/Home featured-CTA/content/profile-portrait verification for version 3.8.18. Never commit private/runtime files.
+Use the existing one-run updater/deployer. Success requires tests, approved Git staging, both Git pushes, successful Render deploy, and live health/Home featured-CTA/content/profile-portrait verification for version 3.8.19. Never commit private/runtime files.
 
 
 ### v3.8.18 direct change
 Home hero secondary CTA label: **Create a New System** (destination remains `/contact`). No other public content or behavior is changed by this release.
+
+
+### v3.8.19 direct change
+Existing ready-built system price: **$290 one-time**. Services & Pricing now clearly states that technical management is optional: **$0/month management fee** if the client manages it, or the unchanged **$39/month / $390/year** if KEY CASTRO manages it. No overall redesign.

@@ -1,10 +1,10 @@
-# KEY CASTRO WEBSITE 3.8.18 — RELEASE AUDIT
+# KEY CASTRO WEBSITE 3.8.19 — RELEASE AUDIT
 
-- Scope: Home hero secondary CTA label only, plus direct test/version/release/deployment dependencies.
-- Home hero secondary CTA: **Create a New System** → `/contact`.
-- The previous **Tell Me What You Need** label is removed from the Home hero only.
-- The Systems page retains its existing wording and behavior.
-- Home continues to show exactly three featured system cards; the cards were not edited.
-- The approved v3.8.17 lower Home CTA balance design is preserved unchanged.
-- Preserved navigation, footer content, Systems page, Services & Pricing page, About, Contact, all approved prices, routes, business logic, database, authentication, owner Inbox, and inquiry flow.
-- Live deployment is valid only after production verification confirms version 3.8.18 and all preserved-site checks.
+- Scope: existing ready-built system price and Services & Pricing management clarity only, plus direct test/version/release/deployment dependencies.
+- Existing ready-built system price: **$290 one-time** across Home, Systems, system details, and Services & Pricing.
+- Self-managed technical care: **$0/month management fee**.
+- Optional KEY CASTRO managed care remains unchanged: **$39/month or $390/year**.
+- Services & Pricing clearly separates what the client handles from what KEY CASTRO handles.
+- New features, workflow changes, new modules, integrations, and other improvements remain outside managed care and are priced separately.
+- No redesign: current ivory/navy/sage colors, cards, fonts, spacing style, navigation, Home CTA design, footer, routes, systems, backend, owner Inbox, database, authentication, and inquiry flow are preserved.
+- Live deployment is valid only after production verification confirms version 3.8.19 and all preserved-site checks.

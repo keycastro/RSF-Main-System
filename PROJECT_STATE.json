@@ -1,7 +1,7 @@
 {
   "project": "KEY_CASTRO_WEBSITE",
   "handoff_date": "2026-09-21",
-  "version": "3.8.18",
+  "version": "3.8.19",
   "owner_public_name": "Key Castro",
   "positioning": "Better systems for complex business needs",
   "framework": "Flask",
@@ -164,7 +164,7 @@
     ],
     "existing_system_purchase": {
       "currency": "USD",
-      "price": 160,
+      "price": 290,
       "billing": "one-time",
       "meaning": "Purchase of the published existing system as shown; customization and maintenance are not included.",
       "single_source": "app/system_templates.py::EXISTING_SYSTEM_PRICING"
@@ -174,8 +174,8 @@
       "Full Handover",
       "Managed by KEY CASTRO"
     ],
-    "full_handover": "I build it. You manage it. Client or someone they hire handles hosting, security, backups, and technical upkeep after handover.",
-    "managed_by_key_castro": "I build it. I manage it. KEY CASTRO keeps the existing live system online, secure, stable, accessible, and technically maintained.",
+    "full_handover": "I build it. You manage it. Client or someone they hire handles hosting/deployment, security/updates, backups, and technical fixes after handover; no monthly management fee is charged by KEY CASTRO.",
+    "managed_by_key_castro": "I build it. I manage it. Optional managed care remains $39/month or $390/year; KEY CASTRO handles hosting/deployment, routine technical checks, backups when used, and technical fixes for the current system.",
     "pricing_public": true,
     "pricing_currency_public": "USD only",
     "maintenance_pricing": {
@@ -188,7 +188,7 @@
     },
     "plan_selection": "monthly/yearly plan keys are resolved server-side; official managed-maintenance price text is generated from trusted pricing metadata; no checkout is implied",
     "legacy_compatibility": "legacy subscribe/free-access URLs and old customization links are accepted only for compatibility; new public existing-system CTAs use the Existing System Purchase intent",
-    "maintenance_boundary": "Maintenance keeps the current system running. It does not include new features, workflow changes, new modules, integrations, or other improvements.",
+    "maintenance_boundary": "Managed care is optional. $39/month or $390/year keeps the current system running and does not include new features, workflow changes, new modules, integrations, or other improvements.",
     "system_upgrades": {
       "minor": {
         "price": 79,
@@ -282,7 +282,7 @@
     "launcher": "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
     "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
     "provider_auto_deploy": false,
-    "success_condition": "production health reports version 3.8.18; Home hero secondary CTA reads Create a New System and still links to /contact; Home keeps exactly 3 featured systems and shows the balanced approved Explore All Systems CTA to /system-templates plus See Services & Pricing CTA to /services with PLAN / ORGANIZE / GROW on the left decorative rail and BUILD / ORGANIZE / GROW on the right; the old Home three-step process remains removed; Home navigation and the /services page show Services & Pricing; Home, Systems, system detail, and Services & Pricing show the approved $160 existing-system purchase price; the purchase is separate from upgrades and maintenance; new custom systems use Price by Agreement; maintenance remains $39/month or $390/year; upgrades remain $79 / $149 / New System / Large Expansion Price by Agreement; no PHP/peso pricing is publicly displayed; approved About profile/lower story, footer tagline, and exactly 3 published systems remain unchanged"
+    "success_condition": "production health reports version 3.8.19; Home hero secondary CTA reads Create a New System and still links to /contact; Home keeps exactly 3 featured systems and shows the balanced approved Explore All Systems CTA to /system-templates plus See Services & Pricing CTA to /services with PLAN / ORGANIZE / GROW on the left decorative rail and BUILD / ORGANIZE / GROW on the right; the old Home three-step process remains removed; Home navigation and the /services page show Services & Pricing; Home, Systems, system detail, and Services & Pricing show the approved $290 existing-system purchase price; the purchase is separate from upgrades and maintenance; new custom systems use Price by Agreement; maintenance remains $39/month or $390/year; upgrades remain $79 / $149 / New System / Large Expansion Price by Agreement; no PHP/peso pricing is publicly displayed; approved About profile/lower story, footer tagline, and exactly 3 published systems remain unchanged; Services & Pricing clearly states management is optional, self-managed technical care has $0/month management fee, and KEY CASTRO managed care remains $39/month or $390/year"
   },
   "ux_master_refinement_3_7": {
     "document": "docs/MASTER_UX_REFINEMENT_3_7.md",
@@ -493,7 +493,7 @@
     "business_logic_changed": false,
     "changes": [
       "Removed the lower Home How it works heading, summary, all three numbered steps, and their descriptions",
-      "Kept only See Services & Pricing \u2192 linked to /services",
+      "Kept only See Services & Pricing → linked to /services",
       "Added Home-CTA-scoped styling to center the link, increase its prominence, and keep desktop/mobile spacing balanced",
       "Preserved all other Home content, Services & Pricing content, pricing, systems, footer content, routes, and private functionality"
     ]
@@ -533,5 +533,17 @@
       "private owner Inbox"
     ]
   },
-  "current_version": "3.8.18"
+  "current_version": "3.8.19",
+  "pricing_and_management_clarity_3_8_19": {
+    "scope": "Existing-system price plus Services & Pricing management clarity and direct tests/release/deployment dependencies",
+    "existing_system_price_usd": 290,
+    "existing_system_billing": "one-time",
+    "self_managed_management_fee_usd_per_month": 0,
+    "managed_care_monthly_usd": 39,
+    "managed_care_yearly_usd": 390,
+    "managed_care_price_changed": false,
+    "management_optional": true,
+    "design_redesigned": false,
+    "visual_scope": "Minimal Services & Pricing content-fit adjustments only; current colors, cards, fonts, spacing style, and visual identity preserved."
+  }
 }

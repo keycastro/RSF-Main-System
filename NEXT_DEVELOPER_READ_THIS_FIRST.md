@@ -1,6 +1,6 @@
 # NEXT DEVELOPER — READ THIS FIRST
 
-**Release version:** 3.8.18
+**Release version:** 3.8.19
 **Official site:** https://keycastro.onrender.com
 **Framework:** Flask
 
@@ -16,11 +16,11 @@
 8. `docs/UPDATE_AND_DEPLOY_WORKFLOW.md`
 9. `docs/DEPLOYMENT_HISTORY.md`
 
-Older versioned pricing/business-model documents are historical. Current 3.8.18 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
+Older versioned pricing/business-model documents are historical. Current 3.8.19 pricing and service rules in the files above supersede older prices. Do not restore the old subscription/free-access model or the old $49/$490 maintenance price.
 
 ## Current release change
 
-Version 3.8.18 changes only the Home hero secondary CTA label to **Create a New System** while keeping the existing `/contact` destination. Preserve the v3.8.17 lower Home CTA balance design and all other public/private behavior.
+Version 3.8.19 changes the existing ready-built system price to **$290 one-time** and clarifies the Services & Pricing management choice without redesigning the site. Self-managed technical care is **$0/month management fee**; optional KEY CASTRO managed care remains **$39/month or $390/year**.
 
 ## Public information architecture
 
@@ -41,7 +41,7 @@ The canonical route remains `/services`; only the public label is **Services & P
 Write for a first-time non-technical older business owner. Public copy should use concrete everyday actions before technical/business terminology. A visitor should quickly understand:
 
 - Key Castro builds custom business systems and automation for real estate, property, and housing businesses.
-- They can buy a published existing system for **$160 one-time**, or ask for a completely new system at **Price by Agreement**.
+- They can buy a published existing system for **$290 one-time**, or ask for a completely new system at **Price by Agreement**.
 - Changes to an existing system are separate upgrades; after the system is ready, they can manage it or Key Castro can manage it.
 - They contact Key Castro to start.
 
@@ -59,19 +59,19 @@ Keep all three separate. Student Housing is an independent portfolio project, no
 
 ### Purchase / creation
 
-1. Buy a published existing KEY CASTRO system — **$160 one-time**.
+1. Buy a published existing KEY CASTRO system — **$290 one-time**.
 2. Build a completely new custom system — **Price by Agreement**.
 
-The $160 existing-system price is for the system as shown. Requested changes are separate upgrades.
+The $290 existing-system price is for the system as shown. Requested changes are separate upgrades.
 
 ### After build — EXACTLY TWO OPTIONS
 
-1. **Full Handover** — “I build it. You manage it.”
-2. **Managed by KEY CASTRO** — “I build it. I manage it.” — **$39/month or $390/year**.
+1. **Full Handover** — “I build it. You manage it.” — **$0/month management fee**; the client handles the technical side.
+2. **Managed by KEY CASTRO** — “I build it. I manage it.” — optional **$39/month or $390/year**; KEY CASTRO handles the technical side.
 
 Public beginner-facing labels are **You Manage It** and **I Manage It**. Keep the formal terms internal/secondary where necessary. Do not add a third management option.
 
-Current price rules: existing published system = **$160 one-time**; Minor System Upgrade = **$79**; Major System Upgrade = **$149**; New System / Large Expansion = **Price by Agreement**; maintenance = **$39/month or $390/year**; completely new custom system = **Price by Agreement**. Purchase, upgrades, maintenance, and new custom builds are separate. Public pricing uses USD only.
+Current price rules: existing published system = **$290 one-time**; Minor System Upgrade = **$79**; Major System Upgrade = **$149**; New System / Large Expansion = **Price by Agreement**; maintenance = **$39/month or $390/year**; completely new custom system = **Price by Agreement**. Purchase, upgrades, maintenance, and new custom builds are separate. Public pricing uses USD only.
 
 ## Page responsibility
 
@@ -86,7 +86,7 @@ Do not repeat the full management model on every system page.
 
 ## Design rule
 
-Preserve the existing ivory/navy/sage brand and Human Clarity composition. Version 3.8.18 changes only the final Home transition after the three featured system cards. The approved CTA band uses **Explore All Systems →** to `/system-templates` as the primary action and **See Services & Pricing →** to `/services` as the secondary action, with restrained decorative microcopy and responsive CTA-only styling. Keep the three cards, hero, navigation, footer content, all other pages, pricing, and private functionality unchanged. Compact must never mean tiny text.
+Preserve the existing ivory/navy/sage brand and Human Clarity composition. Preserve the approved Home transition after the three featured system cards. The approved CTA band uses **Explore All Systems →** to `/system-templates` as the primary action and **See Services & Pricing →** to `/services` as the secondary action, with restrained decorative microcopy and responsive CTA-only styling. Keep the three cards, hero, navigation, footer content, all other pages, pricing, and private functionality unchanged. Compact must never mean tiny text.
 
 ## Security
 
@@ -101,3 +101,7 @@ Use `APPLY_UPDATE_AND_DEPLOY_LIVE.bat`. It must update locally, preserve `.env`,
 
 ### v3.8.18 direct change
 Home hero secondary CTA label: **Create a New System** (destination remains `/contact`). No other public content or behavior is changed by this release.
+
+
+### v3.8.19 direct change
+Existing ready-built system price is **$290 one-time**. On Services & Pricing, make it unmistakable that management is optional: **You Manage It = $0/month management fee**; **I Manage It = $39/month or $390/year**, unchanged. Preserve the current design and keep the two-option model.

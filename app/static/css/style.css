@@ -2673,6 +2673,7 @@ body{font-size:17px;line-height:1.68}
   border-radius:10px;
   background:rgba(255,255,255,.92);
 }
+#management-options .management-price-panel--single{grid-template-columns:1fr}
 #management-options .management-price-column{text-align:center}
 #management-options .management-price-column strong{
   display:block;
@@ -2699,6 +2700,14 @@ body{font-size:17px;line-height:1.68}
   font-size:13px;
   line-height:1.4;
 }
+#management-options .management-optional-intro{max-width:850px}
+#management-options .management-responsibility-note{
+  margin:12px 2px 0;
+  color:var(--ink-2);
+  font-size:13px;
+  line-height:1.5;
+}
+#management-options .management-responsibility-note strong{color:var(--ink)}
 #management-options .management-maintenance-block{margin-top:14px;padding-top:10px}
 #management-options .management-maintenance-heading{
   margin:0 0 5px;
@@ -2783,7 +2792,7 @@ body{font-size:17px;line-height:1.68}
 }
 
 /* 3.8.12 — Existing System Pricing Clarity.
-   Adds only the approved $160 existing-system purchase presentation and direct responsive support. */
+   Adds the existing-system purchase presentation and direct responsive support. */
 .existing-system-card-price{
   display:flex;
   align-items:baseline;

@@ -28,7 +28,7 @@ class ExistingSystemPricing:
 
     currency_code: str = "USD"
     currency_symbol: str = "$"
-    one_time_price: int = 160
+    one_time_price: int = 290
 
     @property
     def price_label(self) -> str:
