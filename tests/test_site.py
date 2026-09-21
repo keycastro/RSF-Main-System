@@ -20,7 +20,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Key Castro Portfolio")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.8.17")
+        self.assertEqual(data["version"], "3.8.18")
 
     def test_main_pages_and_template_library_render(self):
         routes = [
@@ -87,7 +87,8 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertNotIn(b">System Templates</a>", response.data)
         self.assertIn(b"I build simple systems for real estate businesses.", response.data)
         self.assertIn(b"View Systems", response.data)
-        self.assertIn(b"Tell Me What You Need", response.data)
+        self.assertIn(b"Create a New System", response.data)
+        self.assertNotIn(b"Tell Me What You Need", response.data)
         self.assertNotIn(b"$39", response.data)
         self.assertNotIn(b"$390", response.data)
         self.assertEqual(response.data.count(b"Property Operations Command Center</h3>"), 1)

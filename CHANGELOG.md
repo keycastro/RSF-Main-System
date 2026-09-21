@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.8.18 - Home Hero CTA Label Update
+- Changed only the Home hero secondary button label from **Tell Me What You Need** to **Create a New System**.
+- Preserved the existing `/contact` destination, hero layout, styling, system cards, pricing, pages, and business logic.
+
 ## v3.8.17 - Home CTA Balance Fix
 - Balanced the Home featured-systems CTA band so the left decorative rail now matches the right-side white treatment.
 - Replaced the left decorative microcopy with **PLAN / ORGANIZE / GROW** and kept the approved CTA hierarchy intact.

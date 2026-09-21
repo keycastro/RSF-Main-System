@@ -4,7 +4,7 @@ Professional portfolio and client-acquisition website for **KEY CASTRO — Custo
 
 Official website: https://keycastro.onrender.com
 
-**Current release version: 3.8.17**
+**Current release version: 3.8.18**
 
 ## One project folder
 
@@ -16,7 +16,7 @@ This single Flask codebase contains the public website, published system pages, 
 
 ## Public design rule
 
-Preserve the premium ivory/navy/sage identity, typography, compact spacing, responsive behavior, cards, page structure, and five-item navigation. Version 3.8.17 refines only the Home transition after the three featured system cards: **Explore All Systems →** is the primary catalog path and **See Services & Pricing →** remains the secondary path, using the approved compact editorial CTA composition while preserving all cards, pricing, navigation, footer content, pages, and business behavior.
+Preserve the premium ivory/navy/sage identity, typography, compact spacing, responsive behavior, cards, page structure, and five-item navigation. Version 3.8.18 changes only the Home hero secondary CTA label from **Tell Me What You Need** to **Create a New System** while preserving its existing `/contact` destination and all layout, styling, cards, pricing, pages, footer content, and business behavior.
 
 Public rule: **Short. Simple. Clear. No unnecessary repetition.**
 

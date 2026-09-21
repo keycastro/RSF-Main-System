@@ -1,21 +1,19 @@
-# DELIVERY REPORT — KEY CASTRO 3.8.17
+# DELIVERY REPORT — KEY CASTRO 3.8.18
 
 ## Scope
 
-Home featured-systems CTA transition redesign only. The three existing Home system cards remain unchanged.
+Home hero secondary CTA wording only, plus direct test/version/release/live-verification dependencies.
 
 ## Public change
 
-- Added **Explore All Systems →** as the primary CTA to `/system-templates`.
-- Retained **See Services & Pricing →** as the secondary CTA to `/services`.
-- Rebuilt only the lower transition area using the approved compact editorial composition: stronger primary hierarchy, quieter secondary hierarchy, a restrained divider, thin accent lines, angular edge treatments, and the approved decorative microcopy.
-- Tightened only the space between the cards, CTA band, and footer so there is no large blank transition.
-- Added CTA-scoped responsive behavior so mobile stacks the actions and removes nonessential side geometry.
+- Changed **Tell Me What You Need** to **Create a New System** on the Home hero.
+- The button continues to link to `/contact`.
 
 ## Preserved
 
-- Exactly three Home system cards and all of their titles, descriptions, prices, screenshots, Preview labels, Best for text, buttons, colors, and behavior.
-- Home hero, header/navigation, and footer content.
+- Home hero layout and styling.
+- Exactly three Home system cards and the v3.8.17 balanced lower CTA band.
+- Header/navigation and footer content.
 - Systems, Services & Pricing, About, and Contact pages.
 - Current pricing and commercial rules.
 - Contact flow, owner Inbox, database, authentication, CSRF, and inquiry storage.
@@ -23,4 +21,4 @@ Home featured-systems CTA transition redesign only. The three existing Home syst
 
 ## Release rule
 
-Production is not considered 3.8.17 until the one-run deployer passes the complete automated test suite and verifies the live version, both CTA destinations, approved CTA markup/style hooks, exactly three published systems, preserved pricing/content boundaries, and existing About/footer checks.
+Production is not considered 3.8.18 until the one-run deployer passes the complete automated test suite and verifies the live version, the new Home hero CTA label and destination, the featured-systems CTA area, exactly three published systems, preserved pricing/content boundaries, and existing About/footer checks.
