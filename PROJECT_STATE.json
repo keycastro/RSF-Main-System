@@ -1,7 +1,7 @@
 {
   "project": "RSF_MAIN_SYSTEM",
   "handoff_date": "2026-09-21",
-  "version": "1.5.2",
+  "version": "1.8.3",
   "owner_public_name": "Key Castro",
   "positioning": "Technology built for real estate operations",
   "framework": "Flask",
@@ -537,7 +537,7 @@
       "private owner Inbox"
     ]
   },
-  "current_version": "1.5.2",
+  "current_version": "1.8.3",
   "pricing_and_management_clarity_3_8_19": {
     "scope": "Existing-system price plus Services & Pricing management clarity and direct tests/release/deployment dependencies",
     "existing_system_price_usd": 290,
@@ -564,7 +564,7 @@
   "company_public_name": "Realty Systems Foundry",
   "founder": "Key Castro",
   "primary_niche": "Real estate businesses",
-  "preferred_public_domain": "https://realtysystemsfoundry.com",
+  "preferred_public_domain": "https://rsf.com",
   "domain_status": "Preferred custom domain; current Render URL remains the live deployment URL until DNS/domain connection is completed.",
   "rebrand_3_9_0": {
     "status": "executed in release package",
@@ -576,7 +576,7 @@
     "design_changed": false,
     "pricing_changed": false,
     "current_live_host_preserved": "https://keycastro.onrender.com",
-    "preferred_domain": "https://realtysystemsfoundry.com"
+    "preferred_domain": "https://rsf.com"
   },
   "release_3_9_0": {
     "date": "2026-09-21",
@@ -638,11 +638,24 @@
   },
   "unified_online_target": {
     "website": "https://realtysystemsfoundry.onrender.com/",
-    "partner_system": "https://realtysystemsfoundry.onrender.com/app/",
+    "partner_system": "https://partner-rsf.onrender.com/",
     "render_service": "realtysystemsfoundry",
     "render_service_id": "srv-daom5h0ae00c73c3qt70",
     "source_repo": "keycastro/RSF-Main-System",
     "database": "Render PostgreSQL (DATABASE_URL)",
     "desktop_launchers_use_localhost": false
+  },
+  "locked_domain_structure": {
+    "now_free_render": {
+      "website": "https://realtysystemsfoundry.onrender.com/",
+      "website_requested_but_unavailable": "https://rsf.onrender.com/",
+      "partner_workspace": "https://partner-rsf.onrender.com/"
+    },
+    "later_own_domain": {
+      "website": "https://rsf.com/",
+      "partner_workspace": "https://partner.rsf.com/"
+    },
+    "main_render_address_pending_user_choice": true,
+    "partner_alias_render_service_id": "srv-darcsm7avr4c73e5m6dg"
   }
 }
