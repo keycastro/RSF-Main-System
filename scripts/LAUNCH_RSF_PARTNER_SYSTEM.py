@@ -5,7 +5,7 @@ import sys
 import webbrowser
 
 PUBLIC_URL = "https://realtysystemsfoundry.onrender.com/"
-WORKSPACE_URL = "https://realtysystemsfoundry.onrender.com/app/"
+WORKSPACE_URL = "https://partner-rsf.onrender.com/"
 
 
 def main() -> int:
