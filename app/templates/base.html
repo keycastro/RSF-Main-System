@@ -11,6 +11,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/brand/icon_32.png') }}">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/brand/icon_128.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_v18.css') }}">
 </head>
 <body class="{% if request.endpoint in ['main.messages_home','main.messages_thread'] %}page-messages{% endif %}"{% if g.user %} data-message-poll-url="{{ url_for('main.message_unread') }}" data-csrf="{{ csrf_token() }}"{% endif %}>
 {% macro nav_icon(name) -%}
@@ -100,8 +101,17 @@
 
   <main class="main-area" id="main-content" tabindex="-1">
     <header class="topbar">
-      <button class="menu-button" type="button" data-menu aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">☰</button>
-      <div class="topbar-brand"><img src="{{ url_for('static', filename='images/brand/icon_32.png') }}" alt="" aria-hidden="true"><div class="topbar-title"><strong>{{ title }}</strong><span>Unified RSF System</span></div></div>
+      <div class="topbar-left">
+        <button class="menu-button" type="button" data-menu aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">☰</button>
+        <div class="topbar-context"><span>RSF Workspace</span><i aria-hidden="true">/</i><strong>{{ title }}</strong></div>
+      </div>
+      <div class="topbar-actions">
+        <a class="topbar-site-link" href="{{ url_for('site.home') }}">Public website <span aria-hidden="true">↗</span></a>
+        <a class="topbar-user" href="{{ url_for('main.profile') }}" aria-label="Open your profile">
+          {% set topbar_avatar = profile_picture_url(g.user.id, g.user.role) %}<span class="topbar-avatar" aria-hidden="true">{% if topbar_avatar %}<img src="{{ topbar_avatar }}" alt="">{% else %}{{ g.user.full_name[:1]|upper }}{% endif %}</span>
+          <span><strong>{{ g.user.full_name }}</strong><small>{{ 'Founder' if g.user.role=='admin' else 'Partner' }}</small></span>
+        </a>
+      </div>
     </header>
     <div class="content-wrap">
       {% with messages=get_flashed_messages(with_categories=true) %}
