@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex,nofollow">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#073b33">
-  <title>{{ title }} · RSF Partner System</title>
+  <title>{{ title }} · RSF Workspace</title>
   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/brand/KEY_CASTRO.ico') }}">
   <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/brand/icon_32.png') }}">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/brand/icon_128.png') }}">
@@ -79,7 +79,7 @@
         {% set resources_active = request.endpoint in ['main.resources_list','main.resource_new','main.resource_edit'] %}
         <a class="{{ 'active' if resources_active else '' }}" {% if resources_active %}aria-current="page"{% endif %} href="{{ url_for('main.resources_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("resources") }}</span>Resources</a>
         <span class="nav-divider" aria-hidden="true"></span>
-        <span class="nav-section-label">Administration</span>
+        <span class="nav-section-label">Founder</span>
         {% set activity_active = request.endpoint=='main.activity' %}
         <a class="{{ 'active' if activity_active else '' }}" {% if activity_active %}aria-current="page"{% endif %} href="{{ url_for('main.activity') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("activity") }}</span>Activity</a>
         {% set settings_active = request.endpoint=='main.settings' %}
@@ -90,7 +90,7 @@
     </nav>
 
     <div class="sidebar-footer">
-      {% set sidebar_avatar = profile_picture_url(g.user.id, g.user.role) %}<div class="user-block user-block-with-avatar"><div class="sidebar-avatar" aria-hidden="true">{% if sidebar_avatar %}<img class="sidebar-profile-photo" src="{{ sidebar_avatar }}" alt="">{% else %}<span>{{ g.user.full_name[:1]|upper }}</span>{% endif %}</div><div class="user-block-copy"><strong>{{ g.user.full_name }}</strong><small>{{ 'Founder / Admin' if g.user.role=='admin' else 'Sales Partner' }}</small></div></div>
+      {% set sidebar_avatar = profile_picture_url(g.user.id, g.user.role) %}<div class="user-block user-block-with-avatar"><div class="sidebar-avatar" aria-hidden="true">{% if sidebar_avatar %}<img class="sidebar-profile-photo" src="{{ sidebar_avatar }}" alt="">{% else %}<span>{{ g.user.full_name[:1]|upper }}</span>{% endif %}</div><div class="user-block-copy"><strong>{{ g.user.full_name }}</strong><small>{{ 'Founder' if g.user.role=='admin' else 'Partner' }}</small></div></div>
       <form method="post" action="{{ url_for('main.logout') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button class="signout" type="submit">Sign out</button>
@@ -103,7 +103,7 @@
     <header class="topbar">
       <div class="topbar-left">
         <button class="menu-button" type="button" data-menu aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">☰</button>
-        <div class="topbar-context"><span>RSF Workspace</span><i aria-hidden="true">/</i><strong>{{ title }}</strong></div>
+        <div class="topbar-context"><span>RSF Workspace</span><i aria-hidden="true">›</i><strong>{{ title }}</strong></div>
       </div>
       <div class="topbar-actions">
         <a class="topbar-site-link" href="{{ url_for('site.home') }}">Public website <span aria-hidden="true">↗</span></a>
