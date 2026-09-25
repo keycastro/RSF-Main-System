@@ -351,10 +351,10 @@ def claim_inquiry(inquiry_id: int, partner_id: int, actor_user_id: int) -> tuple
     now = utcnow_iso()
     if existing and (not existing["partner_active"] or not existing["user_active"]):
         _notify_founders("OWNERSHIP_REVIEW", f"Ownership review needed: {inquiry['company'] or inquiry['name']}",
-                         "This contact matches an active Lead whose Partner account is inactive. Reassign that Lead before claiming this inquiry.",
+                         "This contact matches an active Lead whose Partner account is unavailable. Reassign that Lead before claiming this inquiry.",
                          entity_type="inquiry", entity_id=inquiry_id)
         db.commit()
-        return False, "This contact already has an RSF lead with an inactive owner. Founder must reassign that lead first.", inquiry["client_conversation_id"]
+        return False, "This contact already has an RSF lead with an unavailable Partner. Founder must reassign that lead first.", inquiry["client_conversation_id"]
     if existing:
         owner_id = int(existing["owner_partner_id"])
         conversation = _conversation_for_lead(int(existing["id"]))
