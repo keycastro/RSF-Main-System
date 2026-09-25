@@ -370,11 +370,21 @@ def claim_inquiry(inquiry_id: int, partner_id: int, actor_user_id: int) -> tuple
                    first_response_due_at=COALESCE(first_response_due_at,?) WHERE id=?""",
                 (existing["id"], owner_id, now, _sla_due(now), conversation_id),
             )
-        db.execute(
+        claim_result = db.execute(
             """UPDATE website_inquiries SET status='CLAIMED',claimed_by_partner_id=?,claimed_at=?,lead_id=?,
-               client_conversation_id=?,updated_at=? WHERE id=? AND status='UNCLAIMED'""",
+               client_conversation_id=?,updated_at=? WHERE id=? AND status='UNCLAIMED'
+               AND claimed_by_partner_id IS NULL""",
             (owner_id, now, existing["id"], conversation_id, now, inquiry_id),
         )
+        if claim_result.rowcount != 1:
+            # Another Partner won the claim while this transaction was preparing
+            # the existing-lead route. Roll back every interim conversation change.
+            db.rollback()
+            fresh = db.execute(
+                "SELECT client_conversation_id FROM website_inquiries WHERE id=?",
+                (inquiry_id,),
+            ).fetchone()
+            return False, "This inquiry has already been claimed.", (fresh["client_conversation_id"] if fresh else None)
         _dismiss_inquiry_notifications(inquiry_id, except_user_id=_partner_user_id(owner_id))
         _notify_founders("INQUIRY_ROUTED", f"Inquiry routed to existing lead", f"{inquiry['company'] or inquiry['name']} stays with its current owner.", entity_type="conversation", entity_id=conversation_id)
         db.commit()
