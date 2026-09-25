@@ -1,3 +1,12 @@
+# CURRENT v1.8.3 NAMING OVERRIDE
+
+- Current public website remains `https://realtysystemsfoundry.onrender.com/`; requested `https://rsf.onrender.com/` is unavailable.
+- Official free Partner Workspace entry: `https://partner-rsf.onrender.com/`.
+- Future owned domains: `https://rsf.com/` and `https://partner.rsf.com/`.
+- Do not substitute another main Render hostname without owner approval.
+
+---
+
 # NEXT DEVELOPER — READ THIS FIRST
 
 **Release version:** 3.9.8
