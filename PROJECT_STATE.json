@@ -1,7 +1,7 @@
 {
   "project": "RSF_MAIN_SYSTEM",
   "handoff_date": "2026-09-21",
-  "version": "1.8.3",
+  "version": "1.8.4",
   "owner_public_name": "Key Castro",
   "positioning": "Technology built for real estate operations",
   "framework": "Flask",
@@ -537,7 +537,7 @@
       "private owner Inbox"
     ]
   },
-  "current_version": "1.8.3",
+  "current_version": "1.8.4",
   "pricing_and_management_clarity_3_8_19": {
     "scope": "Existing-system price plus Services & Pricing management clarity and direct tests/release/deployment dependencies",
     "existing_system_price_usd": 290,
@@ -657,5 +657,13 @@
     },
     "main_render_address_pending_user_choice": true,
     "partner_alias_render_service_id": "srv-darcsm7avr4c73e5m6dg"
+  },
+  "partner_alias_routing": {
+    "public_alias": "https://partner-rsf.onrender.com/",
+    "workspace_target": "https://realtysystemsfoundry.onrender.com/app/",
+    "implementation": "Render static-site entry page redirect via public/index.html and public/404.html",
+    "chromium_verified": true,
+    "chromium_final_url": "https://realtysystemsfoundry.onrender.com/app/login?next=/app/",
+    "database_or_business_logic_changed": false
   }
 }
