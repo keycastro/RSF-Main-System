@@ -1,0 +1,76 @@
+name: RSF v1.9.0 Live Browser
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  live-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Playwright
+        run: |
+          python -m pip install --quiet playwright
+          python -m playwright install --with-deps chromium
+      - name: Verify deployed v1.9.0 website and Partner Workspace
+        run: |
+          python - <<'PY'
+          from playwright.sync_api import sync_playwright
+          MAIN="https://realtysystemsfoundry.onrender.com"
+          PARTNER="https://partner-rsf.onrender.com/"
+          with sync_playwright() as p:
+              browser=p.chromium.launch(headless=True)
+              ctx=browser.new_context()
+              page=ctx.new_page()
+
+              r=page.goto(MAIN+"/",wait_until="domcontentloaded",timeout=90000)
+              assert r and r.status==200, r.status if r else None
+              assert "Realty Systems Foundry" in page.locator("body").inner_text()
+
+              health=ctx.request.get(MAIN+"/system/health",timeout=90000)
+              assert health.status==200, health.status
+              payload=health.json()
+              assert payload.get("status")=="ok", payload
+              assert payload.get("version")=="1.9.0", payload
+
+              r=page.goto(MAIN+"/app/",wait_until="domcontentloaded",timeout=90000)
+              assert r and r.status==200, r.status if r else None
+              assert page.url.startswith(MAIN+"/app/login"), page.url
+              assert "Sign in" in page.locator("body").inner_text()
+              headers={k.lower():v for k,v in r.headers.items()}
+              assert headers.get("x-content-type-options")=="nosniff", headers
+              assert headers.get("x-frame-options")=="DENY", headers
+              assert "no-store" in headers.get("cache-control",""), headers
+              assert "frame-ancestors 'none'" in headers.get("content-security-policy",""), headers
+
+              cookies=ctx.cookies()
+              sess=[c for c in cookies if c["name"]=="rsf_partner_session"]
+              assert sess, cookies
+              assert sess[0]["httpOnly"] is True
+              assert sess[0]["secure"] is True
+              assert sess[0]["sameSite"]=="Lax"
+
+              no_csrf=ctx.request.post(MAIN+"/app/login",form={"email":"nobody@example.test","password":"bad"})
+              assert no_csrf.status==400, no_csrf.status
+
+              founder_route=ctx.request.get(MAIN+"/app/admin/partners",max_redirects=0)
+              assert founder_route.status in (301,302,303,307,308), founder_route.status
+
+              page2=ctx.new_page()
+              r=page2.goto(PARTNER,wait_until="domcontentloaded",timeout=90000)
+              page2.wait_for_timeout(2500)
+              assert r and r.status==200, r.status if r else None
+              assert page2.url.startswith(MAIN+"/app/login"), page2.url
+              body=page2.locator("body").inner_text()
+              assert "Sign in" in body and "Not Found" not in body, body[:800]
+
+              print("LIVE_BROWSER_V190_OK")
+              print("HEALTH_VERSION="+payload.get("version",""))
+              print("PARTNER_FINAL_URL="+page2.url)
+              browser.close()
+          PY
