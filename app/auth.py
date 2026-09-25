@@ -57,7 +57,7 @@ def load_logged_in_user() -> None:
         g.partner = db.execute(
             """SELECT p.*, cs.name AS commission_stage_name, cs.rate_bp AS commission_rate_bp
                FROM partners p JOIN commission_stages cs ON cs.id=p.commission_stage_id
-               WHERE p.user_id=? AND p.active=1""",
+               WHERE p.user_id=? AND p.active=1 AND p.deleted_at IS NULL""",
             (user["id"],),
         ).fetchone()
         if g.partner is None:
