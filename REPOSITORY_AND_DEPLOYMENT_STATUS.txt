@@ -1,4 +1,4 @@
-RSF MAIN SYSTEM — CURRENT SOURCE/DEPLOYMENT STATUS
+RSF MAIN SYSTEM v1.8.3 — CURRENT SOURCE/DEPLOYMENT STATUS
 
 Canonical local folder:
 C:\Users\Admin\Documents\RSF Main System
@@ -13,7 +13,7 @@ Public website:
 https://realtysystemsfoundry.onrender.com/
 
 Private Founder/Partner workspace:
-https://realtysystemsfoundry.onrender.com/app/
+https://partner-rsf.onrender.com/
 
 Render has been verified to deploy successfully after the GitHub repository rename.
 Render may continue to display the pre-rename repository URL in service metadata; GitHub redirects that legacy URL to the renamed canonical repository.
