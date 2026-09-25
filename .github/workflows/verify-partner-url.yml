@@ -1,0 +1,40 @@
+name: Verify Partner Workspace URL
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/verify-partner-url.yml'
+  workflow_dispatch:
+
+jobs:
+  browser-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Playwright
+        run: |
+          python -m pip install --quiet playwright
+          python -m playwright install --with-deps chromium
+      - name: Verify partner-rsf in Chromium
+        run: |
+          python - <<'PY'
+          from playwright.sync_api import sync_playwright
+          alias = "https://partner-rsf.onrender.com/"
+          expected = "https://realtysystemsfoundry.onrender.com/app/"
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True)
+              page = browser.new_page()
+              page.goto(alias, wait_until="domcontentloaded", timeout=90000)
+              page.wait_for_url(expected + "*", timeout=90000)
+              page.wait_for_selector("text=Sign in", timeout=90000)
+              print("BROWSER_CHECK_OK")
+              print("START_URL=" + alias)
+              print("FINAL_URL=" + page.url)
+              print("TITLE=" + page.title())
+              print("SIGN_IN_FOUND=YES")
+              browser.close()
+          PY
