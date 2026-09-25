@@ -26,17 +26,20 @@ jobs:
           python - <<'PY'
           from playwright.sync_api import sync_playwright
           alias = "https://partner-rsf.onrender.com/"
-          expected = "https://realtysystemsfoundry.onrender.com/app/"
           with sync_playwright() as p:
               browser = p.chromium.launch(headless=True)
               page = browser.new_page()
-              page.goto(alias, wait_until="domcontentloaded", timeout=90000)
-              page.wait_for_url(expected + "*", timeout=90000)
-              page.wait_for_selector("text=Sign in", timeout=90000)
-              print("BROWSER_CHECK_OK")
-              print("START_URL=" + alias)
-              print("FINAL_URL=" + page.url)
+              response = page.goto(alias, wait_until="domcontentloaded", timeout=90000)
+              page.wait_for_timeout(8000)
+              print("HTTP_STATUS=" + (str(response.status) if response else "NONE"))
+              print("CURRENT_URL=" + page.url)
               print("TITLE=" + page.title())
-              print("SIGN_IN_FOUND=YES")
+              body = page.locator("body").inner_text(timeout=10000)
+              print("BODY_START=" + body[:800].replace("\n", " | "))
+              if not page.url.startswith("https://realtysystemsfoundry.onrender.com/app/"):
+                  raise RuntimeError("Partner alias did not reach the RSF /app/ workspace")
+              if "Sign in" not in body:
+                  raise RuntimeError("RSF Sign in page was not found")
+              print("BROWSER_CHECK_OK")
               browser.close()
           PY
