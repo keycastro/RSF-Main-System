@@ -24,7 +24,10 @@ def hash_password(password: str) -> str:
 
 
 def valid_password(password: str) -> bool:
-    return len(password or "") >= 12 and any(c.isalpha() for c in password) and any(c.isdigit() for c in password)
+    # Founder-controlled credentials: preserve exactly what was entered.
+    # Empty passwords are the only invalid value because they cannot represent
+    # an intentional credential. No composition/strength rules are imposed.
+    return password is not None and password != ""
 
 
 def valid_email(value: str) -> bool:
