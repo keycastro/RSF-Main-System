@@ -1,4 +1,26 @@
-{% extends 'base.html' %}{% block content %}
-<div class="page-head"><div><h1>Add Partner</h1></div><a class="button secondary" href="{{ url_for('main.partners_list') }}">Cancel</a></div>
-<section class="panel form-panel"><form method="post" class="form-grid"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Full name<input name="full_name" required maxlength="160"></label><label>Email<input type="email" name="email" required maxlength="254"></label><label>Phone<input name="phone" maxlength="60"></label><label>Commission level<select name="commission_stage_id" required><option value="">Choose level</option>{% for s in stages %}<option value="{{ s.id }}">{{ s.name }} — {{ s.rate_bp|rate }}</option>{% endfor %}</select></label><label class="span-2">Password<div class="password-row"><input id="temporary_password" name="temporary_password" type="text" minlength="12" required autocomplete="off"><button class="button ghost" type="button" data-generate-password data-target="temporary_password">Generate</button></div><small class="help">12+ characters with letters and numbers.</small></label><label class="span-2">Notes<textarea name="notes" rows="4" maxlength="2000"></textarea></label><div class="form-actions span-2"><button class="button primary" type="submit">Create Partner</button></div></form></section>
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head organized-page-head">
+  <div><span class="page-kicker">Partners</span><h1>Add Partner</h1><p>Create the Partner account and choose the exact password you want.</p></div>
+  <a class="button secondary" href="{{ url_for('main.partners_list') }}">Cancel</a>
+</div>
+<section class="panel form-panel refined-form-panel">
+  <form method="post" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Full name <span class="required-mark">Required</span><input name="full_name" required maxlength="160" value="{{ request.form.get('full_name','') }}" autocomplete="name"></label>
+    <label>Email <span class="required-mark">Required</span><input type="email" name="email" required maxlength="254" value="{{ request.form.get('email','') }}" autocomplete="email"></label>
+    <label>Phone<input name="phone" maxlength="60" value="{{ request.form.get('phone','') }}" autocomplete="tel"></label>
+    <label>Commission level <span class="required-mark">Required</span><select name="commission_stage_id" required><option value="">Choose level</option>{% for s in stages %}<option value="{{ s.id }}" {{ 'selected' if request.form.get('commission_stage_id')==s.id|string else '' }}>{{ s.name }} — {{ s.rate_bp|rate }}</option>{% endfor %}</select></label>
+    <label class="span-2">Password <span class="required-mark">Required</span>
+      <div class="password-row">
+        <input id="partner_password" name="password" type="password" required autocomplete="new-password" data-password-input>
+        <button class="button ghost" type="button" data-password-toggle data-target="partner_password">Show</button>
+        <button class="button ghost" type="button" data-password-copy data-target="partner_password">Copy</button>
+      </div>
+      <small class="help">Use the exact password you want. RSF will not add password-complexity rules or replace it.</small>
+    </label>
+    <label class="span-2">Notes<textarea name="notes" rows="4" maxlength="2000" placeholder="Optional Founder notes">{{ request.form.get('notes','') }}</textarea></label>
+    <div class="form-actions span-2"><button class="button primary" type="submit">Create Partner</button></div>
+  </form>
+</section>
 {% endblock %}
