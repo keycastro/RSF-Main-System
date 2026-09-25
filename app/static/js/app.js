@@ -92,36 +92,59 @@
     }
   });
 
-  const randomChar = (alphabet) => {
-    const value = new Uint32Array(1);
-    crypto.getRandomValues(value);
-    return alphabet[value[0] % alphabet.length];
-  };
-  const shuffle = (chars) => {
-    const values = new Uint32Array(chars.length);
-    crypto.getRandomValues(values);
-    for (let i = chars.length - 1; i > 0; i -= 1) {
-      const j = values[i] % (i + 1);
-      [chars[i], chars[j]] = [chars[j], chars[i]];
+  const copyText = async (value, button) => {
+    if (!value) return;
+    let copied = false;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+        copied = true;
+      }
+    } catch (_error) {
+      copied = false;
     }
-    return chars;
+    if (!copied) {
+      const fallback = document.createElement('textarea');
+      fallback.value = value;
+      fallback.setAttribute('readonly', '');
+      fallback.style.position = 'fixed';
+      fallback.style.opacity = '0';
+      document.body.appendChild(fallback);
+      fallback.select();
+      try { copied = document.execCommand('copy'); } catch (_error) { copied = false; }
+      fallback.remove();
+    }
+    if (button && copied) {
+      const original = button.textContent;
+      button.textContent = 'Copied';
+      window.setTimeout(() => { button.textContent = original; }, 1200);
+    }
   };
 
-  document.querySelectorAll('[data-generate-password]').forEach((button) => {
+  document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const target = document.getElementById(button.dataset.target);
+      if (!(target instanceof HTMLInputElement)) return;
+      const showing = target.type === 'text';
+      target.type = showing ? 'password' : 'text';
+      button.textContent = showing ? 'Show' : 'Hide';
+      target.focus();
+    });
+  });
+
+  document.querySelectorAll('[data-password-copy]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const target = document.getElementById(button.dataset.target);
+      if (!(target instanceof HTMLInputElement)) return;
+      copyText(target.value, button);
+    });
+  });
+
+  document.querySelectorAll('[data-copy-text]').forEach((button) => {
     button.addEventListener('click', () => {
       const target = document.getElementById(button.dataset.target);
       if (!target) return;
-      const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-      const lower = 'abcdefghijkmnopqrstuvwxyz';
-      const digits = '23456789';
-      const symbols = '!@#$%';
-      const all = upper + lower + digits + symbols;
-      const chars = [randomChar(upper), randomChar(lower), randomChar(digits), randomChar(symbols)];
-      while (chars.length < 18) chars.push(randomChar(all));
-      target.value = shuffle(chars).join('');
-      target.dispatchEvent(new Event('input', { bubbles: true }));
-      target.focus();
-      target.select();
+      copyText(target.textContent || '', button);
     });
   });
 
