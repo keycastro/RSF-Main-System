@@ -1,0 +1,11 @@
+{% extends 'base.html' %}{% block content %}
+<div class="page-head"><div><h1>Create Sale</h1></div><a class="button secondary" href="{{ url_for('main.sales_list') }}">Cancel</a></div>
+<section class="panel form-panel"><form method="post" class="form-grid"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<label class="span-2">Lead<select name="lead_id" required><option value="">Choose lead</option>{% for l in leads %}<option value="{{ l.id }}" {{ 'selected' if selected_lead_id==l.id else '' }}>{{ l.company_name }} — {{ l.owner_name }}</option>{% endfor %}</select></label>
+<label class="span-2">Service<input name="product_service" required maxlength="240" placeholder="CRM build, automation system, integration..."></label>
+<label>Agreed amount<input type="number" name="deal_amount" inputmode="decimal" min="0" step="0.01" value="0.00"></label><label>Invoiced<input type="number" name="amount_invoiced" inputmode="decimal" min="0" step="0.01" value="0.00"></label>
+<label>Collected<input type="number" name="amount_collected" inputmode="decimal" min="0" step="0.01" value="0.00"></label><label>Commission revenue<input type="number" name="qualifying_revenue" inputmode="decimal" min="0" step="0.01" value="0.00"><small class="help">This amount is used to calculate commission. It cannot be more than collected.</small></label>
+<label>Payment status<select name="payment_status">{% for s in ['UNPAID','PARTIALLY_PAID','PAID','REFUNDED_ADJUSTED'] %}<option value="{{ s }}">{{ s|human_status }}</option>{% endfor %}</select></label><label>Sale date<input type="date" name="sale_date" value="{{ request.form.get('sale_date', today) }}"></label>
+<label class="span-2">Notes<textarea name="notes" rows="5" maxlength="4000"></textarea></label><div class="form-actions span-2"><button class="button primary" type="submit">Create Sale</button></div>
+</form></section>
+{% endblock %}

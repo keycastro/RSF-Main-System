@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% block content %}
+<div class="page-head"><div><h1>Partner created</h1></div></div>
+<section class="credential-card"><h2>Login details</h2><div class="credential-grid"><div><span>Email</span><strong>{{ partner.email }}</strong></div><div><span>Password</span><strong class="mono">{{ temporary_password }}</strong></div></div><p>Shown once. Copy it now.</p><div class="page-actions"><a class="button primary" href="{{ url_for('main.partner_detail',partner_id=partner.id) }}">Open Partner</a><a class="button secondary" href="{{ url_for('main.partners_list') }}">Partners</a></div></section>
+{% endblock %}

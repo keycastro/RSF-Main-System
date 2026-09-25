@@ -1,0 +1,86 @@
+{% extends 'public/base.html' %}
+{% block content %}
+<section class="hero hero-simple hero-refined human-hero">
+  <div class="container simple-hero-wrap">
+    <div class="hero-copy reveal">
+      <h1>We Build Custom Systems for Real Estate Businesses.</h1>
+      <p class="hero-lead">We design and build purpose-built technology for real estate teams, brokerages, property companies, and property managers.</p>
+      <p class="hero-support">Choose one of our existing systems or ask us to build a new system for your business.</p>
+      <div class="hero-actions">
+        <a class="button primary" href="{{ url_for('site.system_templates') }}">View Systems</a>
+        <a class="button secondary" href="{{ url_for('site.contact') }}">Create a New System</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section home-systems-section" id="featured-systems">
+  <div class="container">
+    <div class="section-head simple-section-head reveal">
+      <div>
+        <h2>Systems We Already Built.</h2>
+        <p class="system-choice-helper">Choose the one that is closest to what your business needs.</p>
+      </div>
+    </div>
+
+    <div class="system-showcase-grid compact-system-grid portfolio-system-grid">
+      {% for item in published_system_templates %}
+      <article class="system-showcase-card simple-system-card system-choice-card system-choice-card--{{ item.slug }} reveal delay-{{ loop.index0 % 2 }}">
+        <div class="system-showcase-copy">
+          <h3>{{ item.name }}</h3>
+          <p>{{ item.short_description }}</p>
+          <div class="existing-system-card-price" aria-label="One-time system price">
+            <strong>{{ existing_system_pricing.price_label }}</strong>
+            <span>One-time system price</span>
+          </div>
+        </div>
+        {% if item.screenshots %}
+        <a class="system-showcase-image" href="{{ url_for('site.system_template_detail', slug=item.slug) }}" aria-label="View {{ item.name }}">
+          <img src="{{ url_for('static', filename=item.screenshots[0].src) }}" alt="{{ item.screenshots[0].alt }}" width="1600" height="1000" loading="lazy" decoding="async">
+          <span aria-hidden="true">Preview</span>
+        </a>
+        {% endif %}
+        <div class="system-card-footer">
+          <p class="system-audience"><strong>Best for:</strong> {{ item.card_audience }}</p>
+          <a class="button primary" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">View System</a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="home-featured-actions-section" aria-label="More ways to continue">
+  <div class="home-featured-actions-shell">
+    <div class="home-featured-edge home-featured-edge--left" aria-hidden="true">
+      <span>PLAN</span>
+      <span>ORGANIZE</span>
+      <span>GROW</span>
+    </div>
+
+    <div class="container home-featured-actions">
+      <div class="home-featured-action home-featured-action--primary reveal">
+        <span class="home-featured-action-kicker">READY TO SEE MORE?</span>
+        <a class="home-featured-action-link home-featured-action-link--primary" href="{{ url_for('site.system_templates') }}">
+          <span>Explore All Systems</span><span class="home-featured-action-arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <span class="home-featured-action-divider" aria-hidden="true"></span>
+
+      <div class="home-featured-action home-featured-action--secondary reveal">
+        <span class="home-featured-action-kicker home-featured-action-kicker--secondary">NEED DETAILS?</span>
+        <a class="home-featured-action-link home-featured-action-link--secondary" href="{{ url_for('site.services') }}">
+          <span>See Services & Pricing</span><span class="home-featured-action-arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="home-featured-edge home-featured-edge--right" aria-hidden="true">
+      <span>BUILD</span>
+      <span>ORGANIZE</span>
+      <span>GROW</span>
+    </div>
+  </div>
+</section>
+{% endblock %}

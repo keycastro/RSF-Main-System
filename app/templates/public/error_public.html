@@ -1,0 +1,4 @@
+{% extends 'public/base.html' %}
+{% block content %}
+<section class="error-section section-pad"><div class="container error-card reveal"><span>{{ code }}</span><p class="eyebrow"><span></span> WEBSITE RESPONSE</p><h1>{{ message }}</h1><a class="button primary" href="{{ url_for('site.home') }}">Return home</a></div></section>
+{% endblock %}

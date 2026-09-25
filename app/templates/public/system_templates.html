@@ -1,0 +1,63 @@
+{% extends 'public/base.html' %}
+{% block content %}
+<section class="page-hero page-hero-simple">
+  <div class="container simple-page-hero reveal">
+    <h1>Systems We Already Built.</h1>
+    <p>Choose the one that is closest to what your business needs. Each existing system is {{ existing_system_pricing.price_label }} one-time. Changes are priced separately.</p>
+  </div>
+</section>
+
+<section class="section systems-catalog-section catalog-simple">
+  <div class="container">
+    {% if templates|length > 6 %}
+    <div class="system-search-panel system-search-simple" data-system-search role="search" aria-label="Find a system" hidden>
+      <label for="system-search-input">Find a system</label>
+      <div class="system-search-input-wrap">
+        <input id="system-search-input" type="search" inputmode="search" autocomplete="off" spellcheck="false" placeholder="Search systems..." aria-controls="system-results" aria-describedby="system-search-status" data-system-search-input>
+        <button type="button" class="system-search-clear" data-system-search-clear hidden>Clear</button>
+      </div>
+      <p class="system-search-status" id="system-search-status" data-system-search-status role="status" aria-live="polite"></p>
+    </div>
+    {% endif %}
+
+    <div class="template-library-grid compact-library-grid portfolio-system-grid" id="system-results" data-system-results>
+      {% for item in templates %}
+      <article class="template-library-card compact-template-card system-catalog-card simple-catalog-card system-choice-card system-choice-card--{{ item.slug }} reveal delay-{{ loop.index0 % 2 }}"
+               data-system-card data-search="{{ item.search_text|e }}">
+        <div class="template-card-copy">
+          <h2>{{ item.name }}</h2>
+          <p>{{ item.short_description }}</p>
+          <div class="existing-system-card-price" aria-label="One-time system price">
+            <strong>{{ existing_system_pricing.price_label }}</strong>
+            <span>One-time system price</span>
+          </div>
+        </div>
+        {% if item.screenshots %}
+        <a class="template-card-image" href="{{ url_for('site.system_template_detail', slug=item.slug) }}" aria-label="View {{ item.name }}">
+          <img src="{{ url_for('static', filename=item.screenshots[0].src) }}" alt="{{ item.screenshots[0].alt }}" width="1600" height="1000" loading="lazy" decoding="async">
+          <span aria-hidden="true">Preview</span>
+        </a>
+        {% endif %}
+        <div class="template-card-actions system-card-footer">
+          <p class="system-audience"><strong>Best for:</strong> {{ item.card_audience }}</p>
+          <a class="button primary" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">View System</a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    {% if templates|length > 6 %}
+    <div class="system-search-empty" data-system-search-empty hidden>
+      <h2>No matching system.</h2>
+      <p>We can build a new system for your business.</p>
+      <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">Tell Me What You Need</a>
+    </div>
+    {% endif %}
+
+    <div class="catalog-next-step reveal human-next-step">
+      <div><strong>None of these fit?</strong><span>We can build a new system for your business.</span></div>
+      <a class="button secondary" href="{{ url_for('site.contact', intent='custom-build') }}">Tell Me What You Need</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

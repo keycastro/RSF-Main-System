@@ -3,100 +3,138 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="{{ meta_description }}">
-  <meta name="theme-color" content="#fbf9f5">
-  {% if robots_meta %}<meta name="robots" content="{{ robots_meta }}">{% elif environment_label != 'Production' %}<meta name="robots" content="noindex,nofollow">{% endif %}
-  {% if canonical_url %}<link rel="canonical" href="{{ canonical_url }}">{% endif %}
-  {% if google_site_verification %}<meta name="google-site-verification" content="{{ google_site_verification }}">{% endif %}
-  {% if bing_site_verification %}<meta name="msvalidate.01" content="{{ bing_site_verification }}">{% endif %}
-
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Realty Systems Foundry">
-  <meta property="og:title" content="{{ seo_title }}">
-  <meta property="og:description" content="{{ meta_description }}">
-  {% if canonical_url %}<meta property="og:url" content="{{ canonical_url }}">{% endif %}
-  {% if og_image_url %}<meta property="og:image" content="{{ og_image_url }}"><meta property="og:image:alt" content="{{ og_image_alt }}">{% endif %}
-
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{{ seo_title }}">
-  <meta name="twitter:description" content="{{ meta_description }}">
-  {% if og_image_url %}<meta name="twitter:image" content="{{ og_image_url }}"><meta name="twitter:image:alt" content="{{ og_image_alt }}">{% endif %}
-
-  <title>{{ seo_title }}</title>
-  <link rel="icon" href="{{ url_for('static', filename='images/brand/REALTY_SYSTEMS_FOUNDRY.svg') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
-  {% for item in structured_data %}<script type="application/ld+json">{{ item|tojson }}</script>{% endfor %}
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#073b33">
+  <title>{{ title }} · RSF Partner System</title>
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/brand/KEY_CASTRO.ico') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/brand/icon_32.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/brand/icon_128.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 </head>
-<body>
-  <a class="skip-link" href="#main-content">Skip to content</a>
+<body class="{% if request.endpoint in ['main.messages_home','main.messages_thread'] %}page-messages{% endif %}"{% if g.user %} data-message-poll-url="{{ url_for('main.message_unread') }}" data-csrf="{{ csrf_token() }}"{% endif %}>
+{% macro nav_icon(name) -%}
+<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+  {% if name == 'home' %}<path d="M3.5 10.5 12 3.7l8.5 6.8v9.3a1.2 1.2 0 0 1-1.2 1.2h-5.1v-6.2H9.8V21H4.7a1.2 1.2 0 0 1-1.2-1.2v-9.3Z"/>
+  {% elif name == 'messages' %}<path d="M4.2 5.2h15.6A1.2 1.2 0 0 1 21 6.4v9.9a1.2 1.2 0 0 1-1.2 1.2H9l-5.3 3.1.8-3.1h-.3A1.2 1.2 0 0 1 3 16.3V6.4a1.2 1.2 0 0 1 1.2-1.2Z"/><path d="M7.2 9.2h9.6M7.2 13h6.7"/>
+  {% elif name == 'partners' %}<path d="M8.2 11.2a3.1 3.1 0 1 0 0-6.2 3.1 3.1 0 0 0 0 6.2Zm7.8-.7a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/><path d="M2.8 19.2c.4-3.4 2.2-5.4 5.4-5.4s5 2 5.4 5.4M14.1 13.5c3.7-.5 6.2 1.5 6.6 4.7"/>
+  {% elif name == 'leads' %}<path d="M4.2 4.2h6.2v6.2H4.2zM13.6 4.2h6.2v6.2h-6.2zM4.2 13.6h6.2v6.2H4.2z"/><path d="M14.2 16.7h5.1M16.8 14.2v5.1"/>
+  {% elif name == 'followups' %}<path d="m4.3 12.6 4.4 4.4L19.9 5.8"/><path d="M12 21a9 9 0 1 1 7.1-14.5"/>
+  {% elif name == 'sales' %}<path d="M12 2.8v18.4M16.7 6.2c-.9-.8-2.3-1.3-4-1.3-2.4 0-4.2 1.2-4.2 3s1.5 2.5 4.1 3.1c2.8.6 4.6 1.5 4.6 3.7 0 2-2 3.4-4.8 3.4-2 0-3.8-.6-5-1.8"/>
+  {% elif name == 'commissions' %}<path d="m7 17 10-10M7.2 8.3a2.1 2.1 0 1 0 0-4.2 2.1 2.1 0 0 0 0 4.2Zm9.6 11.6a2.1 2.1 0 1 0 0-4.2 2.1 2.1 0 0 0 0 4.2Z"/>
+  {% elif name == 'resources' %}<path d="M4.2 5.2A2.2 2.2 0 0 1 6.4 3h11.2a2.2 2.2 0 0 1 2.2 2.2v13.6A2.2 2.2 0 0 1 17.6 21H6.4a2.2 2.2 0 0 1-2.2-2.2V5.2Z"/><path d="M8 7h8M8 11h8M8 15h5"/>
+  {% elif name == 'activity' %}<path d="M3.2 12a8.8 8.8 0 1 0 2.1-5.7L3 8.7"/><path d="M3.1 4.4v4.5h4.5M12 7.2v5.1l3.4 2"/>
+  {% elif name == 'settings' %}<path d="M12 15.3a3.3 3.3 0 1 0 0-6.6 3.3 3.3 0 0 0 0 6.6Z"/><path d="m19 13.2 1.5 1.2-1.7 3-1.9-.7a7.8 7.8 0 0 1-1.9 1.1l-.3 2h-3.4l-.3-2a7.8 7.8 0 0 1-1.9-1.1l-1.9.7-1.7-3L7 13.2a7 7 0 0 1 0-2.4L5.5 9.6l1.7-3 1.9.7A7.8 7.8 0 0 1 11 6.2l.3-2h3.4l.3 2a7.8 7.8 0 0 1 1.9 1.1l1.9-.7 1.7 3-1.5 1.2a7 7 0 0 1 0 2.4Z"/>
+  {% elif name == 'profile' %}<path d="M12 12.1a4.1 4.1 0 1 0 0-8.2 4.1 4.1 0 0 0 0 8.2Z"/><path d="M4.3 20.2c.7-4.1 3.2-6.2 7.7-6.2s7 2.1 7.7 6.2"/>
+  {% endif %}
+</svg>
+{%- endmacro %}
+<a class="skip-link" href="#main-content">Skip to main content</a>
+{% if g.user %}
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <button class="close-menu" type="button" data-close-menu aria-label="Close navigation">Close ×</button>
+    <a class="brand" href="{{ url_for('main.dashboard') }}">
+      <span class="brand-mark" aria-hidden="true"><img src="{{ url_for('static', filename='images/brand/icon_64.png') }}" alt=""></span>
+      <span class="brand-copy"><strong>Realty Systems Foundry</strong><small>Unified RSF System</small></span>
+    </a>
 
-  <header class="site-header" data-header>
-    <div class="container nav-shell">
-      <a class="brand" href="{{ url_for('site.home') }}" aria-label="Realty Systems Foundry home">
-        <span class="brand-mark" aria-hidden="true">RSF</span>
-        <span class="brand-copy">
-          <strong>REALTY SYSTEMS FOUNDRY</strong>
-          <small>Technology for Real Estate Operations</small>
-        </span>
-      </a>
+    <nav class="nav-list">
+      <span class="nav-section-label">Workspace</span>
+      {% set dashboard_active = request.endpoint=='main.dashboard' %}
+      <a class="{{ 'active' if dashboard_active else '' }}" {% if dashboard_active %}aria-current="page"{% endif %} href="{{ url_for('main.dashboard') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("home") }}</span>Dashboard</a>
+      {% set inbox_active = request.endpoint in ['main.inquiries_list','main.inquiry_detail','main.client_conversation'] %}
+      <a class="{{ 'active' if inbox_active else '' }}" {% if inbox_active %}aria-current="page"{% endif %} href="{{ url_for('main.inquiries_list') }}"><span class="nav-symbol" aria-hidden="true">◎</span><span class="nav-text">Client Inbox</span><span class="nav-unread" data-client-unread hidden>0</span></a>
+      {% set messages_active = request.endpoint in ['main.messages_home','main.messages_thread'] %}
+      <a class="{{ 'active' if messages_active else '' }}" {% if messages_active %}aria-current="page"{% endif %} href="{{ url_for('main.messages_home') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("messages") }}</span><span class="nav-text">Messages</span><span class="nav-unread" data-nav-unread hidden>0</span></a>
+      {% if g.user.role == 'partner' %}
+        <span class="nav-section-label nav-section-spaced">Sales workflow</span>
+        {% set leads_active = request.endpoint in ['main.leads_list','main.lead_detail','main.lead_edit'] %}
+        <a class="{{ 'active' if leads_active else '' }}" {% if leads_active %}aria-current="page"{% endif %} href="{{ url_for('main.leads_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("leads") }}</span>Leads</a>
+        {% set followups_active = request.endpoint=='main.followups_list' %}
+        <a class="{{ 'active' if followups_active else '' }}" {% if followups_active %}aria-current="page"{% endif %} href="{{ url_for('main.followups_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("followups") }}</span>Follow-ups</a>
+        {% set sales_active = request.endpoint in ['main.sales_list','main.sale_detail'] %}
+        <a class="{{ 'active' if sales_active else '' }}" {% if sales_active %}aria-current="page"{% endif %} href="{{ url_for('main.sales_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("sales") }}</span>Sales</a>
+        {% set commissions_active = request.endpoint=='main.commissions_list' %}
+        <a class="{{ 'active' if commissions_active else '' }}" {% if commissions_active %}aria-current="page"{% endif %} href="{{ url_for('main.commissions_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("commissions") }}</span>Commissions</a>
+        {% set resources_active = request.endpoint=='main.resources_list' %}
+        <a class="{{ 'active' if resources_active else '' }}" {% if resources_active %}aria-current="page"{% endif %} href="{{ url_for('main.resources_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("resources") }}</span>Resources</a>
+        <span class="nav-divider" aria-hidden="true"></span>
+        <span class="nav-section-label">Account</span>
+        {% set profile_active = request.endpoint=='main.profile' %}
+        <a class="{{ 'active' if profile_active else '' }}" {% if profile_active %}aria-current="page"{% endif %} href="{{ url_for('main.profile') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("profile") }}</span>Profile</a>
+      {% else %}
+        <span class="nav-section-label nav-section-spaced">Operations</span>
+        {% set partners_active = request.endpoint in ['main.partners_list','main.partner_new','main.partner_detail'] %}
+        <a class="{{ 'active' if partners_active else '' }}" {% if partners_active %}aria-current="page"{% endif %} href="{{ url_for('main.partners_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("partners") }}</span>Partners</a>
+        {% set leads_active = request.endpoint in ['main.leads_list','main.lead_new','main.lead_detail','main.lead_edit','main.duplicate_claims'] %}
+        <a class="{{ 'active' if leads_active else '' }}" {% if leads_active %}aria-current="page"{% endif %} href="{{ url_for('main.leads_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("leads") }}</span>Leads</a>
+        {% set followups_active = request.endpoint=='main.followups_list' %}
+        <a class="{{ 'active' if followups_active else '' }}" {% if followups_active %}aria-current="page"{% endif %} href="{{ url_for('main.followups_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("followups") }}</span>Follow-ups</a>
+        {% set sales_active = request.endpoint in ['main.sales_list','main.sale_new','main.sale_detail'] %}
+        <a class="{{ 'active' if sales_active else '' }}" {% if sales_active %}aria-current="page"{% endif %} href="{{ url_for('main.sales_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("sales") }}</span>Sales</a>
+        {% set commissions_active = request.endpoint=='main.commissions_list' %}
+        <a class="{{ 'active' if commissions_active else '' }}" {% if commissions_active %}aria-current="page"{% endif %} href="{{ url_for('main.commissions_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("commissions") }}</span>Commissions</a>
+        {% set resources_active = request.endpoint in ['main.resources_list','main.resource_new','main.resource_edit'] %}
+        <a class="{{ 'active' if resources_active else '' }}" {% if resources_active %}aria-current="page"{% endif %} href="{{ url_for('main.resources_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("resources") }}</span>Resources</a>
+        <span class="nav-divider" aria-hidden="true"></span>
+        <span class="nav-section-label">Administration</span>
+        {% set activity_active = request.endpoint=='main.activity' %}
+        <a class="{{ 'active' if activity_active else '' }}" {% if activity_active %}aria-current="page"{% endif %} href="{{ url_for('main.activity') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("activity") }}</span>Activity</a>
+        {% set settings_active = request.endpoint=='main.settings' %}
+        <a class="{{ 'active' if settings_active else '' }}" {% if settings_active %}aria-current="page"{% endif %} href="{{ url_for('main.settings') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("settings") }}</span>Settings</a>
+        {% set profile_active = request.endpoint=='main.profile' %}
+        <a class="{{ 'active' if profile_active else '' }}" {% if profile_active %}aria-current="page"{% endif %} href="{{ url_for('main.profile') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("profile") }}</span>Profile</a>
+      {% endif %}
+    </nav>
 
-      <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" data-nav-toggle>
-        <span></span><span></span>
-      </button>
-
-      <nav class="site-nav" data-nav aria-label="Main navigation">
-        {% set home_active = request.endpoint == 'site.home' %}
-        {% set systems_active = request.endpoint in ['site.system_templates','site.system_template_detail','site.projects','site.project_detail'] %}
-        {% set services_active = request.endpoint == 'site.services' %}
-        {% set about_active = request.endpoint in ['site.about','site.skills','site.experience'] %}
-        {% set contact_active = request.endpoint == 'site.contact' %}
-        <a class="{{ 'active' if home_active else '' }}" {% if home_active %}aria-current="page"{% endif %} href="{{ url_for('site.home') }}">Home</a>
-        {% if template_library_enabled %}<a class="{{ 'active' if systems_active else '' }}" {% if systems_active %}aria-current="page"{% endif %} href="{{ url_for('site.system_templates') }}">Systems</a>{% endif %}
-        <a class="{{ 'active' if services_active else '' }}" {% if services_active %}aria-current="page"{% endif %} href="{{ url_for('site.services') }}">Services & Pricing</a>
-        <a class="{{ 'active' if about_active else '' }}" {% if about_active %}aria-current="page"{% endif %} href="{{ url_for('site.about') }}">About</a>
-        <a class="nav-contact {{ 'active' if contact_active else '' }}" {% if contact_active %}aria-current="page"{% endif %} href="{{ url_for('site.contact') }}">Contact</a>
-      </nav>
+    <div class="sidebar-footer">
+      {% set sidebar_avatar = profile_picture_url(g.user.id, g.user.role) %}<div class="user-block user-block-with-avatar"><div class="sidebar-avatar" aria-hidden="true">{% if sidebar_avatar %}<img class="sidebar-profile-photo" src="{{ sidebar_avatar }}" alt="">{% else %}<span>{{ g.user.full_name[:1]|upper }}</span>{% endif %}</div><div class="user-block-copy"><strong>{{ g.user.full_name }}</strong><small>{{ 'Founder / Admin' if g.user.role=='admin' else 'Sales Partner' }}</small></div></div>
+      <form method="post" action="{{ url_for('main.logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="signout" type="submit">Sign out</button>
+      </form>
+      <small class="version">Unified RSF System · v{{ app_version }}</small>
     </div>
-  </header>
+  </aside>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="toast-stack" aria-live="polite">
-        {% for category, message in messages %}<div class="toast {{ category }}">{{ message }}</div>{% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
-
-  <main id="main-content">{% block content %}{% endblock %}</main>
-
-  <footer class="site-footer simple-footer">
-    <div class="container simple-footer-row">
-      <div class="footer-brand-block">
-        <a class="brand" href="{{ url_for('site.home') }}">
-          <span class="brand-mark" aria-hidden="true">RSF</span>
-          <span class="brand-copy"><strong>REALTY SYSTEMS FOUNDRY</strong><small>Technology for Real Estate Operations</small></span>
-        </a>
-        <p>Technology built for real estate operations.</p>
-      </div>
-      <nav class="simple-footer-nav" aria-label="Footer navigation">
-        <a href="{{ url_for('site.home') }}">Home</a>
-        {% if template_library_enabled %}<a href="{{ url_for('site.system_templates') }}">Systems</a>{% endif %}
-        <a href="{{ url_for('site.services') }}">Services & Pricing</a>
-        <a href="{{ url_for('site.about') }}">About</a>
-        <a href="{{ url_for('site.contact') }}">Contact</a>
-      </nav>
+  <main class="main-area" id="main-content" tabindex="-1">
+    <header class="topbar">
+      <button class="menu-button" type="button" data-menu aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">☰</button>
+      <div class="topbar-brand"><img src="{{ url_for('static', filename='images/brand/icon_32.png') }}" alt="" aria-hidden="true"><div class="topbar-title"><strong>{{ title }}</strong><span>Unified RSF System</span></div></div>
+    </header>
+    <div class="content-wrap">
+      {% with messages=get_flashed_messages(with_categories=true) %}
+        {% if messages %}<div class="flash-stack" aria-live="polite">{% for category,message in messages %}<div class="flash {{ category }}" role="status">{{ message }}</div>{% endfor %}</div>{% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
     </div>
-    <div class="container footer-bottom">
-      <span>© <span data-year></span> Realty Systems Foundry. All rights reserved.</span>
-      {% if environment_label == 'Local' %}<span class="local-pill">LOCAL PREVIEW · 127.0.0.1</span>{% endif %}
+  </main>
+</div>
+<div class="scrim" data-scrim aria-hidden="true"></div>
+<div class="voice-call-overlay" data-call-overlay hidden role="dialog" aria-modal="true" aria-labelledby="voice-call-name">
+  <div class="voice-call-card">
+    <div class="voice-call-status" data-call-status>Incoming call</div>
+    <img class="voice-call-profile-photo" data-call-avatar alt="" hidden>
+    <h2 id="voice-call-name" data-call-name>Founder</h2>
+    <div class="voice-call-time" data-call-duration hidden>00:00</div>
+    <div class="voice-call-error" data-call-error hidden role="alert"></div>
+    <div class="voice-call-actions">
+      <button class="button primary" type="button" data-call-answer hidden>Answer</button>
+      <button class="button call-decline" type="button" data-call-decline hidden>Decline</button>
+      <button class="button secondary" type="button" data-call-cancel hidden>Cancel</button>
+      <button class="button secondary" type="button" data-call-mute hidden>Mute</button>
+      <button class="button call-end" type="button" data-call-end hidden>End Call</button>
     </div>
-  </footer>
-
-  <div class="lightbox" data-lightbox-overlay aria-hidden="true">
-    <button class="lightbox-close" type="button" aria-label="Close image" data-lightbox-close>×</button>
-    <img src="" alt="" data-lightbox-image>
-    <p data-lightbox-caption></p>
   </div>
+</div>
+<audio data-call-audio autoplay></audio>
+{% else %}
+  {% with messages=get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="guest-flashes flash-stack" aria-live="polite">{% for category,message in messages %}<div class="flash {{ category }}" role="status">{{ message }}</div>{% endfor %}</div>{% endif %}
+  {% endwith %}
+  {% block guest %}{% endblock %}
+{% endif %}
+<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
 </body>
 </html>

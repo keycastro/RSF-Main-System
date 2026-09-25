@@ -1,0 +1,16 @@
+{% extends 'base.html' %}{% block content %}
+<div class="page-head"><div><h1>Add Lead</h1><p>Add a business or contact. Duplicates are checked automatically.</p></div><a class="button secondary" href="{{ url_for('main.leads_list') }}">Cancel</a></div>
+{% if duplicate_matches and g.user.role=='admin' %}<section class="alert-panel"><strong>Possible duplicate</strong><p>Open the existing lead before changing ownership.</p>{% for match,reasons in duplicate_matches %}<a href="{{ url_for('main.lead_detail',lead_id=match.id) }}">Open lead #{{ match.id }} · Match: {{ reasons|join(', ') }}</a>{% endfor %}</section>{% endif %}
+<section class="panel form-panel"><form method="post" class="form-grid">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{% if g.user.role=='admin' %}<label class="span-2">Lead owner<select name="owner_partner_id" required><option value="">Choose partner</option>{% for p in partners %}<option value="{{ p.id }}" {{ 'selected' if request.form.get('owner_partner_id')|int==p.id else '' }}>{{ p.full_name }}</option>{% endfor %}</select></label>{% endif %}
+<label>Company<input name="company_name" required maxlength="200" value="{{ request.form.get('company_name','') }}"></label>
+<label>Contact name<input name="contact_name" required maxlength="160" value="{{ request.form.get('contact_name','') }}"></label>
+<label>Email<input type="email" name="email" maxlength="254" value="{{ request.form.get('email','') }}"></label>
+<label>Phone<input name="phone" maxlength="60" value="{{ request.form.get('phone','') }}"></label>
+<label>Website<input name="website" maxlength="300" placeholder="company.com" value="{{ request.form.get('website','') }}"></label>
+<label>Source<input name="lead_source" maxlength="120" placeholder="Referral, LinkedIn, outreach" value="{{ request.form.get('lead_source','') }}"></label>
+<label class="span-2">Notes<textarea name="summary_notes" rows="5" maxlength="4000" placeholder="What do you know about this lead?">{{ request.form.get('summary_notes','') }}</textarea></label>
+<div class="form-actions span-2"><button class="button primary" type="submit">Add Lead</button></div>
+</form></section>
+{% endblock %}

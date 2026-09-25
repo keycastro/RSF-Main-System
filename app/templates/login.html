@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% block guest %}
+<main class="login-shell" id="main-content" tabindex="-1">
+  <section class="login-card" aria-labelledby="login-title">
+    <div class="login-brand"><span class="brand-mark large" aria-hidden="true"><img src="{{ url_for('static', filename='images/brand/icon_128.png') }}" alt=""></span><div><strong>Realty Systems Foundry</strong><span>Unified RSF System</span></div></div>
+    <div class="login-copy"><h1 id="login-title">Sign in</h1></div>
+    <form method="post" class="form-stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Email<input type="email" name="email" autocomplete="username" required maxlength="254" autofocus></label>
+      <label>Password<input type="password" name="password" autocomplete="current-password" required maxlength="200"></label>
+      <button class="button primary wide" type="submit">Sign in</button>
+    </form>
+    <p class="login-note">RSF team only.</p>
+  </section>
+</main>
+{% endblock %}

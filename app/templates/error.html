@@ -1,4 +1,1 @@
-{% extends 'base.html' %}
-{% block content %}
-<section class="error-section section-pad"><div class="container error-card reveal"><span>{{ code }}</span><p class="eyebrow"><span></span> WEBSITE RESPONSE</p><h1>{{ message }}</h1><a class="button primary" href="{{ url_for('site.home') }}">Return home</a></div></section>
-{% endblock %}
+{% extends 'base.html' %}{% block content %}<section class="error-card"><span class="eyebrow">{{ code }}</span><h1>{{ title }}</h1><p>{{ message }}</p><a class="button primary" href="{{ url_for('main.dashboard') if g.user else url_for('main.login') }}">Go back</a></section>{% endblock %}{% block guest %}<main class="login-shell" id="main-content" tabindex="-1"><section class="error-card guest-error"><span class="eyebrow">{{ code }}</span><h1>{{ title }}</h1><p>{{ message }}</p><a class="button primary" href="{{ url_for('main.login') }}">Sign in</a></section></main>{% endblock %}

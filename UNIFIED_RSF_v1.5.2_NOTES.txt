@@ -1,0 +1,14 @@
+RSF MAIN SYSTEM v1.5.2 ONLINE
+
+Purpose:
+- One canonical local folder: Documents\RSF Main System
+- Public website launcher opens https://realtysystemsfoundry.onrender.com/
+- Partner System launcher opens https://realtysystemsfoundry.onrender.com/app/
+- Unified public website + private Founder/Partner workspace in one Flask app
+- Production relational data targets Render PostgreSQL
+- Private local runtime data is excluded from the public deployment repository
+- Existing Founder/Partner accounts and structured data are preserved through the online migration path
+
+Hotfix:
+- Adds the required v1.5.2 deployment notes file expected by PUBLISH_RSF_ONLINE.py
+- Keeps the prior Git whitespace fixes in README.md and app/client_ops.py

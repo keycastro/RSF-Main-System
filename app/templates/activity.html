@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% block content %}
+<div class="page-head organized-page-head"><div><span class="page-kicker">Audit trail</span><h1>Activity</h1><p>Review recent system actions and account activity.</p></div></div>
+<section class="panel">{% if activities %}<div class="timeline audit-timeline">{% for a in activities %}<div class="timeline-item"><span class="timeline-dot"></span><div><strong>{{ a.description }}</strong><span>{{ a.actor_name }} · {{ a.created_at|dt }}</span></div></div>{% endfor %}</div>{% else %}<div class="empty"><strong>No activity yet</strong></div>{% endif %}</section>
+{% endblock %}

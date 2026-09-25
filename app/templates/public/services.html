@@ -1,0 +1,149 @@
+{% extends 'public/base.html' %}
+{% block content %}
+<section class="page-hero page-hero-simple how-page-hero">
+  <div class="container simple-page-hero reveal">
+    <h1>Services & Pricing</h1>
+    <p>Tell us what you need. We build the system. Then you choose who manages it.</p>
+  </div>
+</section>
+
+<section class="section human-how-section">
+  <div class="container human-how-flow">
+    <article class="human-step reveal">
+      <div class="human-step-number">1</div>
+      <div class="human-step-body">
+        <h2>Tell us what you need.</h2>
+        <p>Tell us about your business and what you want the system to help with.</p>
+        <div class="human-simple-options" aria-label="Ways we can build your system">
+          <article class="human-option-card">
+            <p class="choice-label choice-label-pill">USE AN EXISTING SYSTEM</p>
+            <strong>Use one of our existing systems</strong>
+            <div class="system-choice-price" aria-label="Existing system price">
+              <b>{{ existing_system_pricing.price_label }}</b>
+              <span>One-time payment</span>
+            </div>
+            <p class="human-option-explanation">Choose one of the systems we already built. The price is for the existing system. If you want changes later, upgrades are priced separately.</p>
+            <a class="button primary human-option-button" href="{{ url_for('site.system_templates') }}">View Systems</a>
+          </article>
+          <article class="human-option-card">
+            <p class="choice-label choice-label-pill">BUILD A NEW SYSTEM</p>
+            <strong>Build a new system</strong>
+            <div class="system-choice-price system-choice-price--quote" aria-label="New custom system price">
+              <b>Price by Agreement</b>
+              <span>Based on the work needed</span>
+            </div>
+            <p class="human-option-explanation">If none of the existing systems fit what your business needs, we can build a new system for you.</p>
+            <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Request a System</a>
+          </article>
+        </div>
+      </div>
+    </article>
+
+    <article class="human-step reveal" id="management-options">
+      <div class="human-step-number">2</div>
+      <div class="human-step-body management-clarity">
+        <h2>Choose who manages it.</h2>
+        <p class="management-optional-intro"><strong>Management is optional.</strong> After buying your system, choose who handles the technical side. Managing it yourself has no monthly management fee.</p>
+
+        <div class="management-choice-grid management-clarity-grid">
+          <section class="management-choice management-clarity-card">
+            <p class="choice-label choice-label-pill">YOU MANAGE IT</p>
+            <h3>We build it. You manage it.</h3>
+            <p>We give the finished system to you. You or someone you hire takes care of the technical side.</p>
+
+            <div class="management-price-panel management-price-panel--single" aria-label="Self-managed pricing">
+              <div class="management-price-column">
+                <strong>$0/month</strong>
+                <span>No management fee</span>
+              </div>
+            </div>
+
+            <div class="management-detail-block">
+              <strong class="management-detail-title">You handle:</strong>
+              <ul class="management-detail-list management-handle-list">
+                <li class="management-item-hosting"><span class="management-item-icon" aria-hidden="true">▦</span><span>Hosting and deployment</span></li>
+                <li class="management-item-security"><span class="management-item-icon" aria-hidden="true">🛡</span><span>Security and updates</span></li>
+                <li class="management-item-backups"><span class="management-item-icon" aria-hidden="true">☁</span><span>Backups</span></li>
+                <li class="management-item-technical"><span class="management-item-icon" aria-hidden="true">⚙</span><span>Technical fixes</span></li>
+              </ul>
+            </div>
+          </section>
+
+          <section class="management-choice managed-choice management-clarity-card">
+            <p class="choice-label choice-label-pill">WE MANAGE IT — OPTIONAL</p>
+            <h3>We build it. We manage it.</h3>
+            <p>You use the system for your business. We handle the technical side and keep your current system online and working properly.</p>
+
+            <div class="management-price-panel" aria-label="Maintenance pricing">
+              <div class="management-price-column">
+                <strong>{{ maintenance_pricing.currency_symbol }}{{ maintenance_pricing.monthly_price }}/month</strong>
+                <span>Monthly billing</span>
+              </div>
+              <div class="management-price-divider">or</div>
+              <div class="management-price-column">
+                <strong>{{ maintenance_pricing.currency_symbol }}{{ maintenance_pricing.yearly_price }}/year</strong>
+                <span>Yearly billing (save more)</span>
+              </div>
+            </div>
+            <p class="management-billing-note">Optional managed care. Same service; choose monthly or yearly billing.</p>
+
+            <div class="management-detail-block management-maintenance-block">
+              <h4 class="management-maintenance-heading">What we manage</h4>
+              <p class="management-maintenance-copy">Managed care keeps your current system running. It does not pay for new features or new ways of working.</p>
+              <div class="management-maintenance-grid">
+                <div class="management-maintenance-column management-maintenance-included">
+                  <strong class="management-detail-title">We handle:</strong>
+                  <ul class="management-detail-list">
+                    <li>Hosting and deployment</li>
+                    <li>Routine technical checks</li>
+                    <li>Backups when used</li>
+                    <li>Technical fixes for the current system</li>
+                  </ul>
+                </div>
+                <div class="management-maintenance-column management-not-included">
+                  <strong class="management-detail-title">Managed care does not include:</strong>
+                  <ul class="management-detail-list">
+                    <li>New features</li>
+                    <li>Workflow changes</li>
+                    <li>New parts of the system</li>
+                    <li>Connections to other tools</li>
+                    <li>Other improvements</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <p class="management-responsibility-note"><strong>You always manage your business.</strong> Your staff, customers, records, and daily operations stay with you. This choice only decides who handles the technical care of the system.</p>
+
+        <section class="management-upgrades" aria-labelledby="changes-later-title">
+          <div class="management-upgrades-intro">
+            <p class="choice-label choice-label-pill">NEED CHANGES LATER?</p>
+            <h3 id="changes-later-title">You can improve the system later.</h3>
+            <p class="management-upgrades-note">Upgrades are separate from maintenance. You can buy an upgrade later whether you manage the system yourself or we manage it.</p>
+          </div>
+          <div class="management-upgrade-grid">
+            <article class="management-upgrade-card">
+              <strong>Minor System Upgrade</strong>
+              <span class="management-upgrade-price">$79</span>
+              <p>For a focused feature, automation, report, or workflow improvement.</p>
+            </article>
+            <article class="management-upgrade-card">
+              <strong>Major System Upgrade</strong>
+              <span class="management-upgrade-price">$149</span>
+              <p>For a larger feature, workflow change, automation, or system improvement.</p>
+            </article>
+            <article class="management-upgrade-card">
+              <strong>New System / Large Expansion</strong>
+              <span class="management-upgrade-price">Price by Agreement</span>
+              <p>For work that is too large for a normal system upgrade.</p>
+            </article>
+          </div>
+        </section>
+      </div>
+    </article>
+
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}{% block content %}
+<div class="page-head dashboard-page-head">
+  <div><span class="dashboard-kicker">Partner workspace</span><h1>Dashboard</h1><p class="dashboard-subtitle">Your leads, follow-ups, sales, and commissions in one place.</p></div>
+  <a class="button primary" href="{{ url_for('main.lead_new') }}">Add Lead</a>
+</div>
+
+{% if metrics.unclaimed %}<a class="attention-banner inquiry-attention" href="{{ url_for('main.inquiries_list') }}"><span><strong>{{ metrics.unclaimed }} new opportunit{{ 'y' if metrics.unclaimed==1 else 'ies' }}</strong><small>Available to claim now.</small></span><span aria-hidden="true">View opportunities →</span></a>{% endif %}
+
+<section class="own-rate-card dashboard-rate-card"><div><span>Commission rate</span><strong>{{ g.partner.commission_rate_bp|rate }}</strong><small>{{ g.partner.commission_stage_name }}</small></div></section>
+
+<section class="dashboard-section" aria-labelledby="partner-work-title">
+  <div class="dashboard-section-head"><div><span>Work overview</span><h2 id="partner-work-title">Today at a glance</h2></div></div>
+  <div class="metric-grid primary-metrics partner-primary dashboard-overview-grid">
+    <a class="metric-card" href="{{ url_for('main.leads_list') }}"><span>Active leads</span><strong>{{ fmt_count(metrics.active, metrics.has_lead_data) }}</strong><small>{{ fmt_count(metrics.leads, metrics.has_lead_data) }} total</small></a>
+    <a class="metric-card" href="{{ url_for('main.followups_list') }}"><span>Due today</span><strong>{{ fmt_count(metrics.today, metrics.has_followup_data) }}</strong></a>
+    <a class="metric-card {{ 'danger-tint' if metrics.overdue else '' }}" href="{{ url_for('main.followups_list') }}"><span>Overdue</span><strong>{{ fmt_count(metrics.overdue, metrics.has_followup_data) }}</strong></a>
+    <a class="metric-card" href="{{ url_for('main.leads_list',status='DEMO_BOOKED') }}"><span>Demos</span><strong>{{ fmt_count(metrics.demos, metrics.has_lead_data) }}</strong></a>
+  </div>
+</section>
+
+<section class="dashboard-section" aria-labelledby="partner-results-title">
+  <div class="dashboard-section-head"><div><span>Earnings</span><h2 id="partner-results-title">Sales & commissions</h2></div><a href="{{ url_for('main.commissions_list') }}">View commissions</a></div>
+  <section class="panel compact-panel results-panel dashboard-results-panel">
+    <div class="stat-strip five-stats partner-results dashboard-results-strip">
+      <a href="{{ url_for('main.sales_list') }}"><span>Won sales</span><strong>{{ fmt_count(metrics.won, metrics.has_sales_data) }}</strong></a>
+      <a href="{{ url_for('main.sales_list') }}"><span>Commission revenue</span><strong>{{ fmt_money(metrics.qualifying, metrics.has_sales_data, setting('currency_code','USD')) }}</strong></a>
+      <a href="{{ url_for('main.commissions_list') }}"><span>Pending</span><strong>{{ fmt_money(metrics.pending, metrics.has_commission_data, setting('currency_code','USD')) }}</strong></a>
+      <a href="{{ url_for('main.commissions_list') }}"><span>Approved</span><strong>{{ fmt_money(metrics.approved, metrics.has_commission_data, setting('currency_code','USD')) }}</strong></a>
+      <a href="{{ url_for('main.commissions_list') }}"><span>Paid</span><strong>{{ fmt_money(metrics.paid, metrics.has_commission_data, setting('currency_code','USD')) }}</strong></a>
+    </div>
+  </section>
+</section>
+
+<section class="dashboard-section dashboard-section-last" aria-labelledby="partner-pipeline-title">
+  <div class="dashboard-section-head"><div><span>Pipeline</span><h2 id="partner-pipeline-title">What needs attention</h2></div></div>
+  <div class="two-col dashboard-cols dashboard-work-grid">
+    <section class="panel"><div class="panel-head"><div><h3>Follow-ups</h3><p>Your next scheduled actions.</p></div><a href="{{ url_for('main.followups_list') }}">View all</a></div>
+      {% if followups %}<div class="list-stack">{% for f in followups %}<a class="list-row" href="{{ url_for('main.lead_detail',lead_id=f.lead_id) }}"><div><strong>{{ f.company_name }}</strong><span>{{ f.title }}</span></div><div class="row-end"><span class="badge {{ 'danger' if f.due_at[:10] < today else 'neutral' }}">{{ f.due_at|dt }}</span></div></a>{% endfor %}</div>{% else %}<div class="empty"><strong>No open follow-ups</strong></div>{% endif %}
+    </section>
+    <section class="panel"><div class="panel-head"><div><h3>Active leads</h3><p>Leads currently moving through your pipeline.</p></div><a href="{{ url_for('main.leads_list') }}">View all</a></div>
+      {% if leads %}<div class="list-stack">{% for l in leads %}<a class="list-row" href="{{ url_for('main.lead_detail',lead_id=l.id) }}"><div><strong>{{ l.company_name }}</strong><span>{{ l.contact_name }}{% if l.next_followup %} · next {{ l.next_followup|dt }}{% endif %}</span></div><span class="badge status-{{ l.status|lower }}">{{ l.status|human_status }}</span></a>{% endfor %}</div>{% else %}<div class="empty"><strong>No active leads yet</strong><a class="button primary small" href="{{ url_for('main.lead_new') }}">Add Lead</a></div>{% endif %}
+    </section>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends 'base.html' %}{% block content %}
+<div class="message-shell {{ 'founder-view' if g.user.role == 'admin' else 'partner-view' }}">
+  {% if g.user.role == 'admin' %}
+  <aside class="message-conversations" aria-label="Partner conversations">
+    <div class="message-conversations-head">
+      <strong>Messages</strong>
+      <a href="{{ url_for('main.messages_home') }}" aria-label="Open all conversations" title="All messages">All</a>
+    </div>
+    <form class="message-side-search" method="get" action="{{ url_for('main.messages_home') }}" role="search">
+      <input name="q" placeholder="Find a partner" aria-label="Find a partner">
+    </form>
+    <div class="message-thread-list compact">
+      {% for p in founder_partners %}
+      <a class="message-thread-row {{ 'active' if p.id == partner.id else '' }}" href="{{ url_for('main.messages_thread', partner_id=p.id) }}" {% if p.id == partner.id %}aria-current="page"{% endif %}>
+        {% set p_avatar = profile_picture_url(p.user_id, 'partner') %}<div class="message-thread-avatar" aria-hidden="true">{% if p_avatar %}<img class="message-thread-photo" src="{{ p_avatar }}" alt="">{% else %}{{ p.full_name[:1]|upper }}{% endif %}</div>
+        <div class="message-thread-copy">
+          <strong>{{ p.full_name }}</strong>
+          <span>{{ p.preview }}</span>
+        </div>
+        {% if p.unread_count %}<span class="unread-pill" aria-label="{{ p.unread_count }} unread messages">{{ p.unread_count }}</span>{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  </aside>
+  {% endif %}
+
+  <section class="message-workspace" data-message-thread
+    data-partner-id="{{ partner.id }}"
+    data-peer-name="{{ peer_name }}"
+    data-csrf="{{ csrf_token() }}"
+    data-updates-url="{{ url_for('main.messages_updates', partner_id=partner.id) }}"
+    data-send-url="{{ url_for('main.message_send', partner_id=partner.id) }}"
+    data-start-call-url="{{ url_for('main.voice_call_start', partner_id=partner.id) }}">
+
+    <header class="message-conversation-head">
+      {% if g.user.role == 'admin' %}<a class="message-mobile-back" href="{{ url_for('main.messages_home') }}" aria-label="Back to messages">‹</a>{% endif %}
+      <div class="message-peer">
+        {% if g.user.role == 'partner' %}{% set peer_avatar = profile_picture_url(founder_user.id, 'admin') if founder_user else '' %}<div class="message-peer-avatar founder-avatar" aria-hidden="true">{% if peer_avatar %}<img class="message-peer-photo" src="{{ peer_avatar }}" alt="">{% else %}F{% endif %}</div>{% else %}{% set peer_avatar = profile_picture_url(partner.user_id, 'partner') %}<div class="message-peer-avatar" aria-hidden="true">{% if peer_avatar %}<img class="message-peer-photo" src="{{ peer_avatar }}" alt="">{% else %}{{ peer_name[:1]|upper }}{% endif %}</div>{% endif %}
+        <strong>{{ peer_name }}</strong>
+      </div>
+      <button class="message-call-button" type="button" data-start-call aria-label="Call {{ peer_name }}" title="Call {{ peer_name }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.1 3.5 9.6 7a1.4 1.4 0 0 1-.2 1.8L8 10.2a14.2 14.2 0 0 0 5.8 5.8l1.4-1.4a1.4 1.4 0 0 1 1.8-.2l3.5 2.5a1.4 1.4 0 0 1 .5 1.6l-.7 2.2a2 2 0 0 1-1.9 1.3C9.3 22 2 14.7 2 5.6a2 2 0 0 1 1.3-1.9l2.2-.7a1.4 1.4 0 0 1 1.6.5Z"/></svg>
+        <span class="sr-only">Call</span>
+      </button>
+    </header>
+
+    <div class="message-history" data-message-list aria-live="polite" aria-label="Conversation with {{ peer_name }}">
+      {% if conversation_items %}
+        {% for item in conversation_items %}
+          {% if item.kind == 'message' %}
+          <div class="message-row {{ 'mine' if item.sender_user_id == g.user.id else 'theirs' }}" data-message-id="{{ item.id }}" data-mine="{{ '1' if item.sender_user_id == g.user.id else '0' }}">
+            <div class="message-bubble {{ 'has-attachments' if item.attachments else '' }}">
+              {% if item.body %}<p>{{ item.body }}</p>{% endif %}
+              {% if item.attachments %}
+              <div class="message-attachments">
+                {% for a in item.attachments %}
+                  {% if a.is_image %}
+                  <button class="message-image-link" type="button" data-message-image data-image-url="{{ a.url }}" data-image-download-url="{{ a.download_url }}" data-image-name="{{ a.name }}" aria-label="Open {{ a.name }} in image viewer">
+                    <img src="{{ a.url }}" alt="{{ a.name }}" loading="lazy">
+                  </button>
+                  {% else %}
+                  <a class="message-file" href="{{ a.download_url }}" aria-label="Download {{ a.name }}">
+                    <span class="message-file-name">{{ a.name }}</span><span class="message-file-action">Download</span>
+                  </a>
+                  {% endif %}
+                {% endfor %}
+              </div>
+              {% endif %}
+              <div class="message-meta"><span>{{ item.created_at|chatdt }}</span>{% if item.delivery_status %}<span data-delivery-status>{{ item.delivery_status }}</span>{% endif %}</div>
+            </div>
+          </div>
+          {% else %}
+          <div class="call-event" data-call-event-id="{{ item.id }}">
+            <span>{{ item.text }}</span><small>{{ item.created_at|chatdt }}</small>
+          </div>
+          {% endif %}
+        {% endfor %}
+      {% else %}
+        <div class="message-empty" data-message-empty><strong>No messages yet</strong><span>Send the first message.</span></div>
+      {% endif %}
+    </div>
+
+    <form class="message-compose" method="post" enctype="multipart/form-data" action="{{ url_for('main.message_send', partner_id=partner.id) }}" data-message-form>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input class="sr-only" id="message-files" type="file" name="attachments" multiple
+        accept=".png,.jpg,.jpeg,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.rtf"
+        data-message-files tabindex="-1">
+      <div class="message-attachment-preview" data-attachment-preview hidden aria-live="polite"></div>
+      <div class="message-compose-row">
+        <button class="message-attach-button" type="button" data-attach-button aria-label="Attach a photo or file" title="Attach a photo or file"><svg class="compose-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8.5 12.5 6.8-6.8a3.4 3.4 0 0 1 4.8 4.8l-8.8 8.8a5 5 0 0 1-7.1-7.1l8.1-8.1"/><path d="m7.6 13.6 7.6-7.6"/></svg><span class="attach-label">Attach</span></button>
+        <label class="sr-only" for="message-body">Message</label>
+        <textarea id="message-body" name="body" rows="1" maxlength="2000" placeholder="Type a message…" data-message-input></textarea>
+        <button class="message-send-button" type="submit">Send</button>
+      </div>
+    </form>
+    <div class="message-error" data-message-error hidden role="alert"></div>
+  </section>
+</div>
+
+
+<div class="message-image-viewer" data-image-viewer hidden role="dialog" aria-modal="true" aria-labelledby="message-image-viewer-title">
+  <div class="message-image-viewer-shell" role="document">
+    <header class="message-image-viewer-head">
+      <div class="message-image-viewer-copy">
+        <span class="image-viewer-eyebrow">IMAGE</span>
+        <div class="image-viewer-meta">
+          <strong id="message-image-viewer-title" data-image-viewer-name>Image</strong>
+          <span data-image-viewer-count aria-live="polite"></span>
+        </div>
+      </div>
+      <div class="message-image-viewer-actions" aria-label="Image controls">
+        <div class="image-viewer-zoom-controls" role="group" aria-label="Zoom controls">
+          <span class="image-viewer-control-label" aria-hidden="true">Zoom</span>
+          <button class="image-viewer-tool" type="button" data-image-viewer-zoom-out aria-label="Zoom out" title="Zoom out (-)">−</button>
+          <span class="image-viewer-zoom-value" data-image-viewer-zoom-value aria-live="polite">Fit</span>
+          <button class="image-viewer-tool" type="button" data-image-viewer-zoom-in aria-label="Zoom in" title="Zoom in (+)">+</button>
+          <span class="image-viewer-control-divider" aria-hidden="true"></span>
+          <button class="image-viewer-fit" type="button" data-image-viewer-fit aria-label="Fit image to screen" title="Fit to screen (0)">Fit</button>
+        </div>
+        <div class="image-viewer-primary-actions" role="group" aria-label="Image actions">
+          <a class="image-viewer-download" data-image-viewer-download href="#" download aria-label="Download image">Download</a>
+          <button class="image-viewer-close" type="button" data-image-viewer-close aria-label="Close image viewer" title="Close (Esc)">×</button>
+        </div>
+      </div>
+    </header>
+    <div class="message-image-viewer-stage" data-image-viewer-stage aria-label="Image inspection area">
+      <button class="image-viewer-nav prev" type="button" data-image-viewer-prev aria-label="Previous image">‹</button>
+      <div class="message-image-viewer-canvas" data-image-viewer-canvas>
+        <img data-image-viewer-img src="" alt="" draggable="false">
+      </div>
+      <button class="image-viewer-nav next" type="button" data-image-viewer-next aria-label="Next image">›</button>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% block content %}
+<div class="page-head organized-page-head"><div><span class="page-kicker">Configuration</span><h1>Settings</h1><p>Manage company settings and commission levels.</p></div></div>
+<div class="two-col"><section class="panel"><div class="panel-head"><div><h2>Company</h2></div></div><form method="post" class="form-stack"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Company name<input name="company_name" value="{{ company_name }}" maxlength="160"></label><label>Currency<input name="currency_code" value="{{ currency_code }}" maxlength="3"></label><button class="button primary" type="submit">Save</button></form></section>
+<section class="panel"><div class="panel-head"><div><h2>Commission levels</h2></div></div><div class="ladder-list">{% for s in stages %}<div><span>{{ s.name }}</span><strong>{{ s.rate_bp|rate }}</strong></div>{% endfor %}</div><div class="info-box"><span>Past commissions keep their original rate.</span></div></section></div>
+{% endblock %}
