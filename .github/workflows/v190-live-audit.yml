@@ -1,0 +1,63 @@
+name: RSF v1.9 Live Audit
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  live-browser:
+    if: github.head_ref == 'v190-live-audit'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Playwright
+        run: |
+          python -m pip install --quiet playwright
+          python -m playwright install --with-deps chromium
+      - name: Verify live Render website and Partner Workspace
+        run: |
+          python - <<'PY'
+          from playwright.sync_api import sync_playwright
+          MAIN="https://realtysystemsfoundry.onrender.com"
+          PARTNER="https://partner-rsf.onrender.com/"
+          with sync_playwright() as p:
+              browser=p.chromium.launch(headless=True)
+              ctx=browser.new_context()
+              page=ctx.new_page()
+              r=page.goto(MAIN+"/",wait_until="domcontentloaded",timeout=90000)
+              assert r and r.status==200
+              assert "Realty Systems Foundry" in page.locator("body").inner_text()
+              health=ctx.request.get(MAIN+"/system/health",timeout=90000)
+              assert health.status==200
+              payload=health.json()
+              assert payload.get("status")=="ok",payload
+              assert payload.get("version")=="1.9.0",payload
+              r=page.goto(MAIN+"/app/",wait_until="domcontentloaded",timeout=90000)
+              assert r and r.status==200
+              assert page.url.startswith(MAIN+"/app/login"),page.url
+              assert "Sign in" in page.locator("body").inner_text()
+              h={k.lower():v for k,v in r.headers.items()}
+              assert h.get("x-content-type-options")=="nosniff"
+              assert h.get("x-frame-options")=="DENY"
+              assert "no-store" in h.get("cache-control","")
+              assert "frame-ancestors 'none'" in h.get("content-security-policy","")
+              sess=[c for c in ctx.cookies() if c["name"]=="rsf_partner_session"]
+              assert sess
+              assert sess[0]["httpOnly"] is True and sess[0]["secure"] is True and sess[0]["sameSite"]=="Lax"
+              no_csrf=ctx.request.post(MAIN+"/app/login",form={"email":"nobody@example.test","password":"bad"})
+              assert no_csrf.status==400,no_csrf.status
+              page2=ctx.new_page()
+              r=page2.goto(PARTNER,wait_until="domcontentloaded",timeout=90000)
+              page2.wait_for_timeout(2500)
+              assert r and r.status==200
+              assert page2.url.startswith(MAIN+"/app/login"),page2.url
+              body=page2.locator("body").inner_text()
+              assert "Sign in" in body and "Not Found" not in body
+              print("V190_LIVE_BROWSER_AUDIT_OK")
+              print("HEALTH_VERSION="+payload.get("version",""))
+              print("PARTNER_FINAL_URL="+page2.url)
+              browser.close()
+          PY
