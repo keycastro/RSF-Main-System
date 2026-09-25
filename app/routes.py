@@ -2256,6 +2256,8 @@ def profile():
                 flash("Password changed.", "success")
                 return redirect(url_for("main.profile"))
         else:
+            if g.user["role"] != "admin":
+                abort(403)
             full_name = (request.form.get("full_name", "") or "").strip()
             email = (request.form.get("email", "") or "").strip().lower()
             if len(full_name) < 2 or not valid_email(email):
@@ -2263,8 +2265,6 @@ def profile():
             else:
                 try:
                     db.execute("UPDATE users SET full_name=?,email=?,updated_at=? WHERE id=?", (full_name[:160], email, utcnow_iso(), g.user["id"]))
-                    if g.user["role"] == "partner":
-                        db.execute("UPDATE partners SET phone=? WHERE id=?", ((request.form.get("phone", "") or "").strip()[:60], g.partner["id"]))
                     log_activity("PROFILE_UPDATED", "user", g.user["id"], "Profile updated.")
                     db.commit()
                     flash("Profile updated.", "success")
@@ -2346,7 +2346,7 @@ def inquiries_list():
     partners = []
     if g.user["role"] == "admin":
         partners = db.execute(
-            "SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND u.active=1 ORDER BY u.full_name"
+            "SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND p.deleted_at IS NULL AND u.active=1 ORDER BY u.full_name"
         ).fetchall()
     now = utcnow_iso()
     overdue = [row for row in claimed if row["first_response_due_at"] and not row["first_responded_at"] and row["first_response_due_at"] < now]
@@ -2369,7 +2369,7 @@ def inquiry_detail(inquiry_id: int):
     partners = []
     if g.user["role"] == "admin":
         partners = get_db().execute(
-            "SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND u.active=1 ORDER BY u.full_name"
+            "SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND p.deleted_at IS NULL AND u.active=1 ORDER BY u.full_name"
         ).fetchall()
     matches, _normalized = duplicate_candidates({
         "company_name": inquiry["company"], "contact_name": inquiry["name"], "email": inquiry["email"],
