@@ -323,7 +323,7 @@ def _founder_conversations(db, query: str = "") -> list[dict]:
         where = " WHERE (u.full_name LIKE ? ESCAPE '\\' OR u.email LIKE ? ESCAPE '\\')"
         params.extend([pattern, pattern])
     rows = db.execute(
-        """SELECT p.id, p.user_id, p.active, u.full_name, u.email, u.role, u.avatar_stored_name, u.active AS user_active,
+        """SELECT p.id, p.user_id, p.active, p.deleted_at, u.full_name, u.email, u.role, u.avatar_stored_name, u.active AS user_active,
                   (SELECT m.id FROM messages m WHERE m.partner_id=p.id ORDER BY m.id DESC LIMIT 1) AS last_message_id,
                   (SELECT m.body FROM messages m WHERE m.partner_id=p.id ORDER BY m.id DESC LIMIT 1) AS last_message,
                   (SELECT m.created_at FROM messages m WHERE m.partner_id=p.id ORDER BY m.id DESC LIMIT 1) AS last_message_at,
@@ -586,7 +586,7 @@ def dashboard():
         leads_count = db.execute("SELECT COUNT(*) c FROM leads").fetchone()["c"]
         followups_count = db.execute("SELECT COUNT(*) c FROM followups").fetchone()["c"]
         metrics = {
-            "partners": db.execute("SELECT COUNT(*) c FROM partners WHERE active=1").fetchone()["c"],
+            "partners": db.execute("SELECT COUNT(*) c FROM partners WHERE active=1 AND deleted_at IS NULL").fetchone()["c"],
             "unclaimed": db.execute("SELECT COUNT(*) c FROM website_inquiries WHERE status='UNCLAIMED'").fetchone()["c"],
             "leads": leads_count,
             "new": db.execute("SELECT COUNT(*) c FROM leads WHERE status='NEW'").fetchone()["c"],
@@ -632,7 +632,7 @@ def dashboard():
                        WHERE f.owner_partner_id=p.id AND l.owner_partner_id=p.id AND f.status='OPEN' AND substr(f.due_at,1,10) < ?) overdue_followups,
                       (SELECT COUNT(*) FROM client_conversations c WHERE c.owner_partner_id=p.id AND c.status='ACTIVE') active_clients
                FROM partners p JOIN users u ON u.id=p.user_id
-               WHERE p.active=1 AND u.active=1
+               WHERE p.active=1 AND p.deleted_at IS NULL AND u.active=1
                ORDER BY overdue_followups DESC, open_followups DESC, active_leads DESC, u.full_name
                LIMIT 8""", (today,)
         ).fetchall()
@@ -713,7 +713,7 @@ def lead_new():
     db = get_db()
     partners = []
     if g.user["role"] == "admin":
-        partners = db.execute("""SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND u.active=1 ORDER BY u.full_name""").fetchall()
+        partners = db.execute("""SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND p.deleted_at IS NULL AND u.active=1 ORDER BY u.full_name""").fetchall()
     if request.method == "POST":
         validate_csrf()
         owner_partner_id = g.partner["id"] if g.user["role"] == "partner" else request.form.get("owner_partner_id", type=int)
@@ -723,10 +723,10 @@ def lead_new():
         if not owner_partner_id:
             errors.append("Choose a lead owner.")
         elif g.user["role"] == "admin" and not db.execute(
-            "SELECT 1 FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=? AND p.active=1 AND u.active=1",
+            "SELECT 1 FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=? AND p.active=1 AND p.deleted_at IS NULL AND u.active=1",
             (owner_partner_id,),
         ).fetchone():
-            errors.append("Choose an active partner.")
+            errors.append("Choose an available Partner.")
         if not data["company_name"]:
             errors.append("Company is required.")
         if not data["contact_name"]:
@@ -884,7 +884,7 @@ def lead_detail(lead_id: int):
         ).fetchall()
     partners = []
     if g.user["role"] == "admin":
-        partners = db.execute("SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND u.active=1 ORDER BY u.full_name").fetchall()
+        partners = db.execute("SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND p.deleted_at IS NULL AND u.active=1 ORDER BY u.full_name").fetchall()
     return render_template("lead_detail.html", title=lead["company_name"], lead=lead, notes=notes, followups=followups, sale=sale, activity=activity, pipeline=PIPELINE, partner_allowed=PARTNER_ALLOWED_STATUSES, partners=partners, now_input=local_now_input(), client_conversation=client_conversation, client_messages=client_messages)
 
 
@@ -955,7 +955,7 @@ def lead_reassign(lead_id: int):
         flash("Owner cannot change after a sale is created.", "error")
         return redirect(url_for("main.lead_detail", lead_id=lead_id))
     new_partner = request.form.get("owner_partner_id", type=int)
-    target = db.execute("SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=? AND p.active=1 AND u.active=1", (new_partner,)).fetchone()
+    target = db.execute("SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=? AND p.active=1 AND p.deleted_at IS NULL AND u.active=1", (new_partner,)).fetchone()
     if not target:
         abort(400)
     old_partner = lead["owner_partner_id"]
@@ -1259,18 +1259,23 @@ def commission_paid(commission_id: int):
     return redirect(url_for("main.commissions_list"))
 
 
-@bp.route("/admin/partners")
+@bp.route("/founder/partners")
 @admin_required
 def partners_list():
     db = get_db()
-    rows = db.execute("""SELECT p.*,u.full_name,u.email,u.active user_active,cs.name commission_stage_name,cs.rate_bp commission_rate_bp,
-        (SELECT COUNT(*) FROM leads l WHERE l.owner_partner_id=p.id) lead_count,
-        (SELECT SUM(c.commission_amount_cents) FROM commissions c WHERE c.partner_id=p.id AND c.status='PAID') paid_commission
-        FROM partners p JOIN users u ON u.id=p.user_id JOIN commission_stages cs ON cs.id=p.commission_stage_id ORDER BY p.joined_at""").fetchall()
+    rows = db.execute(
+        """SELECT p.*,u.full_name,u.email,u.created_at AS account_created_at,
+                  cs.name commission_stage_name,cs.rate_bp commission_rate_bp
+           FROM partners p
+           JOIN users u ON u.id=p.user_id
+           JOIN commission_stages cs ON cs.id=p.commission_stage_id
+           WHERE p.deleted_at IS NULL
+           ORDER BY u.full_name COLLATE NOCASE,p.id"""
+    ).fetchall()
     return render_template("partners_list.html", title="Partners", partners=rows)
 
 
-@bp.route("/admin/partners/new", methods=["GET", "POST"])
+@bp.route("/founder/partners/new", methods=["GET", "POST"])
 @admin_required
 def partner_new():
     db = get_db()
