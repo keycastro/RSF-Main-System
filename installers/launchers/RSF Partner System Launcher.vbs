@@ -1,1 +1,1 @@
-CreateObject("WScript.Shell").Run "https://realtysystemsfoundry.onrender.com/app/", 1, False
+CreateObject("WScript.Shell").Run "https://partner-rsf.onrender.com/", 1, False
