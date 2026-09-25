@@ -40,7 +40,8 @@ CREATE TABLE IF NOT EXISTS partners (
     phone TEXT NOT NULL DEFAULT '',
     notes TEXT NOT NULL DEFAULT '',
     joined_at TEXT NOT NULL,
-    active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0,1))
+    active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0,1)),
+    deleted_at TEXT
 );
 
 CREATE TABLE IF NOT EXISTS leads (
