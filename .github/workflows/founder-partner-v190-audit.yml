@@ -1,0 +1,85 @@
+name: RSF v1.9.0 Founder Partner Audit
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  account-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile source
+        run: python -m compileall -q app scripts bootstrap.py config.py run.py wsgi.py
+      - name: Test Founder Partner account lifecycle and privacy
+        env:
+          RSF_DISABLE_BACKGROUND: "1"
+        run: |
+          python - <<'PY'
+          import tempfile
+          from pathlib import Path
+          from app import create_app
+          from app.db import get_db
+          from app.auth import hash_password
+          from scripts.VERIFY_INSTALLED_SYSTEM import verify_founder_partner_account_management
+
+          with tempfile.TemporaryDirectory(prefix="rsf-v190-ci-") as td:
+              root=Path(td)
+              app=create_app({
+                  "TESTING": True,
+                  "SECRET_KEY": "rsf-v190-ci-secret",
+                  "DATABASE_URL": "",
+                  "DATABASE": str(root/"audit.db"),
+                  "MESSAGE_UPLOAD_DIR": str(root/"message_uploads"),
+                  "PROFILE_PICTURE_DIR": str(root/"profile_pictures"),
+                  "CLIENT_ATTACHMENT_DIR": str(root/"client_attachments"),
+                  "BACKUP_DIR": str(root/"backups"),
+                  "TRUSTED_HOSTS": ["localhost","127.0.0.1"],
+                  "SESSION_COOKIE_SECURE": False,
+              })
+              now="2026-09-26T00:00:00+00:00"
+              with app.app_context():
+                  db=get_db()
+                  if not db.execute("SELECT 1 FROM users WHERE role='admin' LIMIT 1").fetchone():
+                      db.execute(
+                          """INSERT INTO users(full_name,email,password_hash,role,active,force_password_change,
+                             failed_login_count,locked_until,last_login_at,created_at,updated_at)
+                             VALUES (?,?,?,'admin',1,0,0,NULL,NULL,?,?)""",
+                          ("Founder Audit Seed","founder-seed@rsf.test",hash_password("seed"),now,now),
+                      )
+                      db.commit()
+                  assert db.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+                  assert not db.execute("PRAGMA foreign_key_check").fetchall()
+                  assert db.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[0] >= 12
+                  stages=[(r["name"],int(r["rate_bp"])) for r in db.execute("SELECT name,rate_bp FROM commission_stages ORDER BY sort_order")]
+                  assert stages == [
+                      ("Founding Partner #1",4000),
+                      ("Early Partner",3000),
+                      ("Established Sales Partner",2000),
+                      ("Standard Partner",1500),
+                  ]
+                  verify_founder_partner_account_management(db)
+
+          forbidden_titles=("Founder/Admin","Founder / Admin","Employee/Partner","Employee / Partner","Employee Partner","Partner Employee")
+          forbidden_account_actions=("Deactivate","Reactivate","Suspend","Disable account","Archive account")
+          partner_files=[
+              Path("app/templates/partners_list.html"),
+              Path("app/templates/partner_form.html"),
+              Path("app/templates/partner_detail.html"),
+              Path("app/templates/partner_created.html"),
+              Path("app/templates/partner_password_changed.html"),
+              Path("app/templates/profile.html"),
+              Path("app/templates/base.html"),
+          ]
+          visible="\n".join(p.read_text(encoding="utf-8",errors="replace") for p in partner_files)
+          for phrase in forbidden_titles + forbidden_account_actions:
+              assert phrase not in visible, f"Forbidden user-facing account terminology remains: {phrase}"
+          print("FOUNDER_PARTNER_V190_AUDIT_OK")
+          PY
