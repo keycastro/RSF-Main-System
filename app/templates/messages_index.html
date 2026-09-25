@@ -11,7 +11,7 @@
       <a class="message-thread-row" href="{{ url_for('main.messages_thread', partner_id=p.id) }}">
         {% set p_avatar = profile_picture_url(p.user_id, 'partner') %}<div class="message-thread-avatar" aria-hidden="true">{% if p_avatar %}<img class="message-thread-photo" src="{{ p_avatar }}" alt="">{% else %}{{ p.full_name[:1]|upper }}{% endif %}</div>
         <div class="message-thread-copy">
-          <div class="message-thread-title"><strong>{{ p.full_name }}</strong>{% if not p.active or not p.user_active %}<span class="message-inactive">Inactive</span>{% endif %}</div>
+          <div class="message-thread-title"><strong>{{ p.full_name }}</strong>{% if p.deleted_at %}<span class="message-inactive">Deleted</span>{% endif %}</div>
           <span>{{ p.preview }}</span>
         </div>
         <div class="message-thread-meta">
