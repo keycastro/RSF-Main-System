@@ -1413,25 +1413,98 @@ def partner_detail(partner_id: int):
     return render_template("partner_detail.html", title=partner["full_name"], partner=partner, stages=stages, stats=stats)
 
 
-@bp.post("/admin/partners/<int:partner_id>/reset-password")
+@bp.post("/founder/partners/<int:partner_id>/password")
 @admin_required
 def partner_reset_password(partner_id: int):
     validate_csrf()
-    password = request.form.get("temporary_password", "") or ""
-    if not valid_password(password):
-        flash("Partner password must be at least 12 characters and include letters and numbers.", "error")
+    password = request.form.get("password", "") or ""
+    if password == "":
+        flash("Enter a Partner password.", "error")
         return redirect(url_for("main.partner_detail", partner_id=partner_id))
     db = get_db()
-    partner = db.execute("SELECT * FROM partners WHERE id=?", (partner_id,)).fetchone()
-    if not partner: abort(404)
-    db.execute("UPDATE users SET password_hash=?,force_password_change=0,failed_login_count=0,locked_until=NULL,updated_at=? WHERE id=?", (hash_password(password), utcnow_iso(), partner["user_id"]))
+    partner = db.execute(
+        """SELECT p.id,p.user_id,u.full_name,u.email
+           FROM partners p JOIN users u ON u.id=p.user_id
+           WHERE p.id=? AND p.deleted_at IS NULL""",
+        (partner_id,),
+    ).fetchone()
+    if not partner:
+        abort(404)
+    db.execute(
+        """UPDATE users SET password_hash=?,force_password_change=0,failed_login_count=0,
+                  locked_until=NULL,updated_at=? WHERE id=?""",
+        (hash_password(password), utcnow_iso(), partner["user_id"]),
+    )
     log_activity("PARTNER_PASSWORD_RESET", "partner", partner_id, "Partner password changed.")
     db.commit()
-    flash("Partner password updated.", "success")
-    return redirect(url_for("main.partner_detail", partner_id=partner_id))
+    return render_template(
+        "partner_password_changed.html",
+        title="Password Changed",
+        partner=partner,
+        chosen_password=password,
+    )
 
 
-@bp.route("/admin/duplicates")
+@bp.post("/founder/partners/<int:partner_id>/delete")
+@admin_required
+def partner_delete(partner_id: int):
+    validate_csrf()
+    db = get_db()
+    partner = db.execute(
+        """SELECT p.*,u.full_name,u.email,u.avatar_stored_name
+           FROM partners p JOIN users u ON u.id=p.user_id
+           WHERE p.id=? AND p.deleted_at IS NULL""",
+        (partner_id,),
+    ).fetchone()
+    if not partner:
+        abort(404)
+
+    now = utcnow_iso()
+    # This is intentionally not a deactivate flow. Original credentials and
+    # profile data are destroyed and there is no restore/reactivate action. The
+    # scrubbed rows remain only as historical FK anchors for company records.
+    erased_email = f"deleted-partner-{partner_id}-{uuid4().hex}@rsf.invalid"
+    erased_password = hash_password(uuid4().hex + uuid4().hex)
+
+    # End any live call cleanly before authentication access disappears.
+    db.execute(
+        """UPDATE voice_calls
+           SET status=CASE WHEN status='RINGING' THEN 'MISSED' ELSE 'ENDED' END,
+               end_reason='account_deleted',ended_at=?,ended_by_user_id=?
+           WHERE partner_id=? AND status IN ('RINGING','ACTIVE')""",
+        (now, g.user["id"], partner_id),
+    )
+    db.execute("DELETE FROM client_notifications WHERE user_id=?", (partner["user_id"],))
+    db.execute(
+        """UPDATE users
+           SET full_name='Deleted Partner',email=?,password_hash=?,active=0,force_password_change=0,
+               failed_login_count=0,locked_until=NULL,last_login_at=NULL,
+               avatar_stored_name=NULL,avatar_mime_type=NULL,avatar_data=NULL,avatar_updated_at=?,updated_at=?
+           WHERE id=?""",
+        (erased_email, erased_password, now, now, partner["user_id"]),
+    )
+    db.execute(
+        """UPDATE partners
+           SET phone='',notes='',active=0,deleted_at=?
+           WHERE id=? AND deleted_at IS NULL""",
+        (now, partner_id),
+    )
+    log_activity("PARTNER_DELETED", "partner", partner_id, "Partner account permanently deleted.")
+    db.commit()
+
+    old_avatar = partner["avatar_stored_name"]
+    if old_avatar:
+        safe_name = Path(old_avatar).name
+        if safe_name == old_avatar:
+            try:
+                (_profile_picture_dir() / safe_name).unlink(missing_ok=True)
+            except OSError:
+                pass
+    flash("Partner deleted permanently. Business history was preserved.", "success")
+    return redirect(url_for("main.partners_list"))
+
+
+@bp.route("/founder/duplicates")
 @admin_required
 def duplicate_claims():
     db = get_db()
@@ -1443,7 +1516,7 @@ def duplicate_claims():
     return render_template("duplicate_claims.html", title="Duplicate Leads", claims=claims)
 
 
-@bp.post("/admin/duplicates/<int:claim_id>/resolve")
+@bp.post("/founder/duplicates/<int:claim_id>/resolve")
 @admin_required
 def duplicate_resolve(claim_id: int):
     validate_csrf()
@@ -1460,11 +1533,11 @@ def duplicate_resolve(claim_id: int):
         old_owner = lead["owner_partner_id"]
         new_owner = claim["attempted_by_partner_id"]
         target = db.execute(
-            "SELECT 1 FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=? AND p.active=1 AND u.active=1",
+            "SELECT 1 FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=? AND p.active=1 AND p.deleted_at IS NULL AND u.active=1",
             (new_owner,),
         ).fetchone()
         if not target:
-            flash("That partner is inactive. Keep the current owner or choose another partner.", "error")
+            flash("That Partner is unavailable. Keep the current owner or choose another Partner.", "error")
             return redirect(url_for("main.duplicate_claims"))
         db.execute("UPDATE leads SET owner_partner_id=?,last_activity_at=? WHERE id=?", (new_owner, utcnow_iso(), lead["id"]))
         status = "REASSIGNED"
@@ -1580,7 +1653,9 @@ def messages_thread(partner_id: int):
 @login_required
 def message_send(partner_id: int):
     validate_csrf()
-    authorized_conversation_partner(partner_id)
+    partner = authorized_conversation_partner(partner_id)
+    if partner["deleted_at"]:
+        abort(404)
     body = (request.form.get("body", "") or "").strip()
     raw_files = [item for item in request.files.getlist("attachments") if item and item.filename]
 
@@ -1794,6 +1869,8 @@ def message_unread():
 def voice_call_start(partner_id: int):
     validate_csrf()
     partner = authorized_conversation_partner(partner_id)
+    if partner["deleted_at"]:
+        return jsonify({"ok": False, "error": "This Partner account was deleted."}), 404
     expire_stale_voice_calls()
     db = get_db()
     existing = db.execute(
@@ -1976,7 +2053,7 @@ def resources_list():
     return render_template("resources.html", title="Resources", resources=rows)
 
 
-@bp.route("/admin/resources/new", methods=["GET", "POST"])
+@bp.route("/founder/resources/new", methods=["GET", "POST"])
 @admin_required
 def resource_new():
     db = get_db()
@@ -2001,7 +2078,7 @@ def resource_new():
     return render_template("resource_form.html", title="Add Resource", categories=RESOURCE_CATEGORIES, resource=request.form if request.method == "POST" else None)
 
 
-@bp.route("/admin/resources/<int:resource_id>/edit", methods=["GET", "POST"])
+@bp.route("/founder/resources/<int:resource_id>/edit", methods=["GET", "POST"])
 @admin_required
 def resource_edit(resource_id: int):
     db = get_db()
@@ -2027,7 +2104,7 @@ def resource_edit(resource_id: int):
     return render_template("resource_form.html", title="Edit Resource", categories=RESOURCE_CATEGORIES, resource=request.form if request.method == "POST" else resource)
 
 
-@bp.route("/admin/activity")
+@bp.route("/founder/activity")
 @admin_required
 def activity():
     db = get_db()
@@ -2036,7 +2113,7 @@ def activity():
     return render_template("activity.html", title="Activity", activities=rows)
 
 
-@bp.route("/admin/settings", methods=["GET", "POST"])
+@bp.route("/founder/settings", methods=["GET", "POST"])
 @admin_required
 def settings():
     db = get_db()
@@ -2161,10 +2238,8 @@ def profile():
                 flash("Current password is incorrect.", "error")
             elif new_password != confirm_password:
                 flash("New passwords do not match.", "error")
-            elif check_password_hash(g.user["password_hash"], new_password):
-                flash("Choose a new password that is different from the current password.", "error")
             elif not valid_password(new_password):
-                flash("New password must be at least 12 characters and include letters and numbers.", "error")
+                flash("Enter a new password.", "error")
             else:
                 db.execute("UPDATE users SET password_hash=?,force_password_change=0,updated_at=? WHERE id=?", (hash_password(new_password), utcnow_iso(), g.user["id"]))
                 log_activity("PASSWORD_CHANGED", "user", g.user["id"], "Account password changed.")
