@@ -17,7 +17,10 @@
     "branch": "main",
     "auto_deploy": false,
     "repository": "https://github.com/keycastro/RSF-Main-System",
-    "repository_metadata_note": "Render may display the pre-rename URL, which GitHub redirects to RSF-Main-System; deployments are verified live after rename."
+    "legacy_service_id": "srv-dam749e1egvs738cppq0",
+    "legacy_service_name": "realtysystemsfoundry-legacy",
+    "migration_note": "v3.9.8 resumed the already healthy replacement Render service after the prior Git whitespace preflight stop, then completed clean source control, exact deploy, live verification, and private RSF Inbox/database continuity checks. The original service remains as rollback.",
+    "repository_metadata_note": "Render may display the pre-rename URL, which GitHub redirects to RSF-Main-System; deployments have been verified live after the rename."
   },
   "github": {
     "primary_repo": "https://github.com/keycastro/RSF-Main-System",
@@ -26,12 +29,620 @@
     "repository_renamed_from": "keycastro/key-castro-render-deploy"
   },
   "public_pages_require_login": false,
+  "private_owner_inbox": {
+    "deployed_online": true,
+    "listed_on_public_site": false,
+    "listed_in_sitemap": false,
+    "authentication": "desktop launcher exchanges a private bearer token for a short-lived signed access ticket; browser then uses a secure Flask session",
+    "database": "Render PostgreSQL via DATABASE_URL",
+    "statuses": [
+      "new",
+      "read",
+      "replied",
+      "archived"
+    ],
+    "local_secret_config": ".owner_inbox.json",
+    "desktop_launcher": "RSF INBOX",
+    "localhost_required": false
+  },
   "desktop_launchers": {
     "REALTY SYSTEMS FOUNDRY": "https://realtysystemsfoundry.onrender.com/",
-    "RSF PARTNER SYSTEM": "https://realtysystemsfoundry.onrender.com/app/"
+    "RSF INBOX": "private authenticated online owner inbox"
   },
-  "desktop_launchers_use_localhost": false,
   "separate_inbox_project_folder_required": false,
+  "retired_host": {
+    "provider": "PythonAnywhere",
+    "old_url": "https://keycastro.pythonanywhere.com",
+    "webapp_deleted": true,
+    "delete_http_status": 204,
+    "deleted_on": "2026-09-18"
+  },
+  "public_contact_email": "keycastro509@gmail.com",
+  "contact_form": {
+    "mode": "database",
+    "inquiry_database_active": true,
+    "smtp_notification_optional": true,
+    "smtp_auth_configured_and_verified": false,
+    "template_request_type_active": true
+  },
   "secrets_included_in_repository": false,
-  "deployment_status": "LIVE"
+  "visual_design": "Premium ivory + navy + sage design retained. Version 3.9.0 rebrands the public website as Realty Systems Foundry with company-first wording and Key Castro shown as founder; no visual redesign.",
+  "template_library_foundation": {
+    "prepared": true,
+    "published_templates": 3,
+    "public_index_active": true,
+    "routes": [
+      "/system-templates",
+      "/system-templates/<slug>"
+    ],
+    "source_controlled_registry": "app/system_templates.py",
+    "generic_templates_ready": true,
+    "contact_source_context_ready": true,
+    "inquiry_source_fields": [
+      "source_type",
+      "source_slug",
+      "source_title",
+      "source_action"
+    ],
+    "first_flagship_recommendation": "Completed: three independent working systems are published and customizable",
+    "published_slugs": [
+      "property-operations-command-center",
+      "property-inventory-hub",
+      "student-housing-matching-and-placement-system"
+    ]
+  },
+  "seo_foundation": {
+    "canonical_urls": true,
+    "unique_page_titles": true,
+    "open_graph": true,
+    "twitter_cards": true,
+    "person_website_structured_data": true,
+    "project_breadcrumb_structured_data": true,
+    "future_template_structured_data_ready": true,
+    "search_console_verification_env_ready": true,
+    "sitemap_publishes_only_real_templates": true,
+    "published_template_sitemap_entries": true,
+    "software_application_structured_data_active": true
+  },
+  "public_portfolio": {
+    "nexus_properties_publicly_removed": true,
+    "completed_systems": [
+      {
+        "name": "Property Operations Command Center",
+        "slug": "property-operations-command-center",
+        "commercial_model": "customizable_then_full_handover_or_managed"
+      },
+      {
+        "name": "Property Inventory Hub",
+        "slug": "property-inventory-hub",
+        "commercial_model": "customizable_then_full_handover_or_managed"
+      },
+      {
+        "name": "Student Housing Matching and Placement System",
+        "slug": "student-housing-matching-and-placement-system",
+        "commercial_model": "customizable_then_full_handover_or_managed",
+        "truth_note": "Independent portfolio project based on market research; no commission, adoption, affiliation, or endorsement claim."
+      }
+    ],
+    "truth_boundary": "Published systems are presented under Realty Systems Foundry, founded by Key Castro; no client commission, adoption, or paid engagement is claimed without evidence."
+  },
+  "information_architecture": {
+    "primary_navigation": [
+      "Home",
+      "Systems",
+      "Services & Pricing",
+      "About",
+      "Contact"
+    ],
+    "systems_primary_route": "/system-templates",
+    "legacy_projects_route": "301 redirect to /system-templates",
+    "secondary_pages": {
+      "skills": "301 redirect to /about",
+      "experience": "301 redirect to /about"
+    },
+    "ux_contract": "Short, simple, clear public content. No unnecessary repetition. One clear purpose per page.",
+    "visitor_flow": "Home -> Systems -> System -> Contact, with Services & Pricing explaining the build process, pricing, and the two post-build management choices.",
+    "presentation_contract": "One main job per page: Home explains Realty Systems Foundry; Systems shows existing systems; each System page explains that system; Services & Pricing explains the business process, pricing, and management choices; About explains the company first and Key Castro as founder; Contact collects one inquiry."
+  },
+  "system_search": {
+    "active": true,
+    "route": "/system-templates",
+    "implementation": "client-side progressive enhancement over server-rendered system cards",
+    "metadata_source": "app/system_templates.py",
+    "search_fields": [
+      "name",
+      "category",
+      "short_description",
+      "card_audience",
+      "business_problem",
+      "target_users",
+      "search_terms"
+    ],
+    "no_match_conversion": "Discuss Custom Build -> Contact",
+    "javascript_required_for_content": false
+  },
+  "commercial_model": {
+    "system_creation": [
+      "Buy Existing System",
+      "Custom System Build"
+    ],
+    "existing_system_purchase": {
+      "currency": "USD",
+      "price": 199,
+      "billing": "one-time",
+      "meaning": "Purchase of the published existing system as shown; customization and maintenance are not included.",
+      "single_source": "app/system_templates.py::EXISTING_SYSTEM_PRICING"
+    },
+    "new_custom_system_pricing": "Price by Agreement",
+    "post_build_options": [
+      "Full Handover",
+      "Managed by Realty Systems Foundry"
+    ],
+    "full_handover": "We build it. You manage it. Client or someone they hire handles hosting/deployment, security/updates, backups, and technical fixes after handover; no monthly management fee is charged by Realty Systems Foundry.",
+    "pricing_public": true,
+    "pricing_currency_public": "USD only",
+    "maintenance_pricing": {
+      "currency": "USD",
+      "monthly_per_system": 39,
+      "yearly_per_system": 390,
+      "twelve_monthly_total": 468,
+      "annual_savings": 78,
+      "single_source": "app/system_templates.py::MANAGED_MAINTENANCE_PRICING"
+    },
+    "plan_selection": "monthly/yearly plan keys are resolved server-side; official managed-maintenance price text is generated from trusted pricing metadata; no checkout is implied",
+    "legacy_compatibility": "legacy subscribe/free-access URLs and old customization links are accepted only for compatibility; new public existing-system CTAs use the Existing System Purchase intent",
+    "maintenance_boundary": "Managed care is optional. $39/month or $390/year keeps the current system running and does not include new features, workflow changes, new modules, integrations, or other improvements.",
+    "system_upgrades": {
+      "minor": {
+        "price": 79,
+        "meaning": "Focused improvement to an existing Realty Systems Foundry system."
+      },
+      "major": {
+        "price": 149,
+        "meaning": "Larger improvement to an existing Realty Systems Foundry system."
+      },
+      "new_system_or_large_expansion": {
+        "price": "Price by Agreement",
+        "meaning": "Work beyond a normal system upgrade."
+      },
+      "separate_from_system_purchase": true,
+      "separate_from_maintenance": true,
+      "available_to_self_managed_or_key_managed_clients": true
+    },
+    "managed_by_realty_systems_foundry": "We build it. We manage it. Optional managed care remains $39/month or $390/year; Realty Systems Foundry handles hosting/deployment, routine technical checks, backups when used, and technical fixes for the current system."
+  },
+  "ux_refinement_3_4": {
+    "document": "docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md",
+    "navigation_changed": false,
+    "routes_changed": false,
+    "business_logic_changed": false,
+    "public_private_boundary_changed": false,
+    "focus": [
+      "clearer page purpose",
+      "less CTA repetition",
+      "less card overuse",
+      "shorter vertical travel",
+      "controlled media",
+      "mobile hierarchy"
+    ]
+  },
+  "ux_simplification_3_5": {
+    "document": "docs/WEBSITE_SIMPLIFICATION_3_5.md",
+    "navigation_changed": false,
+    "skills_experience_redirect_to_about": true,
+    "business_logic_changed": false,
+    "public_private_boundary_changed": false,
+    "pricing_location": "system detail pages and plan-specific Contact context",
+    "focus": [
+      "simple English",
+      "shorter pages",
+      "less repetition",
+      "fewer choices",
+      "clear buttons",
+      "one purpose per page"
+    ]
+  },
+  "system_card_separation_3_5_1": {
+    "navigation_changed": false,
+    "routes_changed": false,
+    "business_logic_changed": false,
+    "pricing_changed": false,
+    "search_changed": false,
+    "focus": [
+      "clear visual separation between system choices",
+      "subtle warm identity for Property Operations Command Center",
+      "subtle cool identity for Property Inventory Hub",
+      "high-contrast readable copy",
+      "clear borders, spacing, hover and focus states",
+      "consistent Home and Systems presentation"
+    ]
+  },
+  "page_top_refinement_3_5_2": {
+    "document": "docs/SITE_WIDE_PAGE_TOP_REFINEMENT_3_5_2.md",
+    "navigation_changed": false,
+    "routes_changed": false,
+    "business_logic_changed": false,
+    "pricing_changed": false,
+    "search_changed": false,
+    "focus": [
+      "compact page introductions",
+      "reduced empty hero space",
+      "shorter hero-to-content gaps",
+      "balanced system-detail page tops",
+      "responsive proportion",
+      "preserved accessibility and readability"
+    ]
+  },
+  "business_model_3_6": {
+    "document": "docs/BUSINESS_MODEL_AND_MANAGED_MAINTENANCE_3_6.md",
+    "design_changed": false,
+    "published_systems": 3,
+    "student_housing_added": true,
+    "subscription_access_model_retired": true,
+    "managed_maintenance_price_meaning": "ongoing managed technical service only; development/customization is separately quoted"
+  },
+  "release_workflow": {
+    "default": "one-command update + tests + Git pushes + Render deploy + live verification",
+    "launcher": "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
+    "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
+    "provider_auto_deploy": false,
+    "success_condition": "production health reports version 3.9.4; public branding is Realty Systems Foundry; Home headline reads We Build Custom Systems for Real Estate Businesses.; Key Castro is presented as Founder, Realty Systems Foundry; Home hero secondary CTA remains Create a New System and links to /contact; Home keeps exactly 3 featured systems and the approved Explore All Systems / Services & Pricing CTA band; Home, Systems, system detail, and Services & Pricing show the approved $199 existing-system purchase price; new custom systems use Price by Agreement; management remains optional at $0/month self-managed or $39/month / $390/year managed care; upgrades remain $79 / $149 / Price by Agreement; no PHP/peso pricing is publicly displayed; existing design and exactly 3 published systems remain preserved."
+  },
+  "ux_master_refinement_3_7": {
+    "document": "docs/MASTER_UX_REFINEMENT_3_7.md",
+    "navigation_changed": false,
+    "routes_changed": false,
+    "business_logic_changed": false,
+    "public_private_boundary_changed": false,
+    "search_behavior": "metadata search remains implemented but is hidden while the public catalog has 6 or fewer systems",
+    "focus": [
+      "balanced three-system portfolio grid",
+      "less repeated commercial copy",
+      "compact page composition",
+      "controlled screenshots",
+      "simple international English",
+      "responsive visual hierarchy"
+    ]
+  },
+  "human_clarity_3_8": {
+    "document": "docs/HUMAN_CLARITY_AND_OLDER_USER_UX_3_8.md",
+    "public_navigation_label_change": "Services -> How It Works; canonical /services route preserved",
+    "routes_changed": false,
+    "business_logic_changed": false,
+    "public_private_boundary_changed": false,
+    "primary_test": "first-time non-technical older visitor can understand the basic offer without learning internal terminology",
+    "page_responsibilities": {
+      "home": "what Realty Systems Foundry does",
+      "systems": "systems already built",
+      "system_detail": "what one system does",
+      "how_it_works": "build process and exactly two post-build management choices",
+      "about": "what Realty Systems Foundry does, who Key Castro is as founder, the business problems solved, automation value, and workflow consolidation benefits",
+      "contact": "send one inquiry"
+    },
+    "public_management_labels": [
+      "You Manage It",
+      "I Manage It"
+    ],
+    "formal_management_terms_preserved_internally": [
+      "Full Handover",
+      "Managed by Realty Systems Foundry"
+    ],
+    "readability": [
+      "larger everyday text",
+      "48px primary controls",
+      "fewer micro-labels",
+      "fewer competing CTAs",
+      "plain English"
+    ]
+  },
+  "minor_change_3_8_1": {
+    "scope": "How It Works only, plus direct tests/release/deployment dependencies",
+    "route_changed": false,
+    "design_changed": false,
+    "business_model_changed": false,
+    "changes": [
+      "Existing-system card now says the system can be adapted to fit the business",
+      "Removed redundant I build the system step",
+      "Renumbered Choose who manages it from Step 3 to Step 2",
+      "Preserved final Want to get started CTA and both management choices/prices"
+    ]
+  },
+  "minor_change_3_8_2": {
+    "scope": "How It Works only, plus direct tests/release/deployment dependencies",
+    "route_changed": false,
+    "business_model_changed": false,
+    "changes": [
+      "Converted View Systems from a text link to a clear button CTA",
+      "Added Request a System button linked to the existing custom-build Contact context",
+      "Removed the redundant final Want to get started CTA block",
+      "Preserved Step 1/Step 2 flow, management choices, prices, and all unrelated pages/features"
+    ]
+  },
+  "minor_change_3_8_3": {
+    "scope": "About page and footer tagline only, plus direct tests/release/deployment dependencies",
+    "routes_changed": false,
+    "business_model_changed": false,
+    "pricing_changed": false,
+    "changes": [
+      "Expanded About around common business-operation problems",
+      "Highlighted rule-based automation and reduction of repetitive manual work",
+      "Explained that one custom system may reduce dependence on multiple paid tools/subscriptions without guaranteeing lower cost",
+      "Changed footer tagline to Better systems for complex business needs",
+      "Preserved all unrelated public pages and private/backend functionality"
+    ]
+  },
+  "minor_change_3_8_4": {
+    "scope": "About portrait only, plus direct CSS/test/release/deployment dependencies",
+    "routes_changed": false,
+    "business_model_changed": false,
+    "pricing_changed": false,
+    "copy_changed": false,
+    "changes": [
+      "Added the user-supplied Key Castro professional portrait to the About introduction",
+      "Added responsive About-only portrait styling",
+      "Added direct regression and live-deployment checks for the portrait asset",
+      "Preserved all unrelated public pages, approved About copy, footer, and private/backend functionality"
+    ]
+  },
+  "minor_change_3_8_5": {
+    "scope": "About portrait replacement and top-profile organization only, plus direct CSS/test/release/deployment dependencies",
+    "routes_changed": false,
+    "business_model_changed": false,
+    "pricing_changed": false,
+    "approved_about_problem_copy_changed": false,
+    "changes": [
+      "Replaced the prior About portrait with the newly approved user-supplied portrait",
+      "Added the approved professional title to the About top profile block",
+      "Adjusted only About-scoped top-profile alignment, sizing, and responsive portrait behavior",
+      "Preserved all About problem/automation/subscription-value messaging and all unrelated public/private functionality"
+    ]
+  },
+  "minor_change_3_8_6": {
+    "scope": "About top profile area only, plus direct CSS/test/release/deployment dependencies",
+    "routes_changed": false,
+    "business_model_changed": false,
+    "pricing_changed": false,
+    "approved_about_problem_copy_changed": false,
+    "portrait_asset_changed": false,
+    "changes": [
+      "Moved the existing professional title from the left intro to directly below the existing portrait",
+      "Grouped the portrait and title into one clean About-only profile block",
+      "Rebalanced only the About top grid and responsive behavior to reduce the disconnected/floating appearance",
+      "Preserved the approved portrait asset, intro copy, all About content below the top profile area, and all unrelated public/private functionality"
+    ]
+  },
+  "minor_change_3_8_7": {
+    "scope": "Approved About top profile redesign only, plus direct CSS/test/release/deployment dependencies",
+    "routes_changed": false,
+    "business_model_changed": false,
+    "pricing_changed": false,
+    "approved_about_lower_content_changed": false,
+    "portrait_asset_changed": false,
+    "changes": [
+      "Moved the unchanged approved portrait into the left profile column and grouped it with Key Castro and the existing professional title",
+      "Changed the right side of the top About area to ABOUT / What I do. with the exact user-approved service summary",
+      "Added the approved compact Custom Systems / Automation / Real Results value row",
+      "Preserved THE PROBLEMS I HELP SOLVE and everything below it, plus all unrelated public/private functionality"
+    ]
+  },
+  "minor_change_3_8_8": {
+    "scope": "Lower About page organization only from THE PROBLEMS I HELP SOLVE through HOW I WORK, plus direct CSS/test/release/deployment dependencies",
+    "routes_changed": false,
+    "business_model_changed": false,
+    "pricing_changed": false,
+    "approved_about_top_profile_changed": false,
+    "portrait_asset_changed": false,
+    "approved_lower_about_information_removed": false,
+    "changes": [
+      "Reorganized the lower About page into a consistent five-part numbered story without removing approved information",
+      "Added restrained inline icons and unified card/list hierarchy using About-scoped CSS",
+      "Improved section width, spacing, alignment, column balance, and responsive stacking",
+      "Preserved the approved v3.8.7 top profile, every lower-About detail, footer, and all unrelated public/private functionality"
+    ]
+  },
+  "minor_change_3_8_9": {
+    "scope": "How It Works service/pricing wording plus trusted maintenance pricing source and direct test/release/deployment dependencies only",
+    "design_changed": false,
+    "layout_changed": false,
+    "routes_changed": false,
+    "forms_changed": false,
+    "database_changed": false,
+    "pricing_changed": true,
+    "business_model_clarified": true,
+    "changes": [
+      "Changed managed maintenance to $39/month or $390/year",
+      "Kept build/customization as a Custom Quote based on need",
+      "Clarified maintenance as keeping the existing live system running and separated it from future development",
+      "Added Minor System Upgrade at $79 and Major System Upgrade at $149",
+      "Kept very large expansion/new system as Custom Quote",
+      "Used simple professional English while preserving the existing visual design and page structure"
+    ]
+  },
+  "pricing_clarity_3_8_12": {
+    "scope": "Existing-system purchase pricing plus direct Contact/test/release/deployment dependencies",
+    "existing_system_price_usd": 160,
+    "existing_system_billing": "one-time",
+    "customization_included": false,
+    "maintenance_included": false,
+    "public_currency": "USD only",
+    "new_custom_system": "Price by Agreement",
+    "minor_upgrade_usd": 79,
+    "major_upgrade_usd": 149,
+    "new_system_or_large_expansion": "Price by Agreement",
+    "maintenance_monthly_usd": 39,
+    "maintenance_yearly_usd": 390,
+    "published_systems": 3,
+    "contact_intent": "Existing System Purchase"
+  },
+  "minor_change_3_8_14": {
+    "scope": "Services page/navigation naming only, plus direct tests/release/deployment dependencies",
+    "route_changed": false,
+    "design_changed": false,
+    "layout_changed": false,
+    "pricing_changed": false,
+    "business_logic_changed": false,
+    "changes": [
+      "Renamed the public page/navigation label from How It Works to Services & Pricing",
+      "Updated the /services page heading and browser/tab title to Services & Pricing",
+      "Updated the Home direct link label to See Services & Pricing",
+      "Preserved the canonical /services route and all page content, pricing, layout, styling, and behavior"
+    ]
+  },
+  "minor_change_3_8_15": {
+    "scope": "Home final Services & Pricing CTA simplification only, plus direct CSS/test/release/deployment dependencies",
+    "routes_changed": false,
+    "navigation_changed": false,
+    "services_page_changed": false,
+    "pricing_changed": false,
+    "business_logic_changed": false,
+    "changes": [
+      "Removed the lower Home How it works heading, summary, all three numbered steps, and their descriptions",
+      "Kept only See Services & Pricing → linked to /services",
+      "Added Home-CTA-scoped styling to center the link, increase its prominence, and keep desktop/mobile spacing balanced",
+      "Preserved all other Home content, Services & Pricing content, pricing, systems, footer content, routes, and private functionality"
+    ]
+  },
+  "home_featured_cta_3_8_16": {
+    "scope": "Home lower transition area only",
+    "featured_systems_on_home": 3,
+    "primary_cta": {
+      "label": "Explore All Systems",
+      "path": "/system-templates"
+    },
+    "secondary_cta": {
+      "label": "See Services & Pricing",
+      "path": "/services"
+    },
+    "approved_microcopy": [
+      "PLAN",
+      "SYSTEMS",
+      "GROW",
+      "READY TO SEE MORE?",
+      "NEED DETAILS?",
+      "BUILD",
+      "ORGANIZE",
+      "GROW"
+    ],
+    "preserved": [
+      "three Home system cards",
+      "Home hero",
+      "navigation",
+      "footer content",
+      "Systems page",
+      "Services & Pricing page",
+      "About",
+      "Contact",
+      "pricing",
+      "business logic",
+      "private owner Inbox"
+    ]
+  },
+  "current_version": "1.5.2",
+  "pricing_and_management_clarity_3_8_19": {
+    "scope": "Existing-system price plus Services & Pricing management clarity and direct tests/release/deployment dependencies",
+    "existing_system_price_usd": 290,
+    "existing_system_billing": "one-time",
+    "self_managed_management_fee_usd_per_month": 0,
+    "managed_care_monthly_usd": 39,
+    "managed_care_yearly_usd": 390,
+    "managed_care_price_changed": false,
+    "management_optional": true,
+    "design_redesigned": false,
+    "visual_scope": "Minimal Services & Pricing content-fit adjustments only; current colors, cards, fonts, spacing style, and visual identity preserved."
+  },
+  "existing_system_price_update_3_8_20": {
+    "scope": "Existing ready-built system price only plus direct tests/release/deployment dependencies",
+    "existing_system_price_usd": 199,
+    "existing_system_billing": "one-time",
+    "self_managed_management_fee_usd_per_month": 0,
+    "managed_care_monthly_usd": 39,
+    "managed_care_yearly_usd": 390,
+    "managed_care_price_changed": false,
+    "design_redesigned": false,
+    "visual_scope": "No redesign; current colors, cards, fonts, spacing style, and visual identity preserved."
+  },
+  "company_public_name": "Realty Systems Foundry",
+  "founder": "Key Castro",
+  "primary_niche": "Real estate businesses",
+  "preferred_public_domain": "https://realtysystemsfoundry.com",
+  "domain_status": "Preferred custom domain; current Render URL remains the live deployment URL until DNS/domain connection is completed.",
+  "rebrand_3_9_0": {
+    "status": "executed in release package",
+    "company": "Realty Systems Foundry",
+    "founder": "Key Castro",
+    "headline": "We Build Custom Systems for Real Estate Businesses.",
+    "brand_language": "Custom Systems / Purpose-Built Systems / Real Estate Technology Systems",
+    "forbidden_primary_positioning": "simple systems",
+    "design_changed": false,
+    "pricing_changed": false,
+    "current_live_host_preserved": "https://keycastro.onrender.com",
+    "preferred_domain": "https://realtysystemsfoundry.com"
+  },
+  "release_3_9_0": {
+    "date": "2026-09-21",
+    "scope": "Public rebrand only: company identity, company voice, founder role, SEO/structured data, managed-service labels, tests, and deploy verification.",
+    "pricing": {
+      "existing_system": 199,
+      "managed_monthly": 39,
+      "managed_yearly": 390,
+      "minor_upgrade": 79,
+      "major_upgrade": 149,
+      "new_system_or_large_expansion": "Price by Agreement"
+    }
+  },
+  "local_workspace_rebrand_3_9_1": {
+    "status": "approved and implemented",
+    "old_local_folder": "C:\\Users\\Admin\\Documents\\KEY_CASTRO_WEBSITE",
+    "new_local_folder": "C:\\Users\\Admin\\Documents\\REALTY_SYSTEMS_FOUNDRY",
+    "website_desktop_launcher": "REALTY SYSTEMS FOUNDRY",
+    "inbox_desktop_launcher": "RSF INBOX",
+    "migration": "Installer renames the existing local folder in place when safe, preserving .git, .env, .owner_inbox.json, .venv, logs, and other local state.",
+    "repositories_changed": false,
+    "render_service_changed": false,
+    "live_url_changed": false,
+    "website_design_changed": false,
+    "pricing_changed": false
+  },
+  "release_3_9_1": {
+    "date": "2026-09-21",
+    "scope": "Local workspace identity migration only: Documents folder, desktop launchers, launcher filenames, installer/updater paths, tests/deployment metadata.",
+    "public_brand": "Realty Systems Foundry",
+    "local_folder": "REALTY_SYSTEMS_FOUNDRY",
+    "desktop_shortcuts": [
+      "REALTY SYSTEMS FOUNDRY",
+      "RSF INBOX"
+    ],
+    "pricing_changed": false,
+    "design_changed": false
+  },
+  "render_subdomain_3_9_2": {
+    "service_id_preserved": "srv-dam749e1egvs738cppq0 (legacy source only after v3.9.3 migration)",
+    "service_name": "realtysystemsfoundry",
+    "official_url": "https://realtysystemsfoundry.onrender.com",
+    "former_url": "https://keycastro.onrender.com",
+    "github_repositories_unchanged": true,
+    "custom_dot_com_domain": "future option only",
+    "result": "service display name changed, but original onrender.com hostname did not change; target hostname remained 404 after successful deploy"
+  },
+  "render_hostname_migration_3_9_3": {
+    "status": "prepared for one-run execution",
+    "target_url": "https://realtysystemsfoundry.onrender.com",
+    "strategy": "clone existing Render service configuration into a newly created service named realtysystemsfoundry using Render CLI services create --from",
+    "legacy_service_id": "srv-dam749e1egvs738cppq0",
+    "legacy_service_name_after_migration": "realtysystemsfoundry-legacy",
+    "active_service_id": "written automatically during migration before Git commit",
+    "rollback": "original service retained; not deleted automatically",
+    "private_inbox_continuity_check": "new service must accept the locally preserved bearer token and reach the existing inquiry database before endpoint switch",
+    "pricing_changed": false,
+    "design_changed": false
+  },
+  "unified_online_target": {
+    "website": "https://realtysystemsfoundry.onrender.com/",
+    "partner_system": "https://realtysystemsfoundry.onrender.com/app/",
+    "render_service": "realtysystemsfoundry",
+    "render_service_id": "srv-daom5h0ae00c73c3qt70",
+    "source_repo": "keycastro/RSF-Main-System",
+    "database": "Render PostgreSQL (DATABASE_URL)",
+    "desktop_launchers_use_localhost": false
+  }
 }
