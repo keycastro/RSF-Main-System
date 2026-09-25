@@ -1,0 +1,186 @@
+name: RSF Maximum Audit
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  source-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install application dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Run source, role, privacy, CSRF and data-isolation checks
+        run: |
+          python - <<'PY'
+          import re, tempfile
+          from pathlib import Path
+          from app import create_app
+          from app.db import get_db
+          from app.auth import hash_password
+
+          with tempfile.TemporaryDirectory() as td:
+              root = Path(td)
+              app = create_app({
+                  "TESTING": True,
+                  "SECRET_KEY": "audit-only-secret",
+                  "DATABASE_URL": "",
+                  "DATABASE": str(root / "audit.db"),
+                  "MESSAGE_UPLOAD_DIR": str(root / "message_uploads"),
+                  "PROFILE_PICTURE_DIR": str(root / "profile_pictures"),
+                  "CLIENT_ATTACHMENT_DIR": str(root / "client_attachments"),
+                  "BACKUP_DIR": str(root / "backups"),
+                  "TRUSTED_HOSTS": ["localhost"],
+              })
+              now = "2026-01-01T00:00:00+00:00"
+              with app.app_context():
+                  db = get_db()
+                  stage1 = db.execute("SELECT id FROM commission_stages WHERE code='EARLY'").fetchone()["id"]
+                  stage2 = db.execute("SELECT id FROM commission_stages WHERE code='STANDARD'").fetchone()["id"]
+                  users = [
+                      ("Founder Audit","founder-audit@example.test",hash_password("FounderPass1234"),"admin",1,0,0,None,None,now,now),
+                      ("Partner One","partner1-audit@example.test",hash_password("PartnerPass1234"),"partner",1,0,0,None,None,now,now),
+                      ("Partner Two","partner2-audit@example.test",hash_password("PartnerPass2234"),"partner",1,0,0,None,None,now,now),
+                  ]
+                  db.executemany("""INSERT INTO users(full_name,email,password_hash,role,active,force_password_change,
+                      failed_login_count,locked_until,last_login_at,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)""", users)
+                  u1 = db.execute("SELECT id FROM users WHERE email='partner1-audit@example.test'").fetchone()["id"]
+                  u2 = db.execute("SELECT id FROM users WHERE email='partner2-audit@example.test'").fetchone()["id"]
+                  db.execute("INSERT INTO partners(user_id,commission_stage_id,phone,notes,joined_at,active) VALUES (?,?,?,?,?,1)", (u1,stage1,"","","2026-01-01"))
+                  db.execute("INSERT INTO partners(user_id,commission_stage_id,phone,notes,joined_at,active) VALUES (?,?,?,?,?,1)", (u2,stage2,"","","2026-01-01"))
+                  p1 = db.execute("SELECT id FROM partners WHERE user_id=?", (u1,)).fetchone()["id"]
+                  p2 = db.execute("SELECT id FROM partners WHERE user_id=?", (u2,)).fetchone()["id"]
+                  def add_lead(pid, uid, company, email):
+                      cur=db.execute("""INSERT INTO leads(owner_partner_id,company_name,company_norm,contact_name,contact_norm,email,email_norm,
+                          phone,phone_norm,website,website_domain,lead_source,summary_notes,status,lost_reason,demo_at,registered_at,last_activity_at,created_by_user_id)
+                          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                          (pid,company,company.lower(),company,company.lower(),email,email.lower(),"","","","","Audit","","NEW","",None,now,now,uid))
+                      return cur.lastrowid
+                  l1=add_lead(p1,u1,"PARTNER_ONE_PRIVATE","one@example.test")
+                  l2=add_lead(p2,u2,"PARTNER_TWO_PRIVATE","two@example.test")
+                  db.execute("INSERT INTO messages(partner_id,sender_user_id,body,created_at) VALUES (?,?,?,?)",(p1,u1,"P1_PRIVATE_MESSAGE",now))
+                  db.execute("INSERT INTO messages(partner_id,sender_user_id,body,created_at) VALUES (?,?,?,?)",(p2,u2,"P2_PRIVATE_MESSAGE",now))
+                  db.commit()
+
+              def csrf(client):
+                  r=client.get("/app/login")
+                  assert r.status_code == 200
+                  m=re.search(rb'name="csrf_token" value="([^"]+)"',r.data)
+                  assert m
+                  return m.group(1).decode()
+
+              def login(client,email,password):
+                  token=csrf(client)
+                  r=client.post("/app/login",data={"csrf_token":token,"email":email,"password":password},follow_redirects=False)
+                  assert r.status_code in (302,303), (r.status_code,r.data[:500])
+
+              anon=app.test_client()
+              assert anon.get("/app/").status_code in (301,302,303,307,308)
+              assert anon.get("/app/admin/partners").status_code in (301,302,303,307,308)
+              assert anon.post("/app/login",data={"email":"x@example.test","password":"bad"}).status_code == 400
+              assert anon.get("/",headers={"Host":"evil.example"}).status_code == 400
+
+              c1=app.test_client(); login(c1,"partner1-audit@example.test","PartnerPass1234")
+              assert c1.get("/app/").status_code == 200
+              assert c1.get("/app/admin/partners").status_code == 403
+              assert c1.get(f"/app/leads/{l1}").status_code == 200
+              assert c1.get(f"/app/leads/{l2}").status_code == 404
+              own=c1.get(f"/app/messages/{p1}"); other=c1.get(f"/app/messages/{p2}")
+              assert own.status_code == 200 and b"P1_PRIVATE_MESSAGE" in own.data
+              assert other.status_code == 404 and b"P2_PRIVATE_MESSAGE" not in other.data
+
+              c2=app.test_client(); login(c2,"partner2-audit@example.test","PartnerPass2234")
+              assert c2.get(f"/app/leads/{l1}").status_code == 404
+              assert c2.get(f"/app/messages/{p1}").status_code == 404
+
+              ca=app.test_client(); login(ca,"founder-audit@example.test","FounderPass1234")
+              assert ca.get("/app/admin/partners").status_code == 200
+              assert ca.get(f"/app/leads/{l1}").status_code == 200
+              assert ca.get(f"/app/leads/{l2}").status_code == 200
+              assert ca.get(f"/app/messages/{p1}").status_code == 200
+              assert ca.get(f"/app/messages/{p2}").status_code == 200
+
+              r=c1.get("/app/")
+              assert r.headers.get("X-Content-Type-Options") == "nosniff"
+              assert r.headers.get("X-Frame-Options") == "DENY"
+              assert "no-store" in r.headers.get("Cache-Control","")
+              assert "frame-ancestors 'none'" in r.headers.get("Content-Security-Policy","")
+              with app.app_context():
+                  db=get_db()
+                  assert db.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+                  assert not db.execute("PRAGMA foreign_key_check").fetchall()
+                  stages=[(r["name"],r["rate_bp"]) for r in db.execute("SELECT name,rate_bp FROM commission_stages ORDER BY sort_order").fetchall()]
+                  assert stages == [("Founding Partner #1",4000),("Early Partner",3000),("Established Sales Partner",2000),("Standard Partner",1500)]
+              print("SOURCE_SECURITY_AUDIT_OK")
+          PY
+
+  live-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Playwright
+        run: |
+          python -m pip install --quiet playwright
+          python -m playwright install --with-deps chromium
+      - name: Audit live website and Partner Workspace
+        run: |
+          python - <<'PY'
+          from playwright.sync_api import sync_playwright
+          MAIN="https://realtysystemsfoundry.onrender.com"
+          PARTNER="https://partner-rsf.onrender.com/"
+          with sync_playwright() as p:
+              browser=p.chromium.launch(headless=True)
+              ctx=browser.new_context()
+              page=ctx.new_page()
+
+              r=page.goto(MAIN+"/",wait_until="domcontentloaded",timeout=90000)
+              assert r and r.status == 200
+              assert "Realty Systems Foundry" in page.locator("body").inner_text()
+
+              health=ctx.request.get(MAIN+"/system/health",timeout=90000)
+              assert health.status == 200
+              payload=health.json()
+              assert payload.get("status") == "ok", payload
+              assert payload.get("version") == "1.8.5", payload
+
+              r=page.goto(MAIN+"/app/",wait_until="domcontentloaded",timeout=90000)
+              assert r and r.status == 200
+              assert page.url.startswith(MAIN+"/app/login")
+              assert "Sign in" in page.locator("body").inner_text()
+              headers={k.lower():v for k,v in r.headers.items()}
+              assert headers.get("x-content-type-options") == "nosniff"
+              assert headers.get("x-frame-options") == "DENY"
+              assert "no-store" in headers.get("cache-control","")
+              assert "frame-ancestors 'none'" in headers.get("content-security-policy","")
+
+              cookies=ctx.cookies()
+              sess=[c for c in cookies if c["name"]=="rsf_partner_session"]
+              assert sess, cookies
+              assert sess[0]["httpOnly"] is True
+              assert sess[0]["secure"] is True
+              assert sess[0]["sameSite"] == "Lax"
+
+              no_csrf=ctx.request.post(MAIN+"/app/login",form={"email":"nobody@example.test","password":"bad"})
+              assert no_csrf.status == 400, no_csrf.status
+
+              page2=ctx.new_page()
+              r=page2.goto(PARTNER,wait_until="domcontentloaded",timeout=90000)
+              page2.wait_for_timeout(3000)
+              assert r and r.status == 200
+              assert page2.url.startswith(MAIN+"/app/login"), page2.url
+              assert "Sign in" in page2.locator("body").inner_text()
+              assert "Not Found" not in page2.locator("body").inner_text()
+              print("LIVE_BROWSER_AUDIT_OK")
+              print("HEALTH_VERSION="+payload.get("version",""))
+              print("PARTNER_FINAL_URL="+page2.url)
+              browser.close()
+          PY
