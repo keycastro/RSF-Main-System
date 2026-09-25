@@ -537,14 +537,20 @@ def _import_seed_payload(db) -> None:
     ]
     for table in order:
         rows = tables.get(table) or []
+        existing_columns = {col["name"] for col in db.execute(f"PRAGMA table_info({table})").fetchall()}
         for row in rows:
             if not isinstance(row, dict) or not row:
                 continue
-            columns = list(row.keys())
+            clean_row = dict(row)
+            if table == "voice_calls" and "receiver_seeen_at" in clean_row and "receiver_seen_at" not in clean_row:
+                clean_row["receiver_seen_at"] = clean_row.pop("receiver_seeen_at")
+            columns = [c for c in clean_row.keys() if c in existing_columns]
+            if not columns:
+                continue
             placeholders = ",".join("?" for _ in columns)
             quoted = ",".join('"' + c.replace('"','""') + '"' for c in columns)
             sql = f'INSERT INTO "{table}" ({quoted}) VALUES ({placeholders}) ON CONFLICT DO NOTHING'
-            db.execute(sql, tuple(row[c] for c in columns))
+            db.execute(sql, tuple(clean_row[c] for c in columns))
         if rows and "id" in rows[0] and table in SERIAL_ID_TABLES:
             db.execute(
                 "SELECT setval(pg_get_serial_sequence(?, 'id'), COALESCE((SELECT MAX(id) FROM " + table + "), 1), true)",
