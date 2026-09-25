@@ -1,4 +1,19 @@
-{% extends 'base.html' %}{% block content %}
-<div class="page-head"><div><h1>{{ title }}</h1></div><a class="button secondary" href="{{ url_for('main.resources_list') }}">Cancel</a></div>
-<section class="panel form-panel"><form method="post" class="form-grid"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Category<select name="category" required>{% for c in categories %}<option value="{{ c }}" {{ 'selected' if resource and resource.category==c else '' }}>{{ c }}</option>{% endfor %}</select></label><label>Title<input name="title" required maxlength="200" value="{{ resource.title if resource else '' }}"></label><label class="span-2">Content<textarea name="body" rows="10" maxlength="10000">{{ resource.body if resource else '' }}</textarea></label><label class="span-2">Link (optional)<input type="url" name="url" maxlength="500" placeholder="https://..." value="{{ resource.url if resource else '' }}"></label><label class="check-row span-2"><input type="checkbox" name="published" value="1" {{ 'checked' if not resource or resource.published else '' }}><span><strong>Show to partners</strong><small>Turn off to keep this as a draft.</small></span></label><div class="form-actions span-2"><button class="button primary" type="submit">Save</button></div></form></section>
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head organized-page-head">
+  <div><span class="page-kicker">Resource library</span><h1>{{ title }}</h1><p>Create a concise resource Partners can understand and use quickly.</p></div>
+  <a class="button secondary" href="{{ url_for('main.resources_list') }}">Cancel</a>
+</div>
+<section class="panel form-panel refined-form-panel">
+  <form method="post" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Category <span class="required-mark">Required</span><select name="category" required>{% for c in categories %}<option value="{{ c }}" {{ 'selected' if (resource and resource.category==c) or request.form.get('category')==c else '' }}>{{ c }}</option>{% endfor %}</select></label>
+    <label>Title <span class="required-mark">Required</span><input name="title" required maxlength="200" value="{{ request.form.get('title', resource.title if resource else '') }}"></label>
+    <label class="span-2">Content<textarea name="body" rows="8" maxlength="10000" placeholder="Add the useful instructions, script, or reference here.">{{ request.form.get('body', resource.body if resource else '') }}</textarea></label>
+    <label class="span-2">External link <span class="field-optional">Optional</span><input type="url" name="url" maxlength="500" placeholder="https://..." value="{{ request.form.get('url', resource.url if resource else '') }}"></label>
+    {% set publish_checked = (request.form.get('published') == '1') if request.method == 'POST' else (not resource or resource.published) %}
+    <label class="check-row span-2"><input type="checkbox" name="published" value="1" {{ 'checked' if publish_checked else '' }}><span><strong>Show to Partners</strong><small>Turn this off to keep the resource as a Founder-only draft.</small></span></label>
+    <div class="form-actions span-2"><button class="button primary" type="submit">Save Resource</button></div>
+  </form>
+</section>
 {% endblock %}

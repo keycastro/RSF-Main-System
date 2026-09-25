@@ -97,10 +97,10 @@ def _notify_founders(kind: str, title: str, body: str = "", *, entity_type: str 
         _notify(user_id, kind, title, body, entity_type=entity_type, entity_id=entity_id)
 
 
-def _notify_all_active_partners(kind: str, title: str, body: str = "", *, entity_type: str = "", entity_id: int | None = None) -> None:
+def _notify_all_partners(kind: str, title: str, body: str = "", *, entity_type: str = "", entity_id: int | None = None) -> None:
     rows = get_db().execute(
         """SELECT u.id FROM partners p JOIN users u ON u.id=p.user_id
-           WHERE p.active=1 AND u.active=1"""
+           WHERE p.user_id IS NOT NULL"""
     ).fetchall()
     for row in rows:
         _notify(int(row["id"]), kind, title, body, entity_type=entity_type, entity_id=entity_id)
@@ -218,11 +218,11 @@ def _extract_inbound_attachments(message) -> list[tuple[str, str, bytes]]:
     return items
 
 
-def _active_partner(partner_id: int):
+def _current_partner(partner_id: int):
     return get_db().execute(
-        """SELECT p.id,p.user_id,u.full_name,u.active AS user_active,p.active AS partner_active
+        """SELECT p.id,p.user_id,u.full_name
            FROM partners p JOIN users u ON u.id=p.user_id
-           WHERE p.id=? AND p.active=1 AND u.active=1""",
+           WHERE p.id=? AND p.user_id IS NOT NULL""",
         (partner_id,),
     ).fetchone()
 
@@ -232,8 +232,8 @@ def _find_exact_email_lead(email_value: str):
     if not email_norm:
         return None
     return get_db().execute(
-        """SELECT l.*,p.active AS partner_active,u.active AS user_active
-           FROM leads l JOIN partners p ON p.id=l.owner_partner_id JOIN users u ON u.id=p.user_id
+        """SELECT l.*,p.user_id AS owner_user_id
+           FROM leads l JOIN partners p ON p.id=l.owner_partner_id LEFT JOIN users u ON u.id=p.user_id
            WHERE l.email_norm=? AND l.status NOT IN ('WON','LOST') ORDER BY l.last_activity_at DESC,l.id DESC LIMIT 1""",
         (email_norm,),
     ).fetchone()
@@ -274,7 +274,7 @@ def create_public_inquiry(record: dict[str, str]) -> int:
     owner_partner_id = None
     lead_id = None
     status = "UNCLAIMED"
-    if existing and existing["partner_active"] and existing["user_active"]:
+    if existing and existing["owner_user_id"]:
         owner_partner_id = int(existing["owner_partner_id"])
         lead_id = int(existing["id"])
         status = "CLAIMED"
@@ -327,7 +327,7 @@ def create_public_inquiry(record: dict[str, str]) -> int:
         _notify_founders("CLIENT_REPLY", f"{company or name} contacted RSF again", "A returning client sent a new website message.", entity_type="conversation", entity_id=conversation_id)
     else:
         title = f"New inquiry: {company or name}"
-        _notify_all_active_partners("NEW_INQUIRY", title, "A new unclaimed website opportunity is available.", entity_type="inquiry", entity_id=inquiry_id)
+        _notify_all_partners("NEW_INQUIRY", title, "A new unclaimed website opportunity is available.", entity_type="inquiry", entity_id=inquiry_id)
         _notify_founders("NEW_INQUIRY", title, "A new unclaimed website opportunity is available.", entity_type="inquiry", entity_id=inquiry_id)
     db.commit()
     return inquiry_id
@@ -336,9 +336,9 @@ def create_public_inquiry(record: dict[str, str]) -> int:
 def claim_inquiry(inquiry_id: int, partner_id: int, actor_user_id: int) -> tuple[bool, str, int | None]:
     """Atomically claim an unclaimed inquiry and create/link its CRM lead."""
     db = get_db()
-    partner = _active_partner(partner_id)
+    partner = _current_partner(partner_id)
     if not partner:
-        return False, "Partner is not active.", None
+        return False, "Partner account was not found.", None
     inquiry = db.execute("SELECT * FROM website_inquiries WHERE id=?", (inquiry_id,)).fetchone()
     if not inquiry:
         return False, "Inquiry not found.", None
@@ -349,12 +349,12 @@ def claim_inquiry(inquiry_id: int, partner_id: int, actor_user_id: int) -> tuple
     # matching lead was created after the public inquiry first arrived.
     existing = _find_exact_email_lead(inquiry["email"])
     now = utcnow_iso()
-    if existing and (not existing["partner_active"] or not existing["user_active"]):
+    if existing and not existing["owner_user_id"]:
         _notify_founders("OWNERSHIP_REVIEW", f"Ownership review needed: {inquiry['company'] or inquiry['name']}",
-                         "This contact matches an active Lead whose Partner account is inactive. Reassign that Lead before claiming this inquiry.",
+                         "This contact matches an existing Lead whose previous Partner account was deleted. Reassign that Lead before claiming this inquiry.",
                          entity_type="inquiry", entity_id=inquiry_id)
         db.commit()
-        return False, "This contact already has an RSF lead with an inactive owner. Founder must reassign that lead first.", inquiry["client_conversation_id"]
+        return False, "This contact already has an RSF lead with a deleted Partner account. Founder must reassign that lead first.", inquiry["client_conversation_id"]
     if existing:
         owner_id = int(existing["owner_partner_id"])
         conversation = _conversation_for_lead(int(existing["id"]))
@@ -458,6 +458,8 @@ def send_client_email(conversation_id: int, actor_user_id: int, body: str, attac
         """SELECT external_message_id FROM client_messages
            WHERE conversation_id=? AND external_message_id<>'' ORDER BY id DESC LIMIT 1""", (conversation_id,)
     ).fetchone()
+    actor_row = db.execute("SELECT full_name FROM users WHERE id=?", (actor_user_id,)).fetchone()
+    actor_name = actor_row["full_name"] if actor_row else ""
     msg = EmailMessage()
     msg["From"] = formataddr((display, sender))
     msg["To"] = conv["client_email"]
@@ -501,9 +503,9 @@ def send_client_email(conversation_id: int, actor_user_id: int, body: str, attac
         now = utcnow_iso()
         db.execute(
             """INSERT INTO client_messages
-               (conversation_id,direction,channel,sender_email,recipient_email,subject,body,sent_by_user_id,external_message_id,in_reply_to,created_at,delivery_status,delivery_error)
-               VALUES (?,'OUTBOUND','EMAIL',?,?,?,?,?,?,?,?,'FAILED',?)""",
-            (conversation_id, sender, conv["client_email"], subject, body, actor_user_id, message_id,
+               (conversation_id,direction,channel,sender_email,recipient_email,subject,body,sent_by_user_id,sent_by_name_snapshot,external_message_id,in_reply_to,created_at,delivery_status,delivery_error)
+               VALUES (?,'OUTBOUND','EMAIL',?,?,?,?,?,?,?,?,?,'FAILED',?)""",
+            (conversation_id, sender, conv["client_email"], subject, body, actor_user_id, actor_name, message_id,
              last_msg["external_message_id"] if last_msg else "", now, str(exc)[:500]),
         )
         db.commit()
@@ -512,9 +514,9 @@ def send_client_email(conversation_id: int, actor_user_id: int, body: str, attac
     now = utcnow_iso()
     cur = db.execute(
         """INSERT INTO client_messages
-           (conversation_id,direction,channel,sender_email,recipient_email,subject,body,sent_by_user_id,external_message_id,in_reply_to,created_at,delivery_status,delivery_error)
-           VALUES (?,'OUTBOUND','EMAIL',?,?,?,?,?,?,?,?,'SENT','')""",
-        (conversation_id, sender, conv["client_email"], subject, body, actor_user_id, message_id,
+           (conversation_id,direction,channel,sender_email,recipient_email,subject,body,sent_by_user_id,sent_by_name_snapshot,external_message_id,in_reply_to,created_at,delivery_status,delivery_error)
+           VALUES (?,'OUTBOUND','EMAIL',?,?,?,?,?,?,?,?,?,'SENT','')""",
+        (conversation_id, sender, conv["client_email"], subject, body, actor_user_id, actor_name, message_id,
          last_msg["external_message_id"] if last_msg else "", now),
     )
     message_row_id = int(cur.lastrowid)

@@ -27,3 +27,6 @@ ONLINE_ATTACHMENT_KEY.txt
 *.sqlite3
 __pycache__/
 .pytest_cache/
+
+# Organized local runtime output
+runtime/

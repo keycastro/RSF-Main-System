@@ -1,7 +1,7 @@
 {
   "project": "RSF_MAIN_SYSTEM",
   "handoff_date": "2026-09-21",
-  "version": "1.8.4",
+  "version": "1.8.7",
   "owner_public_name": "Key Castro",
   "positioning": "Technology built for real estate operations",
   "framework": "Flask",
@@ -20,13 +20,13 @@
     "legacy_service_id": "srv-dam749e1egvs738cppq0",
     "legacy_service_name": "realtysystemsfoundry-legacy",
     "migration_note": "v3.9.8 resumed the already healthy replacement Render service after the prior Git whitespace preflight stop, then completed clean source control, exact deploy, live verification, and private RSF Inbox/database continuity checks. The original service remains as rollback.",
-    "repository_metadata_note": "Render may display the pre-rename URL, which GitHub redirects to RSF-Main-System; deployments have been verified live after the rename."
+    "repository_metadata_note": "The canonical GitHub repository is keycastro/RSF-Main-System. Render can still display the pre-rename repository URL in service metadata; GitHub redirects it and post-rename deployments have been verified live."
   },
   "github": {
     "primary_repo": "https://github.com/keycastro/RSF-Main-System",
     "local_primary_remote": "origin",
     "local_deploy_remote": "renderdeploy",
-    "repository_renamed_from": "keycastro/key-castro-render-deploy"
+    "previous_repository_name": "key-castro-render-deploy"
   },
   "public_pages_require_login": false,
   "private_owner_inbox": {
@@ -46,8 +46,9 @@
     "localhost_required": false
   },
   "desktop_launchers": {
-    "REALTY SYSTEMS FOUNDRY": "https://realtysystemsfoundry.onrender.com/",
-    "RSF INBOX": "private authenticated online owner inbox"
+    "Realty Systems Foundry Website": "https://realtysystemsfoundry.onrender.com/",
+    "RSF Partner System": "https://partner-rsf.onrender.com/",
+    "normal_operation": "online-only; no localhost or local Python server required"
   },
   "separate_inbox_project_folder_required": false,
   "retired_host": {
@@ -212,7 +213,7 @@
     "managed_by_realty_systems_foundry": "We build it. We manage it. Optional managed care remains $39/month or $390/year; Realty Systems Foundry handles hosting/deployment, routine technical checks, backups when used, and technical fixes for the current system."
   },
   "ux_refinement_3_4": {
-    "document": "docs/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md",
+    "document": "docs/product/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md",
     "navigation_changed": false,
     "routes_changed": false,
     "business_logic_changed": false,
@@ -227,7 +228,7 @@
     ]
   },
   "ux_simplification_3_5": {
-    "document": "docs/WEBSITE_SIMPLIFICATION_3_5.md",
+    "document": "docs/product/WEBSITE_SIMPLIFICATION_3_5.md",
     "navigation_changed": false,
     "skills_experience_redirect_to_about": true,
     "business_logic_changed": false,
@@ -258,7 +259,7 @@
     ]
   },
   "page_top_refinement_3_5_2": {
-    "document": "docs/SITE_WIDE_PAGE_TOP_REFINEMENT_3_5_2.md",
+    "document": "docs/product/SITE_WIDE_PAGE_TOP_REFINEMENT_3_5_2.md",
     "navigation_changed": false,
     "routes_changed": false,
     "business_logic_changed": false,
@@ -274,7 +275,7 @@
     ]
   },
   "business_model_3_6": {
-    "document": "docs/BUSINESS_MODEL_AND_MANAGED_MAINTENANCE_3_6.md",
+    "document": "docs/product/BUSINESS_MODEL_AND_MANAGED_MAINTENANCE_3_6.md",
     "design_changed": false,
     "published_systems": 3,
     "student_housing_added": true,
@@ -283,13 +284,18 @@
   },
   "release_workflow": {
     "default": "one-command update + tests + Git pushes + Render deploy + live verification",
-    "launcher": "APPLY_UPDATE_AND_DEPLOY_LIVE.bat",
+    "launcher": "deployment/PUBLISH_RSF_ONLINE.bat",
     "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
     "provider_auto_deploy": false,
-    "success_condition": "production health reports version 3.9.4; public branding is Realty Systems Foundry; Home headline reads We Build Custom Systems for Real Estate Businesses.; Key Castro is presented as Founder, Realty Systems Foundry; Home hero secondary CTA remains Create a New System and links to /contact; Home keeps exactly 3 featured systems and the approved Explore All Systems / Services & Pricing CTA band; Home, Systems, system detail, and Services & Pricing show the approved $199 existing-system purchase price; new custom systems use Price by Agreement; management remains optional at $0/month self-managed or $39/month / $390/year managed care; upgrades remain $79 / $149 / Price by Agreement; no PHP/peso pricing is publicly displayed; existing design and exactly 3 published systems remain preserved."
+    "success_condition": "production health reports version 3.9.4; public branding is Realty Systems Foundry; Home headline reads We Build Custom Systems for Real Estate Businesses.; Key Castro is presented as Founder, Realty Systems Foundry; Home hero secondary CTA remains Create a New System and links to /contact; Home keeps exactly 3 featured systems and the approved Explore All Systems / Services & Pricing CTA band; Home, Systems, system detail, and Services & Pricing show the approved $199 existing-system purchase price; new custom systems use Price by Agreement; management remains optional at $0/month self-managed or $39/month / $390/year managed care; upgrades remain $79 / $149 / Price by Agreement; no PHP/peso pricing is publicly displayed; existing design and exactly 3 published systems remain preserved.",
+    "installer": "installers/SETUP_RSF_MAIN_SYSTEM.bat",
+    "verification": [
+      "scripts/SMOKE_CHECK.py",
+      "scripts/VERIFY_INSTALLED_SYSTEM.py"
+    ]
   },
   "ux_master_refinement_3_7": {
-    "document": "docs/MASTER_UX_REFINEMENT_3_7.md",
+    "document": "docs/product/MASTER_UX_REFINEMENT_3_7.md",
     "navigation_changed": false,
     "routes_changed": false,
     "business_logic_changed": false,
@@ -305,7 +311,7 @@
     ]
   },
   "human_clarity_3_8": {
-    "document": "docs/HUMAN_CLARITY_AND_OLDER_USER_UX_3_8.md",
+    "document": "docs/product/HUMAN_CLARITY_AND_OLDER_USER_UX_3_8.md",
     "public_navigation_label_change": "Services -> How It Works; canonical /services route preserved",
     "routes_changed": false,
     "business_logic_changed": false,
@@ -497,7 +503,7 @@
     "business_logic_changed": false,
     "changes": [
       "Removed the lower Home How it works heading, summary, all three numbered steps, and their descriptions",
-      "Kept only See Services & Pricing → linked to /services",
+      "Kept only See Services & Pricing \u2192 linked to /services",
       "Added Home-CTA-scoped styling to center the link, increase its prominence, and keep desktop/mobile spacing balanced",
       "Preserved all other Home content, Services & Pricing content, pricing, systems, footer content, routes, and private functionality"
     ]
@@ -537,7 +543,7 @@
       "private owner Inbox"
     ]
   },
-  "current_version": "1.8.4",
+  "current_version": "1.8.7",
   "pricing_and_management_clarity_3_8_19": {
     "scope": "Existing-system price plus Services & Pricing management clarity and direct tests/release/deployment dependencies",
     "existing_system_price_usd": 290,
@@ -645,25 +651,101 @@
     "database": "Render PostgreSQL (DATABASE_URL)",
     "desktop_launchers_use_localhost": false
   },
+  "project_layout": {
+    "root_policy": "Only production-critical files stay at root",
+    "source": "app/",
+    "scripts": "scripts/",
+    "installers": "installers/",
+    "deployment": "deployment/",
+    "documentation": "docs/",
+    "assets": "assets/",
+    "runtime_logs": "runtime/logs/",
+    "protected_runtime_data": "instance/",
+    "automatic_backups": "instance/backups/"
+  },
+  "workspace_refinement_1_7_0": {
+    "status": "implemented in release package; final installed verification required",
+    "date": "2026-09-26",
+    "scope": "Private Founder/Partner /app/ workspace UX, UI, information architecture and responsive refinement inside the existing Flask application.",
+    "public_website_redesigned": false,
+    "backend_rebuilt": false,
+    "database_replaced": false,
+    "authentication_replaced": false,
+    "business_logic_preserved": true,
+    "security_and_partner_isolation_preserved": true,
+    "data_preservation_required": true,
+    "improvements": [
+      "role-aware workspace navigation and identity",
+      "action-first Founder and Partner dashboards",
+      "complete seven-stage Founder lead-pipeline summary",
+      "clearer Client Inbox ownership and response-accountability hierarchy",
+      "denser operational lead, follow-up, sale, commission, partner and duplicate-review tables",
+      "responsive table-to-record presentation on small screens",
+      "clearer lead status controls with progressive disclosure",
+      "consistent forms, detail screens, partner administration, sales and commission presentation",
+      "workspace-wide focus, spacing, state and accessibility refinement"
+    ]
+  },
+  "workspace_redesign_1_8_0": {
+    "status": "implemented in release source; deployment and live verification pending",
+    "date": "2026-09-26",
+    "scope": "Private Founder/Partner /app/ production UX/UI redesign plus online-only launcher correction.",
+    "public_website_redesigned": false,
+    "backend_rebuilt": false,
+    "database_replaced": false,
+    "authentication_replaced": false,
+    "business_logic_preserved": true,
+    "security_and_partner_isolation_preserved": true,
+    "normal_workspace_access": "https://partner-rsf.onrender.com/",
+    "localhost_normal_operation": false,
+    "improvements": [
+      "persistent professional Workspace top bar and refined application shell",
+      "compact operational signal grid replacing oversized empty dashboard cards",
+      "Partner priority work queue, full pipeline visibility, and compact earnings view",
+      "Founder priority work queue, response-accountability signals, Partner workload view, pipeline movement, and financial pulse",
+      "workspace-wide table, form, spacing, empty-state, typography, and responsive-density refinement",
+      "Python and Windows launchers open Render production URLs directly and do not start localhost"
+    ]
+  },
+  "release_1_8_1": {
+    "scope": "Installer/launcher verification compatibility patch",
+    "online_workspace_url": "https://partner-rsf.onrender.com/",
+    "launcher_behavior": "opens production URLs directly in the default browser",
+    "business_logic_changed": false,
+    "database_changed": false,
+    "workspace_design_changed": false
+  },
   "locked_domain_structure": {
     "now_free_render": {
       "website": "https://realtysystemsfoundry.onrender.com/",
-      "website_requested_but_unavailable": "https://rsf.onrender.com/",
       "partner_workspace": "https://partner-rsf.onrender.com/"
     },
     "later_own_domain": {
       "website": "https://rsf.com/",
       "partner_workspace": "https://partner.rsf.com/"
     },
-    "main_render_address_pending_user_choice": true,
-    "partner_alias_render_service_id": "srv-darcsm7avr4c73e5m6dg"
+    "note": "Current Render website stays on realtysystemsfoundry.onrender.com. Partner entry uses partner-rsf.onrender.com exactly."
   },
   "partner_alias_routing": {
     "public_alias": "https://partner-rsf.onrender.com/",
     "workspace_target": "https://realtysystemsfoundry.onrender.com/app/",
     "implementation": "Render static-site entry page redirect via public/index.html and public/404.html",
-    "chromium_verified": true,
-    "chromium_final_url": "https://realtysystemsfoundry.onrender.com/app/login?next=/app/",
     "database_or_business_logic_changed": false
+  },
+  "maximum_audit_v1_8_7": {
+    "authoritative_source": "RSF Main System(8).zip",
+    "atomic_existing_lead_claim_hardened": true,
+    "untrusted_host_400_hardened": true,
+    "partner_alias_entry_files_present": true,
+    "clean_release_excludes_private_runtime_state": true,
+    "installer_private_state_preservation_simulated": true,
+    "source_role_privacy_security_audit": "passed",
+    "live_browser_audit": "passed on deployed v1.8.7",
+    "production_database_direct_sql_audit": "blocked by Render database external IP allowlist; no allowlist was weakened for audit",
+    "installer_copies_partner_alias_public_directory": true,
+    "final_release_version": "1.8.7",
+    "live_health_version": "1.8.7",
+    "partner_alias_final_url": "https://realtysystemsfoundry.onrender.com/app/login?next=/app/",
+    "live_authenticated_production_role_sessions": "not independently verified; production credentials were not exposed or altered"
   }
 }

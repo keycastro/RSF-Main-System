@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 11
-SCHEMA_NAME = "rsf-unified-system-v1.5.1-online-postgres"
+SCHEMA_VERSION = 12
+SCHEMA_NAME = "rsf-unified-system-v1.9.0-founder-partner-accounts"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications"}
 
 
@@ -481,6 +481,123 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
             (11, "rsf-unified-system-v1.5.1-database-file-storage"),
         )
 
+    # V12 implements permanent Partner account deletion while preserving business history.
+    # The Partner identity row remains only as historical business attribution after its
+    # authentication user is deleted. User-linked history uses ON DELETE SET NULL, and
+    # visible author names are snapshotted before detachment.
+    if 12 not in applied:
+        if using_postgres():
+            db.execute("ALTER TABLE partners ADD COLUMN IF NOT EXISTS full_name_snapshot TEXT NOT NULL DEFAULT ''")
+            db.execute("ALTER TABLE partners ADD COLUMN IF NOT EXISTS email_snapshot TEXT NOT NULL DEFAULT ''")
+            db.execute("ALTER TABLE partners ADD COLUMN IF NOT EXISTS deleted_at TEXT")
+            db.execute("UPDATE partners p SET full_name_snapshot=COALESCE(NULLIF(p.full_name_snapshot,''),u.full_name), email_snapshot=COALESCE(NULLIF(p.email_snapshot,''),u.email) FROM users u WHERE u.id=p.user_id")
+            db.execute("ALTER TABLE partners ALTER COLUMN user_id DROP NOT NULL")
+            db.execute("ALTER TABLE partners DROP CONSTRAINT IF EXISTS partners_user_id_fkey")
+            db.execute("ALTER TABLE partners ADD CONSTRAINT partners_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL")
+            # v1.9 removes Partner deactivate/reactivate semantics. Existing Partner
+            # accounts remain available until the Founder permanently deletes them.
+            db.execute("UPDATE users SET active=1 WHERE role='partner'")
+            db.execute("UPDATE partners SET active=1 WHERE user_id IS NOT NULL")
+
+            db.execute("ALTER TABLE lead_notes ADD COLUMN IF NOT EXISTS author_name_snapshot TEXT NOT NULL DEFAULT ''")
+            db.execute("UPDATE lead_notes n SET author_name_snapshot=COALESCE(NULLIF(n.author_name_snapshot,''),u.full_name) FROM users u WHERE u.id=n.author_user_id")
+            db.execute("ALTER TABLE activity_log ADD COLUMN IF NOT EXISTS actor_name_snapshot TEXT NOT NULL DEFAULT ''")
+            db.execute("UPDATE activity_log a SET actor_name_snapshot=COALESCE(NULLIF(a.actor_name_snapshot,''),u.full_name) FROM users u WHERE u.id=a.actor_user_id")
+            db.execute("ALTER TABLE client_messages ADD COLUMN IF NOT EXISTS sent_by_name_snapshot TEXT NOT NULL DEFAULT ''")
+            db.execute("UPDATE client_messages m SET sent_by_name_snapshot=COALESCE(NULLIF(m.sent_by_name_snapshot,''),u.full_name) FROM users u WHERE u.id=m.sent_by_user_id")
+
+            nullable_user_refs = [
+                ('leads','created_by_user_id'), ('lead_notes','author_user_id'), ('followups','created_by_user_id'),
+                ('sales','created_by_user_id'), ('resources','created_by_user_id'), ('duplicate_claims','resolved_by_user_id'),
+                ('activity_log','actor_user_id'), ('messages','sender_user_id'), ('voice_calls','started_by_user_id'),
+                ('voice_calls','ended_by_user_id'), ('voice_call_signals','sender_user_id'), ('settings','updated_by_user_id'),
+                ('client_messages','sent_by_user_id'),
+            ]
+            for table, column in nullable_user_refs:
+                db.execute(f'ALTER TABLE {table} ALTER COLUMN {column} DROP NOT NULL')
+                row = db.execute(
+                    "SELECT tc.constraint_name FROM information_schema.table_constraints tc "
+                    "JOIN information_schema.key_column_usage kcu ON tc.constraint_name=kcu.constraint_name AND tc.table_schema=kcu.table_schema "
+                    "WHERE tc.table_schema='public' AND tc.table_name=? AND tc.constraint_type='FOREIGN KEY' AND kcu.column_name=? LIMIT 1",
+                    (table, column),
+                ).fetchone()
+                if row:
+                    name = row['constraint_name'].replace('\"','')
+                    db.execute(f'ALTER TABLE {table} DROP CONSTRAINT "{name}"')
+                db.execute(f'ALTER TABLE {table} ADD FOREIGN KEY ({column}) REFERENCES users(id) ON DELETE SET NULL')
+        else:
+            # SQLite cannot alter FK actions or NOT NULL constraints in place. Rebuild only
+            # the affected tables from their current definitions while foreign keys are off.
+            db.commit()
+            db.execute("PRAGMA foreign_keys=OFF")
+            try:
+                rebuild_specs = {
+                    'partners': [
+                        ("user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE",
+                         "user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE SET NULL"),
+                    ],
+                    'leads': [("created_by_user_id INTEGER NOT NULL REFERENCES users(id)", "created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL")],
+                    'lead_notes': [("author_user_id INTEGER NOT NULL REFERENCES users(id)", "author_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL")],
+                    'followups': [("created_by_user_id INTEGER NOT NULL REFERENCES users(id)", "created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL")],
+                    'sales': [("created_by_user_id INTEGER NOT NULL REFERENCES users(id)", "created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL")],
+                    'resources': [("created_by_user_id INTEGER NOT NULL REFERENCES users(id)", "created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL")],
+                    'duplicate_claims': [("resolved_by_user_id INTEGER REFERENCES users(id)", "resolved_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL")],
+                    'activity_log': [("actor_user_id INTEGER REFERENCES users(id)", "actor_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL")],
+                    'messages': [("sender_user_id INTEGER NOT NULL REFERENCES users(id)", "sender_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL")],
+                    'voice_calls': [
+                        ("started_by_user_id INTEGER NOT NULL REFERENCES users(id)", "started_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL"),
+                        ("ended_by_user_id INTEGER REFERENCES users(id)", "ended_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL"),
+                    ],
+                    'voice_call_signals': [("sender_user_id INTEGER NOT NULL REFERENCES users(id)", "sender_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL")],
+                    'settings': [("updated_by_user_id INTEGER REFERENCES users(id)", "updated_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL")],
+                    'client_messages': [("sent_by_user_id INTEGER REFERENCES users(id)", "sent_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL")],
+                }
+                for table, replacements in rebuild_specs.items():
+                    row = db.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (table,)).fetchone()
+                    if not row or not row['sql']:
+                        continue
+                    create_sql = row['sql']
+                    for old, new in replacements:
+                        create_sql = create_sql.replace(old, new)
+                    if table == 'partners' and 'full_name_snapshot' not in create_sql:
+                        create_sql = create_sql.replace("commission_stage_id INTEGER", "full_name_snapshot TEXT NOT NULL DEFAULT '', email_snapshot TEXT NOT NULL DEFAULT '', deleted_at TEXT, commission_stage_id INTEGER")
+                    if table == 'lead_notes' and 'author_name_snapshot' not in create_sql:
+                        create_sql = create_sql.replace("body TEXT NOT NULL", "author_name_snapshot TEXT NOT NULL DEFAULT '', body TEXT NOT NULL")
+                    if table == 'activity_log' and 'actor_name_snapshot' not in create_sql:
+                        create_sql = create_sql.replace("action_type TEXT NOT NULL", "actor_name_snapshot TEXT NOT NULL DEFAULT '', action_type TEXT NOT NULL")
+                    if table == 'client_messages' and 'sent_by_name_snapshot' not in create_sql:
+                        create_sql = create_sql.replace("external_message_id TEXT NOT NULL DEFAULT ''", "sent_by_name_snapshot TEXT NOT NULL DEFAULT '', external_message_id TEXT NOT NULL DEFAULT ''")
+                    new_table = table + '__v12'
+                    create_new = re.sub(r'CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["`\[]?' + re.escape(table) + r'["`\]]?', 'CREATE TABLE ' + new_table, create_sql, count=1, flags=re.I)
+                    indexes = [r['sql'] for r in db.execute("SELECT sql FROM sqlite_master WHERE type='index' AND tbl_name=? AND sql IS NOT NULL", (table,)).fetchall()]
+                    old_columns = [r['name'] for r in db.execute(f'PRAGMA table_info({table})').fetchall()]
+                    db.execute(f'DROP TABLE IF EXISTS {new_table}')
+                    db.execute(create_new)
+                    new_columns = [r['name'] for r in db.execute(f'PRAGMA table_info({new_table})').fetchall()]
+                    common = [c for c in old_columns if c in new_columns]
+                    cols = ','.join('"' + c.replace('"','""') + '"' for c in common)
+                    db.execute(f'INSERT INTO {new_table} ({cols}) SELECT {cols} FROM {table}')
+                    db.execute(f'DROP TABLE {table}')
+                    db.execute(f'ALTER TABLE {new_table} RENAME TO {table}')
+                    for sql in indexes:
+                        db.execute(sql)
+                db.execute("UPDATE partners SET full_name_snapshot=COALESCE(NULLIF(full_name_snapshot,''),(SELECT full_name FROM users WHERE users.id=partners.user_id)), email_snapshot=COALESCE(NULLIF(email_snapshot,''),(SELECT email FROM users WHERE users.id=partners.user_id))")
+                db.execute("UPDATE users SET active=1 WHERE role='partner'")
+                db.execute("UPDATE partners SET active=1 WHERE user_id IS NOT NULL")
+                db.execute("UPDATE lead_notes SET author_name_snapshot=COALESCE(NULLIF(author_name_snapshot,''),(SELECT full_name FROM users WHERE users.id=lead_notes.author_user_id))")
+                db.execute("UPDATE activity_log SET actor_name_snapshot=COALESCE(NULLIF(actor_name_snapshot,''),(SELECT full_name FROM users WHERE users.id=activity_log.actor_user_id))")
+                db.execute("UPDATE client_messages SET sent_by_name_snapshot=COALESCE(NULLIF(sent_by_name_snapshot,''),(SELECT full_name FROM users WHERE users.id=client_messages.sent_by_user_id)) WHERE sent_by_user_id IS NOT NULL")
+                db.execute("INSERT INTO schema_migrations(version,name) VALUES (?,?)", (12, "rsf-v1.9-founder-partner-account-control"))
+                db.commit()
+            finally:
+                db.execute("PRAGMA foreign_keys=ON")
+            violations = db.execute("PRAGMA foreign_key_check").fetchall()
+            if violations:
+                raise RuntimeError(f"Foreign-key check failed after v12 migration: {violations[:3]}")
+            applied.add(12)
+        if 12 not in applied:
+            db.execute("INSERT INTO schema_migrations(version,name) VALUES (?,?)", (12, "rsf-v1.9-founder-partner-account-control"))
+
 
 def _table_exists_postgres(db, table: str) -> bool:
     row = db.execute(
@@ -570,7 +687,7 @@ def _import_attachment_seed(db) -> None:
     if marker:
         return
     key = os.environ.get("RSF_ATTACHMENT_MIGRATION_KEY", "").strip()
-    seed_path = Path(current_app.root_path).parent / "online_attachment_seed.enc"
+    seed_path = Path(current_app.root_path).parent / "deployment" / "migration" / "online_attachment_seed.enc"
     if not key or not seed_path.is_file():
         return
     try:

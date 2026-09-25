@@ -139,9 +139,13 @@ def setting(key: str, default: str = "") -> str:
 def log_activity(action_type: str, entity_type: str, entity_id: int | None, description: str, metadata: dict | None = None, actor_user_id: int | None = None) -> None:
     db = get_db()
     actor = actor_user_id if actor_user_id is not None else (g.user["id"] if getattr(g, "user", None) else None)
+    actor_name = ""
+    if actor is not None:
+        row = db.execute("SELECT full_name FROM users WHERE id=?", (actor,)).fetchone()
+        actor_name = row["full_name"] if row else ""
     db.execute(
-        "INSERT INTO activity_log(actor_user_id,action_type,entity_type,entity_id,description,metadata_json,created_at) VALUES (?,?,?,?,?,?,?)",
-        (actor, action_type, entity_type, entity_id, description[:500], json.dumps(metadata or {}, separators=(",", ":")), utcnow_iso()),
+        "INSERT INTO activity_log(actor_user_id,actor_name_snapshot,action_type,entity_type,entity_id,description,metadata_json,created_at) VALUES (?,?,?,?,?,?,?,?)",
+        (actor, actor_name, action_type, entity_type, entity_id, description[:500], json.dumps(metadata or {}, separators=(",", ":")), utcnow_iso()),
     )
 
 

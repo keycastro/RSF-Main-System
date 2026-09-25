@@ -35,7 +35,10 @@ CREATE TABLE IF NOT EXISTS commission_stages (
 
 CREATE TABLE IF NOT EXISTS partners (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE SET NULL,
+    full_name_snapshot TEXT NOT NULL DEFAULT '',
+    email_snapshot TEXT NOT NULL DEFAULT '',
+    deleted_at TEXT,
     commission_stage_id INTEGER NOT NULL REFERENCES commission_stages(id),
     phone TEXT NOT NULL DEFAULT '',
     notes TEXT NOT NULL DEFAULT '',
@@ -63,7 +66,7 @@ CREATE TABLE IF NOT EXISTS leads (
     demo_at TEXT,
     registered_at TEXT NOT NULL,
     last_activity_at TEXT NOT NULL,
-    created_by_user_id INTEGER NOT NULL REFERENCES users(id)
+    created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_lead_email_norm ON leads(email_norm) WHERE email_norm <> '';
@@ -76,7 +79,8 @@ CREATE INDEX IF NOT EXISTS idx_leads_activity ON leads(last_activity_at DESC);
 CREATE TABLE IF NOT EXISTS lead_notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     lead_id INTEGER NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
-    author_user_id INTEGER NOT NULL REFERENCES users(id),
+    author_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    author_name_snapshot TEXT NOT NULL DEFAULT '',
     body TEXT NOT NULL,
     created_at TEXT NOT NULL
 );
@@ -91,7 +95,7 @@ CREATE TABLE IF NOT EXISTS followups (
     notes TEXT NOT NULL DEFAULT '',
     status TEXT NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN','COMPLETED')),
     completed_at TEXT,
-    created_by_user_id INTEGER NOT NULL REFERENCES users(id),
+    created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
@@ -111,7 +115,7 @@ CREATE TABLE IF NOT EXISTS sales (
     payment_status TEXT NOT NULL DEFAULT 'UNPAID' CHECK (payment_status IN ('UNPAID','PARTIALLY_PAID','PAID','REFUNDED_ADJUSTED')),
     sale_date TEXT NOT NULL,
     notes TEXT NOT NULL DEFAULT '',
-    created_by_user_id INTEGER NOT NULL REFERENCES users(id),
+    created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     CHECK (qualifying_revenue_cents <= collected_cents)
@@ -143,7 +147,7 @@ CREATE TABLE IF NOT EXISTS resources (
     body TEXT NOT NULL DEFAULT '',
     url TEXT NOT NULL DEFAULT '',
     published INTEGER NOT NULL DEFAULT 1 CHECK (published IN (0,1)),
-    created_by_user_id INTEGER NOT NULL REFERENCES users(id),
+    created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
@@ -163,13 +167,14 @@ CREATE TABLE IF NOT EXISTS duplicate_claims (
     resolution_notes TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL,
     resolved_at TEXT,
-    resolved_by_user_id INTEGER REFERENCES users(id)
+    resolved_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL
 );
 CREATE INDEX IF NOT EXISTS idx_duplicate_claims_status ON duplicate_claims(status, created_at DESC);
 
 CREATE TABLE IF NOT EXISTS activity_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    actor_user_id INTEGER REFERENCES users(id),
+    actor_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    actor_name_snapshot TEXT NOT NULL DEFAULT '',
     action_type TEXT NOT NULL,
     entity_type TEXT NOT NULL,
     entity_id INTEGER,
@@ -184,7 +189,7 @@ CREATE INDEX IF NOT EXISTS idx_activity_entity ON activity_log(entity_type, enti
 CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     partner_id INTEGER NOT NULL REFERENCES partners(id) ON DELETE CASCADE,
-    sender_user_id INTEGER NOT NULL REFERENCES users(id),
+    sender_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     body TEXT NOT NULL,
     founder_read_at TEXT,
     partner_read_at TEXT,
@@ -210,13 +215,13 @@ CREATE INDEX IF NOT EXISTS idx_message_attachments_partner ON message_attachment
 CREATE TABLE IF NOT EXISTS voice_calls (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     partner_id INTEGER NOT NULL REFERENCES partners(id) ON DELETE CASCADE,
-    started_by_user_id INTEGER NOT NULL REFERENCES users(id),
+    started_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     status TEXT NOT NULL DEFAULT 'RINGING' CHECK (status IN ('RINGING','ACTIVE','ENDED','DECLINED','MISSED')),
     started_at TEXT NOT NULL,
     answered_at TEXT,
     ended_at TEXT,
     end_reason TEXT,
-    ended_by_user_id INTEGER REFERENCES users(id),
+    ended_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     caller_seen_at TEXT,
     receiver_seen_at TEXT
 );
@@ -226,7 +231,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_voice_calls_open_partner ON voice_calls(par
 CREATE TABLE IF NOT EXISTS voice_call_signals (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     call_id INTEGER NOT NULL REFERENCES voice_calls(id) ON DELETE CASCADE,
-    sender_user_id INTEGER NOT NULL REFERENCES users(id),
+    sender_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     kind TEXT NOT NULL CHECK (kind IN ('OFFER','ANSWER','ICE')),
     payload_json TEXT NOT NULL,
     created_at TEXT NOT NULL
@@ -237,7 +242,7 @@ CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL,
     updated_at TEXT NOT NULL,
-    updated_by_user_id INTEGER REFERENCES users(id)
+    updated_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- Unified public website intake and client email workspace (v1.2)
@@ -290,7 +295,8 @@ CREATE TABLE IF NOT EXISTS client_messages (
     recipient_email TEXT NOT NULL DEFAULT '',
     subject TEXT NOT NULL DEFAULT '',
     body TEXT NOT NULL,
-    sent_by_user_id INTEGER REFERENCES users(id),
+    sent_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    sent_by_name_snapshot TEXT NOT NULL DEFAULT '',
     external_message_id TEXT NOT NULL DEFAULT '',
     in_reply_to TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL

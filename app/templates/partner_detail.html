@@ -1,6 +1,43 @@
-{% extends 'base.html' %}{% block content %}
-<div class="page-head"><div><h1>{{ partner.full_name }}</h1><p>{{ partner.email }} · Joined {{ partner.joined_at|dateonly }}</p></div><div class="page-actions"><a class="button primary" href="{{ url_for('main.messages_thread', partner_id=partner.id) }}">Message Partner</a><a class="button secondary" href="{{ url_for('main.partners_list') }}">Partners</a></div></div>
-<div class="metric-grid summary-three"><div class="metric-card static"><span>Leads</span><strong>{{ fmt_count(stats.leads, stats.leads > 0) }}</strong></div><div class="metric-card static"><span>Sales</span><strong>{{ fmt_count(stats.sales, stats.has_sales_data) }}</strong><small>{{ fmt_money(stats.qualifying, stats.has_sales_data, setting('currency_code','USD')) }} commission revenue</small></div><div class="metric-card static"><span>Commissions</span><strong>{{ fmt_money(stats.commissions, stats.has_commission_data, setting('currency_code','USD')) }}</strong></div></div>
-<div class="two-col"><section class="panel"><div class="panel-head"><div><h2>Details</h2></div></div><form method="post" class="form-stack" data-confirm-if-unchecked="active" data-confirm-message="Block this partner from signing in?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Commission level<select name="commission_stage_id">{% for s in stages %}<option value="{{ s.id }}" {{ 'selected' if s.id==partner.commission_stage_id else '' }}>{{ s.name }} — {{ s.rate_bp|rate }}</option>{% endfor %}</select></label><p class="help">New commissions use this level.</p><label>Phone<input name="phone" value="{{ partner.phone }}"></label><label>Notes<textarea name="notes" rows="4">{{ partner.notes }}</textarea></label><label class="check-row"><input type="checkbox" name="active" value="1" {{ 'checked' if partner.active and partner.user_active else '' }}><span><strong>Allow sign in</strong><small>Turn off to block this account.</small></span></label><button class="button primary" type="submit">Save</button></form></section>
-<section class="panel"><div class="panel-head"><div><h2>Partner password</h2></div></div><form method="post" action="{{ url_for('main.partner_reset_password',partner_id=partner.id) }}" class="form-stack" data-confirm="Change this partner password? The old password will stop working."><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>New password<div class="password-row"><input id="reset_password" type="text" name="temporary_password" minlength="12" required autocomplete="off"><button type="button" class="button ghost" data-generate-password data-target="reset_password">Generate</button></div></label><button class="button secondary" type="submit">Save password</button></form></section></div>
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head organized-page-head">
+  <div><span class="page-kicker">Partner</span><h1>{{ partner.full_name }}</h1><p>{{ partner.email }} · Created {{ partner.account_created_at|dateonly }}</p></div>
+  <div class="page-actions"><a class="button primary" href="{{ url_for('main.messages_thread', partner_id=partner.id) }}">Message Partner</a><a class="button secondary" href="{{ url_for('main.partners_list') }}">Back</a></div>
+</div>
+<div class="metric-grid summary-three partner-summary-grid">
+  <div class="metric-card static"><span>Leads</span><strong>{{ fmt_count(stats.leads, stats.leads > 0) }}</strong></div>
+  <div class="metric-card static"><span>Sales</span><strong>{{ fmt_count(stats.sales, stats.has_sales_data) }}</strong><small>{{ fmt_money(stats.qualifying, stats.has_sales_data, setting('currency_code','USD')) }} commission revenue</small></div>
+  <div class="metric-card static"><span>Commissions</span><strong>{{ fmt_money(stats.commissions, stats.has_commission_data, setting('currency_code','USD')) }}</strong></div>
+</div>
+<div class="two-col partner-admin-layout">
+  <section class="panel">
+    <div class="panel-head"><div><span class="panel-kicker">Partner</span><h2>Details</h2></div></div>
+    <form method="post" class="form-stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Full name<input name="full_name" value="{{ partner.full_name }}" required maxlength="160" autocomplete="name"></label>
+      <label>Email<input type="email" name="email" value="{{ partner.email }}" required maxlength="254" autocomplete="email"></label>
+      <label>Commission stage<select name="commission_stage_id" required>{% for s in stages %}<option value="{{ s.id }}" {{ 'selected' if s.id==partner.commission_stage_id else '' }}>{{ s.name }} — {{ s.rate_bp|rate }}</option>{% endfor %}</select><small class="help">Only new commissions use this stage. Existing commission history keeps its original rate.</small></label>
+      <label>Phone<input name="phone" value="{{ partner.phone }}" autocomplete="tel" maxlength="60"></label>
+      <label>Internal notes<textarea name="notes" rows="4" maxlength="2000">{{ partner.notes }}</textarea></label>
+      <div class="form-actions"><button class="button primary" type="submit">Save Partner</button></div>
+    </form>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><div><span class="panel-kicker">Password</span><h2>Change Password</h2></div></div>
+    <p class="panel-intro">Choose the exact password you want. The old password stops working immediately after the change.</p>
+    <form method="post" action="{{ url_for('main.partner_reset_password',partner_id=partner.id) }}" class="form-stack" data-confirm="Change this Partner password now?">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>New password<div class="password-control"><input id="reset_password" type="password" name="password" required autocomplete="new-password"><div class="password-actions"><button type="button" class="button ghost" data-password-toggle data-target="reset_password">Show</button><button type="button" class="button ghost" data-copy-target="reset_password">Copy</button></div></div><small class="help">RSF uses exactly what you enter.</small></label>
+      <button class="button secondary" type="submit">Change Password</button>
+    </form>
+    <div class="permanent-delete-zone">
+      <div><strong>Delete Partner</strong><p>Permanently removes this Partner's login and profile. Business history remains intact where required.</p></div>
+      <form method="post" action="{{ url_for('main.partner_delete',partner_id=partner.id) }}" data-confirm="Permanently delete this Partner? This cannot be undone.">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="confirm_delete" value="1">
+        <button class="button destructive" type="submit">Delete Permanently</button>
+      </form>
+    </div>
+  </section>
+</div>
 {% endblock %}

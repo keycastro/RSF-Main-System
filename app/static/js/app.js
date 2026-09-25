@@ -92,38 +92,34 @@
     }
   });
 
-  const randomChar = (alphabet) => {
-    const value = new Uint32Array(1);
-    crypto.getRandomValues(value);
-    return alphabet[value[0] % alphabet.length];
-  };
-  const shuffle = (chars) => {
-    const values = new Uint32Array(chars.length);
-    crypto.getRandomValues(values);
-    for (let i = chars.length - 1; i > 0; i -= 1) {
-      const j = values[i] % (i + 1);
-      [chars[i], chars[j]] = [chars[j], chars[i]];
-    }
-    return chars;
-  };
-
-  document.querySelectorAll('[data-generate-password]').forEach((button) => {
+  document.querySelectorAll('[data-password-toggle]').forEach((button) => {
     button.addEventListener('click', () => {
       const target = document.getElementById(button.dataset.target);
-      if (!target) return;
-      const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-      const lower = 'abcdefghijkmnopqrstuvwxyz';
-      const digits = '23456789';
-      const symbols = '!@#$%';
-      const all = upper + lower + digits + symbols;
-      const chars = [randomChar(upper), randomChar(lower), randomChar(digits), randomChar(symbols)];
-      while (chars.length < 18) chars.push(randomChar(all));
-      target.value = shuffle(chars).join('');
-      target.dispatchEvent(new Event('input', { bubbles: true }));
+      if (!(target instanceof HTMLInputElement)) return;
+      const reveal = target.type === 'password';
+      target.type = reveal ? 'text' : 'password';
+      button.textContent = reveal ? 'Hide' : 'Show';
       target.focus();
-      target.select();
     });
   });
+
+  document.querySelectorAll('[data-copy-target]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const target = document.getElementById(button.dataset.copyTarget);
+      if (!(target instanceof HTMLInputElement) || !target.value) return;
+      try {
+        await navigator.clipboard.writeText(target.value);
+        const original = button.textContent;
+        button.textContent = 'Copied';
+        window.setTimeout(() => { button.textContent = original; }, 1400);
+      } catch (_error) {
+        target.type = 'text';
+        target.focus();
+        target.select();
+      }
+    });
+  });
+
 
   // Show status-specific lead fields only when they are relevant.
   document.querySelectorAll('[data-lead-status-form]').forEach((form) => {

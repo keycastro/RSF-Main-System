@@ -24,7 +24,12 @@ def hash_password(password: str) -> str:
 
 
 def valid_password(password: str) -> bool:
-    return len(password or "") >= 12 and any(c.isalpha() for c in password) and any(c.isdigit() for c in password)
+    """Accept the exact non-empty password intentionally chosen by the Founder.
+
+    RSF intentionally does not enforce composition, strength, symbol, case, or
+    generated-password rules. Passwords are still stored only as secure hashes.
+    """
+    return bool(password)
 
 
 def valid_email(value: str) -> bool:
@@ -44,7 +49,7 @@ def load_logged_in_user() -> None:
         return
     db = get_db()
     user = db.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
-    if user is None or not user["active"] or not hmac.compare_digest(
+    if user is None or (user["role"] != "partner" and not user["active"]) or not hmac.compare_digest(
         session.get("credential", ""), session_credential(user)
     ):
         session.clear()
@@ -57,7 +62,7 @@ def load_logged_in_user() -> None:
         g.partner = db.execute(
             """SELECT p.*, cs.name AS commission_stage_name, cs.rate_bp AS commission_rate_bp
                FROM partners p JOIN commission_stages cs ON cs.id=p.commission_stage_id
-               WHERE p.user_id=? AND p.active=1""",
+               WHERE p.user_id=?""",
             (user["id"],),
         ).fetchone()
         if g.partner is None:
@@ -106,7 +111,7 @@ def authenticate(email: str, password: str):
     email = (email or "").strip().lower()
     user = db.execute("SELECT * FROM users WHERE lower(email)=?", (email,)).fetchone()
     now = datetime.now(timezone.utc)
-    if user is None or not user["active"]:
+    if user is None or (user["role"] != "partner" and not user["active"]):
         return None, "Invalid email or password."
     if user["locked_until"]:
         try:
