@@ -102,7 +102,7 @@ class _PGConnection:
         lastrowid = None
         match = re.match(r'^\s*INSERT\s+INTO\s+["\']?([A-Za-z_][A-Za-z0-9_]*)', translated, flags=re.I)
         table_name = match.group(1) if match else ""
-        if table_name in SERIAL_ID_TABLES and not original_ignore:
+        if table_name in SERIAL_ID_TABLES and not original_ignore and cur.rowcount and cur.rowcount > 0:
             seq_cur = self._conn.cursor(row_factory=dict_row)
             seq_cur.execute("SELECT LASTVAL() AS id")
             row = seq_cur.fetchone()
