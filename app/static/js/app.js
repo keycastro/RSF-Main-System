@@ -124,6 +124,20 @@
       target.select();
     });
   });
+
+  // Show status-specific lead fields only when they are relevant.
+  document.querySelectorAll('[data-lead-status-form]').forEach((form) => {
+    const select = form.querySelector('[data-lead-status-select]');
+    const fields = [...form.querySelectorAll('[data-status-field]')];
+    if (!select || !fields.length) return;
+    const syncStatusFields = () => {
+      fields.forEach((field) => {
+        field.hidden = field.dataset.statusField !== select.value;
+      });
+    };
+    select.addEventListener('change', syncStatusFields);
+    syncStatusFields();
+  });
 })();
 
 /* Private Founder <-> Partner messages and simple voice calls. */
