@@ -42,7 +42,7 @@ class Config:
     PROFILE_PICTURE_DIR = os.environ.get("PROFILE_PICTURE_DIR", "")
     CLIENT_ATTACHMENT_DIR = os.environ.get("CLIENT_ATTACHMENT_DIR", "")
     BACKUP_DIR = os.environ.get("BACKUP_DIR", "")
-    TRUSTED_HOSTS = [h.strip() for h in os.environ.get("TRUSTED_HOSTS", "realtysystemsfoundry.onrender.com,127.0.0.1,localhost" if ONLINE_MODE else "127.0.0.1,localhost").split(",") if h.strip()]
+    TRUSTED_HOSTS = [h.strip() for h in os.environ.get("TRUSTED_HOSTS", "realtysystemsfoundry.onrender.com,partner-rsf.onrender.com,127.0.0.1,localhost" if ONLINE_MODE else "127.0.0.1,localhost").split(",") if h.strip()]
 
     # Unified public website + official RSF client email
     PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").strip().rstrip("/")
