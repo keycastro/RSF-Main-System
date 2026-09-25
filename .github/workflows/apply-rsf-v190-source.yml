@@ -1,0 +1,41 @@
+name: Apply RSF v1.9.0 authoritative source
+
+on:
+  push:
+    branches: [ rsf-v190-source-sync ]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Apply authoritative v1.9.0 source payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin rsf-v190-source-sync:refs/remotes/origin/rsf-v190-source-sync
+          : > /tmp/rsf_payload.b64
+          for n in 00 01 02 03 04; do
+            git show "origin/rsf-v190-source-sync:.rsf_payload/part_${n}.b64" >> /tmp/rsf_payload.b64
+          done
+          base64 --decode /tmp/rsf_payload.b64 > /tmp/rsf_payload.tar.gz
+          tar -xzf /tmp/rsf_payload.tar.gz -C .
+          find . -type d -name __pycache__ -prune -exec rm -rf {} +
+          find . -type f -name '*.pyc' -delete
+          git config user.name "RSF Release Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add VERSION.txt .env.example .gitignore Dockerfile Procfile README.md PROJECT_STATE.json requirements.txt requirements-production.txt config.py bootstrap.py run.py wsgi.py app public installers scripts
+          if git diff --cached --quiet; then
+            echo "No source changes to commit."
+            exit 0
+          fi
+          git commit -m "Release RSF v1.9.0 Founder Partner control"
+          git push origin HEAD:main
