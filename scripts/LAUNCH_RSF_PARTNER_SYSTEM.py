@@ -1,8 +1,4 @@
-"""Open the production RSF website or private Workspace.
-
-Normal RSF operation is online on Render. This launcher never starts Flask,
-Waitress, localhost, or a background Python web server.
-"""
+"""Open the production RSF website or private Workspace in the default browser."""
 from __future__ import annotations
 
 import sys
