@@ -1,3 +1,9 @@
+## v1.8.3 naming
+
+- Current website remains `https://realtysystemsfoundry.onrender.com/` because `https://rsf.onrender.com/` is unavailable.
+- Partner Workspace: `https://partner-rsf.onrender.com/`.
+- Future domains: `https://rsf.com/` and `https://partner.rsf.com/`.
+
 # RSF Main System — v1.5.2
 
 This is the single RSF application: the public Realty Systems Foundry website and the private Founder/Partner operating workspace share one backend and one database.
