@@ -323,7 +323,7 @@ def _founder_conversations(db, query: str = "") -> list[dict]:
         where = " WHERE (u.full_name LIKE ? ESCAPE '\\' OR u.email LIKE ? ESCAPE '\\')"
         params.extend([pattern, pattern])
     rows = db.execute(
-        """SELECT p.id, p.user_id, p.active, u.full_name, u.email, u.role, u.avatar_stored_name, u.active AS user_active,
+        """SELECT p.id, p.user_id, p.active, p.deleted_at, u.full_name, u.email, u.role, u.avatar_stored_name, u.active AS user_active,
                   (SELECT m.id FROM messages m WHERE m.partner_id=p.id ORDER BY m.id DESC LIMIT 1) AS last_message_id,
                   (SELECT m.body FROM messages m WHERE m.partner_id=p.id ORDER BY m.id DESC LIMIT 1) AS last_message,
                   (SELECT m.created_at FROM messages m WHERE m.partner_id=p.id ORDER BY m.id DESC LIMIT 1) AS last_message_at,
@@ -586,7 +586,7 @@ def dashboard():
         leads_count = db.execute("SELECT COUNT(*) c FROM leads").fetchone()["c"]
         followups_count = db.execute("SELECT COUNT(*) c FROM followups").fetchone()["c"]
         metrics = {
-            "partners": db.execute("SELECT COUNT(*) c FROM partners WHERE active=1").fetchone()["c"],
+            "partners": db.execute("SELECT COUNT(*) c FROM partners WHERE active=1 AND deleted_at IS NULL").fetchone()["c"],
             "unclaimed": db.execute("SELECT COUNT(*) c FROM website_inquiries WHERE status='UNCLAIMED'").fetchone()["c"],
             "leads": leads_count,
             "new": db.execute("SELECT COUNT(*) c FROM leads WHERE status='NEW'").fetchone()["c"],
@@ -632,7 +632,7 @@ def dashboard():
                        WHERE f.owner_partner_id=p.id AND l.owner_partner_id=p.id AND f.status='OPEN' AND substr(f.due_at,1,10) < ?) overdue_followups,
                       (SELECT COUNT(*) FROM client_conversations c WHERE c.owner_partner_id=p.id AND c.status='ACTIVE') active_clients
                FROM partners p JOIN users u ON u.id=p.user_id
-               WHERE p.active=1 AND u.active=1
+               WHERE p.active=1 AND p.deleted_at IS NULL AND u.active=1
                ORDER BY overdue_followups DESC, open_followups DESC, active_leads DESC, u.full_name
                LIMIT 8""", (today,)
         ).fetchall()
@@ -713,7 +713,7 @@ def lead_new():
     db = get_db()
     partners = []
     if g.user["role"] == "admin":
-        partners = db.execute("""SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND u.active=1 ORDER BY u.full_name""").fetchall()
+        partners = db.execute("""SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND p.deleted_at IS NULL AND u.active=1 ORDER BY u.full_name""").fetchall()
     if request.method == "POST":
         validate_csrf()
         owner_partner_id = g.partner["id"] if g.user["role"] == "partner" else request.form.get("owner_partner_id", type=int)
@@ -723,10 +723,10 @@ def lead_new():
         if not owner_partner_id:
             errors.append("Choose a lead owner.")
         elif g.user["role"] == "admin" and not db.execute(
-            "SELECT 1 FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=? AND p.active=1 AND u.active=1",
+            "SELECT 1 FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=? AND p.active=1 AND p.deleted_at IS NULL AND u.active=1",
             (owner_partner_id,),
         ).fetchone():
-            errors.append("Choose an active partner.")
+            errors.append("Choose an available Partner.")
         if not data["company_name"]:
             errors.append("Company is required.")
         if not data["contact_name"]:
@@ -884,7 +884,7 @@ def lead_detail(lead_id: int):
         ).fetchall()
     partners = []
     if g.user["role"] == "admin":
-        partners = db.execute("SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND u.active=1 ORDER BY u.full_name").fetchall()
+        partners = db.execute("SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND p.deleted_at IS NULL AND u.active=1 ORDER BY u.full_name").fetchall()
     return render_template("lead_detail.html", title=lead["company_name"], lead=lead, notes=notes, followups=followups, sale=sale, activity=activity, pipeline=PIPELINE, partner_allowed=PARTNER_ALLOWED_STATUSES, partners=partners, now_input=local_now_input(), client_conversation=client_conversation, client_messages=client_messages)
 
 
@@ -955,7 +955,7 @@ def lead_reassign(lead_id: int):
         flash("Owner cannot change after a sale is created.", "error")
         return redirect(url_for("main.lead_detail", lead_id=lead_id))
     new_partner = request.form.get("owner_partner_id", type=int)
-    target = db.execute("SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=? AND p.active=1 AND u.active=1", (new_partner,)).fetchone()
+    target = db.execute("SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=? AND p.active=1 AND p.deleted_at IS NULL AND u.active=1", (new_partner,)).fetchone()
     if not target:
         abort(400)
     old_partner = lead["owner_partner_id"]
@@ -1259,18 +1259,23 @@ def commission_paid(commission_id: int):
     return redirect(url_for("main.commissions_list"))
 
 
-@bp.route("/admin/partners")
+@bp.route("/founder/partners")
 @admin_required
 def partners_list():
     db = get_db()
-    rows = db.execute("""SELECT p.*,u.full_name,u.email,u.active user_active,cs.name commission_stage_name,cs.rate_bp commission_rate_bp,
-        (SELECT COUNT(*) FROM leads l WHERE l.owner_partner_id=p.id) lead_count,
-        (SELECT SUM(c.commission_amount_cents) FROM commissions c WHERE c.partner_id=p.id AND c.status='PAID') paid_commission
-        FROM partners p JOIN users u ON u.id=p.user_id JOIN commission_stages cs ON cs.id=p.commission_stage_id ORDER BY p.joined_at""").fetchall()
+    rows = db.execute(
+        """SELECT p.*,u.full_name,u.email,u.created_at AS account_created_at,
+                  cs.name commission_stage_name,cs.rate_bp commission_rate_bp
+           FROM partners p
+           JOIN users u ON u.id=p.user_id
+           JOIN commission_stages cs ON cs.id=p.commission_stage_id
+           WHERE p.deleted_at IS NULL
+           ORDER BY u.full_name COLLATE NOCASE,p.id"""
+    ).fetchall()
     return render_template("partners_list.html", title="Partners", partners=rows)
 
 
-@bp.route("/admin/partners/new", methods=["GET", "POST"])
+@bp.route("/founder/partners/new", methods=["GET", "POST"])
 @admin_required
 def partner_new():
     db = get_db()
@@ -1279,78 +1284,121 @@ def partner_new():
         validate_csrf()
         full_name = (request.form.get("full_name", "") or "").strip()
         email = (request.form.get("email", "") or "").strip().lower()
-        password = request.form.get("temporary_password", "") or ""
+        # Preserve the exact password the Founder typed. Do not trim, transform,
+        # score, generate, or apply composition rules.
+        password = request.form.get("password", "") or ""
         phone = (request.form.get("phone", "") or "").strip()
         notes = (request.form.get("notes", "") or "").strip()
         stage_id = request.form.get("commission_stage_id", type=int)
         stage = db.execute("SELECT * FROM commission_stages WHERE id=? AND active=1", (stage_id,)).fetchone()
         errors = []
-        if len(full_name) < 2: errors.append("Partner name is required.")
-        if not valid_email(email): errors.append("Enter a valid partner email.")
-        if not valid_password(password): errors.append("Partner password must be at least 12 characters and include letters and numbers.")
-        if not stage: errors.append("Choose a commission level.")
+        if len(full_name) < 2:
+            errors.append("Partner name is required.")
+        if not valid_email(email):
+            errors.append("Enter a valid Partner email.")
+        if password == "":
+            errors.append("Enter a Partner password.")
+        if not stage:
+            errors.append("Choose a commission level.")
         if errors:
-            for e in errors: flash(e, "error")
+            for error in errors:
+                flash(error, "error")
             return render_template("partner_form.html", title="Add Partner", stages=stages)
         now = utcnow_iso()
         try:
-            cur = db.execute("""INSERT INTO users(full_name,email,password_hash,role,active,force_password_change,created_at,updated_at)
-                                VALUES (?,?,?,'partner',1,0,?,?)""", (full_name[:160], email, hash_password(password), now, now))
+            cur = db.execute(
+                """INSERT INTO users(full_name,email,password_hash,role,active,force_password_change,created_at,updated_at)
+                   VALUES (?,?,?,'partner',1,0,?,?)""",
+                (full_name[:160], email, hash_password(password), now, now),
+            )
             user_id = cur.lastrowid
-            cur = db.execute("INSERT INTO partners(user_id,commission_stage_id,phone,notes,joined_at,active) VALUES (?,?,?,?,?,1)", (user_id, stage_id, phone[:60], notes[:2000], now))
+            cur = db.execute(
+                """INSERT INTO partners(user_id,commission_stage_id,phone,notes,joined_at,active,deleted_at)
+                   VALUES (?,?,?,?,?,1,NULL)""",
+                (user_id, stage_id, phone[:60], notes[:2000], now),
+            )
             partner_id = cur.lastrowid
         except (sqlite3.IntegrityError, IntegrityError):
             db.rollback()
             flash("An account with that email already exists.", "error")
             return render_template("partner_form.html", title="Add Partner", stages=stages)
-        log_activity("PARTNER_CREATED", "partner", partner_id, "Partner account created.", {"stage": stage["name"], "rate_bp": stage["rate_bp"]})
+        log_activity(
+            "PARTNER_CREATED", "partner", partner_id, "Partner account created.",
+            {"stage": stage["name"], "rate_bp": stage["rate_bp"]},
+        )
         db.commit()
-        return render_template("partner_created.html", title="Partner Created", partner={"id":partner_id,"full_name":full_name,"email":email}, temporary_password=password)
+        return render_template(
+            "partner_created.html",
+            title="Partner Created",
+            partner={"id": partner_id, "full_name": full_name, "email": email},
+            chosen_password=password,
+        )
     return render_template("partner_form.html", title="Add Partner", stages=stages)
 
 
-@bp.route("/admin/partners/<int:partner_id>", methods=["GET", "POST"])
+@bp.route("/founder/partners/<int:partner_id>", methods=["GET", "POST"])
 @admin_required
 def partner_detail(partner_id: int):
     db = get_db()
-    partner = db.execute("""SELECT p.*,u.full_name,u.email,u.active user_active,cs.name commission_stage_name,cs.rate_bp commission_rate_bp
-        FROM partners p JOIN users u ON u.id=p.user_id JOIN commission_stages cs ON cs.id=p.commission_stage_id WHERE p.id=?""", (partner_id,)).fetchone()
-    if not partner: abort(404)
+    partner = db.execute(
+        """SELECT p.*,u.full_name,u.email,u.created_at AS account_created_at,
+                  cs.name commission_stage_name,cs.rate_bp commission_rate_bp
+           FROM partners p
+           JOIN users u ON u.id=p.user_id
+           JOIN commission_stages cs ON cs.id=p.commission_stage_id
+           WHERE p.id=? AND p.deleted_at IS NULL""",
+        (partner_id,),
+    ).fetchone()
+    if not partner:
+        abort(404)
     stages = db.execute("SELECT * FROM commission_stages WHERE active=1 ORDER BY sort_order").fetchall()
     if request.method == "POST":
         validate_csrf()
+        full_name = (request.form.get("full_name", "") or "").strip()
+        email = (request.form.get("email", "") or "").strip().lower()
         stage_id = request.form.get("commission_stage_id", type=int)
-        active = 1 if request.form.get("active") == "1" else 0
         phone = (request.form.get("phone", "") or "").strip()
         notes = (request.form.get("notes", "") or "").strip()
         stage = db.execute("SELECT * FROM commission_stages WHERE id=? AND active=1", (stage_id,)).fetchone()
+        errors = []
+        if len(full_name) < 2:
+            errors.append("Partner name is required.")
+        if not valid_email(email):
+            errors.append("Enter a valid Partner email.")
         if not stage:
-            abort(400)
-        if not active and (partner["active"] or partner["user_active"]):
-            active_leads = db.execute(
-                "SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status NOT IN ('WON','LOST')",
-                (partner_id,),
-            ).fetchone()["c"]
-            active_clients = db.execute(
-                "SELECT COUNT(*) c FROM client_conversations WHERE owner_partner_id=? AND status='ACTIVE'",
-                (partner_id,),
-            ).fetchone()["c"]
-            open_followups = db.execute(
-                "SELECT COUNT(*) c FROM followups WHERE owner_partner_id=? AND status='OPEN'",
-                (partner_id,),
-            ).fetchone()["c"]
-            if active_leads or active_clients or open_followups:
-                flash("Reassign or close this Partner's active clients, leads, and follow-ups first.", "error")
-                return redirect(url_for("main.partner_detail", partner_id=partner_id))
-        if stage_id != partner["commission_stage_id"]:
-            log_activity("PARTNER_COMMISSION_RATE_CHANGED", "partner", partner_id, "Partner commission level changed.", {"from": partner["commission_stage_name"], "from_rate_bp": partner["commission_rate_bp"], "to": stage["name"], "to_rate_bp": stage["rate_bp"]})
-        if active != partner["active"] or active != partner["user_active"]:
-            log_activity("PARTNER_STATUS_CHANGED", "partner", partner_id, "Partner account was activated." if active else "Partner account was deactivated.", {"active": bool(active)})
-        if phone[:60] != partner["phone"] or notes[:2000] != partner["notes"]:
-            log_activity("PARTNER_UPDATED", "partner", partner_id, "Partner details updated.")
-        db.execute("UPDATE partners SET commission_stage_id=?,phone=?,notes=?,active=? WHERE id=?", (stage_id, phone[:60], notes[:2000], active, partner_id))
-        db.execute("UPDATE users SET active=?,updated_at=? WHERE id=?", (active, utcnow_iso(), partner["user_id"]))
-        db.commit()
+            errors.append("Choose a commission level.")
+        if errors:
+            for error in errors:
+                flash(error, "error")
+            return redirect(url_for("main.partner_detail", partner_id=partner_id))
+        try:
+            if stage_id != partner["commission_stage_id"]:
+                log_activity(
+                    "PARTNER_COMMISSION_RATE_CHANGED", "partner", partner_id,
+                    "Partner commission level changed.",
+                    {
+                        "from": partner["commission_stage_name"],
+                        "from_rate_bp": partner["commission_rate_bp"],
+                        "to": stage["name"],
+                        "to_rate_bp": stage["rate_bp"],
+                    },
+                )
+            if (full_name[:160] != partner["full_name"] or email != partner["email"] or
+                    phone[:60] != partner["phone"] or notes[:2000] != partner["notes"]):
+                log_activity("PARTNER_UPDATED", "partner", partner_id, "Partner details updated.")
+            db.execute(
+                "UPDATE users SET full_name=?,email=?,updated_at=? WHERE id=?",
+                (full_name[:160], email, utcnow_iso(), partner["user_id"]),
+            )
+            db.execute(
+                "UPDATE partners SET commission_stage_id=?,phone=?,notes=? WHERE id=? AND deleted_at IS NULL",
+                (stage_id, phone[:60], notes[:2000], partner_id),
+            )
+            db.commit()
+        except (sqlite3.IntegrityError, IntegrityError):
+            db.rollback()
+            flash("An account with that email already exists.", "error")
+            return redirect(url_for("main.partner_detail", partner_id=partner_id))
         flash("Partner updated. Past commissions are unchanged.", "success")
         return redirect(url_for("main.partner_detail", partner_id=partner_id))
     stats = {
@@ -1364,25 +1412,97 @@ def partner_detail(partner_id: int):
     return render_template("partner_detail.html", title=partner["full_name"], partner=partner, stages=stages, stats=stats)
 
 
-@bp.post("/admin/partners/<int:partner_id>/reset-password")
+@bp.post("/founder/partners/<int:partner_id>/password")
 @admin_required
 def partner_reset_password(partner_id: int):
     validate_csrf()
-    password = request.form.get("temporary_password", "") or ""
-    if not valid_password(password):
-        flash("Partner password must be at least 12 characters and include letters and numbers.", "error")
+    password = request.form.get("password", "") or ""
+    if password == "":
+        flash("Enter a Partner password.", "error")
         return redirect(url_for("main.partner_detail", partner_id=partner_id))
     db = get_db()
-    partner = db.execute("SELECT * FROM partners WHERE id=?", (partner_id,)).fetchone()
-    if not partner: abort(404)
-    db.execute("UPDATE users SET password_hash=?,force_password_change=0,failed_login_count=0,locked_until=NULL,updated_at=? WHERE id=?", (hash_password(password), utcnow_iso(), partner["user_id"]))
+    partner = db.execute(
+        """SELECT p.id,p.user_id,u.full_name,u.email
+           FROM partners p JOIN users u ON u.id=p.user_id
+           WHERE p.id=? AND p.deleted_at IS NULL""",
+        (partner_id,),
+    ).fetchone()
+    if not partner:
+        abort(404)
+    db.execute(
+        """UPDATE users SET password_hash=?,force_password_change=0,failed_login_count=0,
+                  locked_until=NULL,updated_at=? WHERE id=?""",
+        (hash_password(password), utcnow_iso(), partner["user_id"]),
+    )
     log_activity("PARTNER_PASSWORD_RESET", "partner", partner_id, "Partner password changed.")
     db.commit()
-    flash("Partner password updated.", "success")
-    return redirect(url_for("main.partner_detail", partner_id=partner_id))
+    return render_template(
+        "partner_password_changed.html",
+        title="Password Changed",
+        partner=partner,
+        chosen_password=password,
+    )
 
 
-@bp.route("/admin/duplicates")
+@bp.post("/founder/partners/<int:partner_id>/delete")
+@admin_required
+def partner_delete(partner_id: int):
+    validate_csrf()
+    db = get_db()
+    partner = db.execute(
+        """SELECT p.*,u.full_name,u.email,u.avatar_stored_name
+           FROM partners p JOIN users u ON u.id=p.user_id
+           WHERE p.id=? AND p.deleted_at IS NULL""",
+        (partner_id,),
+    ).fetchone()
+    if not partner:
+        abort(404)
+
+    now = utcnow_iso()
+    # This is not a deactivate flow. Original credentials and profile data are
+    # destroyed and there is no restore action. Scrubbed rows remain only as
+    # historical foreign-key anchors for company records.
+    erased_email = f"deleted-partner-{partner_id}-{uuid4().hex}@rsf.invalid"
+    erased_password = hash_password(uuid4().hex + uuid4().hex)
+
+    db.execute(
+        """UPDATE voice_calls
+           SET status=CASE WHEN status='RINGING' THEN 'MISSED' ELSE 'ENDED' END,
+               end_reason='account_deleted',ended_at=?,ended_by_user_id=?
+           WHERE partner_id=? AND status IN ('RINGING','ACTIVE')""",
+        (now, g.user["id"], partner_id),
+    )
+    db.execute("DELETE FROM client_notifications WHERE user_id=?", (partner["user_id"],))
+    db.execute(
+        """UPDATE users
+           SET full_name='Deleted Partner',email=?,password_hash=?,active=0,force_password_change=0,
+               failed_login_count=0,locked_until=NULL,last_login_at=NULL,
+               avatar_stored_name=NULL,avatar_mime_type=NULL,avatar_data=NULL,avatar_updated_at=?,updated_at=?
+           WHERE id=?""",
+        (erased_email, erased_password, now, now, partner["user_id"]),
+    )
+    db.execute(
+        """UPDATE partners
+           SET phone='',notes='',active=0,deleted_at=?
+           WHERE id=? AND deleted_at IS NULL""",
+        (now, partner_id),
+    )
+    log_activity("PARTNER_DELETED", "partner", partner_id, "Partner account permanently deleted.")
+    db.commit()
+
+    old_avatar = partner["avatar_stored_name"]
+    if old_avatar:
+        safe_name = Path(old_avatar).name
+        if safe_name == old_avatar:
+            try:
+                (_profile_picture_dir() / safe_name).unlink(missing_ok=True)
+            except OSError:
+                pass
+    flash("Partner deleted permanently. Business history was preserved.", "success")
+    return redirect(url_for("main.partners_list"))
+
+
+@bp.route("/founder/duplicates")
 @admin_required
 def duplicate_claims():
     db = get_db()
@@ -1394,7 +1514,7 @@ def duplicate_claims():
     return render_template("duplicate_claims.html", title="Duplicate Leads", claims=claims)
 
 
-@bp.post("/admin/duplicates/<int:claim_id>/resolve")
+@bp.post("/founder/duplicates/<int:claim_id>/resolve")
 @admin_required
 def duplicate_resolve(claim_id: int):
     validate_csrf()
@@ -1411,11 +1531,11 @@ def duplicate_resolve(claim_id: int):
         old_owner = lead["owner_partner_id"]
         new_owner = claim["attempted_by_partner_id"]
         target = db.execute(
-            "SELECT 1 FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=? AND p.active=1 AND u.active=1",
+            "SELECT 1 FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=? AND p.active=1 AND p.deleted_at IS NULL AND u.active=1",
             (new_owner,),
         ).fetchone()
         if not target:
-            flash("That partner is inactive. Keep the current owner or choose another partner.", "error")
+            flash("That Partner is unavailable. Keep the current owner or choose another Partner.", "error")
             return redirect(url_for("main.duplicate_claims"))
         db.execute("UPDATE leads SET owner_partner_id=?,last_activity_at=? WHERE id=?", (new_owner, utcnow_iso(), lead["id"]))
         status = "REASSIGNED"
@@ -1463,6 +1583,8 @@ def messages_home():
 @login_required
 def messages_thread(partner_id: int):
     partner = authorized_conversation_partner(partner_id)
+    if partner["deleted_at"]:
+        return jsonify({"ok": False, "error": "This Partner account was deleted."}), 404
     expire_stale_voice_calls()
     db = get_db()
     mark_conversation_read(partner)
@@ -1531,7 +1653,9 @@ def messages_thread(partner_id: int):
 @login_required
 def message_send(partner_id: int):
     validate_csrf()
-    authorized_conversation_partner(partner_id)
+    partner = authorized_conversation_partner(partner_id)
+    if partner["deleted_at"]:
+        abort(404)
     body = (request.form.get("body", "") or "").strip()
     raw_files = [item for item in request.files.getlist("attachments") if item and item.filename]
 
@@ -1927,7 +2051,7 @@ def resources_list():
     return render_template("resources.html", title="Resources", resources=rows)
 
 
-@bp.route("/admin/resources/new", methods=["GET", "POST"])
+@bp.route("/founder/resources/new", methods=["GET", "POST"])
 @admin_required
 def resource_new():
     db = get_db()
@@ -1952,7 +2076,7 @@ def resource_new():
     return render_template("resource_form.html", title="Add Resource", categories=RESOURCE_CATEGORIES, resource=request.form if request.method == "POST" else None)
 
 
-@bp.route("/admin/resources/<int:resource_id>/edit", methods=["GET", "POST"])
+@bp.route("/founder/resources/<int:resource_id>/edit", methods=["GET", "POST"])
 @admin_required
 def resource_edit(resource_id: int):
     db = get_db()
@@ -1978,7 +2102,7 @@ def resource_edit(resource_id: int):
     return render_template("resource_form.html", title="Edit Resource", categories=RESOURCE_CATEGORIES, resource=request.form if request.method == "POST" else resource)
 
 
-@bp.route("/admin/activity")
+@bp.route("/founder/activity")
 @admin_required
 def activity():
     db = get_db()
@@ -1987,7 +2111,7 @@ def activity():
     return render_template("activity.html", title="Activity", activities=rows)
 
 
-@bp.route("/admin/settings", methods=["GET", "POST"])
+@bp.route("/founder/settings", methods=["GET", "POST"])
 @admin_required
 def settings():
     db = get_db()
@@ -2112,10 +2236,8 @@ def profile():
                 flash("Current password is incorrect.", "error")
             elif new_password != confirm_password:
                 flash("New passwords do not match.", "error")
-            elif check_password_hash(g.user["password_hash"], new_password):
-                flash("Choose a new password that is different from the current password.", "error")
             elif not valid_password(new_password):
-                flash("New password must be at least 12 characters and include letters and numbers.", "error")
+                flash("Enter a new password.", "error")
             else:
                 db.execute("UPDATE users SET password_hash=?,force_password_change=0,updated_at=? WHERE id=?", (hash_password(new_password), utcnow_iso(), g.user["id"]))
                 log_activity("PASSWORD_CHANGED", "user", g.user["id"], "Account password changed.")
@@ -2132,6 +2254,8 @@ def profile():
                 flash("Password changed.", "success")
                 return redirect(url_for("main.profile"))
         else:
+            if g.user["role"] != "admin":
+                abort(403)
             full_name = (request.form.get("full_name", "") or "").strip()
             email = (request.form.get("email", "") or "").strip().lower()
             if len(full_name) < 2 or not valid_email(email):
@@ -2139,8 +2263,6 @@ def profile():
             else:
                 try:
                     db.execute("UPDATE users SET full_name=?,email=?,updated_at=? WHERE id=?", (full_name[:160], email, utcnow_iso(), g.user["id"]))
-                    if g.user["role"] == "partner":
-                        db.execute("UPDATE partners SET phone=? WHERE id=?", ((request.form.get("phone", "") or "").strip()[:60], g.partner["id"]))
                     log_activity("PROFILE_UPDATED", "user", g.user["id"], "Profile updated.")
                     db.commit()
                     flash("Profile updated.", "success")
@@ -2222,7 +2344,7 @@ def inquiries_list():
     partners = []
     if g.user["role"] == "admin":
         partners = db.execute(
-            "SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND u.active=1 ORDER BY u.full_name"
+            "SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND p.deleted_at IS NULL AND u.active=1 ORDER BY u.full_name"
         ).fetchall()
     now = utcnow_iso()
     overdue = [row for row in claimed if row["first_response_due_at"] and not row["first_responded_at"] and row["first_response_due_at"] < now]
@@ -2245,7 +2367,7 @@ def inquiry_detail(inquiry_id: int):
     partners = []
     if g.user["role"] == "admin":
         partners = get_db().execute(
-            "SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND u.active=1 ORDER BY u.full_name"
+            "SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND p.deleted_at IS NULL AND u.active=1 ORDER BY u.full_name"
         ).fetchall()
     matches, _normalized = duplicate_candidates({
         "company_name": inquiry["company"], "contact_name": inquiry["name"], "email": inquiry["email"],
