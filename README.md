@@ -1,4 +1,4 @@
-# Unified RSF System — v1.3.0
+# RSF Main System — v1.5.2
 
 This is the single RSF application: the public Realty Systems Foundry website and the private Founder/Partner operating workspace share one backend and one database.
 
@@ -25,8 +25,8 @@ Partners and Founder reply inside RSF, but clients see one company identity. Con
 
 ## Routes
 
-- Public website: `http://127.0.0.1:5078/`
-- Private workspace: `http://127.0.0.1:5078/app/`
+- Public website: `https://realtysystemsfoundry.onrender.com/`
+- Private workspace: `https://realtysystemsfoundry.onrender.com/app/`
 
 ## Data safety
 
@@ -46,9 +46,7 @@ The app uses one folder only:
 
 `Documents\RSF Partner System`
 
-Setup keeps the existing database, login accounts, passwords, and local settings. It updates the app, verifies access rules, refreshes the Desktop shortcut, and starts the system at:
-
-`http://127.0.0.1:5078`
+Setup keeps the existing database, login accounts, passwords, and local settings. It updates the app, verifies access rules, and recreates the online Desktop shortcuts for the deployed website and private workspace.
 
 ## Access rules
 
