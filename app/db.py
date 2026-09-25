@@ -584,7 +584,7 @@ def _import_attachment_seed(db) -> None:
     if marker:
         return
     key = os.environ.get("RSF_ATTACHMENT_MIGRATION_KEY", "").strip()
-    seed_path = Path(current_app.root_path).parent / "online_attachment_seed.enc"
+    seed_path = Path(current_app.root_path).parent / "deployment" / "migration" / "online_attachment_seed.enc"
     if not key or not seed_path.is_file():
         return
     try:
