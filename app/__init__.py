@@ -214,6 +214,13 @@ def create_app(test_config=None):
 
     @app.errorhandler(400)
     def bad_request(error):
+        # Werkzeug rejects untrusted Host headers before Flask can create a usable
+        # URL adapter. Rendering our normal error template in that state calls
+        # url_for() and can turn the intended 400 into an internal error. Keep
+        # hostile-host failures deliberately minimal and dependency-free.
+        from werkzeug.exceptions import SecurityError
+        if isinstance(error, SecurityError):
+            return "Bad Request", 400, {"Content-Type": "text/plain; charset=utf-8"}
         return render_template("error.html", title="Something went wrong", code=400, message=getattr(error, "description", "We could not process that request.")), 400
 
     @app.errorhandler(403)
