@@ -26,7 +26,7 @@ Partners and Founder reply inside RSF, but clients see one company identity. Con
 ## Routes
 
 - Public website: `https://realtysystemsfoundry.onrender.com/`
-- Private workspace: `https://realtysystemsfoundry.onrender.com/app/`
+- Private workspace: `https://partner-rsf.onrender.com/`
 
 ## Data safety
 
@@ -218,4 +218,4 @@ The one unified Documents folder now also contains the restored Git metadata/rem
 
 ## v1.5.1 ONLINE
 
-The canonical local source folder is `Documents\RSF Main System`. The two desktop launchers open the live Render deployment directly: the public website at `https://realtysystemsfoundry.onrender.com/` and the private Founder/Partner workspace at `https://realtysystemsfoundry.onrender.com/app/`. Production relational data uses Render PostgreSQL; raw local `.env`, SQLite DB, uploads, logs, and backups are excluded from Git deployment.
+The canonical local source folder is `Documents\RSF Main System`. The two desktop launchers open the live Render deployment directly: the public website at `https://realtysystemsfoundry.onrender.com/` and the private Founder/Partner workspace at `https://partner-rsf.onrender.com/`. Production relational data uses Render PostgreSQL; raw local `.env`, SQLite DB, uploads, logs, and backups are excluded from Git deployment.
