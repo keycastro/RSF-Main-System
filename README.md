@@ -1,3 +1,9 @@
+## v1.8.4 Partner alias routing fix
+
+- `https://partner-rsf.onrender.com/` now serves a real entry page that immediately forwards to the existing RSF Workspace at `https://realtysystemsfoundry.onrender.com/app/`.
+- Verified in Chromium: final page is the RSF Partner System Sign in page.
+- No database, account, password, client-data, or business-logic changes.
+
 ## v1.8.3 naming
 
 - Current website remains `https://realtysystemsfoundry.onrender.com/` because `https://rsf.onrender.com/` is unavailable.
