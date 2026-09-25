@@ -19,6 +19,7 @@ if str(ROOT) not in sys.path:
 from app import create_app
 from app.db import get_db
 from app.auth import session_credential, hash_password
+from werkzeug.security import check_password_hash
 
 
 def fail(message: str) -> None:
@@ -161,8 +162,8 @@ def verify_founder_partner_account_management(source_db) -> None:
             if not created_row:
                 fail("Partner creation did not create an account.")
             test_user_id = int(created_row["id"]); test_partner_id = int(created_row["partner_id"] )
-            if created_row["password_hash"] == first_password or first_password in created_row["password_hash"]:
-                fail("Password security check failed: readable Partner password appears in the stored hash field.")
+            if created_row["password_hash"] == first_password or not check_password_hash(created_row["password_hash"], first_password):
+                fail("Password security check failed: Partner password was not stored as a verifiable hash.")
             # Seed business history owned/authored by the disposable Partner. These rows must survive account deletion.
             now = "2026-09-25T21:30:00+00:00"
             lead_cur = db.execute(
