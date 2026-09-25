@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 11
-SCHEMA_NAME = "rsf-unified-system-v1.5.1-online-postgres"
+SCHEMA_VERSION = 12
+SCHEMA_NAME = "rsf-unified-system-v1.9.0-founder-partner-management"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications"}
 
 
@@ -479,6 +479,19 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
         db.execute(
             "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
             (11, "rsf-unified-system-v1.5.1-database-file-storage"),
+        )
+
+    # V12 adds an irreversible deletion marker for Partner login/profile erasure.
+    # Historical business rows keep their partner/user foreign-key anchors, while
+    # all active account queries exclude deleted Partner records.
+    if 12 not in applied:
+        partner_columns = {row["name"] for row in db.execute("PRAGMA table_info(partners)").fetchall()}
+        if "deleted_at" not in partner_columns:
+            db.execute("ALTER TABLE partners ADD COLUMN deleted_at TEXT")
+        db.execute("CREATE INDEX IF NOT EXISTS idx_partners_deleted ON partners(deleted_at,id)")
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (12, "rsf-v1.9.0-founder-partner-management"),
         )
 
 
