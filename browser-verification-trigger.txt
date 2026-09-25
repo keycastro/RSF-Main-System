@@ -1,0 +1,1 @@
+Verify https://partner-rsf.onrender.com/ in Chromium.
