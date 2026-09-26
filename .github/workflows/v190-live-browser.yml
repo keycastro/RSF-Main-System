@@ -36,7 +36,7 @@ jobs:
               assert health.status==200, health.status
               payload=health.json()
               assert payload.get("status")=="ok", payload
-              assert payload.get("version")=="1.9.0", payload
+              assert payload.get("version")=="1.9.1", payload
 
               r=page.goto(MAIN+"/app/",wait_until="domcontentloaded",timeout=90000)
               assert r and r.status==200, r.status if r else None
