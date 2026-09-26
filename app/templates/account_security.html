@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head organized-page-head">
+  <div><span class="page-kicker">Settings</span><h1>Account &amp; Security</h1><p>Manage Founder credentials and every current Partner account from one place.</p></div>
+</div>
+
+<nav class="settings-subnav" aria-label="Settings sections">
+  <a href="{{ url_for('main.settings') }}">Workspace Settings</a>
+  <a class="active" aria-current="page" href="{{ url_for('main.account_security') }}">Account &amp; Security</a>
+</nav>
+
+{% if revealed_partner and chosen_password %}
+<section class="credential-card refined-credential-card account-password-reveal" aria-labelledby="changed-partner-password-title">
+  <div class="credential-title"><span class="status-dot is-ready" aria-hidden="true"></span><div><span>Password changed</span><strong id="changed-partner-password-title">{{ revealed_partner.full_name }}</strong></div></div>
+  <div class="credential-grid">
+    <div><span>Email</span><strong>{{ revealed_partner.email }}</strong></div>
+    <div><span>New password</span><strong id="changed_partner_password" class="mono credential-password">{{ chosen_password }}</strong><button class="button ghost small credential-copy" type="button" data-copy-target="changed_partner_password">Copy Password</button></div>
+  </div>
+  <p class="credential-warning">Copy this password now. RSF stores only its secure hash and does not keep this plaintext value.</p>
+</section>
+{% endif %}
+
+<section class="panel founder-account-panel" id="founder-account">
+  <div class="panel-head account-panel-head">
+    <div><span class="panel-kicker">Founder</span><h2>Founder Account</h2><p>Change the Founder password here. Other Founder sessions are invalidated when the password changes.</p></div>
+    <span class="role-chip founder-role-chip">Founder</span>
+  </div>
+  <div class="account-security-grid">
+    <div class="account-identity-card">
+      <span class="account-identity-label">Account</span>
+      <strong>{{ founder.full_name }}</strong>
+      <a href="mailto:{{ founder.email }}">{{ founder.email }}</a>
+    </div>
+    <form method="post" action="{{ url_for('main.founder_password_change') }}" class="form-stack account-password-form" data-confirm="Change the Founder password? Other Founder sessions will be signed out.">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>New Password
+        <div class="password-control">
+          <input id="founder_account_new_password" type="password" name="new_password" required autocomplete="new-password">
+          <div class="password-actions"><button type="button" class="button ghost" data-password-toggle data-target="founder_account_new_password">Show</button></div>
+        </div>
+      </label>
+      <label>Confirm New Password<input type="password" name="confirm_password" required autocomplete="new-password"></label>
+      <small class="help">RSF uses exactly what you enter. It does not generate, rewrite, or apply password-strength rules.</small>
+      <div class="form-actions"><button class="button primary" type="submit">Change Founder Password</button></div>
+    </form>
+  </div>
+</section>
+
+<section class="panel partner-accounts-panel" id="partner-accounts">
+  <div class="panel-head account-panel-head">
+    <div><span class="panel-kicker">Partners</span><h2>Partner Accounts</h2><p>View, edit, change passwords, or permanently delete current Partner accounts.</p></div>
+    <span class="result-count page-count">{{ partners|length }} Partner{{ '' if partners|length == 1 else 's' }}</span>
+  </div>
+  {% if partners %}
+  <div class="partner-account-list">
+    {% for partner in partners %}
+    <article class="partner-account-item" id="partner-{{ partner.id }}">
+      <div class="partner-account-main">
+        <div class="partner-account-identity"><span class="role-chip partner-role-chip">Partner</span><div><strong>{{ partner.full_name }}</strong><span>{{ partner.email }}</span></div></div>
+        <div class="partner-account-actions" aria-label="Actions for {{ partner.full_name }}">
+          <a class="button ghost small" href="{{ url_for('main.partner_detail', partner_id=partner.id) }}#partner-account-summary">View Account</a>
+          <a class="button secondary small" href="{{ url_for('main.partner_detail', partner_id=partner.id) }}#edit-partner-account">Edit Account</a>
+          <details class="partner-password-details">
+            <summary class="button secondary small">Change Password</summary>
+            <div class="partner-password-popover">
+              <form method="post" action="{{ url_for('main.partner_reset_password', partner_id=partner.id) }}" class="form-stack" data-confirm="Change {{ partner.full_name }}'s password? Their old password and existing sessions will stop working.">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <label>New Partner Password
+                  <div class="password-control">
+                    <input id="partner_password_{{ partner.id }}" type="password" name="partner_password" required autocomplete="new-password">
+                    <div class="password-actions"><button type="button" class="button ghost" data-password-toggle data-target="partner_password_{{ partner.id }}">Show</button></div>
+                  </div>
+                </label>
+                <label>Confirm New Password<input type="password" name="confirm_partner_password" required autocomplete="new-password"></label>
+                <small class="help">The exact password you enter is used. The old password stops working immediately.</small>
+                <button class="button primary small" type="submit">Save New Password</button>
+              </form>
+            </div>
+          </details>
+          <form method="post" action="{{ url_for('main.partner_delete', partner_id=partner.id) }}" class="partner-delete-form" data-confirm="Permanently delete {{ partner.full_name }}? Their login and profile will be removed and cannot be restored. Historical business records will remain.">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="confirm_delete" value="1">
+            <button class="button destructive small" type="submit">Delete Partner Permanently</button>
+          </form>
+        </div>
+      </div>
+      <div class="partner-account-meta"><span>Commission stage: <strong>{{ partner.commission_stage_name }}</strong></span><span>Rate: <strong>{{ partner.commission_rate_bp|rate }}</strong></span><span>Created: <strong>{{ partner.created_at|dateonly }}</strong></span></div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty"><strong>No current Partner accounts</strong><span>Create a Partner when you are ready to give someone workspace access.</span><a class="button primary small" href="{{ url_for('main.partner_new') }}">Create Partner</a></div>
+  {% endif %}
+</section>
+{% endblock %}
