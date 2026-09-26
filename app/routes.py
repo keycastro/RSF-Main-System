@@ -1404,6 +1404,9 @@ def partner_reset_password(partner_id: int):
         title="Account & Security",
         founder=founder,
         partners=partners,
+        revealed_founder_password=None,
+        revealed_partner=None,
+        chosen_password=None,
     )
 
 
@@ -2096,6 +2099,9 @@ def account_security():
         title="Account & Security",
         founder=founder,
         partners=partners,
+        revealed_founder_password=None,
+        revealed_partner=partner,
+        chosen_password=password,
     )
 
 
@@ -2176,6 +2182,9 @@ def founder_password_change():
         title="Account & Security",
         founder=founder,
         partners=partners,
+        revealed_founder_password=new_password,
+        revealed_partner=None,
+        chosen_password=None,
     )
 
 
