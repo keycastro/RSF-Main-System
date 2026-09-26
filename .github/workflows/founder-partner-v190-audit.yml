@@ -1,4 +1,4 @@
-name: RSF v1.9.4 Founder Partner Audit
+name: RSF v1.10.0 Founder Partner Audit
 
 on:
   pull_request:
@@ -91,11 +91,34 @@ jobs:
           assert 'data-password-vault-url="{{ url_for(\'main.account_security_reveal_password\') }}"' in account_security
           assert 'data-vault-reveal' in account_security
           assert 'data-vault-copy' in account_security
-          assert 'id="founder_current_password"' in account_security
-          assert 'id="partner_current_password_{{ partner.id }}"' in account_security
+          assert 'id="vault_password_founder"' in account_security
+          assert 'id="vault_password_partner_{{ partner.id }}"' in account_security
+          assert 'data-vault-password' in account_security
           assert "rsf-account-credential-context" not in base_template
           assert "buildCredentialControl" not in app_js
           assert "[data-vault-reveal]" in app_js
           assert "[data-vault-copy]" in app_js
-          print("FOUNDER_PARTNER_V194_AUDIT_OK")
+
+          assert Path("VERSION.txt").read_text(encoding="utf-8").strip() == "1.10.0"
+          assert Path("app/static/css/workspace_v20.css").is_file()
+          assert '<span class="nav-section-label">Work</span>' in base_template
+          assert 'nav-section-spaced">Business</span>' in base_template
+          assert "sidebar-utility-links" in base_template
+          assert "nav-subitem" not in base_template
+
+          founder_dashboard=Path("app/templates/dashboard_admin.html").read_text(encoding="utf-8")
+          partner_dashboard=Path("app/templates/dashboard_partner.html").read_text(encoding="utf-8")
+          sales_template=Path("app/templates/sales_list.html").read_text(encoding="utf-8")
+          lead_detail=Path("app/templates/lead_detail.html").read_text(encoding="utf-8")
+          partner_detail=Path("app/templates/partner_detail.html").read_text(encoding="utf-8")
+          profile_template=Path("app/templates/profile.html").read_text(encoding="utf-8")
+          for dashboard in (founder_dashboard,partner_dashboard):
+              assert "attention-strip" in dashboard
+              assert "pipeline-track" in dashboard
+          assert "recent" not in founder_dashboard.lower()
+          assert "commission_amount_cents" not in sales_template
+          assert "client_messages|length" in lead_detail
+          assert "Credentials" in partner_detail and "Change Password" not in partner_detail
+          assert "Change Password" not in profile_template
+          print("FOUNDER_PARTNER_V110_AUDIT_OK")
           PY
