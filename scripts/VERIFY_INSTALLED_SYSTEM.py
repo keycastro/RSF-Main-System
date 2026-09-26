@@ -677,7 +677,7 @@ def main() -> None:
 
         verify_founder_partner_account_management(db)
 
-    print("Installed system verified: database OK, Founder account OK, Partner privacy OK, RSF Emerald + Champagne UI OK, approved RSF brand assets OK, organized navigation and page hierarchy OK, v1.8 production workspace redesign OK, full-workspace private Messages OK, protected attachments OK, one-way Founder read status OK, state-specific private voice calling with incoming ringtone and outgoing ringback OK, organized fixed-position in-app private image viewer with zoom/pan inspection OK, organized Founder and Partner dashboards OK, organized per-user profile workspace OK, per-user protected profile pictures OK, Founder-only Partner account and password control OK, permanent Partner delete OK, unified public website OK, atomic shared inquiry queue OK, Founder full client oversight OK, response accountability OK, automatic client notification plumbing OK, protected client attachments OK, client email delivery state OK.")
+    print("Installed system verified: database OK, Founder account OK, Founder-only Partner management OK, Partner create/view/edit OK, exact Founder-chosen Partner passwords OK, Partner password reset/session invalidation OK, Partner self-service password change blocked OK, forged Founder actions blocked OK, cross-Partner privacy OK, permanent Partner delete confirmation OK, permanent Partner authentication removal OK, deleted Partner login blocked OK, historical business records preserved OK, database integrity/foreign keys OK, CSRF OK, trusted hosts OK, session security OK, security headers OK, RSF Emerald + Champagne UI OK, desktop launchers OK, unified public website OK, Partner Workspace OK.")
 
 
 if __name__ == "__main__":
