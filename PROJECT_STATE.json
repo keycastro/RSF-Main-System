@@ -1,7 +1,7 @@
 {
   "project": "RSF_MAIN_SYSTEM",
   "handoff_date": "2026-09-21",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "owner_public_name": "Key Castro",
   "positioning": "Technology built for real estate operations",
   "framework": "Flask",
@@ -543,7 +543,7 @@
       "private owner Inbox"
     ]
   },
-  "current_version": "1.9.2",
+  "current_version": "1.9.3",
   "pricing_and_management_clarity_3_8_19": {
     "scope": "Existing-system price plus Services & Pricing management clarity and direct tests/release/deployment dependencies",
     "existing_system_price_usd": 290,
@@ -784,5 +784,29 @@
     "live_health_version": "1.9.2",
     "partner_workspace_browser_check": "BROWSER_CHECK_OK"
   },
-  "authoritative_source": "RSF Main System(20260926-011547).zip"
+  "authoritative_source": "RSF Main System(20260926-020543).zip",
+  "release_v1_9_3": {
+    "scope": "Compact Account & Security UX redesign with secure one-time password visibility",
+    "official_people_titles": [
+      "Founder",
+      "Partner"
+    ],
+    "settings_account_security_route": "/app/admin/settings/account-security",
+    "founder_compact_card": true,
+    "founder_current_password_plaintext_recovery": false,
+    "founder_new_and_confirm_show_hide": true,
+    "founder_one_time_new_password_reveal_copy": true,
+    "partner_compact_rows": true,
+    "partner_password_expand_on_demand": true,
+    "partner_one_time_password_show_hide_copy": true,
+    "hashed_password_storage_preserved": true,
+    "session_invalidation_preserved": true,
+    "csrf_and_permissions_preserved": true,
+    "partner_self_password_change_blocked": true,
+    "permanent_partner_delete_preserved": true,
+    "schema_changed": false,
+    "business_workflow_changed": false,
+    "production_data_reset": false,
+    "verification_status": "pending CI/live verification"
+  }
 }

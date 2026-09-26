@@ -92,7 +92,31 @@
     }
   });
 
-  document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+  document.querySelectorAll('[data-account-disclosure]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const targetId = button.dataset.target;
+      const panel = targetId ? document.getElementById(targetId) : null;
+      if (!panel) return;
+      const opening = panel.hidden;
+
+      if (opening) {
+        document.querySelectorAll('.partner-password-expand:not([hidden])').forEach((openPanel) => {
+          openPanel.hidden = true;
+          const controller = document.querySelector(`[data-account-disclosure][data-target="${openPanel.id}"]`);
+          if (controller) controller.setAttribute('aria-expanded', 'false');
+        });
+      }
+
+      panel.hidden = !opening;
+      button.setAttribute('aria-expanded', opening ? 'true' : 'false');
+      if (opening) {
+        const firstInput = panel.querySelector('input[type="password"]');
+        if (firstInput) window.setTimeout(() => firstInput.focus(), 0);
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-password-toggle],[data-toggle-password]').forEach((button) => {
     button.addEventListener('click', () => {
       const target = document.getElementById(button.dataset.target);
       if (!(target instanceof HTMLInputElement)) return;
@@ -103,19 +127,23 @@
     });
   });
 
-  document.querySelectorAll('[data-copy-target]').forEach((button) => {
+  document.querySelectorAll('[data-copy-target],[data-copy-input],[data-copy-text]').forEach((button) => {
     button.addEventListener('click', async () => {
-      const target = document.getElementById(button.dataset.copyTarget);
-      if (!(target instanceof HTMLInputElement) || !target.value) return;
+      const targetId = button.dataset.copyTarget || button.dataset.target;
+      const target = targetId ? document.getElementById(targetId) : null;
+      const value = target instanceof HTMLInputElement ? target.value : (target?.textContent || '').trim();
+      if (!value) return;
       try {
-        await navigator.clipboard.writeText(target.value);
+        await navigator.clipboard.writeText(value);
         const original = button.textContent;
         button.textContent = 'Copied';
         window.setTimeout(() => { button.textContent = original; }, 1400);
       } catch (_error) {
-        target.type = 'text';
-        target.focus();
-        target.select();
+        if (target instanceof HTMLInputElement) {
+          target.type = 'text';
+          target.focus();
+          target.select();
+        }
       }
     });
   });
