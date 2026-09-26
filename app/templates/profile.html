@@ -1,38 +1,7 @@
 {% extends 'base.html' %}{% block content %}
-<div class="page-head organized-page-head"><div><span class="page-kicker">Account</span><h1>Profile</h1><p>Manage your identity, contact details, and profile photo. Credential controls are centralized in Settings → Account & Security.</p></div></div>
-<div class="profile-organized-layout">
-<div class="profile-primary-grid">
-<section class="panel">
-  <div class="panel-head"><div><h2>Profile picture</h2><p>Choose the photo people see for your account.</p></div></div>
-  <div class="profile-picture-manager">
-    {% set my_avatar = profile_picture_url(g.user.id, g.user.role) %}
-    <div class="profile-picture-preview" aria-label="Current profile picture">
-      {% if my_avatar %}<img src="{{ my_avatar }}" alt="{{ g.user.full_name }} profile picture">{% else %}<span aria-hidden="true">{{ g.user.full_name[:1]|upper }}</span>{% endif %}
-    </div>
-    <div class="profile-picture-actions">
-      <strong>{{ g.user.full_name }}</strong>
-      <small>{{ 'Founder' if g.user.role=='admin' else 'Partner' }}</small>
-      <form method="post" enctype="multipart/form-data" class="profile-picture-upload">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="hidden" name="action" value="avatar">
-        <label class="profile-picture-file">Choose photo<input type="file" name="profile_picture" accept="image/jpeg,image/png,image/webp" required></label>
-        <button class="button primary small" type="submit">Upload photo</button>
-      </form>
-      {% if g.user.avatar_stored_name %}
-      <form method="post" data-confirm="Remove your current profile picture?">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="hidden" name="action" value="avatar_remove">
-        <button class="button ghost small" type="submit">Remove photo</button>
-      </form>
-      {% endif %}
-      <small class="help">JPG, PNG, or WEBP · up to 8 MB.</small>
-    </div>
-  </div>
-</section>
-<section class="panel"><div class="panel-head"><div><h2>Details</h2></div></div><form method="post" class="form-stack"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="profile"><label>Full name<input name="full_name" value="{{ g.user.full_name }}" autocomplete="name" required maxlength="160"></label><label>Email<input type="email" name="email" value="{{ g.user.email }}" autocomplete="email" required maxlength="254"></label>{% if g.user.role=='partner' %}<label>Phone<input name="phone" value="{{ g.partner.phone }}" autocomplete="tel" maxlength="60"></label><div class="private-rate"><span>Your commission rate</span><strong>{{ g.partner.commission_rate_bp|rate }}</strong><small>{{ g.partner.commission_stage_name }}</small></div>{% endif %}<button class="button primary" type="submit">Save</button></form></section>
-</div>
-{% if g.user.role=='admin' %}
-<section class="panel profile-security-panel account-security-link-panel"><div class="panel-head"><div><span class="panel-kicker">Security</span><h2>Account &amp; Security</h2><p>Founder and Partner credential controls are managed together in Settings → Account &amp; Security.</p></div></div><a class="button primary" href="{{ url_for('main.account_security') }}">Open Account &amp; Security</a></section>
-{% endif %}
+<div class="page-head workspace-page-head"><div><h1>Profile</h1><p>Your photo and account details.</p></div></div>
+<div class="profile-primary-grid simplified-profile-grid">
+  <section class="workspace-section"><div class="section-head"><div><h2>Photo</h2></div></div><div class="profile-picture-manager">{% set my_avatar = profile_picture_url(g.user.id, g.user.role) %}<div class="profile-picture-preview" aria-label="Current profile picture">{% if my_avatar %}<img src="{{ my_avatar }}" alt="{{ g.user.full_name }} profile picture">{% else %}<span aria-hidden="true">{{ g.user.full_name[:1]|upper }}</span>{% endif %}</div><div class="profile-picture-actions"><strong>{{ g.user.full_name }}</strong><small>{{ 'Founder' if g.user.role=='admin' else 'Partner' }}</small><form method="post" enctype="multipart/form-data" class="profile-picture-upload"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="avatar"><label class="profile-picture-file">Choose photo<input type="file" name="profile_picture" accept="image/jpeg,image/png,image/webp" required></label><button class="button primary small" type="submit">Upload</button></form>{% if g.user.avatar_stored_name %}<form method="post" data-confirm="Remove your current profile picture?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="avatar_remove"><button class="button ghost small" type="submit">Remove</button></form>{% endif %}<small class="help">JPG, PNG, or WEBP · up to 8 MB.</small></div></div></section>
+  <section class="workspace-section"><div class="section-head"><div><h2>Details</h2></div></div>{% if g.user.role=='admin' %}<form method="post" class="form-stack"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="profile"><label>Full name<input name="full_name" value="{{ g.user.full_name }}" autocomplete="name" required maxlength="160"></label><label>Email<input type="email" name="email" value="{{ g.user.email }}" autocomplete="email" required maxlength="254"></label><button class="button primary" type="submit">Save Profile</button></form>{% else %}<dl class="detail-list profile-readonly-details"><div><dt>Name</dt><dd>{{ g.user.full_name }}</dd></div><div><dt>Email</dt><dd>{{ g.user.email }}</dd></div><div><dt>Phone</dt><dd>{{ g.partner.phone or '—' }}</dd></div></dl><small class="help">Your account details are managed by the Founder.</small>{% endif %}</section>
 </div>
 {% endblock %}

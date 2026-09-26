@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-head organized-page-head">
-  <div><span class="page-kicker">Partner</span><h1>Partner Created</h1><p>Copy the login details now. The password is not stored as readable text.</p></div>
+<div class="page-head workspace-page-head">
+  <div><h1>Partner created</h1><p>The login is ready to use.</p></div>
 </div>
 <section class="credential-card refined-credential-card">
-  <div class="credential-title"><span class="status-dot is-ready" aria-hidden="true"></span><div><span>Login</span><strong>{{ partner.full_name }}</strong></div></div>
+  <div class="credential-title"><span class="status-dot is-ready" aria-hidden="true"></span><div><span>Login details</span><strong>{{ partner.full_name }}</strong></div></div>
   <div class="credential-grid">
-    <div><span>Email</span><strong id="created_email">{{ partner.email }}</strong></div>
-    <div><span>Password</span><div class="credential-secret"><input id="created_password" class="mono" type="password" readonly value="{{ chosen_password }}"><div class="password-actions"><button class="button ghost small" type="button" data-password-toggle data-target="created_password">Show</button><button class="button ghost small" type="button" data-copy-target="created_password">Copy</button></div></div></div>
+    <div><span>Email</span><strong>{{ partner.email }}</strong></div>
+    <div><span>Password</span><strong id="created_partner_password" class="mono credential-password">{{ chosen_password }}</strong><button class="button ghost small credential-copy" type="button" data-copy-text data-target="created_partner_password">Copy password</button></div>
   </div>
-  <p class="credential-warning">This exact password is shown only in this response. RSF stores only its secure hash.</p>
-  <div class="page-actions"><a class="button primary" href="{{ url_for('main.partner_detail',partner_id=partner.id) }}">Open Partner</a><a class="button secondary" href="{{ url_for('main.partners_list') }}">Partners</a></div>
+  <p class="credential-note">The Founder can view or copy this password later in Account &amp; Security.</p>
+  <div class="page-actions"><a class="button primary" href="{{ url_for('main.partner_detail',partner_id=partner.id) }}">View Partner</a><a class="button secondary" href="{{ url_for('main.partners_list') }}">Partners</a></div>
 </section>
 {% endblock %}
