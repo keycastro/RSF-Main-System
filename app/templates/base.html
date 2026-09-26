@@ -68,8 +68,10 @@
         <a class="{{ 'active' if resources_active else '' }}" {% if resources_active %}aria-current="page"{% endif %} href="{{ url_for('main.resources_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("resources") }}</span><span class="nav-text">Resources</span></a>
         {% set activity_active = request.endpoint=='main.activity' %}
         <a class="{{ 'active' if activity_active else '' }}" {% if activity_active %}aria-current="page"{% endif %} href="{{ url_for('main.activity') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("activity") }}</span><span class="nav-text">Activity</span></a>
-        {% set settings_active = request.endpoint=='main.settings' %}
+        {% set settings_active = request.endpoint in ['main.settings','main.account_security','main.founder_password_change'] %}
         <a class="{{ 'active' if settings_active else '' }}" {% if settings_active %}aria-current="page"{% endif %} href="{{ url_for('main.settings') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("settings") }}</span><span class="nav-text">Settings</span></a>
+        {% set account_security_active = request.endpoint in ['main.account_security','main.founder_password_change','main.partner_reset_password','main.partner_delete'] %}
+        <a class="nav-subitem {{ 'active' if account_security_active else '' }}" {% if account_security_active %}aria-current="page"{% endif %} href="{{ url_for('main.account_security') }}"><span class="nav-subitem-dot" aria-hidden="true"></span><span class="nav-text">Account &amp; Security</span></a>
       {% else %}
         <span class="nav-section-label nav-section-spaced">Tools</span>
         {% set resources_active = request.endpoint=='main.resources_list' %}
