@@ -1567,78 +1567,14 @@
   });
 
 
-  const credentialContext = document.getElementById('rsf-account-credential-context');
-  if (credentialContext) {
-    const revealUrl = credentialContext.dataset.revealUrl || '';
-    const credentialCsrf = credentialContext.dataset.csrf || csrf || '';
-    const founderUserId = credentialContext.dataset.founderUserId || '';
-
-    const buildCredentialControl = (inputId, userId) => {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'vault-password-control';
-
-      const input = document.createElement('input');
-      input.id = inputId;
-      input.type = 'password';
-      input.readOnly = true;
-      input.autocomplete = 'off';
-      input.placeholder = '••••••••••••';
-      input.dataset.vaultPassword = '1';
-
-      const show = document.createElement('button');
-      show.type = 'button';
-      show.className = 'button ghost small';
-      show.textContent = 'Show';
-      show.dataset.rsfCredentialShow = '1';
-      show.dataset.userId = userId;
-      show.dataset.target = inputId;
-
-      const copy = document.createElement('button');
-      copy.type = 'button';
-      copy.className = 'button secondary small';
-      copy.textContent = 'Copy';
-      copy.dataset.rsfCredentialCopy = '1';
-      copy.dataset.userId = userId;
-      copy.dataset.target = inputId;
-
-      wrapper.append(input, show, copy);
-      return wrapper;
-    };
-
-    const founderState = document.querySelector('.current-password-state');
-    if (founderState && founderUserId) {
-      founderState.classList.add('account-password-vault');
-      founderState.innerHTML = '';
-
-      const label = document.createElement('span');
-      label.textContent = 'Current Password';
-
-      const note = document.createElement('small');
-      note.textContent = 'Founder-only encrypted password visibility';
-
-      founderState.append(label, buildCredentialControl('rsf-founder-current-password', founderUserId), note);
-    }
-
-    credentialContext.querySelectorAll('[data-partner-id][data-user-id]').forEach((meta) => {
-      const partnerId = meta.dataset.partnerId;
-      const userId = meta.dataset.userId;
-      const row = document.getElementById(`partner-${partnerId}`);
-      const identity = row?.querySelector('.partner-compact-identity');
-      if (!row || !identity || !userId || row.querySelector('.partner-inline-vault')) return;
-
-      const vault = document.createElement('div');
-      vault.className = 'partner-inline-vault';
-
-      const label = document.createElement('span');
-      label.textContent = 'Current Password';
-
-      vault.append(label, buildCredentialControl(`rsf-partner-current-password-${partnerId}`, userId));
-      identity.insertAdjacentElement('afterend', vault);
-    });
+  const credentialShell = document.querySelector('.account-security-shell[data-password-vault-url]');
+  if (credentialShell) {
+    const revealUrl = credentialShell.dataset.passwordVaultUrl || '';
+    const credentialCsrf = credentialShell.dataset.passwordVaultCsrf || csrf || '';
 
     const loadCredential = async (button) => {
       const target = document.getElementById(button.dataset.target || '');
-      if (!target) throw new Error('Password field unavailable.');
+      if (!(target instanceof HTMLInputElement)) throw new Error('Password field unavailable.');
       if (target.dataset.loaded === '1') return target;
 
       const body = new URLSearchParams({
@@ -1661,20 +1597,21 @@
       return target;
     };
 
-    document.addEventListener('click', async (event) => {
-      const show = event.target.closest('[data-rsf-credential-show]');
+    credentialShell.addEventListener('click', async (event) => {
+      const show = event.target.closest('[data-vault-reveal]');
       if (show) {
         try {
           const input = await loadCredential(show);
-          input.type = input.type === 'password' ? 'text' : 'password';
-          show.textContent = input.type === 'password' ? 'Show' : 'Hide';
+          const reveal = input.type === 'password';
+          input.type = reveal ? 'text' : 'password';
+          show.textContent = reveal ? 'Hide' : 'Show';
         } catch (error) {
           window.alert(error.message);
         }
         return;
       }
 
-      const copy = event.target.closest('[data-rsf-credential-copy]');
+      const copy = event.target.closest('[data-vault-copy]');
       if (copy) {
         try {
           const input = await loadCredential(copy);
@@ -1688,7 +1625,6 @@
       }
     });
   }
-
 
   scrollMessages();
   window.setTimeout(pollGlobal, 150);

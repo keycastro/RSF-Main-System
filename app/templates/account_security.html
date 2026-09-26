@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="account-security-shell">
+<div class="account-security-shell" data-password-vault-url="{{ url_for('main.account_security_reveal_password') }}" data-password-vault-csrf="{{ csrf_token() }}">
   <div class="page-head organized-page-head account-security-page-head">
     <div><span class="page-kicker">Settings</span><h1>Account &amp; Security</h1><p>Founder credentials and Partner account access, organized in one place.</p></div>
   </div>
@@ -16,8 +16,14 @@
         <span class="role-chip founder-role-chip">Founder</span>
         <div><h2>Founder Account</h2><p><strong>{{ founder.full_name }}</strong><span aria-hidden="true"> · </span>{{ founder.email }}</p></div>
       </div>
-      <div class="current-password-state" aria-label="Current Founder password status">
-        <span>Current password</span><strong>Securely set</strong><small>Hashed · not readable or recoverable</small>
+      <div class="current-password-state account-password-vault" aria-label="Current Founder password">
+        <span>Current Password</span>
+        <div class="vault-password-control">
+          <input id="founder_current_password" type="password" readonly autocomplete="off" placeholder="••••••••••••" aria-label="Founder current password">
+          <button type="button" class="button ghost small" data-vault-reveal data-user-id="{{ founder.id }}" data-target="founder_current_password">Show</button>
+          <button type="button" class="button secondary small" data-vault-copy data-user-id="{{ founder.id }}" data-target="founder_current_password">Copy</button>
+        </div>
+        <small>Founder-only encrypted password visibility</small>
       </div>
     </div>
 
@@ -76,6 +82,14 @@
       <article class="partner-compact-row" id="partner-{{ partner.id }}">
         <div class="partner-compact-main">
           <div class="partner-compact-identity"><span class="role-chip partner-role-chip">Partner</span><div><strong>{{ partner.full_name }}</strong><span>{{ partner.email }}</span></div></div>
+          <div class="partner-inline-vault" aria-label="Current password for {{ partner.full_name }}">
+            <span>Current Password</span>
+            <div class="vault-password-control">
+              <input id="partner_current_password_{{ partner.id }}" type="password" readonly autocomplete="off" placeholder="••••••••••••" aria-label="Current password for {{ partner.full_name }}">
+              <button type="button" class="button ghost small" data-vault-reveal data-user-id="{{ partner.user_id }}" data-target="partner_current_password_{{ partner.id }}">Show</button>
+              <button type="button" class="button secondary small" data-vault-copy data-user-id="{{ partner.user_id }}" data-target="partner_current_password_{{ partner.id }}">Copy</button>
+            </div>
+          </div>
           <div class="partner-compact-actions" aria-label="Actions for {{ partner.full_name }}">
             <a class="button ghost small" href="{{ url_for('main.partner_detail', partner_id=partner.id) }}#partner-account-summary">View</a>
             <a class="button ghost small" href="{{ url_for('main.partner_detail', partner_id=partner.id) }}#edit-partner-account">Edit</a>

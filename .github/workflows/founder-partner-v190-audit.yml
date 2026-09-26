@@ -82,5 +82,20 @@ jobs:
           visible="\n".join(p.read_text(encoding="utf-8",errors="replace") for p in partner_files)
           for phrase in forbidden_titles + forbidden_account_actions:
               assert phrase not in visible, f"Forbidden user-facing account terminology remains: {phrase}"
+
+          account_security=Path("app/templates/account_security.html").read_text(encoding="utf-8")
+          base_template=Path("app/templates/base.html").read_text(encoding="utf-8")
+          app_js=Path("app/static/js/app.js").read_text(encoding="utf-8")
+          assert "Hashed · not readable or recoverable" not in account_security
+          assert "<strong>Securely set</strong>" not in account_security
+          assert 'data-password-vault-url="{{ url_for(\'main.account_security_reveal_password\') }}"' in account_security
+          assert 'data-vault-reveal' in account_security
+          assert 'data-vault-copy' in account_security
+          assert 'id="founder_current_password"' in account_security
+          assert 'id="partner_current_password_{{ partner.id }}"' in account_security
+          assert "rsf-account-credential-context" not in base_template
+          assert "buildCredentialControl" not in app_js
+          assert "[data-vault-reveal]" in app_js
+          assert "[data-vault-copy]" in app_js
           print("FOUNDER_PARTNER_V194_AUDIT_OK")
           PY

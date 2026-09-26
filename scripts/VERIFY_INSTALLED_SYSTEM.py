@@ -124,15 +124,34 @@ def verify_founder_partner_account_management(source_db) -> None:
         account_visible = _visible_text(account_html)
         required = (
             "Account & Security","Founder Account","Partner Accounts","New Password","Confirm New Password",
-            "Current password","Securely set","not readable or recoverable",
+            "Current Password","Show","Copy",
         )
         if account_page.status_code != 200 or any(item not in account_visible for item in required):
-            fail("Compact Founder Account & Security workspace is incomplete.")
-        source_markers = ("compact-password-form","data-toggle-password","compact-empty-state")
+            fail("Founder Account & Security current-password workspace is incomplete.")
+        source_markers = (
+            "compact-password-form","data-toggle-password","compact-empty-state",
+            'id="founder_current_password"',"data-vault-reveal","data-vault-copy","data-password-vault-url",
+        )
         if any(marker not in account_html for marker in source_markers):
-            fail("Compact Account & Security source controls are incomplete.")
+            fail("Account & Security current-password source controls are incomplete.")
+        if "Hashed · not readable or recoverable" in account_visible or "Securely set" in account_visible:
+            fail("Obsolete v1.9.3 current-password status is still visible.")
+        founder_current_input = re.search(r'<input[^>]+id="founder_current_password"[^>]*>', account_html)
+        if not founder_current_input or re.search(r'\svalue=', founder_current_input.group(0), flags=re.I):
+            fail("Founder current-password field must render masked and empty; plaintext must be fetched on demand.")
         if 'name="current_password"' in account_html:
-            fail("Account & Security incorrectly exposes or asks for a recoverable current Founder password.")
+            fail("Account & Security incorrectly asks the Founder to re-enter the current password.")
+
+        reveal = founder_client.post(
+            "/app/admin/settings/account-security/reveal-password",
+            data={"csrf_token": _csrf_from(account_page), "user_id": str(founder["id"])},
+            follow_redirects=False,
+        )
+        reveal_payload = reveal.get_json(silent=True) or {}
+        if reveal.status_code != 200 or not reveal_payload.get("ok") or reveal_payload.get("password") != founder_password:
+            fail("Founder current-password reveal did not return the exact authenticated password.")
+        if "no-store" not in reveal.headers.get("Cache-Control","") or reveal.headers.get("Pragma") != "no-cache":
+            fail("Founder current-password reveal is missing no-cache response headers.")
         if founder_email not in account_html or "Founder Audit Seed" not in account_visible:
             fail("Founder identity is missing from Account & Security.")
         for forbidden in ("Founder/Admin","Founder / Admin","Employee","Staff","Deactivate","Suspend","Archive"):
