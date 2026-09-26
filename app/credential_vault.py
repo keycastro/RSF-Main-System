@@ -36,17 +36,18 @@ def decrypt_password(token: str) -> str:
 def store_password(db, user_id: int, password: str) -> None:
     encrypted = encrypt_password(password)
     now = utcnow_iso()
+    key = f"account_password_vault:{int(user_id)}"
     db.execute(
-        """INSERT INTO account_password_vault(user_id,encrypted_password,updated_at)
-           VALUES (?,?,?)
-           ON CONFLICT(user_id) DO UPDATE SET encrypted_password=excluded.encrypted_password,updated_at=excluded.updated_at""",
-        (user_id, encrypted, now),
+        """INSERT INTO settings(key,value,updated_at) VALUES (?,?,?)
+           ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at""",
+        (key, encrypted, now),
     )
 
 
 def current_password(db, user_id: int) -> str | None:
-    row = db.execute("SELECT encrypted_password FROM account_password_vault WHERE user_id=?", (user_id,)).fetchone()
-    return decrypt_password(row["encrypted_password"]) if row else None
+    key = f"account_password_vault:{int(user_id)}"
+    row = db.execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
+    return decrypt_password(row["value"]) if row else None
 
 
 def seed_password_if_matches(db, user_id: int, password: str) -> bool:
