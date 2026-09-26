@@ -122,8 +122,7 @@ def verify_founder_partner_account_management(source_db) -> None:
         account_page = founder_client.get("/app/admin/settings/account-security", follow_redirects=False)
         account_html = account_page.get_data(as_text=True)
         account_visible = _visible_text(account_html)
-        required = ("Account & Security","Founder Account","Partner Accounts","New Password","Confirm New Password",
-                    "View Account","Edit Account","Change Password","Delete Partner Permanently")
+        required = ("Account & Security","Founder Account","Partner Accounts","New Password","Confirm New Password")
         if account_page.status_code != 200 or any(item not in account_visible for item in required):
             fail("Centralized Founder Account & Security workspace is incomplete.")
         if founder_email not in account_html or "Founder Audit Seed" not in account_visible:
@@ -328,8 +327,10 @@ def verify_founder_partner_account_management(source_db) -> None:
 
         account_page = founder_client.get("/app/admin/settings/account-security", follow_redirects=False)
         account_html = account_page.get_data(as_text=True)
-        if f'id="partner-{test_partner_id}"' not in account_html or "Change Password" not in _visible_text(account_html):
-            fail("Partner is missing from centralized Account & Security.")
+        account_visible = _visible_text(account_html)
+        partner_actions = ("View Account","Edit Account","Change Password","Delete Partner Permanently")
+        if f'id="partner-{test_partner_id}"' not in account_html or any(item not in account_visible for item in partner_actions):
+            fail("Partner account actions are missing from centralized Account & Security.")
         reset_token = _csrf_from(account_page)
         changed = founder_client.post(
             f"/app/admin/partners/{test_partner_id}/reset-password",
