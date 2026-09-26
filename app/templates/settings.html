@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="page-head organized-page-head"><div><span class="page-kicker">Configuration</span><h1>Settings</h1><p>Keep company details correct and review the commission structure used for new sales.</p></div></div>
+<nav class="settings-subnav" aria-label="Settings sections"><a class="active" aria-current="page" href="{{ url_for('main.settings') }}">Workspace Settings</a><a href="{{ url_for('main.account_security') }}">Account &amp; Security</a></nav>
 <div class="two-col settings-layout">
   <section class="panel">
     <div class="panel-head"><div><span class="panel-kicker">Workspace identity</span><h2>Company</h2></div></div>
