@@ -740,11 +740,11 @@
     "clean_release_excludes_private_runtime_state": true,
     "installer_private_state_preservation_simulated": true,
     "source_role_privacy_security_audit": "passed",
-    "live_browser_audit": "passed on deployed v1.9.2 after explicit Render deploy and final post-deployment verification",
+    "live_browser_audit": "passed on deployed v1.9.3 after final post-deployment verification",
     "production_database_direct_sql_audit": "blocked by Render database external IP allowlist; no allowlist was weakened for audit",
     "installer_copies_partner_alias_public_directory": true,
-    "final_release_version": "1.9.2",
-    "live_health_version": "1.9.2",
+    "final_release_version": "1.9.3",
+    "live_health_version": "1.9.3",
     "partner_alias_final_url": "https://realtysystemsfoundry.onrender.com/app/login?next=/app/",
     "live_authenticated_production_role_sessions": "not independently verified; production credentials were not exposed or altered"
   },
@@ -807,6 +807,12 @@
     "schema_changed": false,
     "business_workflow_changed": false,
     "production_data_reset": false,
-    "verification_status": "pending CI/live verification"
+    "verification_status": "passed CI and live v1.9.3 verification",
+    "source_account_audit": "FOUNDER_PARTNER_V193_AUDIT_OK",
+    "source_security_audit": "SOURCE_SECURITY_AUDIT_OK",
+    "live_browser_audit": "LIVE_BROWSER_V193_OK",
+    "live_health_version": "1.9.3",
+    "partner_workspace_browser_check": "BROWSER_CHECK_OK",
+    "deployed_commit": "fd9d0eee4b0fc2c6085d7bd4346c67b602f1c922"
   }
 }
