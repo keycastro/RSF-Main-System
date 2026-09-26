@@ -733,18 +733,18 @@
     "database_or_business_logic_changed": false
   },
   "maximum_audit_v1_8_7": {
-    "authoritative_source": "RSF Main System(8).zip",
+    "authoritative_source": "RSF Main System(20260926-011547).zip",
     "atomic_existing_lead_claim_hardened": true,
     "untrusted_host_400_hardened": true,
     "partner_alias_entry_files_present": true,
     "clean_release_excludes_private_runtime_state": true,
     "installer_private_state_preservation_simulated": true,
     "source_role_privacy_security_audit": "passed",
-    "live_browser_audit": "passed on deployed v1.8.7",
+    "live_browser_audit": "passed on deployed v1.9.2 after explicit Render deploy and final post-deployment verification",
     "production_database_direct_sql_audit": "blocked by Render database external IP allowlist; no allowlist was weakened for audit",
     "installer_copies_partner_alias_public_directory": true,
     "final_release_version": "1.9.2",
-    "live_health_version": "1.9.1",
+    "live_health_version": "1.9.2",
     "partner_alias_final_url": "https://realtysystemsfoundry.onrender.com/app/login?next=/app/",
     "live_authenticated_production_role_sessions": "not independently verified; production credentials were not exposed or altered"
   },
@@ -783,5 +783,6 @@
     "live_browser_audit": "LIVE_BROWSER_V192_OK",
     "live_health_version": "1.9.2",
     "partner_workspace_browser_check": "BROWSER_CHECK_OK"
-  }
+  },
+  "authoritative_source": "RSF Main System(20260926-011547).zip"
 }
