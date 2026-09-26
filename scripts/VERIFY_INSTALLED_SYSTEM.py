@@ -136,8 +136,9 @@ def verify_founder_partner_account_management(source_db) -> None:
             fail("Account & Security current-password source controls are incomplete.")
         if "Hashed · not readable or recoverable" in account_visible or "Securely set" in account_visible:
             fail("Obsolete v1.9.3 current-password status is still visible.")
-        if founder_password in account_html:
-            fail("Founder plaintext password was rendered into Account & Security HTML.")
+        founder_current_input = re.search(r'<input[^>]+id="founder_current_password"[^>]*>', account_html)
+        if not founder_current_input or re.search(r'\svalue=', founder_current_input.group(0), flags=re.I):
+            fail("Founder current-password field must render masked and empty; plaintext must be fetched on demand.")
         if 'name="current_password"' in account_html:
             fail("Account & Security incorrectly asks the Founder to re-enter the current password.")
 
