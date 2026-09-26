@@ -1,5 +1,5 @@
 {% extends 'base.html' %}{% block content %}
-<div class="page-head organized-page-head"><div><span class="page-kicker">Account</span><h1>Profile</h1><p>Manage your identity, contact details, photo, and account security.</p></div></div>
+<div class="page-head organized-page-head"><div><span class="page-kicker">Account</span><h1>Profile</h1><p>Manage your identity, contact details, and profile photo. Credential controls are centralized in Settings → Account & Security.</p></div></div>
 <div class="profile-organized-layout">
 <div class="profile-primary-grid">
 <section class="panel">
@@ -32,7 +32,7 @@
 <section class="panel"><div class="panel-head"><div><h2>Details</h2></div></div><form method="post" class="form-stack"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="profile"><label>Full name<input name="full_name" value="{{ g.user.full_name }}" autocomplete="name" required maxlength="160"></label><label>Email<input type="email" name="email" value="{{ g.user.email }}" autocomplete="email" required maxlength="254"></label>{% if g.user.role=='partner' %}<label>Phone<input name="phone" value="{{ g.partner.phone }}" autocomplete="tel" maxlength="60"></label><div class="private-rate"><span>Your commission rate</span><strong>{{ g.partner.commission_rate_bp|rate }}</strong><small>{{ g.partner.commission_stage_name }}</small></div>{% endif %}<button class="button primary" type="submit">Save</button></form></section>
 </div>
 {% if g.user.role=='admin' %}
-<section class="panel profile-security-panel"><div class="panel-head"><div><span class="panel-kicker">Password</span><h2>Change Password</h2><p>Choose the exact Founder password you want.</p></div></div><form method="post" class="form-stack"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="password"><label>Current password<input type="password" name="current_password" autocomplete="current-password" required></label><label>New password<div class="password-control"><input id="founder_new_password" type="password" name="new_password" autocomplete="new-password" required><div class="password-actions"><button type="button" class="button ghost" data-password-toggle data-target="founder_new_password">Show</button><button type="button" class="button ghost" data-copy-target="founder_new_password">Copy</button></div></div></label><label>Confirm new password<input type="password" name="confirm_password" autocomplete="new-password" required></label><small class="help">RSF uses exactly what you enter.</small><button class="button secondary" type="submit">Change Password</button></form></section>
+<section class="panel profile-security-panel account-security-link-panel"><div class="panel-head"><div><span class="panel-kicker">Security</span><h2>Account &amp; Security</h2><p>Founder and Partner credential controls are managed together in Settings → Account &amp; Security.</p></div></div><a class="button primary" href="{{ url_for('main.account_security') }}">Open Account &amp; Security</a></section>
 {% endif %}
 </div>
 {% endblock %}
