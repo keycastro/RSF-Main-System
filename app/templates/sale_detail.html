@@ -1,62 +1,41 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-head organized-page-head">
-  <div>
-    <span class="page-kicker">Sale record</span>
-    <h1>{{ sale.client_name }}</h1>
-    <p>{{ sale.product_service }}{% if g.user.role=='admin' %} · {{ sale.partner_name }}{% endif %}</p>
-  </div>
-  <div class="page-actions"><span class="badge status-{{ sale.payment_status|lower }}">{{ sale.payment_status|human_status }}</span><a class="button secondary" href="{{ url_for('main.sales_list') }}">Back to Sales</a></div>
+<div class="page-head workspace-page-head">
+  <div><div class="title-line"><span class="badge status-{{ sale.payment_status|lower }}">{{ sale.payment_status|human_status }}</span>{% if g.user.role=='admin' %}<span class="muted">{{ sale.partner_name }}</span>{% endif %}</div><h1>{{ sale.client_name }}</h1><p>{{ sale.product_service }} · {{ sale.sale_date|dateonly }}</p></div>
+  <a class="button secondary" href="{{ url_for('main.sales_list') }}">Back to Sales</a>
 </div>
-<div class="metric-grid summary-three sale-summary-grid">
-  <div class="metric-card static"><span>Agreed</span><strong>{{ fmt_money(sale.deal_amount_cents, True, setting('currency_code','USD')) }}</strong></div>
-  <div class="metric-card static"><span>Collected</span><strong>{{ fmt_money(sale.collected_cents, True, setting('currency_code','USD')) }}</strong></div>
-  <div class="metric-card static"><span>Sale date</span><strong class="metric-date">{{ sale.sale_date|dateonly }}</strong></div>
-</div>
-<div class="two-col sale-detail-layout">
-  <section class="panel">
-    <div class="panel-head"><div><span class="panel-kicker">Commercial record</span><h2>Sale details</h2></div></div>
+
+<div class="sale-record-layout">
+  <section class="workspace-section sale-commercial-section">
+    <div class="section-head"><div><h2>Sale details</h2><p>Commercial and payment record.</p></div></div>
     {% if g.user.role=='admin' %}
     <form method="post" class="form-grid compact-grid">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <label>Agreed amount<input type="number" name="deal_amount" inputmode="decimal" min="0" step="0.01" value="{{ request.form.get('deal_amount', '%.2f'|format(sale.deal_amount_cents/100)) }}"></label>
       <label>Invoiced<input type="number" name="amount_invoiced" inputmode="decimal" min="0" step="0.01" value="{{ request.form.get('amount_invoiced', '%.2f'|format(sale.invoiced_cents/100)) }}"></label>
       <label>Collected<input type="number" name="amount_collected" inputmode="decimal" min="0" step="0.01" value="{{ request.form.get('amount_collected', '%.2f'|format(sale.collected_cents/100)) }}"></label>
-      <label>Commission revenue<input type="number" name="qualifying_revenue" inputmode="decimal" min="0" step="0.01" value="{{ request.form.get('qualifying_revenue', '%.2f'|format(sale.qualifying_revenue_cents/100)) }}" {% if commission and commission.status!='PENDING' %}readonly{% endif %}><small class="help">{% if commission and commission.status!='PENDING' %}Locked because this commission is no longer pending.{% else %}Used to calculate commission.{% endif %}</small></label>
+      <label>Commission revenue<input type="number" name="qualifying_revenue" inputmode="decimal" min="0" step="0.01" value="{{ request.form.get('qualifying_revenue', '%.2f'|format(sale.qualifying_revenue_cents/100)) }}" {% if commission and commission.status!='PENDING' %}readonly{% endif %}><small class="help">{% if commission and commission.status!='PENDING' %}Locked after commission approval.{% else %}Used to calculate commission.{% endif %}</small></label>
       <label>Payment status<select name="payment_status">{% for s in payment_statuses %}<option value="{{ s }}" {{ 'selected' if request.form.get('payment_status', sale.payment_status)==s else '' }}>{{ s|human_status }}</option>{% endfor %}</select></label>
       <label class="span-2">Notes<textarea name="notes" rows="4">{{ request.form.get('notes', sale.notes) }}</textarea></label>
-      <div class="form-actions span-2"><button class="button primary" type="submit">Save Changes</button></div>
+      <div class="form-actions span-2"><button class="button primary" type="submit">Save Sale</button></div>
     </form>
     {% else %}
-    <dl class="detail-list">
-      <div><dt>Agreed amount</dt><dd>{{ fmt_money(sale.deal_amount_cents, True, setting('currency_code','USD')) }}</dd></div>
+    <dl class="detail-list compact-detail-list">
+      <div><dt>Agreed</dt><dd>{{ fmt_money(sale.deal_amount_cents, True, setting('currency_code','USD')) }}</dd></div>
       <div><dt>Invoiced</dt><dd>{{ fmt_money(sale.invoiced_cents, True, setting('currency_code','USD')) }}</dd></div>
       <div><dt>Collected</dt><dd>{{ fmt_money(sale.collected_cents, True, setting('currency_code','USD')) }}</dd></div>
       <div><dt>Commission revenue</dt><dd>{{ fmt_money(sale.qualifying_revenue_cents, True, setting('currency_code','USD')) }}</dd></div>
-      <div><dt>Payment status</dt><dd>{{ sale.payment_status|human_status }}</dd></div>
-      <div><dt>Sale date</dt><dd>{{ sale.sale_date|dateonly }}</dd></div>
-      <div><dt>Notes</dt><dd>{{ sale.notes or 'No notes' }}</dd></div>
+      <div><dt>Payment</dt><dd>{{ sale.payment_status|human_status }}</dd></div>
+      <div><dt>Notes</dt><dd>{{ sale.notes or '—' }}</dd></div>
     </dl>
     {% endif %}
   </section>
-  <section class="panel commission-panel">
-    <div class="panel-head"><div><span class="panel-kicker">Rate snapshot</span><h2>Commission</h2></div></div>
-    {% if commission %}
-    <div class="commission-summary">
-      <div><span>Commission level</span><strong>{{ commission.stage_name_snapshot }}</strong></div>
-      <div><span>Rate used</span><strong>{{ commission.rate_bp_snapshot|rate }}</strong></div>
-      <div><span>Commission revenue</span><strong>{{ fmt_money(commission.qualifying_revenue_cents, True, setting('currency_code','USD')) }}</strong></div>
-      <div><span>Amount</span><strong>{{ fmt_money(commission.commission_amount_cents, True, setting('currency_code','USD')) }}</strong></div>
-      <div><span>Status</span><strong><span class="badge status-{{ commission.status|lower }}">{{ commission.status|human_status }}</span></strong></div>
-    </div>
-    <p class="help snapshot-note">This sale keeps the commission rate captured when the commission was created.</p>
-    {% else %}
-    <div class="empty compact-empty"><strong>No commission record</strong></div>
-    {% endif %}
-  </section>
+
+  <aside class="workspace-section sale-linked-section">
+    <div class="section-head"><div><h2>Commission</h2><p>Managed in Commissions.</p></div><a href="{{ url_for('main.commissions_list') }}">View all</a></div>
+    {% if commission %}<div class="linked-summary-list"><div><span>Status</span><strong><span class="badge status-{{ commission.status|lower }}">{{ commission.status|human_status }}</span></strong></div><div><span>Rate</span><strong>{{ commission.rate_bp_snapshot|rate }}</strong></div><div><span>Amount</span><strong>{{ fmt_money(commission.commission_amount_cents, True, setting('currency_code','USD')) }}</strong></div></div>{% else %}<div class="empty compact-empty"><strong>No commission record</strong></div>{% endif %}
+  </aside>
 </div>
-<section class="panel">
-  <div class="panel-head"><div><span class="panel-kicker">Audit trail</span><h2>History</h2></div></div>
-  {% if activity %}<div class="timeline audit-timeline">{% for a in activity %}<div class="timeline-item"><span class="timeline-dot"></span><div><strong>{{ a.description }}</strong><span>{{ a.actor_name }} · {{ a.created_at|dt }}</span></div></div>{% endfor %}</div>{% else %}<div class="empty compact-empty"><span>No activity yet.</span></div>{% endif %}
-</section>
+
+<details class="history-disclosure"><summary>History{% if activity %} <span>{{ activity|length }}</span>{% endif %}</summary>{% if activity %}<div class="timeline audit-timeline">{% for a in activity %}<div class="timeline-item"><span class="timeline-dot"></span><div><strong>{{ a.description }}</strong><span>{{ a.actor_name }} · {{ a.created_at|dt }}</span></div></div>{% endfor %}</div>{% else %}<div class="empty compact-empty"><span>No activity yet.</span></div>{% endif %}</details>
 {% endblock %}

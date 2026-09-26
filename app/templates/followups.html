@@ -1,5 +1,5 @@
 {% extends 'base.html' %}{% block content %}
-<div class="page-head organized-page-head"><div><span class="page-kicker">Work queue</span><h1>Follow-ups</h1><p>See who needs attention, what needs to happen, and when it is due.</p></div><span class="result-count page-count">{{ followups|length }} shown</span></div>
+<div class="page-head workspace-page-head"><div><h1>Follow-ups</h1><p>See who needs attention, what needs to happen, and when it is due.</p></div><span class="result-count page-count">{{ followups|length }} shown</span></div>
 <div class="filter-bar" aria-label="Follow-up filters"><a class="{{ 'active' if show=='open' else '' }}" href="{{ url_for('main.followups_list',show='open') }}">Open</a><a class="{{ 'active' if show=='completed' else '' }}" href="{{ url_for('main.followups_list',show='completed') }}">Completed</a><a class="{{ 'active' if show=='all' else '' }}" href="{{ url_for('main.followups_list',show='all') }}">All</a></div>
 <section class="panel table-panel operational-table">
 {% if followups %}

@@ -649,6 +649,9 @@ def dashboard():
     followups_count = db.execute("SELECT COUNT(*) c FROM followups WHERE owner_partner_id=?", (pid,)).fetchone()["c"]
     metrics = {
         "unclaimed": db.execute("SELECT COUNT(*) c FROM website_inquiries WHERE status='UNCLAIMED'").fetchone()["c"],
+        "awaiting_response": db.execute("""SELECT COUNT(*) c FROM client_conversations
+                                           WHERE owner_partner_id=? AND status='ACTIVE' AND last_client_message_at IS NOT NULL
+                                             AND (last_outbound_message_at IS NULL OR last_client_message_at > last_outbound_message_at)""", (pid,)).fetchone()["c"],
         "leads": leads_count,
         "active": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status NOT IN ('WON','LOST')", (pid,)).fetchone()["c"],
         "new": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status='NEW'", (pid,)).fetchone()["c"],
