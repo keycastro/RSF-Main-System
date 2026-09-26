@@ -4,13 +4,13 @@
   <div><span class="page-kicker">Partner</span><h1>{{ partner.full_name }}</h1><p>{{ partner.email }} · Created {{ partner.account_created_at|dateonly }}</p></div>
   <div class="page-actions"><a class="button primary" href="{{ url_for('main.messages_thread', partner_id=partner.id) }}">Message Partner</a><a class="button secondary" href="{{ url_for('main.partners_list') }}">Back</a></div>
 </div>
-<div class="metric-grid summary-three partner-summary-grid">
+<div id="partner-account-summary" class="metric-grid summary-three partner-summary-grid">
   <div class="metric-card static"><span>Leads</span><strong>{{ fmt_count(stats.leads, stats.leads > 0) }}</strong></div>
   <div class="metric-card static"><span>Sales</span><strong>{{ fmt_count(stats.sales, stats.has_sales_data) }}</strong><small>{{ fmt_money(stats.qualifying, stats.has_sales_data, setting('currency_code','USD')) }} commission revenue</small></div>
   <div class="metric-card static"><span>Commissions</span><strong>{{ fmt_money(stats.commissions, stats.has_commission_data, setting('currency_code','USD')) }}</strong></div>
 </div>
 <div class="two-col partner-admin-layout">
-  <section class="panel">
+  <section class="panel" id="edit-partner-account">
     <div class="panel-head"><div><span class="panel-kicker">Partner</span><h2>Details</h2></div></div>
     <form method="post" class="form-stack">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -22,22 +22,9 @@
       <div class="form-actions"><button class="button primary" type="submit">Save Partner</button></div>
     </form>
   </section>
-  <section class="panel">
-    <div class="panel-head"><div><span class="panel-kicker">Password</span><h2>Change Password</h2></div></div>
-    <p class="panel-intro">Choose the exact password you want. The old password stops working immediately after the change.</p>
-    <form method="post" action="{{ url_for('main.partner_reset_password',partner_id=partner.id) }}" class="form-stack" data-confirm="Change this Partner password now?">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <label>New password<div class="password-control"><input id="reset_password" type="password" name="password" required autocomplete="new-password"><div class="password-actions"><button type="button" class="button ghost" data-password-toggle data-target="reset_password">Show</button><button type="button" class="button ghost" data-copy-target="reset_password">Copy</button></div></div><small class="help">RSF uses exactly what you enter.</small></label>
-      <button class="button secondary" type="submit">Change Password</button>
-    </form>
-    <div class="permanent-delete-zone">
-      <div><strong>Delete Partner</strong><p>Permanently removes this Partner's login and profile. Business history remains intact where required.</p></div>
-      <form method="post" action="{{ url_for('main.partner_delete',partner_id=partner.id) }}" data-confirm="Permanently delete this Partner? This cannot be undone.">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="hidden" name="confirm_delete" value="1">
-        <button class="button destructive" type="submit">Delete Permanently</button>
-      </form>
-    </div>
+  <section class="panel account-security-link-panel">
+    <div class="panel-head"><div><span class="panel-kicker">Account security</span><h2>Credential controls</h2><p>Passwords and permanent account deletion are centralized in Settings → Account &amp; Security.</p></div></div>
+    <a class="button primary" href="{{ url_for('main.account_security') }}#partner-{{ partner.id }}">Open Account &amp; Security</a>
   </section>
 </div>
 {% endblock %}
