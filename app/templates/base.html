@@ -140,7 +140,7 @@
   {% block guest %}{% endblock %}
 {% endif %}
 <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
-{% if request.endpoint == 'main.account_security' %}
+{% if request.endpoint == 'main.account_security' and founder is defined and partners is defined %}
 <script data-rsf-v194-password-ui>
 document.addEventListener('DOMContentLoaded', () => {
   const csrf = {{ csrf_token()|tojson }};
