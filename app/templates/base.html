@@ -140,17 +140,6 @@
   {% block guest %}{% endblock %}
 {% endif %}
 <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
-{% if request.endpoint == 'main.account_security' and founder is defined and partners is defined %}
-<div id="rsf-account-credential-context"
-     hidden
-     data-reveal-url="{{ url_for('main.account_security_reveal_password') }}"
-     data-csrf="{{ csrf_token() }}"
-     data-founder-user-id="{{ founder.id }}">
-  {% for partner in partners %}
-  <span data-partner-id="{{ partner.id }}" data-user-id="{{ partner.user_id }}"></span>
-  {% endfor %}
-</div>
-{% endif %}
 </body>
 </html>
 
