@@ -180,6 +180,49 @@ def create_app(test_config=None):
     with app.app_context():
         db.ensure_database()
 
+        # Emergency one-time production credential reset. This is deliberately
+        # environment-gated, never exposes a public route, and is removed after use.
+        if not app.config.get("TESTING") and os.environ.get("RSF_ONE_TIME_CREDENTIAL_RESET", "0") == "1":
+            from .services import utcnow_iso
+
+            founder_hash = os.environ.get("RSF_RESET_FOUNDER_HASH", "")
+            partner_hash = os.environ.get("RSF_RESET_PARTNER_HASH", "")
+            if not founder_hash.startswith("scrypt:") or not partner_hash.startswith("scrypt:"):
+                raise RuntimeError("RSF one-time credential reset requested without both valid password hashes.")
+
+            live_db = db.get_db()
+            founders = live_db.execute("SELECT id,email FROM users WHERE role='admin' ORDER BY id").fetchall()
+            partners = live_db.execute("SELECT id,email FROM users WHERE role='partner' ORDER BY id").fetchall()
+            if len(founders) != 1 or len(partners) != 1:
+                raise RuntimeError(
+                    f"RSF credential reset aborted: expected exactly 1 Founder and 1 Partner; "
+                    f"found {len(founders)} Founder and {len(partners)} Partner accounts."
+                )
+
+            founder = founders[0]
+            partner = partners[0]
+            now = utcnow_iso()
+            live_db.execute(
+                "UPDATE users SET password_hash=?,force_password_change=0,failed_login_count=0,locked_until=NULL,updated_at=? WHERE id=?",
+                (founder_hash, now, founder["id"]),
+            )
+            live_db.execute(
+                "UPDATE users SET password_hash=?,force_password_change=0,failed_login_count=0,locked_until=NULL,updated_at=? WHERE id=?",
+                (partner_hash, now, partner["id"]),
+            )
+            live_db.commit()
+
+            founder_after = live_db.execute("SELECT password_hash FROM users WHERE id=?", (founder["id"],)).fetchone()
+            partner_after = live_db.execute("SELECT password_hash FROM users WHERE id=?", (partner["id"],)).fetchone()
+            if founder_after["password_hash"] != founder_hash or partner_after["password_hash"] != partner_hash:
+                raise RuntimeError("RSF credential reset verification failed after database commit.")
+
+            print(
+                "RSF_ONE_TIME_CREDENTIAL_RESET_OK "
+                f"founder_email={founder['email']} partner_email={partner['email']} "
+                "founder_hash_applied=OK partner_hash_applied=OK"
+            )
+
     # Background mailbox sync + protected local/off-site-capable backups. A DB lease
     # ensures only one worker is active even when multiple WSGI workers are running.
     if not app.config.get("TESTING") and os.environ.get("RSF_DISABLE_BACKGROUND", "0") != "1":
