@@ -1,4 +1,4 @@
-name: RSF v1.9.0 Founder Partner Audit
+name: RSF v1.9.1 Founder Partner Audit
 
 on:
   pull_request:
@@ -81,5 +81,5 @@ jobs:
           visible="\n".join(p.read_text(encoding="utf-8",errors="replace") for p in partner_files)
           for phrase in forbidden_titles + forbidden_account_actions:
               assert phrase not in visible, f"Forbidden user-facing account terminology remains: {phrase}"
-          print("FOUNDER_PARTNER_V190_AUDIT_OK")
+          print("FOUNDER_PARTNER_V191_AUDIT_OK")
           PY

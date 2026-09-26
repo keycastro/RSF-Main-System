@@ -1,7 +1,7 @@
 {
   "project": "RSF_MAIN_SYSTEM",
   "handoff_date": "2026-09-21",
-  "version": "1.8.7",
+  "version": "1.9.1",
   "owner_public_name": "Key Castro",
   "positioning": "Technology built for real estate operations",
   "framework": "Flask",
@@ -503,7 +503,7 @@
     "business_logic_changed": false,
     "changes": [
       "Removed the lower Home How it works heading, summary, all three numbered steps, and their descriptions",
-      "Kept only See Services & Pricing \u2192 linked to /services",
+      "Kept only See Services & Pricing → linked to /services",
       "Added Home-CTA-scoped styling to center the link, increase its prominence, and keep desktop/mobile spacing balanced",
       "Preserved all other Home content, Services & Pricing content, pricing, systems, footer content, routes, and private functionality"
     ]
@@ -543,7 +543,7 @@
       "private owner Inbox"
     ]
   },
-  "current_version": "1.8.7",
+  "current_version": "1.9.1",
   "pricing_and_management_clarity_3_8_19": {
     "scope": "Existing-system price plus Services & Pricing management clarity and direct tests/release/deployment dependencies",
     "existing_system_price_usd": 290,
@@ -743,9 +743,20 @@
     "live_browser_audit": "passed on deployed v1.8.7",
     "production_database_direct_sql_audit": "blocked by Render database external IP allowlist; no allowlist was weakened for audit",
     "installer_copies_partner_alias_public_directory": true,
-    "final_release_version": "1.8.7",
-    "live_health_version": "1.8.7",
+    "final_release_version": "1.9.1",
+    "live_health_version": "1.9.1",
     "partner_alias_final_url": "https://realtysystemsfoundry.onrender.com/app/login?next=/app/",
     "live_authenticated_production_role_sessions": "not independently verified; production credentials were not exposed or altered"
+  },
+  "release_v1_9_1": {
+    "scope": "Final Founder/Partner terminology and installed-verifier reporting patch",
+    "official_people_titles": [
+      "Founder",
+      "Partner"
+    ],
+    "founder_admin_console_wording_removed": true,
+    "verifier_explicit_partner_lifecycle_reporting": true,
+    "business_logic_changed": false,
+    "production_data_reset": false
   }
 }

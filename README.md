@@ -1,3 +1,10 @@
+## v1.9.1 Founder Partner account-management verification patch
+
+- Official people titles are **Founder** and **Partner** only.
+- Removed the last setup-console `Founder/Admin` wording.
+- Installed-system verification now explicitly reports Founder-only create/view/edit/password/delete checks, permanent-delete safety, privacy, CSRF, sessions, trusted hosts, and security headers.
+- No database wipe, business-workflow change, commission change, or production-data reset is part of this patch.
+
 ## v1.8.7 Maximum audit hardening
 
 - Hardened the existing-lead inquiry claim path with an atomic row-count check and rollback so a concurrent claim cannot continue after losing the queue race.
@@ -6,7 +13,7 @@
 - The clean FINAL release excludes `.env`, runtime databases/backups/uploads, logs, caches, and repository metadata. Existing installed private data is preserved by the installer and is never replaced by release contents.
 - No account, password, client-data, commission-rule, or core business-flow reset is part of this release.
 
-# RSF Main System — v1.8.7
+# RSF Main System — v1.9.1
 
 Unified Realty Systems Foundry public website + private Founder/Partner workspace.
 

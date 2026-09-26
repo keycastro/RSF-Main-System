@@ -82,7 +82,7 @@ def main() -> None:
                     FIRST_ACCESS.unlink()
                 except OSError:
                     pass
-            print("Database ready. Existing Founder/Admin account preserved.")
+            print("Database ready. Existing Founder account preserved.")
             return
         password = generate_password()
         now = utcnow_iso()
