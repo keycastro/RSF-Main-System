@@ -1,35 +1,31 @@
 {% extends 'base.html' %}{% block content %}
-<div class="page-head executive-page-head">
-  <div>
-    <span class="page-kicker">Founder command center</span>
-    <h1>Dashboard</h1>
-    <p>See operational pressure first, then move the team and pipeline forward.</p>
-  </div>
-  <div class="page-actions executive-actions"><a class="button secondary" href="{{ url_for('main.partner_new') }}">Add Partner</a><a class="button primary" href="{{ url_for('main.lead_new') }}">Add Lead</a></div>
+<div class="page-head workspace-page-head">
+  <div><h1>Dashboard</h1><p>What needs attention across RSF right now.</p></div>
+  <a class="button primary" href="{{ url_for('main.lead_new') }}">Add Lead</a>
 </div>
 
-<section class="signal-grid founder-signal-grid" aria-label="Founder operational status">
-  <a class="signal-tile {{ 'signal-accent' if metrics.unclaimed else '' }}" href="{{ url_for('main.inquiries_list') }}"><span>Unclaimed</span><strong>{{ metrics.unclaimed }}</strong><small>Website inquiries</small></a>
-  <a class="signal-tile {{ 'signal-warning' if metrics.awaiting_response else '' }}" href="{{ url_for('main.inquiries_list') }}"><span>Awaiting reply</span><strong>{{ metrics.awaiting_response }}</strong><small>Active client conversations</small></a>
-  <a class="signal-tile {{ 'signal-danger' if metrics.overdue else '' }}" href="{{ url_for('main.followups_list') }}"><span>Overdue</span><strong>{{ fmt_count(metrics.overdue, metrics.has_followup_data) }}</strong><small>Follow-ups</small></a>
-  <a class="signal-tile" href="{{ url_for('main.followups_list') }}"><span>Due today</span><strong>{{ fmt_count(metrics.due_today, metrics.has_followup_data) }}</strong><small>Open actions</small></a>
-  <a class="signal-tile {{ 'signal-warning' if metrics.duplicate_claims else '' }}" href="{{ url_for('main.duplicate_claims') }}"><span>Duplicate review</span><strong>{{ metrics.duplicate_claims }}</strong><small>Ownership checks</small></a>
+<section class="attention-strip" aria-label="Items needing attention">
+  <a class="{{ 'is-alert' if metrics.unclaimed else '' }}" href="{{ url_for('main.inquiries_list') }}"><span>Unclaimed</span><strong>{{ metrics.unclaimed }}</strong></a>
+  <a class="{{ 'is-alert' if metrics.awaiting_response else '' }}" href="{{ url_for('main.inquiries_list') }}"><span>Client replies</span><strong>{{ metrics.awaiting_response }}</strong></a>
+  <a class="{{ 'is-danger' if metrics.overdue else '' }}" href="{{ url_for('main.followups_list') }}"><span>Overdue</span><strong>{{ fmt_count(metrics.overdue, metrics.has_followup_data) }}</strong></a>
+  <a href="{{ url_for('main.followups_list') }}"><span>Due today</span><strong>{{ fmt_count(metrics.due_today, metrics.has_followup_data) }}</strong></a>
 </section>
+{% if metrics.duplicate_claims %}<a class="workspace-alert-row" href="{{ url_for('main.duplicate_claims') }}"><strong>{{ metrics.duplicate_claims }} duplicate lead review{{ '' if metrics.duplicate_claims == 1 else 's' }}</strong><span>Resolve ownership conflicts</span></a>{% endif %}
 
-<div class="founder-command-grid">
-  <section class="panel dashboard-command-panel" aria-labelledby="admin-priority-title">
-    <div class="panel-head command-panel-head"><div><span class="panel-kicker">Priority work</span><h2 id="admin-priority-title">Team follow-ups</h2><p>Highest-priority open actions across RSF.</p></div><a href="{{ url_for('main.followups_list') }}">View all</a></div>
-    {% if attention %}<div class="list-stack compact-command-list">{% for f in attention[:6] %}<a class="list-row" href="{{ url_for('main.lead_detail',lead_id=f.lead_id) }}"><div><strong>{{ f.company_name }}</strong><span>{{ f.title }} · {{ f.partner_name }}</span></div><div class="row-end"><span class="badge {{ 'danger' if f.due_at[:10] < today else 'neutral' }}">{{ 'Overdue' if f.due_at[:10] < today else 'Due' }}</span><small>{{ f.due_at|dt }}</small></div></a>{% endfor %}</div>{% else %}<div class="command-empty-state compact"><div class="command-empty-icon" aria-hidden="true">✓</div><div><strong>No follow-ups waiting</strong><span>The team has no scheduled work requiring attention.</span></div></div>{% endif %}
+<div class="dashboard-focus-grid founder-focus-grid">
+  <section class="workspace-section" aria-labelledby="admin-priority-title">
+    <div class="section-head"><div><h2 id="admin-priority-title">Priority follow-ups</h2><p>Open team actions, earliest first.</p></div><a href="{{ url_for('main.followups_list') }}">View all</a></div>
+    {% if attention %}<div class="list-stack compact-command-list">{% for f in attention[:6] %}<a class="list-row" href="{{ url_for('main.lead_detail',lead_id=f.lead_id) }}"><div><strong>{{ f.company_name }}</strong><span>{{ f.title }} · {{ f.partner_name }}</span></div><div class="row-end"><span class="badge {{ 'danger' if f.due_at[:10] < today else 'neutral' }}">{{ 'Overdue' if f.due_at[:10] < today else 'Due' }}</span><small>{{ f.due_at|dt }}</small></div></a>{% endfor %}</div>{% else %}<div class="compact-zero"><span class="status-dot is-ready"></span><div><strong>No follow-ups waiting</strong><small>The team queue is clear.</small></div></div>{% endif %}
   </section>
 
-  <section class="panel team-load-panel" aria-labelledby="team-load-title">
-    <div class="panel-head"><div><span class="panel-kicker">Team load</span><h2 id="team-load-title">Partner workload</h2><p>Active work by Partner.</p></div><a href="{{ url_for('main.partners_list') }}">Partners</a></div>
-    {% if partner_workloads %}<div class="team-load-list">{% for p in partner_workloads %}<a class="team-load-row" href="{{ url_for('main.partner_detail',partner_id=p.id) }}"><div class="team-load-person"><span class="team-avatar">{{ p.full_name[:1]|upper }}</span><strong>{{ p.full_name }}</strong></div><div class="team-load-stats"><span><strong>{{ p.active_leads }}</strong> leads</span><span><strong>{{ p.open_followups }}</strong> follow-ups</span>{% if p.overdue_followups %}<span class="load-danger"><strong>{{ p.overdue_followups }}</strong> overdue</span>{% endif %}</div></a>{% endfor %}</div>{% else %}<div class="compact-zero"><span class="status-dot"></span><div><strong>No Partners yet</strong><small>Add a Partner when you are ready to assign work.</small></div></div>{% endif %}
+  <section class="workspace-section" aria-labelledby="team-load-title">
+    <div class="section-head"><div><h2 id="team-load-title">Partner workload</h2><p>Where active work is concentrated.</p></div><a href="{{ url_for('main.partners_list') }}">Partners</a></div>
+    {% if partner_workloads %}<div class="team-load-list">{% for p in partner_workloads[:6] %}<a class="team-load-row" href="{{ url_for('main.partner_detail',partner_id=p.id) }}"><div class="team-load-person"><span class="team-avatar">{{ p.full_name[:1]|upper }}</span><strong>{{ p.full_name }}</strong></div><div class="team-load-stats"><span><strong>{{ p.active_leads }}</strong> leads</span><span><strong>{{ p.open_followups }}</strong> follow-ups</span>{% if p.overdue_followups %}<span class="load-danger"><strong>{{ p.overdue_followups }}</strong> overdue</span>{% endif %}</div></a>{% endfor %}</div>{% else %}<div class="compact-zero"><span class="status-dot"></span><div><strong>No active Partners</strong><small>Create a Partner from Partners when needed.</small></div></div>{% endif %}
   </section>
 </div>
 
-<section class="panel pipeline-panel founder-pipeline-panel" aria-labelledby="admin-pipeline-title">
-  <div class="panel-head"><div><span class="panel-kicker">Sales pipeline</span><h2 id="admin-pipeline-title">Pipeline movement</h2><p>Every stage of the current RSF sales process.</p></div><a href="{{ url_for('main.leads_list') }}">View all leads</a></div>
+<section class="workspace-section pipeline-section" aria-labelledby="admin-pipeline-title">
+  <div class="section-head"><div><h2 id="admin-pipeline-title">Pipeline</h2><p>Current lead movement.</p></div><a href="{{ url_for('main.leads_list') }}">View leads</a></div>
   <div class="pipeline-track founder-pipeline-track">
     <a href="{{ url_for('main.leads_list',status='NEW') }}"><span>New</span><strong>{{ fmt_count(metrics.new, metrics.has_lead_data) }}</strong></a>
     <a href="{{ url_for('main.leads_list',status='CONTACTED') }}"><span>Contacted</span><strong>{{ fmt_count(metrics.contacted, metrics.has_lead_data) }}</strong></a>
@@ -41,20 +37,12 @@
   </div>
 </section>
 
-<div class="dashboard-lower-grid founder-lower-grid">
-  <section class="panel finance-panel" aria-labelledby="finance-title">
-    <div class="panel-head"><div><span class="panel-kicker">Financial pulse</span><h2 id="finance-title">Revenue & commissions</h2></div><a href="{{ url_for('main.sales_list') }}">View sales</a></div>
-    <div class="finance-strip">
-      <a href="{{ url_for('main.sales_list') }}"><span>Revenue collected</span><strong>{{ fmt_money(metrics.collected, metrics.has_sales_data, setting('currency_code','USD')) }}</strong></a>
-      <a href="{{ url_for('main.commissions_list') }}"><span>Pending</span><strong>{{ fmt_money(metrics.pending_commission, metrics.has_commission_data, setting('currency_code','USD')) }}</strong></a>
-      <a href="{{ url_for('main.commissions_list') }}"><span>Approved</span><strong>{{ fmt_money(metrics.approved_commission, metrics.has_commission_data, setting('currency_code','USD')) }}</strong></a>
-      <a href="{{ url_for('main.commissions_list') }}"><span>Paid</span><strong>{{ fmt_money(metrics.paid_commission, metrics.has_commission_data, setting('currency_code','USD')) }}</strong></a>
-    </div>
-  </section>
-
-  <section class="panel activity-panel" aria-labelledby="recent-activity-title">
-    <div class="panel-head"><div><span class="panel-kicker">Recent</span><h2 id="recent-activity-title">Workspace activity</h2></div><a href="{{ url_for('main.activity') }}">View all</a></div>
-    {% if recent %}<div class="timeline compact-timeline">{% for a in recent[:5] %}<div class="timeline-item"><span class="timeline-dot" aria-hidden="true"></span><div><strong>{{ a.description }}</strong><span>{{ a.actor_name }} · {{ a.created_at|dt }}</span></div></div>{% endfor %}</div>{% else %}<div class="compact-zero"><span class="status-dot"></span><div><strong>No activity yet</strong><small>Workspace changes will appear here.</small></div></div>{% endif %}
-  </section>
-</div>
+<section class="workspace-section finance-brief-section" aria-labelledby="finance-title">
+  <div class="section-head"><div><h2 id="finance-title">Financial snapshot</h2></div><div class="section-links"><a href="{{ url_for('main.sales_list') }}">Sales</a><a href="{{ url_for('main.commissions_list') }}">Commissions</a></div></div>
+  <div class="finance-brief">
+    <div><span>Collected</span><strong>{{ fmt_money(metrics.collected, metrics.has_sales_data, setting('currency_code','USD')) }}</strong></div>
+    <div><span>Commission due</span><strong>{{ fmt_money(metrics.pending_commission + metrics.approved_commission, metrics.has_commission_data, setting('currency_code','USD')) }}</strong></div>
+    <div><span>Commission paid</span><strong>{{ fmt_money(metrics.paid_commission, metrics.has_commission_data, setting('currency_code','USD')) }}</strong></div>
+  </div>
+</section>
 {% endblock %}
