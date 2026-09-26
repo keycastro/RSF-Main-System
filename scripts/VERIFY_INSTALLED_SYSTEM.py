@@ -94,6 +94,7 @@ def verify_founder_partner_account_management(source_db) -> None:
 
         founder_email = "founder-audit@rsf.test"
         founder_password = "f"
+        founder_new_password = "q"
         partner_email = "partner-audit@rsf.test"
         first_password = "1"
         second_password = "x"
@@ -117,6 +118,61 @@ def verify_founder_partner_account_management(source_db) -> None:
         founder_client = test_app.test_client()
         if _login_with_password(founder_client, founder_email, founder_password) not in (302, 303):
             fail("Founder login check failed in disposable account audit.")
+
+        account_page = founder_client.get("/app/admin/settings/account-security", follow_redirects=False)
+        account_html = account_page.get_data(as_text=True)
+        account_visible = _visible_text(account_html)
+        required = ("Account & Security","Founder Account","Partner Accounts","New Password","Confirm New Password")
+        if account_page.status_code != 200 or any(item not in account_visible for item in required):
+            fail("Centralized Founder Account & Security workspace is incomplete.")
+        if founder_email not in account_html or "Founder Audit Seed" not in account_visible:
+            fail("Founder identity is missing from Account & Security.")
+        for forbidden in ("Founder/Admin","Founder / Admin","Employee","Staff","Deactivate","Suspend","Archive"):
+            if forbidden.lower() in account_visible.lower():
+                fail(f"Obsolete account terminology is visible in Account & Security: {forbidden}")
+        for nag in ("too weak","stronger password","add a symbol","uppercase","lowercase","password strength","12+ characters"):
+            if nag in account_visible.lower():
+                fail(f"Password-strength rule remains visible in Account & Security: {nag}")
+
+        founder_stale = test_app.test_client()
+        if _login_with_password(founder_stale, founder_email, founder_password) not in (302,303):
+            fail("Founder stale-session setup failed.")
+        if founder_client.post(
+            "/app/admin/settings/account-security/founder-password",
+            data={"new_password": founder_new_password, "confirm_password": founder_new_password},
+            follow_redirects=False,
+        ).status_code != 400:
+            fail("CSRF protection failed on Founder password change.")
+        changed_founder = founder_client.post(
+            "/app/admin/settings/account-security/founder-password",
+            data={"csrf_token": _csrf_from(account_page), "new_password": founder_new_password, "confirm_password": founder_new_password},
+            follow_redirects=False,
+        )
+        if changed_founder.status_code not in (302,303) or "/app/admin/settings/account-security" not in changed_founder.headers.get("Location",""):
+            fail("Founder password change failed from Account & Security.")
+        with test_app.app_context():
+            founder_after = get_db().execute("SELECT password_hash FROM users WHERE lower(email)=?", (founder_email,)).fetchone()
+            if not founder_after or not check_password_hash(founder_after["password_hash"], founder_new_password) or check_password_hash(founder_after["password_hash"], founder_password):
+                fail("Founder password was not replaced exactly.")
+        stale_response = founder_stale.get("/app/admin/settings/account-security", follow_redirects=False)
+        if stale_response.status_code not in (301,302,303,307,308) or "/app/login" not in stale_response.headers.get("Location",""):
+            fail("Older Founder session was not invalidated after password change.")
+        old_founder = test_app.test_client()
+        if _login_with_password(old_founder, founder_email, founder_password) in (302,303):
+            fail("Old Founder password still authenticates.")
+        if founder_client.get("/app/admin/settings/account-security", follow_redirects=False).status_code != 200:
+            fail("Current Founder session was not safely rebound after password change.")
+        new_founder = test_app.test_client()
+        if _login_with_password(new_founder, founder_email, founder_new_password) not in (302,303):
+            fail("New exact Founder password does not authenticate.")
+        founder_password = founder_new_password
+
+        founder_profile = founder_client.get("/app/profile", follow_redirects=False)
+        founder_profile_html = founder_profile.get_data(as_text=True)
+        if 'name="current_password"' in founder_profile_html or 'name="new_password"' in founder_profile_html:
+            fail("Founder password controls are still scattered on Profile.")
+        if "Account &amp; Security" not in founder_profile_html:
+            fail("Founder Profile does not link to Account & Security.")
 
         partners_page = founder_client.get("/app/admin/partners", follow_redirects=False)
         partners_html = partners_page.get_data(as_text=True)
@@ -207,6 +263,8 @@ def verify_founder_partner_account_management(source_db) -> None:
             fail("New Partner dashboard login check failed.")
         if partner_client.get("/app/admin/partners", follow_redirects=False).status_code != 403:
             fail("Founder-only Partners route is accessible to a Partner.")
+        if partner_client.get("/app/admin/settings/account-security", follow_redirects=False).status_code != 403:
+            fail("Founder Account & Security is accessible to a Partner.")
         if partner_client.get("/app/admin/partners/new", follow_redirects=False).status_code != 403:
             fail("Founder-only Partner creation route is accessible to a Partner.")
         if partner_client.get(f"/app/admin/partners/{test_partner_id}", follow_redirects=False).status_code != 403:
@@ -229,7 +287,8 @@ def verify_founder_partner_account_management(source_db) -> None:
         if blocked_self_change.status_code != 403:
             fail("Partner self-service password change was not blocked at the backend.")
         for path, data in (
-            (f"/app/admin/partners/{test_partner_id}/reset-password", {"csrf_token": partner_csrf, "password": "forged"}),
+            ("/app/admin/settings/account-security/founder-password", {"csrf_token": partner_csrf, "new_password": "forged", "confirm_password": "forged"}),
+            (f"/app/admin/partners/{test_partner_id}/reset-password", {"csrf_token": partner_csrf, "partner_password": "forged", "confirm_partner_password": "forged"}),
             (f"/app/admin/partners/{test_partner_id}/delete", {"csrf_token": partner_csrf, "confirm_delete": "1"}),
             ("/app/admin/partners/new", {"csrf_token": partner_csrf, "full_name": "Forged", "email": forged_email, "password": "p", "commission_stage_id": str(stage["id"])}),
         ):
@@ -241,8 +300,12 @@ def verify_founder_partner_account_management(source_db) -> None:
 
         # Founder can view and edit the Partner.
         detail = founder_client.get(f"/app/admin/partners/{test_partner_id}", follow_redirects=False)
-        if detail.status_code != 200 or "Audit Partner" not in _visible_text(detail.get_data(as_text=True)):
-            fail("Founder Partner detail page check failed.")
+        detail_html = detail.get_data(as_text=True)
+        detail_visible = _visible_text(detail_html)
+        if detail.status_code != 200 or "Audit Partner" not in detail_visible or "Account & Security" not in detail_visible:
+            fail("Founder Partner detail page or centralized security handoff failed.")
+        if "Change Password" in detail_visible or "Delete Partner Permanently" in detail_visible:
+            fail("Partner credential controls are still scattered on the Partner detail page.")
         edit_token = _csrf_from(detail)
         edited = founder_client.post(
             f"/app/admin/partners/{test_partner_id}",
@@ -255,21 +318,28 @@ def verify_founder_partner_account_management(source_db) -> None:
 
         # CSRF must block a password reset before authorization/business logic.
         no_csrf = founder_client.post(
-            f"/app/admin/partners/{test_partner_id}/reset-password", data={"password": second_password}, follow_redirects=False
+            f"/app/admin/partners/{test_partner_id}/reset-password",
+            data={"partner_password": second_password, "confirm_partner_password": second_password},
+            follow_redirects=False,
         )
         if no_csrf.status_code != 400:
             fail("CSRF check failed on Founder Partner password reset.")
 
-        detail = founder_client.get(f"/app/admin/partners/{test_partner_id}", follow_redirects=False)
-        reset_token = _csrf_from(detail)
+        account_page = founder_client.get("/app/admin/settings/account-security", follow_redirects=False)
+        account_html = account_page.get_data(as_text=True)
+        account_visible = _visible_text(account_html)
+        partner_actions = ("View Account","Edit Account","Change Password","Delete Partner Permanently")
+        if f'id="partner-{test_partner_id}"' not in account_html or any(item not in account_visible for item in partner_actions):
+            fail("Partner account actions are missing from centralized Account & Security.")
+        reset_token = _csrf_from(account_page)
         changed = founder_client.post(
             f"/app/admin/partners/{test_partner_id}/reset-password",
-            data={"csrf_token": reset_token, "password": second_password},
+            data={"csrf_token": reset_token, "partner_password": second_password, "confirm_partner_password": second_password},
             follow_redirects=False,
         )
         changed_html = changed.get_data(as_text=True)
-        if changed.status_code != 200 or 'id="changed_password"' not in changed_html or f'value="{second_password}"' not in changed_html:
-            fail("Founder exact Partner password reset check failed.")
+        if changed.status_code != 200 or 'id="changed_partner_password"' not in changed_html or second_password not in changed_html or "Copy Password" not in _visible_text(changed_html):
+            fail("Founder exact Partner password reset check failed in Account & Security.")
 
         # Password reset invalidates existing sessions and the old password immediately.
         if partner_client.get("/app/", follow_redirects=False).status_code not in (301,302,303,307,308):
@@ -287,15 +357,22 @@ def verify_founder_partner_account_management(source_db) -> None:
                 "leads","website_inquiries","client_conversations","client_messages","messages","sales","commissions"
             )}
 
-        detail = founder_client.get(f"/app/admin/partners/{test_partner_id}", follow_redirects=False)
-        delete_token = _csrf_from(detail)
+        account_page = founder_client.get("/app/admin/settings/account-security", follow_redirects=False)
+        delete_token = _csrf_from(account_page)
+        missing_confirmation = founder_client.post(
+            f"/app/admin/partners/{test_partner_id}/delete",
+            data={"csrf_token": delete_token},
+            follow_redirects=False,
+        )
+        if missing_confirmation.status_code != 400:
+            fail("Permanent Partner deletion did not require explicit confirmation.")
         deleted = founder_client.post(
             f"/app/admin/partners/{test_partner_id}/delete",
             data={"csrf_token": delete_token, "confirm_delete": "1"},
             follow_redirects=False,
         )
-        if deleted.status_code not in (302,303):
-            fail("Founder permanent Partner delete action failed.")
+        if deleted.status_code not in (302,303) or "/app/admin/settings/account-security" not in deleted.headers.get("Location",""):
+            fail("Founder permanent Partner delete action failed from Account & Security.")
 
         with test_app.app_context():
             db = get_db()
