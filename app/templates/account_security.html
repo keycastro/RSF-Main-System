@@ -56,7 +56,7 @@
   <section class="account-compact-card partner-management-card" id="partner-accounts">
     <div class="partner-management-head">
       <div><span class="panel-kicker">Partners</span><h2>Partner Accounts</h2></div>
-      <div class="partner-management-actions"><span class="compact-count">{{ partners|length }} Partner{{ '' if partners|length == 1 else 's' }}</span><a class="button primary small" href="{{ url_for('main.partner_new') }}">Create Partner</a></div>
+      <div class="partner-management-actions"><span class="compact-count">{{ partners|length }} Partner{{ '' if partners|length == 1 else 's' }}</span>{% if partners %}<a class="button primary small" href="{{ url_for('main.partner_new') }}">Create Partner</a>{% endif %}</div>
     </div>
 
     {% if revealed_partner and chosen_password %}
