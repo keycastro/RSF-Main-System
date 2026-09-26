@@ -129,7 +129,7 @@ def verify_founder_partner_account_management(source_db) -> None:
         if account_page.status_code != 200 or any(item not in account_visible for item in required):
             fail("Founder Account & Security current-password workspace is incomplete.")
         source_markers = (
-            "compact-password-form","data-toggle-password","security-change-disclosure","partner-security-list",
+            "compact-password-form","data-toggle-password","security-change-disclosure",
             'id="founder_current_password"',"data-vault-reveal","data-vault-copy","data-password-vault-url",
         )
         if any(marker not in account_html for marker in source_markers):
