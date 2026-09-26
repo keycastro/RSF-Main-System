@@ -1,4 +1,4 @@
-name: RSF v1.9.1 Live Browser
+name: RSF v1.9.2 Live Browser
 
 on:
   pull_request:
@@ -17,7 +17,7 @@ jobs:
         run: |
           python -m pip install --quiet playwright
           python -m playwright install --with-deps chromium
-      - name: Verify deployed v1.9.1 website and Partner Workspace
+      - name: Verify deployed v1.9.2 website and Partner Workspace
         run: |
           python - <<'PY'
           from playwright.sync_api import sync_playwright
@@ -36,7 +36,7 @@ jobs:
               assert health.status==200, health.status
               payload=health.json()
               assert payload.get("status")=="ok", payload
-              assert payload.get("version")=="1.9.1", payload
+              assert payload.get("version")=="1.9.2", payload
 
               r=page.goto(MAIN+"/app/",wait_until="domcontentloaded",timeout=90000)
               assert r and r.status==200, r.status if r else None
@@ -69,7 +69,7 @@ jobs:
               body=page2.locator("body").inner_text()
               assert "Sign in" in body and "Not Found" not in body, body[:800]
 
-              print("LIVE_BROWSER_V191_OK")
+              print("LIVE_BROWSER_V192_OK")
               print("HEALTH_VERSION="+payload.get("version",""))
               print("PARTNER_FINAL_URL="+page2.url)
               browser.close()
