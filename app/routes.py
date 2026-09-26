@@ -1367,17 +1367,43 @@ def partner_detail(partner_id: int):
 @admin_required
 def partner_reset_password(partner_id: int):
     validate_csrf()
-    password = request.form.get("password", "") or ""
+    password = request.form.get("partner_password", "") or ""
+    confirm_password = request.form.get("confirm_partner_password", "") or ""
     if not valid_password(password):
-        flash("Enter the Partner password you want to use.", "error")
-        return redirect(url_for("main.partner_detail", partner_id=partner_id))
+        flash("Enter the new Partner password you want to use.", "error")
+        return redirect(url_for("main.account_security", _anchor=f"partner-{partner_id}"))
+    if password != confirm_password:
+        flash("Partner password confirmation does not match.", "error")
+        return redirect(url_for("main.account_security", _anchor=f"partner-{partner_id}"))
+
     db = get_db()
-    partner = db.execute("SELECT p.*,u.full_name,u.email FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=? AND p.user_id IS NOT NULL", (partner_id,)).fetchone()
-    if not partner: abort(404)
-    db.execute("UPDATE users SET password_hash=?,force_password_change=0,failed_login_count=0,locked_until=NULL,updated_at=? WHERE id=?", (hash_password(password), utcnow_iso(), partner["user_id"]))
-    log_activity("PARTNER_PASSWORD_RESET", "partner", partner_id, "Partner password changed.")
+    partner = db.execute(
+        """SELECT p.id,p.user_id,u.full_name,u.email
+           FROM partners p JOIN users u ON u.id=p.user_id
+           WHERE p.id=? AND p.user_id IS NOT NULL AND u.active=1""",
+        (partner_id,),
+    ).fetchone()
+    if not partner:
+        abort(404)
+    db.execute(
+        """UPDATE users
+           SET password_hash=?,force_password_change=0,failed_login_count=0,locked_until=NULL,updated_at=?
+           WHERE id=?""",
+        (hash_password(password), utcnow_iso(), partner["user_id"]),
+    )
+    log_activity("PARTNER_PASSWORD_RESET", "partner", partner_id, "Partner password changed from Account & Security.")
     db.commit()
-    return render_template("partner_password_changed.html", title="Password Changed", partner=partner, chosen_password=password)
+
+    founder, partners = _account_security_context(db)
+    flash(f"Password changed successfully for {partner['full_name']}.", "success")
+    return render_template(
+        "account_security.html",
+        title="Account & Security",
+        founder=founder,
+        partners=partners,
+        revealed_partner=partner,
+        chosen_password=password,
+    )
 
 
 @bp.post("/admin/partners/<int:partner_id>/delete")
@@ -1427,8 +1453,8 @@ def partner_delete(partner_id: int):
             (_profile_picture_dir() / Path(old_avatar).name).unlink(missing_ok=True)
         except OSError:
             pass
-    flash("Partner deleted permanently.", "success")
-    return redirect(url_for("main.partners_list"))
+    flash("Partner deleted permanently. Historical business records were preserved.", "success")
+    return redirect(url_for("main.account_security"))
 
 
 @bp.route("/admin/duplicates")
@@ -2039,6 +2065,81 @@ def activity():
     return render_template("activity.html", title="Activity", activities=rows)
 
 
+def _account_security_context(db):
+    founder = db.execute(
+        """SELECT id,full_name,email,created_at,updated_at
+           FROM users WHERE id=? AND role='admin' AND active=1""",
+        (g.user["id"],),
+    ).fetchone()
+    if not founder:
+        abort(403)
+    partners = db.execute(
+        """SELECT p.id,p.user_id,u.full_name,u.email,u.created_at,
+                  cs.name commission_stage_name,cs.rate_bp commission_rate_bp
+           FROM partners p
+           JOIN users u ON u.id=p.user_id
+           JOIN commission_stages cs ON cs.id=p.commission_stage_id
+           WHERE p.user_id IS NOT NULL AND p.deleted_at IS NULL AND u.active=1
+           ORDER BY lower(u.full_name),p.id"""
+    ).fetchall()
+    return founder, partners
+
+
+@bp.get("/admin/settings/account-security")
+@admin_required
+def account_security():
+    db = get_db()
+    founder, partners = _account_security_context(db)
+    return render_template(
+        "account_security.html",
+        title="Account & Security",
+        founder=founder,
+        partners=partners,
+        revealed_partner=None,
+        chosen_password=None,
+    )
+
+
+@bp.post("/admin/settings/account-security/founder-password")
+@admin_required
+def founder_password_change():
+    validate_csrf()
+    new_password = request.form.get("new_password", "") or ""
+    confirm_password = request.form.get("confirm_password", "") or ""
+    if not valid_password(new_password):
+        flash("Enter the new Founder password you want to use.", "error")
+        return redirect(url_for("main.account_security"))
+    if new_password != confirm_password:
+        flash("Founder password confirmation does not match.", "error")
+        return redirect(url_for("main.account_security"))
+
+    db = get_db()
+    db.execute(
+        """UPDATE users
+           SET password_hash=?,force_password_change=0,failed_login_count=0,locked_until=NULL,updated_at=?
+           WHERE id=? AND role='admin'""",
+        (hash_password(new_password), utcnow_iso(), g.user["id"]),
+    )
+    log_activity("FOUNDER_PASSWORD_CHANGED", "user", g.user["id"], "Founder password changed from Account & Security.")
+    db.commit()
+
+    refreshed = db.execute("SELECT * FROM users WHERE id=? AND role='admin'", (g.user["id"],)).fetchone()
+    if not refreshed:
+        abort(403)
+    login_user(refreshed)
+
+    if not current_app.testing:
+        try:
+            from config import BASE_DIR
+            first_access = BASE_DIR / "FIRST_RUN_FOUNDER_ACCESS.txt"
+            if first_access.exists():
+                first_access.unlink()
+        except OSError:
+            pass
+    flash("Founder password changed successfully. Other Founder sessions were signed out.", "success")
+    return redirect(url_for("main.account_security"))
+
+
 @bp.route("/admin/settings", methods=["GET", "POST"])
 @admin_required
 def settings():
@@ -2156,17 +2257,9 @@ def profile():
         if action == "password":
             if g.user["role"] != "admin":
                 abort(403)
-            current = request.form.get("current_password", "") or ""
-            new_password = request.form.get("new_password", "") or ""
-            confirm_password = request.form.get("confirm_password", "") or ""
-            from werkzeug.security import check_password_hash
-            if not check_password_hash(g.user["password_hash"], current):
-                flash("Current password is incorrect.", "error")
-            elif new_password != confirm_password:
-                flash("New passwords do not match.", "error")
-            elif not valid_password(new_password):
-                flash("Enter the Founder password you want to use.", "error")
-            else:
+            flash("Founder password controls are in Settings → Account & Security.", "success")
+            return redirect(url_for("main.account_security"))
+        else:
                 db.execute("UPDATE users SET password_hash=?,force_password_change=0,updated_at=? WHERE id=?", (hash_password(new_password), utcnow_iso(), g.user["id"]))
                 log_activity("PASSWORD_CHANGED", "user", g.user["id"], "Account password changed.")
                 db.commit()
