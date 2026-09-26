@@ -1,7 +1,7 @@
 {
   "project": "RSF_MAIN_SYSTEM",
   "handoff_date": "2026-09-21",
-  "version": "1.9.3",
+  "version": "1.10.0",
   "owner_public_name": "Key Castro",
   "positioning": "Technology built for real estate operations",
   "framework": "Flask",
@@ -543,7 +543,7 @@
       "private owner Inbox"
     ]
   },
-  "current_version": "1.9.3",
+  "current_version": "1.10.0",
   "pricing_and_management_clarity_3_8_19": {
     "scope": "Existing-system price plus Services & Pricing management clarity and direct tests/release/deployment dependencies",
     "existing_system_price_usd": 290,
@@ -784,7 +784,7 @@
     "live_health_version": "1.9.2",
     "partner_workspace_browser_check": "BROWSER_CHECK_OK"
   },
-  "authoritative_source": "RSF Main System(20260926-020543).zip",
+  "authoritative_source": "RSF Main System(20260926-062346).zip",
   "release_v1_9_3": {
     "scope": "Compact Account & Security UX redesign with secure one-time password visibility",
     "official_people_titles": [
@@ -814,5 +814,29 @@
     "live_health_version": "1.9.3",
     "partner_workspace_browser_check": "BROWSER_CHECK_OK",
     "deployed_commit": "fd9d0eee4b0fc2c6085d7bd4346c67b602f1c922"
+  },
+  "release_v1_10_0": {
+    "scope": "Founder + Partner Workspace UX simplification only; public website unchanged",
+    "navigation": "Work: Dashboard, Client Inbox, Leads, Follow-ups, Messages. Business: Sales, Commissions, Partners for Founder, Resources. Profile/Settings/Activity moved to secondary utility access.",
+    "redundancy": "Dashboards refocused on priority work; Lead Detail links to Client Inbox instead of duplicating the transcript; Sales no longer duplicates commission lifecycle; Partner Details and Account & Security have separate responsibilities; Profile no longer duplicates security.",
+    "security": "Founder-only Account & Security preserved with masked current password fields and on-demand Show/Copy. Partner self-service password control remains blocked.",
+    "business_rules": {
+      "pipeline": [
+        "NEW",
+        "CONTACTED",
+        "QUALIFIED",
+        "DEMO_BOOKED",
+        "PROPOSAL",
+        "WON",
+        "LOST"
+      ],
+      "commission_basis_points": [
+        4000,
+        3000,
+        2000,
+        1500
+      ]
+    },
+    "public_website_changed": false
   }
 }
