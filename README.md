@@ -1,3 +1,9 @@
+# RSF Main System — v1.10.0
+
+## v1.10.0 Founder + Partner Workspace simplification
+
+This release simplifies the private RSF Workspace without changing the public website or core business rules. It reduces navigation clutter, assigns canonical homes to repeated information/actions, refocuses both dashboards on priority work, separates Partner details from credentials, and preserves the verified Founder-controlled password vault.
+
 ## v1.9.3 Account & Security UX redesign
 
 - Redesigns **Settings → Account & Security** into a compact account-control dashboard with a single grouped Founder card and compact Partner rows.
