@@ -1,7 +1,7 @@
 {
   "project": "RSF_MAIN_SYSTEM",
   "handoff_date": "2026-09-21",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "owner_public_name": "Key Castro",
   "positioning": "Technology built for real estate operations",
   "framework": "Flask",
@@ -543,7 +543,7 @@
       "private owner Inbox"
     ]
   },
-  "current_version": "1.9.1",
+  "current_version": "1.9.2",
   "pricing_and_management_clarity_3_8_19": {
     "scope": "Existing-system price plus Services & Pricing management clarity and direct tests/release/deployment dependencies",
     "existing_system_price_usd": 290,
@@ -743,7 +743,7 @@
     "live_browser_audit": "passed on deployed v1.8.7",
     "production_database_direct_sql_audit": "blocked by Render database external IP allowlist; no allowlist was weakened for audit",
     "installer_copies_partner_alias_public_directory": true,
-    "final_release_version": "1.9.1",
+    "final_release_version": "1.9.2",
     "live_health_version": "1.9.1",
     "partner_alias_final_url": "https://realtysystemsfoundry.onrender.com/app/login?next=/app/",
     "live_authenticated_production_role_sessions": "not independently verified; production credentials were not exposed or altered"
@@ -758,5 +758,25 @@
     "verifier_explicit_partner_lifecycle_reporting": true,
     "business_logic_changed": false,
     "production_data_reset": false
+  },
+  "release_v1_9_2": {
+    "scope": "Centralized Founder Account & Security workspace",
+    "official_people_titles": [
+      "Founder",
+      "Partner"
+    ],
+    "settings_account_security_route": "/app/admin/settings/account-security",
+    "founder_password_exact_entry": true,
+    "founder_other_sessions_invalidated": true,
+    "partner_accounts_centralized": true,
+    "partner_password_exact_entry": true,
+    "partner_password_one_time_reveal": true,
+    "partner_sessions_invalidated_on_password_change": true,
+    "partner_self_password_change_blocked": true,
+    "partner_permanent_delete_preserves_history": true,
+    "schema_changed": false,
+    "business_workflow_changed": false,
+    "production_data_reset": false,
+    "verification_status": "pending CI/live verification"
   }
 }
