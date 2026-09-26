@@ -1408,8 +1408,8 @@ def partner_reset_password(partner_id: int):
         founder=founder,
         partners=partners,
         revealed_founder_password=None,
-        revealed_partner=None,
-        chosen_password=None,
+        revealed_partner=partner,
+        chosen_password=password,
     )
 
 
@@ -2103,8 +2103,8 @@ def account_security():
         founder=founder,
         partners=partners,
         revealed_founder_password=None,
-        revealed_partner=partner,
-        chosen_password=password,
+        revealed_partner=None,
+        chosen_password=None,
     )
 
 
