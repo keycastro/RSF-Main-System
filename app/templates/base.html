@@ -12,6 +12,7 @@
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/brand/icon_128.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_v18.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_v20.css') }}">
 </head>
 <body class="{% if request.endpoint in ['main.messages_home','main.messages_thread'] %}page-messages{% endif %}"{% if g.user %} data-message-poll-url="{{ url_for('main.message_unread') }}" data-csrf="{{ csrf_token() }}"{% endif %}>
 {% macro nav_icon(name) -%}
@@ -41,50 +42,39 @@
       <span class="brand-copy"><strong>Realty Systems Foundry</strong><small>{{ 'Founder Workspace' if g.user.role=='admin' else 'Partner Workspace' }}</small></span>
     </a>
 
-    <nav class="nav-list">
-      <span class="nav-section-label">Workspace</span>
+    <nav class="nav-list" aria-label="Workspace navigation">
+      <span class="nav-section-label">Work</span>
       {% set dashboard_active = request.endpoint=='main.dashboard' %}
       <a class="{{ 'active' if dashboard_active else '' }}" {% if dashboard_active %}aria-current="page"{% endif %} href="{{ url_for('main.dashboard') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("home") }}</span><span class="nav-text">Dashboard</span></a>
       {% set inbox_active = request.endpoint in ['main.inquiries_list','main.inquiry_detail','main.client_conversation'] %}
       <a class="{{ 'active' if inbox_active else '' }}" {% if inbox_active %}aria-current="page"{% endif %} href="{{ url_for('main.inquiries_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("inbox") }}</span><span class="nav-text">Client Inbox</span><span class="nav-unread" data-client-unread hidden>0</span></a>
-      {% set messages_active = request.endpoint in ['main.messages_home','main.messages_thread'] %}
-      <a class="{{ 'active' if messages_active else '' }}" {% if messages_active %}aria-current="page"{% endif %} href="{{ url_for('main.messages_home') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("messages") }}</span><span class="nav-text">Messages</span><span class="nav-unread" data-nav-unread hidden>0</span></a>
-
-      <span class="nav-section-label nav-section-spaced">{{ 'Sales workflow' if g.user.role=='partner' else 'Sales operations' }}</span>
       {% set leads_active = request.endpoint in ['main.leads_list','main.lead_new','main.lead_detail','main.lead_edit','main.duplicate_claims'] %}
       <a class="{{ 'active' if leads_active else '' }}" {% if leads_active %}aria-current="page"{% endif %} href="{{ url_for('main.leads_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("leads") }}</span><span class="nav-text">Leads</span></a>
       {% set followups_active = request.endpoint=='main.followups_list' %}
       <a class="{{ 'active' if followups_active else '' }}" {% if followups_active %}aria-current="page"{% endif %} href="{{ url_for('main.followups_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("followups") }}</span><span class="nav-text">Follow-ups</span></a>
+      {% set messages_active = request.endpoint in ['main.messages_home','main.messages_thread'] %}
+      <a class="{{ 'active' if messages_active else '' }}" {% if messages_active %}aria-current="page"{% endif %} href="{{ url_for('main.messages_home') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("messages") }}</span><span class="nav-text">Messages</span><span class="nav-unread" data-nav-unread hidden>0</span></a>
+
+      <span class="nav-section-label nav-section-spaced">Business</span>
       {% set sales_active = request.endpoint in ['main.sales_list','main.sale_new','main.sale_detail'] %}
       <a class="{{ 'active' if sales_active else '' }}" {% if sales_active %}aria-current="page"{% endif %} href="{{ url_for('main.sales_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("sales") }}</span><span class="nav-text">Sales</span></a>
       {% set commissions_active = request.endpoint=='main.commissions_list' %}
       <a class="{{ 'active' if commissions_active else '' }}" {% if commissions_active %}aria-current="page"{% endif %} href="{{ url_for('main.commissions_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("commissions") }}</span><span class="nav-text">Commissions</span></a>
-
       {% if g.user.role == 'admin' %}
-        <span class="nav-section-label nav-section-spaced">Founder</span>
         {% set partners_active = request.endpoint in ['main.partners_list','main.partner_new','main.partner_detail','main.partner_reset_password','main.partner_delete'] %}
         <a class="{{ 'active' if partners_active else '' }}" {% if partners_active %}aria-current="page"{% endif %} href="{{ url_for('main.partners_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("partners") }}</span><span class="nav-text">Partners</span></a>
-        {% set resources_active = request.endpoint in ['main.resources_list','main.resource_new','main.resource_edit'] %}
-        <a class="{{ 'active' if resources_active else '' }}" {% if resources_active %}aria-current="page"{% endif %} href="{{ url_for('main.resources_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("resources") }}</span><span class="nav-text">Resources</span></a>
-        {% set activity_active = request.endpoint=='main.activity' %}
-        <a class="{{ 'active' if activity_active else '' }}" {% if activity_active %}aria-current="page"{% endif %} href="{{ url_for('main.activity') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("activity") }}</span><span class="nav-text">Activity</span></a>
-        {% set settings_active = request.endpoint in ['main.settings','main.account_security','main.founder_password_change'] %}
-        <a class="{{ 'active' if settings_active else '' }}" {% if settings_active %}aria-current="page"{% endif %} href="{{ url_for('main.settings') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("settings") }}</span><span class="nav-text">Settings</span></a>
-        {% set account_security_active = request.endpoint in ['main.account_security','main.founder_password_change','main.partner_reset_password','main.partner_delete'] %}
-        <a class="nav-subitem {{ 'active' if account_security_active else '' }}" {% if account_security_active %}aria-current="page"{% endif %} href="{{ url_for('main.account_security') }}"><span class="nav-subitem-dot" aria-hidden="true"></span><span class="nav-text">Account &amp; Security</span></a>
-      {% else %}
-        <span class="nav-section-label nav-section-spaced">Tools</span>
-        {% set resources_active = request.endpoint=='main.resources_list' %}
-        <a class="{{ 'active' if resources_active else '' }}" {% if resources_active %}aria-current="page"{% endif %} href="{{ url_for('main.resources_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("resources") }}</span><span class="nav-text">Resources</span></a>
       {% endif %}
-
-      <span class="nav-section-label nav-section-spaced">Account</span>
-      {% set profile_active = request.endpoint=='main.profile' %}
-      <a class="{{ 'active' if profile_active else '' }}" {% if profile_active %}aria-current="page"{% endif %} href="{{ url_for('main.profile') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("profile") }}</span><span class="nav-text">Profile</span></a>
+      {% set resources_active = request.endpoint in ['main.resources_list','main.resource_new','main.resource_edit'] %}
+      <a class="{{ 'active' if resources_active else '' }}" {% if resources_active %}aria-current="page"{% endif %} href="{{ url_for('main.resources_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("resources") }}</span><span class="nav-text">Resources</span></a>
     </nav>
 
     <div class="sidebar-footer">
       {% set sidebar_avatar = profile_picture_url(g.user.id, g.user.role) %}<a class="user-block user-block-with-avatar user-block-link" href="{{ url_for('main.profile') }}" aria-label="Open your profile"><div class="sidebar-avatar" aria-hidden="true">{% if sidebar_avatar %}<img class="sidebar-profile-photo" src="{{ sidebar_avatar }}" alt="">{% else %}<span>{{ g.user.full_name[:1]|upper }}</span>{% endif %}</div><div class="user-block-copy"><strong>{{ g.user.full_name }}</strong><small>{{ 'Founder' if g.user.role=='admin' else 'Partner' }}</small></div></a>
+      <nav class="sidebar-utility-links" aria-label="Account and workspace utilities">
+        <a class="{{ 'active' if request.endpoint=='main.profile' else '' }}" href="{{ url_for('main.profile') }}">Profile</a>
+        {% if g.user.role=='admin' %}<a class="{{ 'active' if request.endpoint in ['main.settings','main.account_security','main.founder_password_change'] else '' }}" href="{{ url_for('main.settings') }}">Settings</a><a class="{{ 'active' if request.endpoint=='main.activity' else '' }}" href="{{ url_for('main.activity') }}">Activity</a>{% endif %}
+        <a href="{{ url_for('site.home') }}" target="_blank" rel="noopener">Website</a>
+      </nav>
       <form method="post" action="{{ url_for('main.logout') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button class="signout" type="submit">Sign out</button>
@@ -97,14 +87,10 @@
     <header class="topbar">
       <div class="topbar-left">
         <button class="menu-button" type="button" data-menu aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">☰</button>
-        <div class="topbar-context"><span>RSF Workspace</span><i aria-hidden="true">›</i><strong>{{ title }}</strong></div>
+        <div class="topbar-context"><strong>{{ title }}</strong></div>
       </div>
       <div class="topbar-actions">
-        <a class="topbar-site-link" href="{{ url_for('site.home') }}">Public website <span aria-hidden="true">↗</span></a>
-        <a class="topbar-user" href="{{ url_for('main.profile') }}" aria-label="Open your profile">
-          {% set topbar_avatar = profile_picture_url(g.user.id, g.user.role) %}<span class="topbar-avatar" aria-hidden="true">{% if topbar_avatar %}<img src="{{ topbar_avatar }}" alt="">{% else %}{{ g.user.full_name[:1]|upper }}{% endif %}</span>
-          <span><strong>{{ g.user.full_name }}</strong><small>{{ 'Founder' if g.user.role=='admin' else 'Partner' }}</small></span>
-        </a>
+        <a class="topbar-profile-link" href="{{ url_for('main.profile') }}" aria-label="Open your profile">{% set topbar_avatar = profile_picture_url(g.user.id, g.user.role) %}<span class="topbar-avatar" aria-hidden="true">{% if topbar_avatar %}<img src="{{ topbar_avatar }}" alt="">{% else %}{{ g.user.full_name[:1]|upper }}{% endif %}</span></a>
       </div>
     </header>
     <div class="content-wrap">
@@ -142,4 +128,3 @@
 <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
 </body>
 </html>
-
