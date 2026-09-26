@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-head organized-page-head">
-  <div><span class="page-kicker">Founder</span><h1>Add Partner</h1><p>Create the Partner account and choose the exact password and commission stage.</p></div>
+<div class="page-head workspace-page-head">
+  <div><h1>Create Partner</h1><p>Create the Partner account and login.</p></div>
   <a class="button secondary" href="{{ url_for('main.partners_list') }}">Cancel</a>
 </div>
 <section class="panel form-panel refined-form-panel">
@@ -12,10 +12,10 @@
     <label>Phone<input name="phone" maxlength="60" value="{{ request.form.get('phone','') }}" autocomplete="tel"></label>
     <label>Commission stage <span class="required-mark">Required</span><select name="commission_stage_id" required><option value="">Choose stage</option>{% for s in stages %}<option value="{{ s.id }}" {{ 'selected' if request.form.get('commission_stage_id')==s.id|string else '' }}>{{ s.name }} — {{ s.rate_bp|rate }}</option>{% endfor %}</select></label>
     <label class="span-2">Password <span class="required-mark">Required</span>
-      <div class="password-control"><input id="partner_password" name="password" type="password" required autocomplete="new-password" value="{{ request.form.get('password','') }}"><div class="password-actions"><button class="button ghost" type="button" data-password-toggle data-target="partner_password">Show</button><button class="button ghost" type="button" data-copy-target="partner_password">Copy</button></div></div>
-      <small class="help">Use the exact password you want. RSF uses exactly what you enter.</small>
+      <div class="password-row partner-password-row"><input id="partner_password" name="partner_password" type="password" required autocomplete="new-password" value="{{ request.form.get('partner_password','') }}"><button class="button ghost" type="button" data-toggle-password data-target="partner_password">Show</button><button class="button ghost" type="button" data-copy-input data-target="partner_password">Copy</button></div>
+      <small class="help">Use the exact password you want. RSF does not change it or apply password-strength rules.</small>
     </label>
-    <label class="span-2">Internal notes<textarea name="notes" rows="4" maxlength="2000" placeholder="Optional Founder context">{{ request.form.get('notes','') }}</textarea></label>
+    <label class="span-2">Internal notes<textarea name="notes" rows="4" maxlength="2000" placeholder="Optional Founder-only context">{{ request.form.get('notes','') }}</textarea></label>
     <div class="form-actions span-2"><button class="button primary" type="submit">Create Partner</button></div>
   </form>
 </section>
