@@ -23,6 +23,7 @@ from .auth import (
     validate_csrf,
 )
 from .db import get_db, IntegrityError, using_postgres
+from .credential_vault import current_password as vault_current_password, store_password as vault_store_password
 from .services import (
     PARTNER_ALLOWED_STATUSES,
     PAYMENT_STATUSES,
@@ -1301,6 +1302,7 @@ def partner_new():
             cur = db.execute("""INSERT INTO users(full_name,email,password_hash,role,active,force_password_change,created_at,updated_at)
                                 VALUES (?,?,?,'partner',1,0,?,?)""", (full_name[:160], email, hash_password(password), now, now))
             user_id = cur.lastrowid
+            vault_store_password(db, user_id, password)
             cur = db.execute("""INSERT INTO partners(user_id,full_name_snapshot,email_snapshot,commission_stage_id,phone,notes,joined_at,active)
                                 VALUES (?,?,?,?,?,?,?,1)""", (user_id, full_name[:160], email, stage_id, phone[:60], notes[:2000], now))
             partner_id = cur.lastrowid
@@ -1391,6 +1393,7 @@ def partner_reset_password(partner_id: int):
            WHERE id=?""",
         (hash_password(password), utcnow_iso(), partner["user_id"]),
     )
+    vault_store_password(db, partner["user_id"], password)
     log_activity("PARTNER_PASSWORD_RESET", "partner", partner_id, "Partner password changed from Account & Security.")
     db.commit()
 
@@ -1401,9 +1404,6 @@ def partner_reset_password(partner_id: int):
         title="Account & Security",
         founder=founder,
         partners=partners,
-        revealed_founder_password=None,
-        revealed_partner=partner,
-        chosen_password=password,
     )
 
 
@@ -2096,10 +2096,40 @@ def account_security():
         title="Account & Security",
         founder=founder,
         partners=partners,
-        revealed_founder_password=None,
-        revealed_partner=None,
-        chosen_password=None,
     )
+
+
+@bp.post("/admin/settings/account-security/reveal-password")
+@admin_required
+def account_security_reveal_password():
+    validate_csrf()
+    try:
+        user_id = int(request.form.get("user_id", "0"))
+    except (TypeError, ValueError):
+        abort(400)
+    db = get_db()
+    target = db.execute(
+        """SELECT u.id,u.full_name,u.email,u.role
+           FROM users u
+           LEFT JOIN partners p ON p.user_id=u.id
+           WHERE u.id=? AND u.active=1
+             AND (u.role='admin' OR (u.role='partner' AND p.deleted_at IS NULL))
+           LIMIT 1""",
+        (user_id,),
+    ).fetchone()
+    if not target or target["role"] not in {"admin", "partner"}:
+        abort(404)
+    if target["role"] == "admin" and target["id"] != g.user["id"]:
+        abort(403)
+    password = vault_current_password(db, user_id)
+    if password is None:
+        return jsonify({"ok": False, "error": "Current password visibility is not initialized for this account yet. Change or reset its password once."}), 404
+    log_activity("ACCOUNT_PASSWORD_REVEALED", "user", user_id, f"Founder revealed current {target['role']} account password from Account & Security.")
+    db.commit()
+    response = jsonify({"ok": True, "password": password})
+    response.headers["Cache-Control"] = "no-store, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    return response
 
 
 @bp.post("/admin/settings/account-security/founder-password")
@@ -2122,6 +2152,7 @@ def founder_password_change():
            WHERE id=? AND role='admin'""",
         (hash_password(new_password), utcnow_iso(), g.user["id"]),
     )
+    vault_store_password(db, g.user["id"], new_password)
     log_activity("FOUNDER_PASSWORD_CHANGED", "user", g.user["id"], "Founder password changed from Account & Security.")
     db.commit()
 
@@ -2145,9 +2176,6 @@ def founder_password_change():
         title="Account & Security",
         founder=founder,
         partners=partners,
-        revealed_founder_password=new_password,
-        revealed_partner=None,
-        chosen_password=None,
     )
 
 
