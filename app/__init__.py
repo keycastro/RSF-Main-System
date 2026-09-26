@@ -179,6 +179,8 @@ def create_app(test_config=None):
 
     with app.app_context():
         db.ensure_database()
+        from .credential_vault import one_time_sync_from_environment
+        one_time_sync_from_environment(db.get_db())
 
     # Background mailbox sync + protected local/off-site-capable backups. A DB lease
     # ensures only one worker is active even when multiple WSGI workers are running.
