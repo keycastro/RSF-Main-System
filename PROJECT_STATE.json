@@ -777,6 +777,11 @@
     "schema_changed": false,
     "business_workflow_changed": false,
     "production_data_reset": false,
-    "verification_status": "pending CI/live verification"
+    "verification_status": "passed",
+    "source_account_audit": "FOUNDER_PARTNER_V192_AUDIT_OK",
+    "source_security_audit": "SOURCE_SECURITY_AUDIT_OK",
+    "live_browser_audit": "LIVE_BROWSER_V192_OK",
+    "live_health_version": "1.9.2",
+    "partner_workspace_browser_check": "BROWSER_CHECK_OK"
   }
 }
