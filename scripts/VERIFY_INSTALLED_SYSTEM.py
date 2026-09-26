@@ -129,15 +129,15 @@ def verify_founder_partner_account_management(source_db) -> None:
         if account_page.status_code != 200 or any(item not in account_visible for item in required):
             fail("Founder Account & Security current-password workspace is incomplete.")
         source_markers = (
-            "compact-password-form","data-toggle-password","compact-empty-state",
-            'id="founder_current_password"',"data-vault-reveal","data-vault-copy","data-password-vault-url",
+            "compact-password-form","data-toggle-password","data-vault-password",
+            'id="vault_password_founder"',"data-vault-reveal","data-vault-copy","data-password-vault-url",
         )
         if any(marker not in account_html for marker in source_markers):
             fail("Account & Security current-password source controls are incomplete.")
         if "Hashed · not readable or recoverable" in account_visible or "Securely set" in account_visible:
             fail("Obsolete v1.9.3 current-password status is still visible.")
-        founder_current_input = re.search(r'<input[^>]+id="founder_current_password"[^>]*>', account_html)
-        if not founder_current_input or re.search(r'\svalue=', founder_current_input.group(0), flags=re.I):
+        founder_current_input = re.search(r'<input[^>]+id="vault_password_founder"[^>]*>', account_html)
+        if not founder_current_input or not re.search(r'value=""', founder_current_input.group(0), flags=re.I):
             fail("Founder current-password field must render masked and empty; plaintext must be fetched on demand.")
         if 'name="current_password"' in account_html:
             fail("Account & Security incorrectly asks the Founder to re-enter the current password.")
@@ -176,13 +176,19 @@ def verify_founder_partner_account_management(source_db) -> None:
             follow_redirects=False,
         )
         founder_changed_html = changed_founder.get_data(as_text=True)
-        founder_reveal_markers = (
-            'id="founder_current_password_once"', f'value="{founder_new_password}"',
-            "This is your new current password.", "Copy it now. RSF will not store it as readable text.",
-            "data-toggle-password", "data-copy-input", "Copy Password",
+        if changed_founder.status_code != 200:
+            fail("Founder password change failed from Account & Security.")
+        if founder_new_password in founder_changed_html:
+            fail("Founder password change rendered plaintext into Account & Security HTML.")
+        founder_changed_page = founder_client.get("/app/admin/settings/account-security", follow_redirects=False)
+        founder_changed_reveal = founder_client.post(
+            "/app/admin/settings/account-security/reveal-password",
+            data={"csrf_token": _csrf_from(founder_changed_page), "user_id": str(founder["id"])},
+            follow_redirects=False,
         )
-        if changed_founder.status_code != 200 or any(marker not in founder_changed_html for marker in founder_reveal_markers):
-            fail("Founder password change or one-time visibility failed from Account & Security.")
+        founder_changed_payload = founder_changed_reveal.get_json(silent=True) or {}
+        if founder_changed_reveal.status_code != 200 or founder_changed_payload.get("password") != founder_new_password:
+            fail("Founder current-password vault was not updated after password change.")
         with test_app.app_context():
             founder_after = get_db().execute("SELECT password_hash FROM users WHERE lower(email)=?", (founder_email,)).fetchone()
             if not founder_after or not check_password_hash(founder_after["password_hash"], founder_new_password) or check_password_hash(founder_after["password_hash"], founder_password):
@@ -196,8 +202,8 @@ def verify_founder_partner_account_management(source_db) -> None:
         founder_after_get = founder_client.get("/app/admin/settings/account-security", follow_redirects=False)
         if founder_after_get.status_code != 200:
             fail("Current Founder session was not safely rebound after password change.")
-        if 'id="founder_current_password_once"' in founder_after_get.get_data(as_text=True):
-            fail("Founder plaintext password persisted beyond the one-time password-change response.")
+        if founder_new_password in founder_after_get.get_data(as_text=True):
+            fail("Founder plaintext password persisted in Account & Security HTML.")
         new_founder = test_app.test_client()
         if _login_with_password(new_founder, founder_email, founder_new_password) not in (302,303):
             fail("New exact Founder password does not authenticate.")
@@ -207,8 +213,8 @@ def verify_founder_partner_account_management(source_db) -> None:
         founder_profile_html = founder_profile.get_data(as_text=True)
         if 'name="current_password"' in founder_profile_html or 'name="new_password"' in founder_profile_html:
             fail("Founder password controls are still scattered on Profile.")
-        if "Account &amp; Security" not in founder_profile_html:
-            fail("Founder Profile does not link to Account & Security.")
+        if "Change Password" in _visible_text(founder_profile_html):
+            fail("Founder Profile still duplicates Account & Security controls.")
 
         partners_page = founder_client.get("/app/admin/partners", follow_redirects=False)
         partners_html = partners_page.get_data(as_text=True)
@@ -338,7 +344,7 @@ def verify_founder_partner_account_management(source_db) -> None:
         detail = founder_client.get(f"/app/admin/partners/{test_partner_id}", follow_redirects=False)
         detail_html = detail.get_data(as_text=True)
         detail_visible = _visible_text(detail_html)
-        if detail.status_code != 200 or "Audit Partner" not in detail_visible or "Account & Security" not in detail_visible:
+        if detail.status_code != 200 or "Audit Partner" not in detail_visible or "Credentials" not in detail_visible:
             fail("Founder Partner detail page or centralized security handoff failed.")
         if "Change Password" in detail_visible or "Delete Partner Permanently" in detail_visible:
             fail("Partner credential controls are still scattered on the Partner detail page.")
@@ -364,10 +370,16 @@ def verify_founder_partner_account_management(source_db) -> None:
         account_page = founder_client.get("/app/admin/settings/account-security", follow_redirects=False)
         account_html = account_page.get_data(as_text=True)
         account_visible = _visible_text(account_html)
-        partner_actions = ("View","Edit","Change Password","Delete")
-        partner_source_markers = ("data-account-disclosure", f'id="partner-password-panel-{test_partner_id}"', "partner-compact-row")
+        partner_actions = ("Change password","Delete Partner")
+        partner_source_markers = (
+            "data-account-disclosure", f'id="partner-password-panel-{test_partner_id}"',
+            "partner-security-row", f'id="vault_password_partner_{test_partner_id}"',
+            "data-vault-reveal", "data-vault-copy",
+        )
         if f'id="partner-{test_partner_id}"' not in account_html or any(item not in account_visible for item in partner_actions) or any(marker not in account_html for marker in partner_source_markers):
-            fail("Compact Partner account actions are incomplete in Account & Security.")
+            fail("Partner credential actions are incomplete in Account & Security.")
+        if "View" in account_visible or "Edit" in account_visible:
+            fail("Partner detail actions are duplicated inside Account & Security.")
         reset_token = _csrf_from(account_page)
         changed = founder_client.post(
             f"/app/admin/partners/{test_partner_id}/reset-password",
@@ -375,16 +387,21 @@ def verify_founder_partner_account_management(source_db) -> None:
             follow_redirects=False,
         )
         changed_html = changed.get_data(as_text=True)
-        partner_reveal_markers = (
-            'id="changed_partner_password"', f'value="{second_password}"', "Copy Password",
-            "data-toggle-password", "data-copy-input", "new current password",
-            "RSF will not store it as readable text",
-        )
-        if changed.status_code != 200 or any(marker not in changed_html for marker in partner_reveal_markers):
-            fail("Founder exact Partner password reset/one-time visibility failed in Account & Security.")
+        if changed.status_code != 200:
+            fail("Founder exact Partner password reset failed in Account & Security.")
+        if second_password in changed_html:
+            fail("Partner password reset rendered plaintext into Account & Security HTML.")
         partner_after_get = founder_client.get("/app/admin/settings/account-security", follow_redirects=False)
-        if 'id="changed_partner_password"' in partner_after_get.get_data(as_text=True):
-            fail("Partner plaintext password persisted beyond the one-time password-change response.")
+        partner_reveal = founder_client.post(
+            "/app/admin/settings/account-security/reveal-password",
+            data={"csrf_token": _csrf_from(partner_after_get), "user_id": str(test_user_id)},
+            follow_redirects=False,
+        )
+        partner_payload = partner_reveal.get_json(silent=True) or {}
+        if partner_reveal.status_code != 200 or partner_payload.get("password") != second_password:
+            fail("Founder persistent Partner password reveal did not return the reset password.")
+        if "no-store" not in partner_reveal.headers.get("Cache-Control","") or partner_reveal.headers.get("Pragma") != "no-cache":
+            fail("Partner current-password reveal is missing no-cache response headers.")
 
         # Password reset invalidates existing sessions and the old password immediately.
         if partner_client.get("/app/", follow_redirects=False).status_code not in (301,302,303,307,308):
