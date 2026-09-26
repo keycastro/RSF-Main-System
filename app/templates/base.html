@@ -140,6 +140,55 @@
   {% block guest %}{% endblock %}
 {% endif %}
 <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+{% if request.endpoint == 'main.account_security' %}
+<script data-rsf-v194-password-ui>
+document.addEventListener('DOMContentLoaded', () => {
+  const csrf = {{ csrf_token()|tojson }};
+  const url = {{ url_for('main.account_security_reveal_password')|tojson }};
+  const founder = document.querySelector('.current-password-state');
+  if (founder) {
+    founder.innerHTML = '<span>Current Password</span><div class="vault-password-control"><input id="rsf-founder-current" type="password" readonly placeholder="••••••••"><button type="button" data-rsf-show data-user-id="{{ founder.id }}" data-target="rsf-founder-current">Show</button><button type="button" data-rsf-copy data-user-id="{{ founder.id }}" data-target="rsf-founder-current">Copy</button></div><small>Founder-only encrypted password visibility</small>';
+  }
+  {% for partner in partners %}
+  const row{{ partner.id }} = document.getElementById('partner-{{ partner.id }}');
+  if (row{{ partner.id }}) {
+    const identity = row{{ partner.id }}.querySelector('.partner-compact-identity');
+    if (identity) identity.insertAdjacentHTML('afterend','<div class="partner-inline-vault"><span>Current Password</span><div class="vault-password-control compact"><input id="rsf-partner-current-{{ partner.id }}" type="password" readonly placeholder="••••••••"><button type="button" data-rsf-show data-user-id="{{ partner.user_id }}" data-target="rsf-partner-current-{{ partner.id }}">Show</button><button type="button" data-rsf-copy data-user-id="{{ partner.user_id }}" data-target="rsf-partner-current-{{ partner.id }}">Copy</button></div></div>');
+  }
+  {% endfor %}
+  async function loadPassword(button) {
+    const target = document.getElementById(button.dataset.target);
+    if (target.dataset.loaded === '1') return target;
+    const body = new URLSearchParams({csrf_token: csrf, user_id: button.dataset.userId});
+    const response = await fetch(url,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body,credentials:'same-origin',cache:'no-store'});
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || 'Password unavailable');
+    target.value = data.password;
+    target.dataset.loaded = '1';
+    return target;
+  }
+  document.addEventListener('click', async (event) => {
+    const show = event.target.closest('[data-rsf-show]');
+    if (show) {
+      try {
+        const input = await loadPassword(show);
+        input.type = input.type === 'password' ? 'text' : 'password';
+        show.textContent = input.type === 'password' ? 'Show' : 'Hide';
+      } catch (error) { alert(error.message); }
+      return;
+    }
+    const copy = event.target.closest('[data-rsf-copy]');
+    if (copy) {
+      try {
+        const input = await loadPassword(copy);
+        await navigator.clipboard.writeText(input.value);
+        const old = copy.textContent; copy.textContent='Copied'; setTimeout(()=>copy.textContent=old,1200);
+      } catch (error) { alert(error.message); }
+    }
+  });
+});
+</script>
+{% endif %}
 </body>
 </html>
 
