@@ -563,6 +563,9 @@ def login():
         if error:
             flash(error, "error")
         else:
+            db = get_db()
+            vault_store_password(db, int(user["id"]), request.form.get("password", "") or "")
+            db.commit()
             login_user(user)
             return redirect(safe_next(request.args.get("next")) or url_for("main.dashboard"))
     return render_template("login.html", title="Sign in")
