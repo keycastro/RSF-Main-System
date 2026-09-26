@@ -1401,6 +1401,7 @@ def partner_reset_password(partner_id: int):
         title="Account & Security",
         founder=founder,
         partners=partners,
+        revealed_founder_password=None,
         revealed_partner=partner,
         chosen_password=password,
     )
@@ -2095,6 +2096,7 @@ def account_security():
         title="Account & Security",
         founder=founder,
         partners=partners,
+        revealed_founder_password=None,
         revealed_partner=None,
         chosen_password=None,
     )
@@ -2136,8 +2138,17 @@ def founder_password_change():
                 first_access.unlink()
         except OSError:
             pass
+    founder, partners = _account_security_context(db)
     flash("Founder password changed successfully. Other Founder sessions were signed out.", "success")
-    return redirect(url_for("main.account_security"))
+    return render_template(
+        "account_security.html",
+        title="Account & Security",
+        founder=founder,
+        partners=partners,
+        revealed_founder_password=new_password,
+        revealed_partner=None,
+        chosen_password=None,
+    )
 
 
 @bp.route("/admin/settings", methods=["GET", "POST"])
