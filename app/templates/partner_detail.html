@@ -1,30 +1,4 @@
-{% extends 'base.html' %}
-{% block content %}
-<div class="page-head organized-page-head">
-  <div><span class="page-kicker">Partner</span><h1>{{ partner.full_name }}</h1><p>{{ partner.email }} · Created {{ partner.account_created_at|dateonly }}</p></div>
-  <div class="page-actions"><a class="button primary" href="{{ url_for('main.messages_thread', partner_id=partner.id) }}">Message Partner</a><a class="button secondary" href="{{ url_for('main.partners_list') }}">Back</a></div>
-</div>
-<div id="partner-account-summary" class="metric-grid summary-three partner-summary-grid">
-  <div class="metric-card static"><span>Leads</span><strong>{{ fmt_count(stats.leads, stats.leads > 0) }}</strong></div>
-  <div class="metric-card static"><span>Sales</span><strong>{{ fmt_count(stats.sales, stats.has_sales_data) }}</strong><small>{{ fmt_money(stats.qualifying, stats.has_sales_data, setting('currency_code','USD')) }} commission revenue</small></div>
-  <div class="metric-card static"><span>Commissions</span><strong>{{ fmt_money(stats.commissions, stats.has_commission_data, setting('currency_code','USD')) }}</strong></div>
-</div>
-<div class="two-col partner-admin-layout">
-  <section class="panel" id="edit-partner-account">
-    <div class="panel-head"><div><span class="panel-kicker">Partner</span><h2>Details</h2></div></div>
-    <form method="post" class="form-stack">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <label>Full name<input name="full_name" value="{{ partner.full_name }}" required maxlength="160" autocomplete="name"></label>
-      <label>Email<input type="email" name="email" value="{{ partner.email }}" required maxlength="254" autocomplete="email"></label>
-      <label>Commission stage<select name="commission_stage_id" required>{% for s in stages %}<option value="{{ s.id }}" {{ 'selected' if s.id==partner.commission_stage_id else '' }}>{{ s.name }} — {{ s.rate_bp|rate }}</option>{% endfor %}</select><small class="help">Only new commissions use this stage. Existing commission history keeps its original rate.</small></label>
-      <label>Phone<input name="phone" value="{{ partner.phone }}" autocomplete="tel" maxlength="60"></label>
-      <label>Internal notes<textarea name="notes" rows="4" maxlength="2000">{{ partner.notes }}</textarea></label>
-      <div class="form-actions"><button class="button primary" type="submit">Save Partner</button></div>
-    </form>
-  </section>
-  <section class="panel account-security-link-panel">
-    <div class="panel-head"><div><span class="panel-kicker">Account security</span><h2>Credential controls</h2><p>Passwords and permanent account deletion are centralized in Settings → Account &amp; Security.</p></div></div>
-    <a class="button primary" href="{{ url_for('main.account_security') }}#partner-{{ partner.id }}">Open Account &amp; Security</a>
-  </section>
-</div>
+{% extends 'base.html' %}{% block content %}
+<div class="page-head workspace-page-head"><div><div class="title-line"><span class="badge neutral">Partner</span><span class="muted">{{ partner.commission_stage_name }} · {{ partner.commission_rate_bp|rate }}</span></div><h1>{{ partner.full_name }}</h1><p>{{ partner.email }}</p></div><div class="page-actions"><a class="button primary" href="{{ url_for('main.messages_thread', partner_id=partner.id) }}">Message</a><a class="button secondary" href="{{ url_for('main.partners_list') }}">Back</a></div></div>
+<section class="workspace-section partner-edit-section" id="edit-partner-account"><div class="section-head"><div><h2>Partner details</h2><p>Identity, commission stage, and internal context.</p></div><a href="{{ url_for('main.account_security') }}#partner-{{ partner.id }}">Credentials</a></div><form method="post" class="form-grid partner-edit-grid"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Full name<input name="full_name" required maxlength="160" value="{{ partner.full_name }}" autocomplete="name"></label><label>Email<input type="email" name="email" required maxlength="254" value="{{ partner.email }}" autocomplete="email"></label><label>Commission stage<select name="commission_stage_id" required>{% for s in stages %}<option value="{{ s.id }}" {{ 'selected' if s.id==partner.commission_stage_id else '' }}>{{ s.name }} — {{ s.rate_bp|rate }}</option>{% endfor %}</select><small class="help">Only new commissions use a changed stage.</small></label><label>Phone<input name="phone" maxlength="60" value="{{ partner.phone }}" autocomplete="tel"></label><label class="span-2">Internal notes<textarea name="notes" rows="4" maxlength="2000">{{ partner.notes }}</textarea></label><div class="form-actions span-2"><button class="button primary" type="submit">Save Partner</button></div></form></section>
 {% endblock %}
