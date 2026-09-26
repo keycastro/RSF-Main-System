@@ -299,3 +299,53 @@ body.page-messages .content-wrap{padding-top:13px}.messages-page-title{margin-bo
 .compact-empty-state{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 11px;border-top:1px solid #edf1ef;background:#fafcfb;border-radius:0 0 8px 8px}.compact-empty-state>div{display:flex;align-items:baseline;gap:8px}.compact-empty-state strong{font-size:11px;color:var(--workspace-ink)}.compact-empty-state span{font-size:9.5px;color:var(--workspace-muted)}
 @media(max-width:900px){.account-security-shell{max-width:none}.compact-password-form{grid-template-columns:1fr 1fr}.compact-password-submit{grid-column:1/-1}.one-time-password-banner{align-items:flex-start;flex-direction:column}.one-time-password-control{width:100%;grid-template-columns:minmax(0,1fr) auto auto}.partner-compact-main{align-items:flex-start}.partner-compact-identity>div{display:grid;gap:1px}.partner-compact-identity div>span{max-width:220px}}
 @media(max-width:680px){.account-compact-head,.partner-management-head,.partner-compact-main{flex-direction:column;align-items:stretch}.current-password-state{min-width:0}.compact-password-form{grid-template-columns:1fr}.compact-password-submit{grid-column:auto}.one-time-password-control{grid-template-columns:1fr auto}.one-time-password-control .button.secondary{grid-column:1/-1}.partner-management-actions{justify-content:space-between}.partner-compact-actions{justify-content:flex-start}.partner-compact-identity div>span{max-width:100%}.compact-empty-state{align-items:flex-start;flex-direction:column}.compact-empty-state>div{display:grid;gap:2px}}
+
+
+/* v1.9.4 CSP-safe Founder credential visibility */
+.account-password-vault {
+  min-width: 290px;
+}
+.account-password-vault > span,
+.partner-inline-vault > span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.vault-password-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.vault-password-control input {
+  width: 180px;
+  min-width: 0;
+  height: 36px;
+  padding: 7px 10px;
+  border: 1px solid var(--line, #d9dfda);
+  border-radius: 9px;
+  background: #fff;
+  font: inherit;
+}
+.account-password-vault small {
+  display: block;
+  margin-top: 6px;
+}
+.partner-inline-vault {
+  min-width: 270px;
+}
+.partner-inline-vault .vault-password-control input {
+  width: 150px;
+}
+@media (max-width: 900px) {
+  .account-password-vault,
+  .partner-inline-vault {
+    width: 100%;
+    min-width: 0;
+  }
+  .vault-password-control {
+    flex-wrap: wrap;
+  }
+}
