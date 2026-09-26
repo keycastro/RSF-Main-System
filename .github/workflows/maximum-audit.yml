@@ -150,7 +150,7 @@ jobs:
               assert health.status == 200
               payload=health.json()
               assert payload.get("status") == "ok", payload
-              assert payload.get("version") == "1.9.4", payload
+              assert payload.get("version") == "1.10.0", payload
 
               r=page.goto(MAIN+"/app/",wait_until="domcontentloaded",timeout=90000)
               assert r and r.status == 200
