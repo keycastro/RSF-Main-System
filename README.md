@@ -1,3 +1,11 @@
+## v1.9.3 Account & Security UX redesign
+
+- Redesigns **Settings → Account & Security** into a compact account-control dashboard with a single grouped Founder card and compact Partner rows.
+- Keeps current passwords securely hashed and never pretends an existing plaintext password can be recovered.
+- Founder New Password and Confirm New Password both have Show/Hide controls; after a successful change the exact new current Founder password is shown once with Show/Hide and Copy Password.
+- Partner password controls expand only when requested; successful Partner changes show the exact new password once with Show/Hide and Copy Password.
+- Preserves Founder-only authorization, CSRF, exact manual passwords, session invalidation, old-password rejection, Partner self-change blocking, and permanent Partner deletion safeguards.
+
 ## v1.9.2 Account & Security
 
 - Adds a centralized Founder-only **Settings → Account & Security** workspace for Founder password control and all current Partner account/password controls.
@@ -21,7 +29,7 @@
 - The clean FINAL release excludes `.env`, runtime databases/backups/uploads, logs, caches, and repository metadata. Existing installed private data is preserved by the installer and is never replaced by release contents.
 - No account, password, client-data, commission-rule, or core business-flow reset is part of this release.
 
-# RSF Main System — v1.9.2
+# RSF Main System — v1.9.3
 
 Unified Realty Systems Foundry public website + private Founder/Partner workspace.
 
