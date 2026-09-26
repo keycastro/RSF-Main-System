@@ -2260,21 +2260,6 @@ def profile():
             flash("Founder password controls are in Settings → Account & Security.", "success")
             return redirect(url_for("main.account_security"))
         else:
-                db.execute("UPDATE users SET password_hash=?,force_password_change=0,updated_at=? WHERE id=?", (hash_password(new_password), utcnow_iso(), g.user["id"]))
-                log_activity("PASSWORD_CHANGED", "user", g.user["id"], "Account password changed.")
-                db.commit()
-                login_user(db.execute("SELECT * FROM users WHERE id=?", (g.user["id"],)).fetchone())
-                if g.user["role"] == "admin" and not current_app.testing:
-                    try:
-                        from config import BASE_DIR
-                        first_access = BASE_DIR / "FIRST_RUN_FOUNDER_ACCESS.txt"
-                        if first_access.exists():
-                            first_access.unlink()
-                    except OSError:
-                        pass
-                flash("Password changed.", "success")
-                return redirect(url_for("main.profile"))
-        else:
             full_name = (request.form.get("full_name", "") or "").strip()
             email = (request.form.get("email", "") or "").strip().lower()
             if len(full_name) < 2 or not valid_email(email):
