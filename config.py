@@ -26,6 +26,7 @@ _load_env_file(BASE_DIR / ".env")
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "")
+    CREDENTIAL_VAULT_KEY = os.environ.get("RSF_CREDENTIAL_VAULT_KEY", "").strip()
     DATABASE = os.environ.get("DATABASE_PATH", str(BASE_DIR / "instance" / "rsf_sales_partner.db"))
     DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
     ONLINE_MODE = bool(DATABASE_URL.startswith(("postgres://", "postgresql://")))
