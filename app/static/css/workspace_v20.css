@@ -1494,3 +1494,12 @@ textarea.prospect-inline-editor{resize:vertical}
   border-radius:6px
 }
 .deal-document-list[hidden]{display:none!important}
+
+
+/* v1.18.12 — three Deal cards per row on wide desktop; card internals unchanged */
+@media(min-width:1351px){
+  .deals-list{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(min-width:901px) and (max-width:1350px){
+  .deals-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
