@@ -2,16 +2,14 @@
 {% block content %}
 <section class="prospects-page">
   <div class="simple-head prospects-head">
-    <div>
-      <h1>Prospects</h1>
+    <div class="prospects-head-main">
+      <div class="prospects-title-row">
+        <h1>Prospects</h1>
+        <button class="prospect-add-plus" type="button" data-prospect-add-trigger data-prospect-today-url="{{ url_for('main.prospects', add='1') }}" aria-label="Add Prospect" title="Add Prospect">+</button>
+      </div>
       <p>Potential clients found through research before any call, email, or message.</p>
-    </div>
-    <button class="button primary" type="button" data-prospect-add-trigger data-prospect-today-url="{{ url_for('main.prospects', add='1') }}">Add Prospect</button>
-  </div>
 
-  <section class="simple-section">
-    <div class="simple-section-head prospect-list-head">
-      <form class="prospect-date-form" method="get" action="{{ url_for('main.prospects') }}">
+      <form class="prospect-date-form prospect-head-date" method="get" action="{{ url_for('main.prospects') }}">
         <div class="prospect-date-nav" aria-label="Prospect date navigation">
           <a class="prospect-date-step" href="{{ url_for('main.prospects', date=previous_date) }}" aria-label="Previous day" title="Previous day">‹</a>
           <div class="prospect-date-picker-wrap">
@@ -29,6 +27,18 @@
         </div>
       </form>
     </div>
+  </div>
+
+  <section class="simple-section">
+    {% if is_today %}
+      <div class="simple-section-head prospect-filter-head" data-prospect-filters>
+        <div class="prospect-status-filters" role="group" aria-label="Filter today's prospects by status">
+          <button class="prospect-filter-button is-active" type="button" data-prospect-filter="ALL" aria-pressed="true">All</button>
+          <button class="prospect-filter-button" type="button" data-prospect-filter="NOT_CONTACTED" aria-pressed="false">Not Contacted</button>
+          <button class="prospect-filter-button" type="button" data-prospect-filter="NO_ANSWER" aria-pressed="false">No Answer</button>
+        </div>
+      </div>
+    {% endif %}
 
     <div class="simple-list" data-prospect-list>
       {% if is_today %}
@@ -68,6 +78,10 @@
       {% else %}
         <div class="simple-empty" data-prospect-empty>No prospects for this date.</div>
       {% endfor %}
+
+      {% if is_today %}
+        <div class="simple-empty prospect-filter-empty" data-prospect-filter-empty hidden>No prospects in this status.</div>
+      {% endif %}
     </div>
   </section>
 
