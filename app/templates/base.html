@@ -42,7 +42,10 @@
       <span class="brand-copy"><strong>Realty Systems Foundry</strong><small>{{ 'Founder Workspace' if g.user.role=='admin' else 'Partner Workspace' }}</small></span>
     </a>
 
-    <div class="nav-list simple-primary-nav" aria-label="Workspace navigation"></div>
+    <nav class="nav-list simple-primary-nav" aria-label="Workspace navigation">
+      {% set prospects_active = request.endpoint in ['main.prospects','main.prospect_new'] %}
+      <a class="{{ 'active' if prospects_active else '' }}" {% if prospects_active %}aria-current="page"{% endif %} href="{{ url_for('main.prospects') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("leads") }}</span><span class="nav-text">Prospects</span></a>
+    </nav>
 
     <div class="sidebar-footer">
       {% set sidebar_avatar = profile_picture_url(g.user.id, g.user.role) %}<a class="user-block user-block-with-avatar user-block-link" href="{{ url_for('main.profile') }}" aria-label="Open your profile"><div class="sidebar-avatar" aria-hidden="true">{% if sidebar_avatar %}<img class="sidebar-profile-photo" src="{{ sidebar_avatar }}" alt="">{% else %}<span>{{ g.user.full_name[:1]|upper }}</span>{% endif %}</div><div class="user-block-copy"><strong>{{ g.user.full_name }}</strong><small>{{ 'Founder' if g.user.role=='admin' else 'Partner' }}</small></div></a>
