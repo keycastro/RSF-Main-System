@@ -778,3 +778,16 @@ textarea.prospect-inline-editor{resize:vertical}
   .prospect-card-platform>.prospect-edit-value{font-size:13px}
 }
 
+/* v1.15.8 — remove redundant Prospects top header strip */
+.prospect-mobile-menu{display:none!important}
+@media(max-width:880px){
+  .prospect-mobile-menu{
+    display:grid!important;
+    place-items:center;
+    width:36px;
+    height:36px;
+    margin:0;
+    flex:0 0 auto
+  }
+}
+
