@@ -6,9 +6,9 @@
           <span>Business Type</span>
           <strong>{{ prospect['business_type'] or '—' }}</strong>
         </div>
-        <div class="prospect-card-system">
-          <span>System They Want</span>
-          <strong>{{ prospect['system_wanted'] or '—' }}</strong>
+        <div class="prospect-card-platform">
+          <span>Platform They Want</span>
+          <strong>{{ prospect['platform_wanted'] or '—' }}</strong>
         </div>
       </div>
 
@@ -37,7 +37,7 @@
 
       <div class="prospect-detail-grid">
         <div class="prospect-detail prospect-detail-wide"><span>Problem</span><strong>{{ prospect['problem'] or '—' }}</strong></div>
-        <div class="prospect-detail"><span>Platform They Want</span><strong>{{ prospect['platform_wanted'] or '—' }}</strong></div>
+        <div class="prospect-detail"><span>System They Want</span><strong>{{ prospect['system_wanted'] or '—' }}</strong></div>
         <div class="prospect-detail"><span>Post Link</span>{% if prospect['post_link'] %}{% if prospect['post_link'].startswith('http://') or prospect['post_link'].startswith('https://') %}<a href="{{ prospect['post_link'] }}" target="_blank" rel="noopener noreferrer">{{ prospect['post_link'] }}</a>{% else %}<strong>{{ prospect['post_link'] }}</strong>{% endif %}{% else %}<strong>—</strong>{% endif %}</div>
         <div class="prospect-detail"><span>Company</span><strong>{{ prospect['name'] }}</strong></div>
         <div class="prospect-detail"><span>Location</span><strong>{{ prospect['location'] or '—' }}</strong></div>
