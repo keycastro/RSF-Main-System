@@ -13,11 +13,13 @@
     <div class="prospect-date-nav" aria-label="Prospect date navigation">
       <a class="prospect-date-step" href="{{ url_for('main.prospects', date=previous_date) }}" aria-label="Previous day" title="Previous day">‹</a>
 
-      <label class="prospect-date-picker" for="prospect-date">
-        <span class="prospect-date-display">{{ 'Today · ' if is_today else '' }}{{ selected_date|dateonly }}</span>
-        <span class="prospect-date-arrow" aria-hidden="true">▾</span>
-        <input id="prospect-date" type="date" name="date" value="{{ selected_date }}" max="{{ today }}" aria-label="Choose prospect date" data-prospect-date-input>
-      </label>
+      <div class="prospect-date-picker-wrap">
+        <button class="prospect-date-picker" type="button" data-prospect-date-trigger aria-label="Choose prospect date">
+          <span class="prospect-date-display">{{ 'Today · ' if is_today else '' }}{{ selected_date|dateonly }}</span>
+          <span class="prospect-date-arrow" aria-hidden="true">▾</span>
+        </button>
+        <input class="prospect-date-native" id="prospect-date" type="date" name="date" value="{{ selected_date }}" max="{{ today }}" aria-label="Choose prospect date" data-prospect-date-input>
+      </div>
 
       {% if next_date %}
         <a class="prospect-date-step" href="{{ url_for('main.prospects', date=next_date) }}" aria-label="Next day" title="Next day">›</a>
