@@ -768,11 +768,16 @@ def prospects():
             (selected_str,),
         ).fetchall()
 
+    previous_date = (selected - timedelta(days=1)).isoformat()
+    next_date = (selected + timedelta(days=1)).isoformat() if selected < today else None
+
     return render_template(
         "prospects.html",
         title="Prospects",
         prospects=rows,
         selected_date=selected_str,
+        previous_date=previous_date,
+        next_date=next_date,
         today=today.isoformat(),
         is_today=is_today,
         prospect_status_labels=PROSPECT_STATUS_LABELS,
