@@ -1670,6 +1670,11 @@
   const toast = page.querySelector('[data-prospect-toast]');
   let toastTimer = null;
 
+  const target = window.location.hash ? document.querySelector(window.location.hash) : null;
+  if (target && target.matches('[data-prospect-row]') && target.tagName === 'DETAILS') {
+    target.open = true;
+  }
+
   const showToast = (message, isError = false) => {
     if (!toast) return;
     window.clearTimeout(toastTimer);
