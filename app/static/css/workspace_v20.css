@@ -883,8 +883,6 @@ textarea.prospect-inline-editor{resize:vertical}
   box-shadow:0 0 0 2px rgba(27,94,74,.10)
 }
 .deal-field-wide{grid-column:1/-1}
-.deal-form-actions{display:flex;justify-content:flex-end;margin-top:13px}
-.deal-form-actions .button{min-width:82px}
 .deals-empty{grid-column:1/-1}
 @media(max-width:900px){
   .deals-list{grid-template-columns:1fr}

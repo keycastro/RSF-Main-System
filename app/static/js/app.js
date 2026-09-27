@@ -2158,6 +2158,16 @@
   };
   let pendingForm = null;
 
+  page.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey) return;
+    const target = event.target;
+    const form = target?.closest?.('[data-deal-form]');
+    if (!form) return;
+    if (target instanceof HTMLTextAreaElement) return;
+    event.preventDefault();
+    form.requestSubmit();
+  });
+
   const resetPendingStatus = () => {
     if (!pendingForm) return;
     const select = pendingForm.querySelector('select[name="status"]');
