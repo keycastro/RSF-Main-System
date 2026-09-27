@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS prospects (
     contact TEXT NOT NULL DEFAULT '',
     email TEXT NOT NULL DEFAULT '',
     phone TEXT NOT NULL DEFAULT '',
+    contact_attempt INTEGER NOT NULL DEFAULT 0,
     status TEXT NOT NULL DEFAULT 'NOT_CONTACTED',
     recorded_date TEXT NOT NULL,
     created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,

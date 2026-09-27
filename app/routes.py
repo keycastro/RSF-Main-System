@@ -942,6 +942,135 @@ def prospect_new():
     return redirect(url_for("main.prospects") + f"#prospect-{prospect_id}")
 
 
+@bp.post("/prospects/<int:prospect_id>/update")
+@login_required
+def prospect_update(prospect_id: int):
+    validate_csrf()
+    db = get_db()
+    prospect = db.execute("SELECT * FROM prospects WHERE id=?", (prospect_id,)).fetchone()
+    if not prospect:
+        return jsonify({"ok": False, "error": "not_found", "message": "Prospect not found."}), 404
+
+    field_name = (request.form.get("field", "") or "").strip()
+    raw_value = request.form.get("value", "") or ""
+    limits = {
+        "business_type": 160,
+        "problem": 2000,
+        "platform_wanted": 200,
+        "post_link": 1000,
+        "post_date": 10,
+        "system_wanted": 2000,
+        "budget": 200,
+        "company": 200,
+        "location": 200,
+        "website": 1000,
+        "contact": 200,
+        "email": 320,
+        "phone": 120,
+        "status": 40,
+    }
+    if field_name not in limits:
+        return jsonify({"ok": False, "error": "invalid_field", "message": "That Prospect field cannot be edited."}), 400
+
+    now = utcnow_iso()
+    if field_name == "company":
+        company = " ".join(raw_value.split())
+        if not company:
+            return jsonify({"ok": False, "error": "validation", "message": "Company is required."}), 400
+        if len(company) > limits["company"]:
+            return jsonify({"ok": False, "error": "validation", "message": "Company must be 200 characters or fewer."}), 400
+        name_norm = _normalize_prospect_name(company)
+        duplicate = db.execute(
+            "SELECT id,name,recorded_date FROM prospects WHERE name_norm=? AND id<>? LIMIT 1",
+            (name_norm, prospect_id),
+        ).fetchone()
+        if duplicate:
+            view_url = url_for("main.prospects", date=duplicate["recorded_date"]) + f"#prospect-{duplicate['id']}"
+            return jsonify(
+                {
+                    "ok": False,
+                    "error": "duplicate",
+                    "message": "Prospect already exists.",
+                    "duplicate": {
+                        "id": duplicate["id"],
+                        "company": duplicate["name"],
+                        "recorded_date": duplicate["recorded_date"],
+                        "view_url": view_url,
+                    },
+                }
+            ), 409
+        db.execute(
+            "UPDATE prospects SET name=?,name_norm=?,updated_at=? WHERE id=?",
+            (company, name_norm, now, prospect_id),
+        )
+    elif field_name == "status":
+        status = raw_value.strip().upper()
+        if status not in PROSPECT_STATUS_LABELS:
+            return jsonify({"ok": False, "error": "validation", "message": "Invalid prospect status."}), 400
+        db.execute("UPDATE prospects SET status=?,updated_at=? WHERE id=?", (status, now, prospect_id))
+    elif field_name == "post_date":
+        post_date = raw_value.strip()[:10]
+        if post_date:
+            try:
+                date.fromisoformat(post_date)
+            except ValueError:
+                return jsonify({"ok": False, "error": "validation", "message": "Post Date must be a valid date."}), 400
+        db.execute("UPDATE prospects SET post_date=?,updated_at=? WHERE id=?", (post_date, now, prospect_id))
+    else:
+        value = raw_value.strip()[:limits[field_name]]
+        db.execute(f'UPDATE prospects SET "{field_name}"=?,updated_at=? WHERE id=?', (value, now, prospect_id))
+
+    db.commit()
+    prospect = db.execute("SELECT * FROM prospects WHERE id=?", (prospect_id,)).fetchone()
+    selected = _selected_prospect_date(request.form.get("date"))
+    selected_str = selected.isoformat()
+    is_today = selected == date.today()
+    remove_from_view = bool(
+        is_today
+        and prospect["recorded_date"] != selected_str
+        and prospect["status"] not in PROSPECT_UNFINISHED_STATUSES
+    )
+    row_html = render_template(
+        "_prospect_row.html",
+        prospect=prospect,
+        is_today=is_today,
+        selected_date=selected_str,
+        prospect_status_labels=PROSPECT_STATUS_LABELS,
+    )
+    return jsonify(
+        {
+            "ok": True,
+            "message": "Prospect updated.",
+            "status": prospect["status"],
+            "remove_from_view": remove_from_view,
+            "row_html": row_html,
+        }
+    )
+
+
+@bp.post("/prospects/<int:prospect_id>/contact-attempt")
+@login_required
+def prospect_contact_attempt(prospect_id: int):
+    validate_csrf()
+    delta = request.form.get("delta", type=int)
+    if delta not in (-1, 1):
+        return jsonify({"ok": False, "error": "validation", "message": "Invalid Contact Attempt change."}), 400
+
+    db = get_db()
+    prospect = db.execute("SELECT id,contact_attempt FROM prospects WHERE id=?", (prospect_id,)).fetchone()
+    if not prospect:
+        return jsonify({"ok": False, "error": "not_found", "message": "Prospect not found."}), 404
+
+    current = max(0, int(prospect["contact_attempt"] or 0))
+    updated = max(0, current + delta)
+    db.execute(
+        "UPDATE prospects SET contact_attempt=?,updated_at=? WHERE id=?",
+        (updated, utcnow_iso(), prospect_id),
+    )
+    db.commit()
+    return jsonify({"ok": True, "value": updated})
+
+
 @bp.post("/prospects/<int:prospect_id>/delete")
 @login_required
 def prospect_delete(prospect_id: int):

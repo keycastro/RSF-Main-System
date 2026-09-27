@@ -1876,6 +1876,217 @@
     });
   }
 
+  const selectedDate = page.dataset.prospectSelectedDate || '';
+
+  const csrfForRow = (row) => (
+    row.querySelector('input[name="csrf_token"]')?.value
+    || quickForm?.querySelector('input[name="csrf_token"]')?.value
+    || ''
+  );
+
+  const replaceProspectRow = (row, html, keepOpen) => {
+    if (!html) return row;
+    const template = document.createElement('template');
+    template.innerHTML = html.trim();
+    const replacement = template.content.firstElementChild;
+    if (!replacement) return row;
+    row.replaceWith(replacement);
+    const details = replacement.querySelector('details.prospect-card');
+    if (details && keepOpen) details.open = true;
+    applyProspectFilter();
+    return replacement;
+  };
+
+  const statusOptions = [
+    ['NOT_CONTACTED', 'Not Contacted'],
+    ['NO_ANSWER', 'No Answer'],
+    ['REJECTED', 'Rejected'],
+    ['CLOSED', 'Closed']
+  ];
+
+  const beginProspectEdit = (field) => {
+    if (!field || field.dataset.prospectEditing === '1') return;
+    const row = field.closest('[data-prospect-row]');
+    const display = field.querySelector('[data-prospect-edit-trigger]');
+    if (!row || !display) return;
+
+    const fieldName = field.dataset.prospectField || '';
+    const editorType = field.dataset.prospectEditor || 'text';
+    const originalValue = field.dataset.prospectValue || '';
+    let editor;
+
+    if (editorType === 'textarea') {
+      editor = document.createElement('textarea');
+      editor.rows = 3;
+    } else if (editorType === 'status') {
+      editor = document.createElement('select');
+      statusOptions.forEach(([value, label]) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        editor.appendChild(option);
+      });
+    } else {
+      editor = document.createElement('input');
+      editor.type = editorType === 'url' ? 'url' : editorType === 'email' ? 'email' : editorType === 'tel' ? 'tel' : editorType === 'date' ? 'date' : 'text';
+    }
+
+    editor.className = 'prospect-inline-editor';
+    editor.dataset.prospectEditorActive = '';
+    editor.value = originalValue;
+    field.dataset.prospectEditing = '1';
+    display.hidden = true;
+    field.appendChild(editor);
+
+    let finished = false;
+    const restore = () => {
+      editor.remove();
+      display.hidden = false;
+      delete field.dataset.prospectEditing;
+    };
+
+    const save = async () => {
+      if (finished) return;
+      finished = true;
+      const newValue = editor.value;
+      if (newValue === originalValue) {
+        restore();
+        return;
+      }
+
+      editor.disabled = true;
+      field.classList.add('is-saving');
+      const body = new URLSearchParams({
+        csrf_token: csrfForRow(row),
+        field: fieldName,
+        value: newValue,
+        date: selectedDate
+      });
+
+      try {
+        const response = await fetch(row.dataset.prospectUpdateUrl, {
+          method: 'POST',
+          headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body: body.toString(),
+          credentials: 'same-origin'
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || !data.ok) {
+          restore();
+          field.classList.remove('is-saving');
+          let message = data.message || 'Prospect could not be updated.';
+          if (data.error === 'duplicate' && data.duplicate?.recorded_date) {
+            const dateValue = new Date(`${data.duplicate.recorded_date}T00:00:00`);
+            const readable = Number.isNaN(dateValue.getTime())
+              ? data.duplicate.recorded_date
+              : new Intl.DateTimeFormat(undefined, { month: 'long', day: 'numeric', year: 'numeric' }).format(dateValue);
+            message += ` Recorded on ${readable}.`;
+          }
+          showToast(message, true);
+          return;
+        }
+
+        const keepOpen = Boolean(row.querySelector('details.prospect-card')?.open);
+        if (data.remove_from_view) {
+          row.remove();
+          ensureEmpty();
+          applyProspectFilter();
+        } else {
+          replaceProspectRow(row, data.row_html, keepOpen);
+        }
+        showToast(data.message || 'Prospect updated.');
+      } catch (_error) {
+        restore();
+        field.classList.remove('is-saving');
+        showToast('Prospect could not be updated. Try again.', true);
+      }
+    };
+
+    const cancel = () => {
+      if (finished) return;
+      finished = true;
+      restore();
+    };
+
+    editor.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        cancel();
+        return;
+      }
+      if (event.key === 'Enter' && editor.tagName !== 'TEXTAREA') {
+        event.preventDefault();
+        save();
+      }
+    });
+    editor.addEventListener('blur', save);
+    if (editorType === 'status' || editorType === 'date') {
+      editor.addEventListener('change', save);
+    }
+
+    window.setTimeout(() => {
+      editor.focus();
+      if (editor.select && editorType !== 'date' && editorType !== 'status') editor.select();
+    }, 0);
+  };
+
+  page.addEventListener('click', (event) => {
+    const triggerEdit = event.target.closest('[data-prospect-edit-trigger]');
+    if (!triggerEdit) return;
+    event.preventDefault();
+    event.stopPropagation();
+    beginProspectEdit(triggerEdit.closest('[data-prospect-edit-field]'));
+  });
+
+  page.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-prospect-attempt-delta]');
+    if (!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const row = button.closest('[data-prospect-row]');
+    const control = button.closest('[data-prospect-attempt-control]');
+    if (!row || !control || control.dataset.prospectAttemptSaving === '1') return;
+
+    const delta = Number(button.dataset.prospectAttemptDelta || 0);
+    if (delta !== -1 && delta !== 1) return;
+    control.dataset.prospectAttemptSaving = '1';
+    const buttons = Array.from(control.querySelectorAll('[data-prospect-attempt-delta]'));
+    buttons.forEach((item) => { item.disabled = true; });
+
+    const body = new URLSearchParams({
+      csrf_token: csrfForRow(row),
+      delta: String(delta)
+    });
+
+    try {
+      const response = await fetch(row.dataset.prospectAttemptUrl, {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        body: body.toString(),
+        credentials: 'same-origin'
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) {
+        showToast(data.message || 'Contact Attempt could not be updated.', true);
+        return;
+      }
+      const value = Math.max(0, Number(data.value || 0));
+      control.dataset.prospectAttemptValue = String(value);
+      const number = control.querySelector('[data-prospect-attempt-number]');
+      if (number) number.textContent = String(value);
+    } catch (_error) {
+      showToast('Contact Attempt could not be updated. Try again.', true);
+    } finally {
+      delete control.dataset.prospectAttemptSaving;
+      buttons.forEach((item) => {
+        const itemDelta = Number(item.dataset.prospectAttemptDelta || 0);
+        item.disabled = itemDelta < 0 && Number(control.dataset.prospectAttemptValue || 0) <= 0;
+      });
+    }
+  });
+
   page.addEventListener('submit', async (event) => {
     const form = event.target.closest('[data-prospect-delete-form]');
     if (!form) return;

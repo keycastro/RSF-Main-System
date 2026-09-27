@@ -1,29 +1,29 @@
-<article class="prospect-card-shell" id="prospect-{{ prospect['id'] }}" data-prospect-row data-prospect-status="{{ prospect['status'] }}">
+<article class="prospect-card-shell" id="prospect-{{ prospect['id'] }}" data-prospect-row data-prospect-status="{{ prospect['status'] }}" data-prospect-update-url="{{ url_for('main.prospect_update', prospect_id=prospect['id']) }}" data-prospect-attempt-url="{{ url_for('main.prospect_contact_attempt', prospect_id=prospect['id']) }}">
   <details class="prospect-card">
     <summary class="prospect-card-summary">
       <div class="prospect-card-top">
-        <div class="prospect-card-title">
+        <div class="prospect-card-title prospect-editable-field" data-prospect-edit-field data-prospect-field="business_type" data-prospect-editor="text" data-prospect-value="{{ prospect['business_type'] }}">
           <span>Business Type</span>
-          <strong>{{ prospect['business_type'] or '—' }}</strong>
+          <button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Business Type">{{ prospect['business_type'] or '—' }}</button>
         </div>
-        <div class="prospect-card-platform">
+        <div class="prospect-card-platform prospect-editable-field" data-prospect-edit-field data-prospect-field="platform_wanted" data-prospect-editor="text" data-prospect-value="{{ prospect['platform_wanted'] }}">
           <span>Platform They Want</span>
-          <strong>{{ prospect['platform_wanted'] or '—' }}</strong>
+          <button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Platform They Want">{{ prospect['platform_wanted'] or '—' }}</button>
         </div>
       </div>
 
       <div class="prospect-card-meta">
-        <div class="prospect-card-meta-item">
+        <div class="prospect-card-meta-item prospect-editable-field" data-prospect-edit-field data-prospect-field="budget" data-prospect-editor="text" data-prospect-value="{{ prospect['budget'] }}">
           <span>Budget</span>
-          <strong>{{ prospect['budget'] or '—' }}</strong>
+          <button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Budget">{{ prospect['budget'] or '—' }}</button>
         </div>
-        <div class="prospect-card-meta-item">
+        <div class="prospect-card-meta-item prospect-editable-field" data-prospect-edit-field data-prospect-field="post_date" data-prospect-editor="date" data-prospect-value="{{ prospect['post_date'] }}">
           <span>Post Date</span>
-          <strong>{{ prospect['post_date']|dateonly if prospect['post_date'] else '—' }}</strong>
+          <button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Post Date">{{ prospect['post_date']|dateonly if prospect['post_date'] else '—' }}</button>
         </div>
-        <div class="prospect-card-meta-item">
+        <div class="prospect-card-meta-item prospect-editable-field" data-prospect-edit-field data-prospect-field="status" data-prospect-editor="status" data-prospect-value="{{ prospect['status'] }}">
           <span>Status</span>
-          <strong class="prospect-status">{{ prospect_status_labels.get(prospect['status'], prospect['status']|human_status) }}</strong>
+          <button class="prospect-edit-value prospect-status" type="button" data-prospect-edit-trigger aria-label="Edit Status">{{ prospect_status_labels.get(prospect['status'], prospect['status']|human_status) }}</button>
         </div>
       </div>
 
@@ -36,15 +36,23 @@
       {% endif %}
 
       <div class="prospect-detail-grid">
-        <div class="prospect-detail prospect-detail-wide"><span>Problem</span><strong>{{ prospect['problem'] or '—' }}</strong></div>
-        <div class="prospect-detail"><span>System They Want</span><strong>{{ prospect['system_wanted'] or '—' }}</strong></div>
-        <div class="prospect-detail"><span>Post Link</span>{% if prospect['post_link'] %}{% if prospect['post_link'].startswith('http://') or prospect['post_link'].startswith('https://') %}<a href="{{ prospect['post_link'] }}" target="_blank" rel="noopener noreferrer">{{ prospect['post_link'] }}</a>{% else %}<strong>{{ prospect['post_link'] }}</strong>{% endif %}{% else %}<strong>—</strong>{% endif %}</div>
-        <div class="prospect-detail"><span>Company</span><strong>{{ prospect['name'] }}</strong></div>
-        <div class="prospect-detail"><span>Location</span><strong>{{ prospect['location'] or '—' }}</strong></div>
-        <div class="prospect-detail"><span>Website</span>{% if prospect['website'] %}{% if prospect['website'].startswith('http://') or prospect['website'].startswith('https://') %}<a href="{{ prospect['website'] }}" target="_blank" rel="noopener noreferrer">{{ prospect['website'] }}</a>{% else %}<strong>{{ prospect['website'] }}</strong>{% endif %}{% else %}<strong>—</strong>{% endif %}</div>
-        <div class="prospect-detail"><span>Contact</span><strong>{{ prospect['contact'] or '—' }}</strong></div>
-        <div class="prospect-detail"><span>Email</span><strong>{{ prospect['email'] or '—' }}</strong></div>
-        <div class="prospect-detail"><span>Phone</span><strong>{{ prospect['phone'] or '—' }}</strong></div>
+        <div class="prospect-detail prospect-detail-wide prospect-editable-field" data-prospect-edit-field data-prospect-field="problem" data-prospect-editor="textarea" data-prospect-value="{{ prospect['problem'] }}"><span>Problem</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Problem">{{ prospect['problem'] or '—' }}</button></div>
+        <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="system_wanted" data-prospect-editor="textarea" data-prospect-value="{{ prospect['system_wanted'] }}"><span>System They Want</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit System They Want">{{ prospect['system_wanted'] or '—' }}</button></div>
+        <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="post_link" data-prospect-editor="url" data-prospect-value="{{ prospect['post_link'] }}"><span>Post Link</span><button class="prospect-edit-value prospect-edit-link" type="button" data-prospect-edit-trigger aria-label="Edit Post Link">{{ prospect['post_link'] or '—' }}</button></div>
+        <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="company" data-prospect-editor="text" data-prospect-value="{{ prospect['name'] }}"><span>Company</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Company">{{ prospect['name'] }}</button></div>
+        <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="location" data-prospect-editor="text" data-prospect-value="{{ prospect['location'] }}"><span>Location</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Location">{{ prospect['location'] or '—' }}</button></div>
+        <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="website" data-prospect-editor="url" data-prospect-value="{{ prospect['website'] }}"><span>Website</span><button class="prospect-edit-value prospect-edit-link" type="button" data-prospect-edit-trigger aria-label="Edit Website">{{ prospect['website'] or '—' }}</button></div>
+        <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="contact" data-prospect-editor="text" data-prospect-value="{{ prospect['contact'] }}"><span>Contact</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Contact">{{ prospect['contact'] or '—' }}</button></div>
+        <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="email" data-prospect-editor="email" data-prospect-value="{{ prospect['email'] }}"><span>Email</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Email">{{ prospect['email'] or '—' }}</button></div>
+        <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="phone" data-prospect-editor="tel" data-prospect-value="{{ prospect['phone'] }}"><span>Phone</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Phone">{{ prospect['phone'] or '—' }}</button></div>
+        <div class="prospect-detail prospect-contact-attempt">
+          <span>Contact Attempt</span>
+          <div class="prospect-attempt-control" data-prospect-attempt-control data-prospect-attempt-value="{{ prospect['contact_attempt']|int }}">
+            <button type="button" class="prospect-attempt-step" data-prospect-attempt-delta="-1" aria-label="Decrease Contact Attempt" {% if prospect['contact_attempt']|int <= 0 %}disabled{% endif %}>‹</button>
+            <strong data-prospect-attempt-number>{{ prospect['contact_attempt']|int }}</strong>
+            <button type="button" class="prospect-attempt-step" data-prospect-attempt-delta="1" aria-label="Increase Contact Attempt">›</button>
+          </div>
+        </div>
       </div>
     </div>
   </details>

@@ -779,6 +779,17 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
             (18, "rsf-v1.15.0-approved-prospect-fields"),
         )
 
+    # V19 adds the approved Contact Attempt counter to every Prospect.
+    # Existing Prospect records start at zero and are preserved.
+    if 19 not in applied:
+        existing = {row["name"] for row in db.execute("PRAGMA table_info(prospects)").fetchall()}
+        if "contact_attempt" not in existing:
+            db.execute("ALTER TABLE prospects ADD COLUMN contact_attempt INTEGER NOT NULL DEFAULT 0")
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (19, "rsf-v1.15.5-prospect-inline-edit-contact-attempt"),
+        )
+
 
 def _table_exists_postgres(db, table: str) -> bool:
     row = db.execute(
