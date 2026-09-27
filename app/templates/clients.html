@@ -1,0 +1,59 @@
+{% extends 'base.html' %}{% block content %}
+<div class="page-head workspace-page-head simple-head">
+  <div><h1>Clients</h1><p>Requests, clients, and next tasks — all in one place.</p></div>
+  <a class="button primary" href="{{ url_for('main.lead_new') }}">Add Client</a>
+</div>
+
+{% if not email_send_ready or not email_receive_ready %}
+<div class="simple-note warning"><strong>Email connection is not fully set up.</strong><span>Website requests still show here.</span></div>
+{% endif %}
+
+<div class="simple-summary-grid">
+  <a href="#new-requests"><span>New requests</span><strong>{{ unclaimed|length }}</strong></a>
+  <a href="#clients"><span>Clients</span><strong>{{ leads|length }}</strong></a>
+  <a href="#tasks"><span>Open tasks</span><strong>{{ followups|length }}</strong></a>
+  <a href="#clients"><span>Replies waiting</span><strong>{{ awaiting }}</strong></a>
+</div>
+
+<section class="simple-section" id="new-requests">
+  <div class="simple-section-head"><div><h2>New requests</h2><p>People who contacted RSF and still need an owner.</p></div></div>
+  {% if unclaimed %}
+  <div class="simple-list">
+    {% for item in unclaimed %}
+    <a class="simple-row" href="{{ url_for('main.inquiry_detail', inquiry_id=item.id) }}">
+      <div><strong>{{ item.name or item.company or 'New request' }}</strong><span>{{ item.company or item.email }}{% if item.subject %} · {{ item.subject }}{% endif %}</span></div>
+      <span class="row-action-text">Open</span>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}<div class="simple-empty">No new requests.</div>{% endif %}
+</section>
+
+<section class="simple-section" id="clients">
+  <div class="simple-section-head"><div><h2>Clients</h2><p>Every lead/client record.</p></div></div>
+  {% if leads %}
+  <div class="simple-list">
+    {% for l in leads %}
+    <a class="simple-row" href="{{ url_for('main.client_conversation', conversation_id=l.conversation_id) if l.conversation_id else url_for('main.lead_detail', lead_id=l.id) }}">
+      <div><strong>{{ l.company_name }}</strong><span>{{ l.contact_name }}{% if g.user.role=='admin' %} · {{ l.owner_name }}{% endif %}{% if l.next_followup %} · Next {{ l.next_followup|dt }}{% endif %}</span></div>
+      <span class="badge status-{{ l.status|lower }}">{{ l.status|human_status }}</span>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}<div class="simple-empty">No clients yet. Add one when you are ready.</div>{% endif %}
+</section>
+
+<section class="simple-section" id="tasks">
+  <div class="simple-section-head"><div><h2>Next tasks</h2><p>What needs to be done next.</p></div></div>
+  {% if followups %}
+  <div class="simple-list">
+    {% for f in followups %}
+    <div class="simple-row simple-row-static">
+      <a class="simple-row-main" href="{{ url_for('main.lead_detail', lead_id=f.lead_id) }}"><strong>{{ f.company_name }}</strong><span>{{ f.title }} · {{ f.due_at|dt }}{% if g.user.role=='admin' %} · {{ f.owner_name }}{% endif %}</span></a>
+      <form method="post" action="{{ url_for('main.followup_complete', item_id=f.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="mini-button primary-mini" type="submit">Done</button></form>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}<div class="simple-empty">No tasks waiting.</div>{% endif %}
+</section>
+{% endblock %}
