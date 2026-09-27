@@ -73,7 +73,6 @@ PROSPECT_STATUS_LABELS = {
     "NO_ANSWER": "No Answer",
     "REJECTED": "Rejected",
     "CLOSED": "Closed",
-    "CONVERTED_CLIENT": "Converted / Client",
 }
 
 
