@@ -1670,10 +1670,15 @@
   const toast = page.querySelector('[data-prospect-toast]');
   let toastTimer = null;
 
-  const target = window.location.hash ? document.querySelector(window.location.hash) : null;
-  if (target && target.matches('[data-prospect-row]') && target.tagName === 'DETAILS') {
-    target.open = true;
-  }
+  const openTargetProspect = () => {
+    if (!window.location.hash) return;
+    const target = document.querySelector(window.location.hash);
+    if (target && target.matches('[data-prospect-row]') && target.tagName === 'DETAILS') {
+      target.open = true;
+    }
+  };
+  openTargetProspect();
+  window.addEventListener('hashchange', openTargetProspect);
 
   const showToast = (message, isError = false) => {
     if (!toast) return;
