@@ -853,16 +853,6 @@ textarea.prospect-inline-editor{resize:vertical}
   overflow-wrap:anywhere
 }
 .deal-card-head a:hover{color:var(--workspace-emerald)}
-.deal-status-chip{
-  flex:0 0 auto;
-  padding:5px 9px;
-  border:1px solid #d7e2dd;
-  border-radius:999px;
-  background:#f3f7f5;
-  color:var(--workspace-emerald);
-  font-size:10.5px;
-  font-weight:700
-}
 .deal-form{padding:16px 18px 18px}
 .deal-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .deal-form-grid label{display:grid;gap:5px;min-width:0}

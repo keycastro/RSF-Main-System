@@ -19,7 +19,6 @@
             <span>Linked Prospect</span>
             <a href="{{ url_for('main.prospects', date=deal['prospect_recorded_date']) }}#prospect-{{ deal['prospect_id'] }}">{{ deal['prospect_name'] }}</a>
           </div>
-          <span class="deal-status-chip">{{ deal_status_labels.get(deal['workflow_status'], deal['workflow_status']) }}</span>
         </header>
 
         <form class="deal-form" method="post" action="{{ url_for('main.deal_update', deal_id=deal['id']) }}" data-deal-form data-deal-current-status="{{ deal['workflow_status'] }}">
@@ -43,8 +42,8 @@
               <input type="date" name="followup_date" value="{{ deal['followup_date'] }}">
             </label>
             <label>
-              <span>Next Step</span>
-              <input type="text" name="next_step" maxlength="500" value="{{ deal['next_step'] }}">
+              <span>Email</span>
+              <input type="email" name="email" maxlength="320" value="{{ deal['email'] }}">
             </label>
             <label>
               <span>Price</span>
@@ -55,8 +54,8 @@
               <input type="text" name="contact_number" maxlength="120" value="{{ deal['contact_number'] }}">
             </label>
             <label class="deal-field-wide">
-              <span>Email</span>
-              <input type="email" name="email" maxlength="320" value="{{ deal['email'] }}">
+              <span>Next Step</span>
+              <input type="text" name="next_step" maxlength="500" value="{{ deal['next_step'] }}">
             </label>
             <label class="deal-field-wide">
               <span>Notes After Conversation</span>
