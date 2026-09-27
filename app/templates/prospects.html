@@ -10,10 +10,12 @@
   </div>
 
   <form class="prospect-date-form" method="get" action="{{ url_for('main.prospects') }}">
-    <label for="prospect-date">Date
-      <input id="prospect-date" type="date" name="date" value="{{ selected_date }}" max="{{ today }}">
+    <span class="prospect-date-caption">Date</span>
+    <label class="prospect-date-picker" for="prospect-date">
+      <span class="prospect-date-display">{{ 'Today · ' if is_today else '' }}{{ selected_date|dateonly }}</span>
+      <span class="prospect-date-arrow" aria-hidden="true">▾</span>
+      <input id="prospect-date" type="date" name="date" value="{{ selected_date }}" max="{{ today }}" aria-label="Choose prospect date" data-prospect-date-input>
     </label>
-    <button class="button secondary" type="submit">View</button>
     {% if not is_today %}<a class="today-link" href="{{ url_for('main.prospects') }}">Today</a>{% endif %}
   </form>
 
