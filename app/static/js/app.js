@@ -1632,7 +1632,23 @@
 
 (() => {
   const input = document.querySelector('[data-prospect-date-input]');
-  if (!input) return;
+  const trigger = document.querySelector('[data-prospect-date-trigger]');
+  if (!input || !trigger) return;
+
+  const openPicker = () => {
+    try {
+      if (typeof input.showPicker === 'function') {
+        input.showPicker();
+        return;
+      }
+    } catch (_error) {
+      // Fall through to the native click fallback.
+    }
+    input.focus({ preventScroll: true });
+    input.click();
+  };
+
+  trigger.addEventListener('click', openPicker);
   input.addEventListener('change', () => {
     if (!input.value || !input.form) return;
     input.form.submit();
