@@ -1664,7 +1664,8 @@
   const list = page.querySelector('[data-prospect-list]');
   const quick = page.querySelector('[data-prospect-quick-add]');
   const quickForm = page.querySelector('[data-prospect-quick-form]');
-  const quickInput = page.querySelector('[data-prospect-quick-input]');
+  const primaryInput = page.querySelector('[data-prospect-primary-input]');
+  const companyInput = page.querySelector('[data-prospect-company-input]');
   const quickMessage = page.querySelector('[data-prospect-quick-message]');
   const toast = page.querySelector('[data-prospect-toast]');
   let toastTimer = null;
@@ -1697,16 +1698,13 @@
     if (!quickMessage) return;
     const duplicate = data.duplicate || {};
     quickMessage.textContent = '';
-
     const strong = document.createElement('strong');
     strong.textContent = data.message || 'Prospect already exists.';
     quickMessage.appendChild(strong);
 
     if (duplicate.recorded_date) {
       const date = new Date(`${duplicate.recorded_date}T00:00:00`);
-      const readable = Number.isNaN(date.getTime())
-        ? duplicate.recorded_date
-        : new Intl.DateTimeFormat(undefined, { month: 'long', day: 'numeric', year: 'numeric' }).format(date);
+      const readable = Number.isNaN(date.getTime()) ? duplicate.recorded_date : new Intl.DateTimeFormat(undefined, { month: 'long', day: 'numeric', year: 'numeric' }).format(date);
       const detail = document.createElement('span');
       detail.textContent = `Recorded on ${readable}.`;
       quickMessage.appendChild(detail);
@@ -1718,7 +1716,6 @@
       link.textContent = 'View Prospect';
       quickMessage.appendChild(link);
     }
-
     quickMessage.hidden = false;
   };
 
@@ -1738,10 +1735,10 @@
   };
 
   const openQuick = () => {
-    if (!quick || !quickInput) return;
+    if (!quick || !primaryInput) return;
     quick.hidden = false;
     hideQuickMessage();
-    window.setTimeout(() => quickInput.focus(), 0);
+    window.setTimeout(() => primaryInput.focus(), 0);
   };
 
   if (trigger) {
@@ -1754,7 +1751,7 @@
     });
   }
 
-  if (quick && quickForm && quickInput && list) {
+  if (quick && quickForm && primaryInput && companyInput && list) {
     const params = new URLSearchParams(window.location.search);
     if (params.get('add') === '1') {
       openQuick();
@@ -1764,35 +1761,38 @@
       window.history.replaceState({}, '', clean.pathname + (clean.search ? `?${clean.search}` : '') + clean.hash);
     }
 
+    const editableFields = Array.from(quickForm.querySelectorAll('input:not([type="hidden"]), textarea, select'));
     let saving = false;
+    const hasEnteredData = () => editableFields.some((field) => field.name !== 'status' && field.value.trim() !== '');
+    const setDisabled = (disabled) => editableFields.forEach((field) => { field.disabled = disabled; });
 
     const saveQuick = async () => {
       if (saving || quick.hidden) return;
+      const company = companyInput.value.trim().replace(/\s+/g, ' ');
 
-      const name = quickInput.value.trim().replace(/\s+/g, ' ');
-      if (!name) {
-        quickInput.value = '';
-        closeQuick();
+      if (!company) {
+        if (!hasEnteredData()) {
+          quickForm.reset();
+          closeQuick();
+          return;
+        }
+        showQuickMessage('Company is required.');
+        companyInput.focus();
         return;
       }
 
+      companyInput.value = company;
       saving = true;
-      quickInput.disabled = true;
+      setDisabled(true);
       hideQuickMessage();
 
       const body = new URLSearchParams();
-      for (const [key, value] of new FormData(quickForm).entries()) {
-        body.append(key, String(value));
-      }
-      body.set('name', name);
+      for (const [key, value] of new FormData(quickForm).entries()) body.append(key, String(value));
 
       try {
         const response = await fetch(quickForm.action, {
           method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-          },
+          headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
           body: body.toString(),
           credentials: 'same-origin',
           keepalive: true
@@ -1802,7 +1802,7 @@
         if (response.ok && data.ok) {
           list.querySelector('[data-prospect-empty]')?.remove();
           quick.insertAdjacentHTML('afterend', data.row_html || '');
-          quickInput.value = '';
+          quickForm.reset();
           closeQuick();
           showToast(data.message || 'Prospect saved.');
           return;
@@ -1812,28 +1812,25 @@
           showDuplicate(data);
           return;
         }
-
         showQuickMessage(data.message || 'Prospect could not be saved.');
       } catch (_error) {
         showQuickMessage('Prospect could not be saved. Try again.');
       } finally {
         saving = false;
-        quickInput.disabled = false;
-        if (!quick.hidden) quickInput.focus();
+        setDisabled(false);
+        if (!quick.hidden && !quick.contains(document.activeElement)) primaryInput.focus();
       }
     };
 
-    quickInput.addEventListener('keydown', (event) => {
-      if (event.key !== 'Enter') return;
+    quickForm.addEventListener('submit', (event) => {
       event.preventDefault();
       saveQuick();
     });
-
-    quickInput.addEventListener('input', hideQuickMessage);
-
-    quickInput.addEventListener('blur', () => {
+    quickForm.addEventListener('input', hideQuickMessage);
+    quickForm.addEventListener('change', hideQuickMessage);
+    quick.addEventListener('focusout', () => {
       window.setTimeout(() => {
-        if (!saving && !quick.hidden) saveQuick();
+        if (!saving && !quick.hidden && !quick.contains(document.activeElement)) saveQuick();
       }, 0);
     });
   }
@@ -1841,23 +1838,17 @@
   page.addEventListener('submit', async (event) => {
     const form = event.target.closest('[data-prospect-delete-form]');
     if (!form) return;
-
     event.preventDefault();
     const button = form.querySelector('.prospect-delete-button');
     if (button) button.disabled = true;
 
     const body = new URLSearchParams();
-    for (const [key, value] of new FormData(form).entries()) {
-      body.append(key, String(value));
-    }
+    for (const [key, value] of new FormData(form).entries()) body.append(key, String(value));
 
     try {
       const response = await fetch(form.action, {
         method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-        },
+        headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
         body: body.toString(),
         credentials: 'same-origin'
       });
@@ -1877,4 +1868,4 @@
       showToast('Prospect could not be deleted. Try again.', true);
     }
   });
-})();
+})();;
