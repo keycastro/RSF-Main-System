@@ -1,7 +1,7 @@
 {
   "project": "RSF_MAIN_SYSTEM",
   "handoff_date": "2026-09-21",
-  "version": "1.9.3",
+  "version": "1.11.2",
   "owner_public_name": "Key Castro",
   "positioning": "Technology built for real estate operations",
   "framework": "Flask",
@@ -12,7 +12,7 @@
   "render": {
     "workspace": "Key Castro",
     "service_name": "realtysystemsfoundry",
-    "service_id": "srv-daom5h0ae00c73c3qt70",
+    "service_id": "srv-das7540jo6nc73age4fg",
     "region_selected": "singapore",
     "branch": "main",
     "auto_deploy": false,
@@ -543,7 +543,7 @@
       "private owner Inbox"
     ]
   },
-  "current_version": "1.9.3",
+  "current_version": "1.11.2",
   "pricing_and_management_clarity_3_8_19": {
     "scope": "Existing-system price plus Services & Pricing management clarity and direct tests/release/deployment dependencies",
     "existing_system_price_usd": 290,
@@ -646,7 +646,7 @@
     "website": "https://realtysystemsfoundry.onrender.com/",
     "partner_system": "https://partner-rsf.onrender.com/",
     "render_service": "realtysystemsfoundry",
-    "render_service_id": "srv-daom5h0ae00c73c3qt70",
+    "render_service_id": "srv-das7540jo6nc73age4fg",
     "source_repo": "keycastro/RSF-Main-System",
     "database": "Render PostgreSQL (DATABASE_URL)",
     "desktop_launchers_use_localhost": false
@@ -748,6 +748,7 @@
     "partner_alias_final_url": "https://realtysystemsfoundry.onrender.com/app/login?next=/app/",
     "live_authenticated_production_role_sessions": "not independently verified; production credentials were not exposed or altered"
   },
+  "release_v1_9_0": "Founder and Partner account management implemented, audited, deployed, browser-verified, and packaged",
   "release_v1_9_1": {
     "scope": "Final Founder/Partner terminology and installed-verifier reporting patch",
     "official_people_titles": [
@@ -755,9 +756,22 @@
       "Partner"
     ],
     "founder_admin_console_wording_removed": true,
-    "verifier_explicit_partner_lifecycle_reporting": true,
+    "verifier_explicit_permanent_delete_reporting": true,
+    "partner_lifecycle_verified": [
+      "create",
+      "view/edit",
+      "change password",
+      "permanent delete"
+    ],
+    "source_account_security_audit": "passed",
+    "source_security_privacy_csrf_audit": "passed",
+    "post_deploy_live_browser_audit": "passed",
+    "partner_workspace_browser_audit": "passed",
+    "live_health_version": "1.9.1",
+    "partner_alias_final_url": "https://realtysystemsfoundry.onrender.com/app/login?next=/app/",
     "business_logic_changed": false,
-    "production_data_reset": false
+    "production_data_reset": false,
+    "schema_version": 13
   },
   "release_v1_9_2": {
     "scope": "Centralized Founder Account & Security workspace",
@@ -777,14 +791,9 @@
     "schema_changed": false,
     "business_workflow_changed": false,
     "production_data_reset": false,
-    "verification_status": "passed",
-    "source_account_audit": "FOUNDER_PARTNER_V192_AUDIT_OK",
-    "source_security_audit": "SOURCE_SECURITY_AUDIT_OK",
-    "live_browser_audit": "LIVE_BROWSER_V192_OK",
-    "live_health_version": "1.9.2",
-    "partner_workspace_browser_check": "BROWSER_CHECK_OK"
+    "verification_status": "passed CI and live v1.9.2 verification"
   },
-  "authoritative_source": "RSF Main System(20260926-020543).zip",
+  "authoritative_source": "RSF Main System(20260926-062346).zip",
   "release_v1_9_3": {
     "scope": "Compact Account & Security UX redesign with secure one-time password visibility",
     "official_people_titles": [
@@ -813,6 +822,99 @@
     "live_browser_audit": "LIVE_BROWSER_V193_OK",
     "live_health_version": "1.9.3",
     "partner_workspace_browser_check": "BROWSER_CHECK_OK",
-    "deployed_commit": "fd9d0eee4b0fc2c6085d7bd4346c67b602f1c922"
+    "functional_merge_commit": "fd9d0eee4b0fc2c6085d7bd4346c67b602f1c922",
+    "final_state_commit": "8dfc1d20b9a677513a2fba472c78d437c97fc020"
+  },
+  "release_v1_9_4": {
+    "scope": "Founder-only encrypted current-password visibility for Founder and current Partner accounts",
+    "authentication_hashes_preserved": true,
+    "encrypted_password_vault": true,
+    "founder_can_reveal_own_password": true,
+    "founder_can_reveal_partner_passwords": true,
+    "partners_can_reveal_passwords": false,
+    "partners_can_change_own_passwords": false,
+    "show_hide_copy_controls": true,
+    "csrf_on_reveal": true,
+    "founder_only_reveal_route": true,
+    "schema_migration": 14,
+    "production_data_reset": false,
+    "verification_status": "Python syntax, JavaScript syntax, clean-release scan, SQLite fresh-schema, encrypted-vault round-trip, current-account hash match, and vault migration tests passed; full Flask lifecycle verification runs during Windows installation."
+  },
+  "release_v1_10_0": {
+    "scope": "Private Founder + Partner Workspace UX simplification and information-architecture overhaul; public website unchanged.",
+    "navigation": {
+      "founder_primary": [
+        "Dashboard",
+        "Client Inbox",
+        "Leads",
+        "Follow-ups",
+        "Messages",
+        "Sales",
+        "Commissions",
+        "Partners",
+        "Resources"
+      ],
+      "partner_primary": [
+        "Dashboard",
+        "Client Inbox",
+        "Leads",
+        "Follow-ups",
+        "Messages",
+        "Sales",
+        "Commissions",
+        "Resources"
+      ],
+      "secondary_access": "Profile plus Founder Settings/Activity live in the sidebar footer instead of competing with daily work."
+    },
+    "canonical_homes": {
+      "Client Inbox": "client inquiries and client conversations",
+      "Messages": "internal Founder ↔ Partner communication",
+      "Leads": "lead record and pipeline status",
+      "Follow-ups": "scheduled operational actions",
+      "Sales": "commercial and payment records",
+      "Commissions": "commission lifecycle and payment state",
+      "Partners": "Partner identity/profile/commission level",
+      "Account & Security": "Founder-controlled login credentials",
+      "Profile": "personal identity/photo",
+      "Workspace Settings": "company, currency, and commission-level configuration",
+      "Activity": "secondary operational history"
+    },
+    "redundancy_removed": [
+      "dashboard report-card repetition",
+      "embedded lead conversation transcript",
+      "sales commission duplication",
+      "Partner-detail credential controls",
+      "Profile security duplication",
+      "Account & Security general Partner-management actions"
+    ],
+    "security_preserved": [
+      "Founder-only security routes",
+      "Partner isolation",
+      "encrypted recoverable credential vault",
+      "hash-based authentication",
+      "CSRF",
+      "trusted hosts",
+      "security headers",
+      "session invalidation"
+    ],
+    "business_rules_preserved": {
+      "pipeline": [
+        "NEW",
+        "CONTACTED",
+        "QUALIFIED",
+        "DEMO_BOOKED",
+        "PROPOSAL",
+        "WON",
+        "LOST"
+      ],
+      "commission_bp": {
+        "Founding Partner #1": 4000,
+        "Early Partner": 3000,
+        "Established Sales Partner": 2000,
+        "Standard Partner": 1500
+      }
+    },
+    "public_website": "No public template, public CSS, public JavaScript, sitemap, SEO, or marketing-content redesign is part of this release.",
+    "authoritative_source": "RSF Main System(20260926-062346).zip"
   }
 }

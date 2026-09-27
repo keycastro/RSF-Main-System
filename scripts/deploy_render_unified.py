@@ -19,7 +19,7 @@ REPO_URL = "https://github.com/keycastro/RSF-Main-System.git"
 EXPECTED_REPO = "keycastro/rsf-main-system"
 WEBSITE = "https://realtysystemsfoundry.onrender.com"
 PARTNER = "https://partner-rsf.onrender.com"
-WEB_SERVICE_ID = "srv-daom5h0ae00c73c3qt70"
+WEB_SERVICE_ID = "srv-das7540jo6nc73age4fg"
 
 # Only these files are allowed to change in a private-workspace release.
 PRIVATE_FILES = [
@@ -50,7 +50,9 @@ WORKFLOW_FILES = [
     "deployment/PUBLISH_RSF_ONLINE.bat",
     "scripts/PUBLISH_RSF_ONLINE.py",
     "scripts/deploy_render_unified.py",
+    "scripts/RECOVER_NEW_RENDER_HOSTING.py",
     "scripts/VERIFY_INSTALLED_SYSTEM.py",
+    "PROJECT_STATE.json",
 ]
 
 # These source areas define the public website and must remain exactly as they are
@@ -208,7 +210,14 @@ def verify_live(version: str) -> None:
         if response.status != 200 or payload.get("status") != "ok" or payload.get("version") != version:
             raise RuntimeError(f"Live version check failed: {payload!r}")
 
+    # partner-rsf is a small static entry/redirect site, so urllib will not
+    # execute its JavaScript/meta refresh. Verify that alias points at the
+    # unified workspace, then verify the real /app/ login page directly.
     with fetch(PARTNER + "/") as response:
+        alias_html = response.read().decode("utf-8", errors="replace")
+        if response.status != 200 or WEBSITE + "/app/" not in alias_html:
+            raise RuntimeError("Partner Workspace alias is not pointing at the unified /app/ workspace.")
+    with fetch(WEBSITE + "/app/") as response:
         final_url = response.geturl()
         login_html = response.read().decode("utf-8", errors="replace")
     if "/app/login" not in final_url:

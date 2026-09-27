@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 from io import BytesIO
 from datetime import date, datetime, timedelta, timezone
@@ -2843,3 +2844,48 @@ def client_sync_email():
         extra = f" {result.get('bounced', 0)} bounce(s) detected." if result.get("bounced") else ""
         flash(f"Email sync finished. {result['imported']} new message(s).{extra}", "success")
     return redirect(request.referrer or url_for("main.inquiries_list"))
+
+
+@bp.post("/admin/recovery/upload-preserved-file")
+@admin_required
+def recovery_upload_preserved_file():
+    """One-time, Founder-only recovery path for a deleted Render deployment.
+
+    The route is disabled unless RSF_RECOVERY_UPLOAD_ENABLED=1 is present in the
+    production environment. It can only fill the database-backed blob for a file
+    record that already exists after the trusted local-database migration.
+    """
+    if os.environ.get("RSF_RECOVERY_UPLOAD_ENABLED", "0").strip() != "1":
+        abort(404)
+    kind = (request.form.get("kind") or "").strip()
+    stored_name = (request.form.get("stored_name") or "").strip()
+    if not stored_name or stored_name != Path(stored_name).name or len(stored_name) > 255:
+        abort(400, description="Invalid preserved filename.")
+    uploaded = request.files.get("file")
+    if not uploaded:
+        abort(400, description="Preserved file is required.")
+    data = uploaded.read()
+    if not data or len(data) > current_app.config.get("MAX_CONTENT_LENGTH", 32 * 1024 * 1024):
+        abort(400, description="Invalid preserved file data.")
+    db = get_db()
+    if kind == "message_uploads":
+        result = db.execute(
+            "UPDATE message_attachments SET data_blob=? WHERE stored_name=?",
+            (data, stored_name),
+        )
+    elif kind == "client_attachments":
+        result = db.execute(
+            "UPDATE client_attachments SET data_blob=? WHERE stored_name=?",
+            (data, stored_name),
+        )
+    elif kind == "profile_pictures":
+        result = db.execute(
+            "UPDATE users SET avatar_data=? WHERE avatar_stored_name=?",
+            (data, stored_name),
+        )
+    else:
+        abort(400, description="Unknown preserved file category.")
+    if result.rowcount != 1:
+        abort(404, description="No matching preserved file record exists.")
+    db.commit()
+    return jsonify(ok=True, stored_name=stored_name, size_bytes=len(data))

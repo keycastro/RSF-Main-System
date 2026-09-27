@@ -790,6 +790,12 @@ def _import_seed_payload(db) -> None:
             clean_row = dict(row)
             if table == "voice_calls" and "receiver_seeen_at" in clean_row and "receiver_seen_at" not in clean_row:
                 clean_row["receiver_seen_at"] = clean_row.pop("receiver_seeen_at")
+            # One-time Render recovery payloads can carry SQLite BLOB values as
+            # explicit base64 sentinels. Decode them only during the trusted
+            # migration import; ordinary application JSON is never interpreted here.
+            for key, value in list(clean_row.items()):
+                if isinstance(value, dict) and set(value.keys()) == {"__rsf_bytes_b64__"}:
+                    clean_row[key] = base64.b64decode(value["__rsf_bytes_b64__"])
             columns = [c for c in clean_row.keys() if c in existing_columns]
             if not columns:
                 continue
@@ -816,7 +822,9 @@ def _import_attachment_seed(db) -> None:
     if marker:
         return
     key = os.environ.get("RSF_ATTACHMENT_MIGRATION_KEY", "").strip()
-    seed_path = Path(current_app.root_path).parent / "deployment" / "migration" / "online_attachment_seed.enc"
+    packaged_seed = Path(current_app.root_path).parent / "deployment" / "migration" / "online_attachment_seed.enc"
+    render_secret_seed = Path("/etc/secrets/online_attachment_seed.enc")
+    seed_path = render_secret_seed if render_secret_seed.is_file() else packaged_seed
     if not key or not seed_path.is_file():
         return
     try:
