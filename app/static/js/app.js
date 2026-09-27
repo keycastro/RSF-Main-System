@@ -1900,9 +1900,13 @@
   const statusOptions = [
     ['NOT_CONTACTED', 'Not Contacted'],
     ['NO_ANSWER', 'No Answer'],
-    ['INTERESTED', 'Interested'],
     ['REJECTED', 'Rejected'],
-    ['CLOSED', 'Closed']
+    ['INTERESTED', 'Interested'],
+    ['DEMO', 'Demo'],
+    ['PROPOSAL', 'Proposal'],
+    ['DECISION', 'Decision'],
+    ['WON', 'Won'],
+    ['LOST', 'Lost']
   ];
 
   const beginProspectEdit = (field) => {
@@ -2136,3 +2140,68 @@
     }
   });
 })();;
+
+
+(() => {
+  const page = document.querySelector('.deals-page');
+  if (!page) return;
+
+  const dialog = page.querySelector('[data-deal-status-confirm]');
+  const message = page.querySelector('[data-deal-status-confirm-message]');
+  const yes = page.querySelector('[data-deal-status-confirm-yes]');
+  const no = page.querySelector('[data-deal-status-confirm-no]');
+  const preDealStatuses = new Set(['NOT_CONTACTED', 'NO_ANSWER', 'REJECTED']);
+  const labels = {
+    NOT_CONTACTED: 'Not Contacted',
+    NO_ANSWER: 'No Answer',
+    REJECTED: 'Rejected'
+  };
+  let pendingForm = null;
+
+  const submitConfirmed = () => {
+    if (!pendingForm) return;
+    const form = pendingForm;
+    pendingForm = null;
+    const confirmField = form.querySelector('[data-deal-confirm-field]');
+    if (confirmField) confirmField.value = 'yes';
+    form.dataset.dealBackwardConfirmed = '1';
+    if (dialog?.open) dialog.close();
+    form.requestSubmit();
+  };
+
+  page.addEventListener('submit', (event) => {
+    const form = event.target.closest('[data-deal-form]');
+    if (!form) return;
+
+    if (form.dataset.dealBackwardConfirmed === '1') {
+      delete form.dataset.dealBackwardConfirmed;
+      return;
+    }
+
+    const select = form.querySelector('select[name="status"]');
+    const status = select?.value || '';
+    if (!preDealStatuses.has(status)) return;
+
+    event.preventDefault();
+    pendingForm = form;
+    const text = `Are you sure you want to change this Deal to ${labels[status] || status}? This will remove it from the Deals page. Your linked Deal details will stay preserved.`;
+    if (message) message.textContent = text;
+
+    if (dialog && typeof dialog.showModal === 'function') {
+      dialog.showModal();
+      return;
+    }
+
+    if (window.confirm(text)) submitConfirmed();
+    else pendingForm = null;
+  });
+
+  yes?.addEventListener('click', submitConfirmed);
+  no?.addEventListener('click', () => {
+    pendingForm = null;
+    if (dialog?.open) dialog.close();
+  });
+  dialog?.addEventListener('cancel', () => {
+    pendingForm = null;
+  });
+})();

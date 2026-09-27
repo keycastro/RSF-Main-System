@@ -19,17 +19,18 @@
             <span>Linked Prospect</span>
             <a href="{{ url_for('main.prospects', date=deal['prospect_recorded_date']) }}#prospect-{{ deal['prospect_id'] }}">{{ deal['prospect_name'] }}</a>
           </div>
-          <span class="deal-status-chip">{{ deal_status_labels.get(deal['status'], deal['status']) }}</span>
+          <span class="deal-status-chip">{{ deal_status_labels.get(deal['workflow_status'], deal['workflow_status']) }}</span>
         </header>
 
-        <form class="deal-form" method="post" action="{{ url_for('main.deal_update', deal_id=deal['id']) }}">
+        <form class="deal-form" method="post" action="{{ url_for('main.deal_update', deal_id=deal['id']) }}" data-deal-form>
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="confirm_leave_deals" value="" data-deal-confirm-field>
           <div class="deal-form-grid">
             <label>
               <span>Status</span>
               <select name="status">
                 {% for code, label in deal_status_labels.items() %}
-                  <option value="{{ code }}" {% if deal['status'] == code %}selected{% endif %}>{{ label }}</option>
+                  <option value="{{ code }}" {% if deal['workflow_status'] == code %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
               </select>
             </label>
@@ -73,5 +74,16 @@
       </div>
     {% endfor %}
   </div>
+
+  <dialog class="deal-status-confirm" data-deal-status-confirm aria-labelledby="deal-status-confirm-title">
+    <div class="deal-status-confirm-card">
+      <h2 id="deal-status-confirm-title">Confirm status change</h2>
+      <p data-deal-status-confirm-message>Are you sure you want to move this record out of Deals?</p>
+      <div class="deal-status-confirm-actions">
+        <button class="button secondary" type="button" data-deal-status-confirm-no>No</button>
+        <button class="button primary" type="button" data-deal-status-confirm-yes>Yes</button>
+      </div>
+    </div>
+  </dialog>
 </section>
 {% endblock %}

@@ -71,12 +71,7 @@ PROSPECT_UNFINISHED_STATUSES = ("NOT_CONTACTED", "NO_ANSWER")
 PROSPECT_STATUS_LABELS = {
     "NOT_CONTACTED": "Not Contacted",
     "NO_ANSWER": "No Answer",
-    "INTERESTED": "Interested",
     "REJECTED": "Rejected",
-    "CLOSED": "Closed",
-}
-
-DEAL_STATUS_LABELS = {
     "INTERESTED": "Interested",
     "DEMO": "Demo",
     "PROPOSAL": "Proposal",
@@ -84,6 +79,8 @@ DEAL_STATUS_LABELS = {
     "WON": "Won",
     "LOST": "Lost",
 }
+DEAL_ACTIVE_STATUSES = ("INTERESTED", "DEMO", "PROPOSAL", "DECISION", "WON", "LOST")
+DEAL_PRE_STATUS_STATUSES = ("NOT_CONTACTED", "NO_ANSWER", "REJECTED")
 
 
 def _normalize_prospect_name(value: str) -> str:
@@ -139,7 +136,7 @@ def _ensure_deal_for_prospect(db, prospect_id: int, created_by_user_id: int, now
         "DEAL_CREATED",
         "deal",
         deal_id,
-        "Deal created automatically from Interested Prospect.",
+        "Deal created automatically from Prospect Status.",
         {"prospect_id": prospect_id},
     )
     return deal_id, True
@@ -821,7 +818,11 @@ def prospects():
             (selected_str,),
         ).fetchall()
 
-    deal_rows = db.execute("SELECT id,prospect_id FROM deals").fetchall()
+    deal_rows = db.execute(
+        """SELECT d.id,d.prospect_id FROM deals d
+           JOIN prospects p ON p.id=d.prospect_id
+           WHERE p.status IN ('INTERESTED','DEMO','PROPOSAL','DECISION','WON','LOST')"""
+    ).fetchall()
     prospect_deal_ids = {int(row["prospect_id"]): int(row["id"]) for row in deal_rows}
 
     previous_date = (selected - timedelta(days=1)).isoformat()
@@ -976,8 +977,9 @@ def prospect_new():
         {"recorded_date": recorded_date},
     )
     linked_deal_id = None
-    if submitted_status == "INTERESTED":
+    if submitted_status in DEAL_ACTIVE_STATUSES:
         linked_deal_id, _ = _ensure_deal_for_prospect(db, prospect_id, g.user["id"], now)
+        db.execute("UPDATE deals SET status=?,updated_at=? WHERE id=?", (submitted_status, now, linked_deal_id))
     db.commit()
 
     prospect = db.execute("SELECT * FROM prospects WHERE id=?", (prospect_id,)).fetchone()
@@ -1071,8 +1073,9 @@ def prospect_update(prospect_id: int):
         if status not in PROSPECT_STATUS_LABELS:
             return jsonify({"ok": False, "error": "validation", "message": "Invalid prospect status."}), 400
         db.execute("UPDATE prospects SET status=?,updated_at=? WHERE id=?", (status, now, prospect_id))
-        if status == "INTERESTED":
-            _, deal_created = _ensure_deal_for_prospect(db, prospect_id, g.user["id"], now)
+        if status in DEAL_ACTIVE_STATUSES:
+            deal_id, deal_created = _ensure_deal_for_prospect(db, prospect_id, g.user["id"], now)
+            db.execute("UPDATE deals SET status=?,updated_at=? WHERE id=?", (status, now, deal_id))
     elif field_name == "post_date":
         post_date = raw_value.strip()[:10]
         if post_date:
@@ -1095,7 +1098,11 @@ def prospect_update(prospect_id: int):
         and prospect["recorded_date"] != selected_str
         and prospect["status"] not in PROSPECT_UNFINISHED_STATUSES
     )
-    linked_deal = db.execute("SELECT id FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
+    linked_deal = (
+        db.execute("SELECT id FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
+        if prospect["status"] in DEAL_ACTIVE_STATUSES
+        else None
+    )
     row_html = render_template(
         "_prospect_row.html",
         prospect=prospect,
@@ -1167,16 +1174,18 @@ def prospect_delete(prospect_id: int):
 def deals():
     db = get_db()
     rows = db.execute(
-        """SELECT d.*,p.name AS prospect_name,p.recorded_date AS prospect_recorded_date
+        """SELECT d.*,p.name AS prospect_name,p.recorded_date AS prospect_recorded_date,
+                  p.status AS workflow_status
            FROM deals d
            JOIN prospects p ON p.id=d.prospect_id
+           WHERE p.status IN ('INTERESTED','DEMO','PROPOSAL','DECISION','WON','LOST')
            ORDER BY d.updated_at DESC,d.id DESC"""
     ).fetchall()
     return render_template(
         "deals.html",
         title="Deals",
         deals=rows,
-        deal_status_labels=DEAL_STATUS_LABELS,
+        deal_status_labels=PROSPECT_STATUS_LABELS,
     )
 
 
@@ -1192,13 +1201,18 @@ def deal_create_from_prospect(prospect_id: int):
     if not prospect:
         abort(404)
 
+    now = utcnow_iso()
     existing = db.execute("SELECT id FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
     if existing:
-        flash("Deal already exists.", "success")
-        return redirect(url_for("main.deals") + f"#deal-{existing['id']}")
+        deal_id = int(existing["id"])
+        db.execute("UPDATE prospects SET status='INTERESTED',updated_at=? WHERE id=?", (now, prospect_id))
+        db.execute("UPDATE deals SET status='INTERESTED',updated_at=? WHERE id=?", (now, deal_id))
+        db.commit()
+        flash("Deal opened at Interested.", "success")
+        return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
-    now = utcnow_iso()
     deal_id, _ = _ensure_deal_for_prospect(db, prospect_id, g.user["id"], now)
+    db.execute("UPDATE prospects SET status='INTERESTED',updated_at=? WHERE id=?", (now, prospect_id))
     db.commit()
     flash("Deal created.", "success")
     return redirect(url_for("main.deals") + f"#deal-{deal_id}")
@@ -1214,8 +1228,11 @@ def deal_update(deal_id: int):
         abort(404)
 
     status = (request.form.get("status", "") or "").strip().upper()
-    if status not in DEAL_STATUS_LABELS:
+    if status not in PROSPECT_STATUS_LABELS:
         flash("Invalid Deal status.", "error")
+        return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+    if status in DEAL_PRE_STATUS_STATUSES and (request.form.get("confirm_leave_deals", "") or "").strip().lower() != "yes":
+        flash("Confirm the backward Status change before removing this record from Deals.", "warning")
         return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
     demo_date = (request.form.get("demo_date", "") or "").strip()[:10]
@@ -1235,25 +1252,50 @@ def deal_update(deal_id: int):
     notes_after_conversation = (request.form.get("notes_after_conversation", "") or "").strip()[:3000]
     now = utcnow_iso()
 
-    db.execute(
-        """UPDATE deals
-           SET status=?,demo_date=?,followup_date=?,next_step=?,price=?,
-               contact_number=?,email=?,notes_after_conversation=?,updated_at=?
-           WHERE id=?""",
-        (
-            status,
-            demo_date,
-            followup_date,
-            next_step,
-            price,
-            contact_number,
-            email,
-            notes_after_conversation,
-            now,
-            deal_id,
-        ),
-    )
+    if status in DEAL_ACTIVE_STATUSES:
+        db.execute(
+            """UPDATE deals
+               SET status=?,demo_date=?,followup_date=?,next_step=?,price=?,
+                   contact_number=?,email=?,notes_after_conversation=?,updated_at=?
+               WHERE id=?""",
+            (
+                status,
+                demo_date,
+                followup_date,
+                next_step,
+                price,
+                contact_number,
+                email,
+                notes_after_conversation,
+                now,
+                deal_id,
+            ),
+        )
+    else:
+        # Preserve the linked Deal and all Deal details while hiding it from Deals.
+        # The legacy deals.status column only accepts deal-side statuses.
+        db.execute(
+            """UPDATE deals
+               SET demo_date=?,followup_date=?,next_step=?,price=?,
+                   contact_number=?,email=?,notes_after_conversation=?,updated_at=?
+               WHERE id=?""",
+            (
+                demo_date,
+                followup_date,
+                next_step,
+                price,
+                contact_number,
+                email,
+                notes_after_conversation,
+                now,
+                deal_id,
+            ),
+        )
+    db.execute("UPDATE prospects SET status=?,updated_at=? WHERE id=?", (status, now, deal["prospect_id"]))
     db.commit()
+    if status in DEAL_PRE_STATUS_STATUSES:
+        flash("Status updated. Record removed from Deals.", "success")
+        return redirect(url_for("main.deals"))
     flash("Deal updated.", "success")
     return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
