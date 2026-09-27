@@ -1673,9 +1673,9 @@
   const openTargetProspect = () => {
     if (!window.location.hash) return;
     const target = document.querySelector(window.location.hash);
-    if (target && target.matches('[data-prospect-row]') && target.tagName === 'DETAILS') {
-      target.open = true;
-    }
+    if (!target || !target.matches('[data-prospect-row]')) return;
+    const details = target.tagName === 'DETAILS' ? target : target.querySelector('details.prospect-card');
+    if (details) details.open = true;
   };
   openTargetProspect();
   window.addEventListener('hashchange', openTargetProspect);
