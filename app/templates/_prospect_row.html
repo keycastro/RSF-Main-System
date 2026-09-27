@@ -1,22 +1,51 @@
-<details class="prospect-card" id="prospect-{{ prospect['id'] }}" data-prospect-row>
-  <summary class="prospect-card-summary">
-    <div class="prospect-card-intro">
-      <div class="prospect-card-primary">
-        <span>Business Type</span>
-        <strong>{{ prospect['business_type'] or '—' }}</strong>
+<div class="prospect-card-shell" id="prospect-{{ prospect['id'] }}" data-prospect-row>
+  <details class="prospect-card">
+    <summary class="prospect-card-summary">
+      <div class="prospect-card-intro">
+        <div class="prospect-card-primary">
+          <span>Business Type</span>
+          <strong>{{ prospect['business_type'] or '—' }}</strong>
+        </div>
+        <div class="prospect-card-system">
+          <span>System They Want</span>
+          <strong>{{ prospect['system_wanted'] or '—' }}</strong>
+        </div>
+        <div class="prospect-card-facts">
+          <div><span>Budget</span><strong>{{ prospect['budget'] or '—' }}</strong></div>
+          <div><span>Post Date</span><strong>{{ prospect['post_date']|dateonly if prospect['post_date'] else '—' }}</strong></div>
+          <div><span>Status</span><strong class="prospect-status">{{ prospect_status_labels.get(prospect['status'], prospect['status']|human_status) }}</strong></div>
+        </div>
       </div>
-      <div class="prospect-card-system">
-        <span>System They Want</span>
-        <strong>{{ prospect['system_wanted'] or '—' }}</strong>
+      <span class="prospect-card-chevron" aria-hidden="true">⌄</span>
+    </summary>
+
+    <div class="prospect-card-details">
+      <div class="prospect-record-meta">
+        {% if is_today and prospect['recorded_date'] != selected_date %}
+          <small class="prospect-carry">Carried forward · Recorded {{ prospect['recorded_date']|dateonly }}</small>
+        {% else %}
+          <small>Recorded {{ prospect['recorded_date']|dateonly }}</small>
+        {% endif %}
       </div>
-      <div class="prospect-card-facts">
-        <div><span>Budget</span><strong>{{ prospect['budget'] or '—' }}</strong></div>
-        <div><span>Post Date</span><strong>{{ prospect['post_date']|dateonly if prospect['post_date'] else '—' }}</strong></div>
-        <div><span>Status</span><strong class="prospect-status">{{ prospect_status_labels.get(prospect['status'], prospect['status']|human_status) }}</strong></div>
+
+      <div class="prospect-fields">
+        <div class="prospect-field"><span>Business Type</span><strong>{{ prospect['business_type'] or '—' }}</strong></div>
+        <div class="prospect-field prospect-field-wide"><span>Problem</span><strong>{{ prospect['problem'] or '—' }}</strong></div>
+        <div class="prospect-field"><span>Platform They Want</span><strong>{{ prospect['platform_wanted'] or '—' }}</strong></div>
+        <div class="prospect-field"><span>Post Link</span>{% if prospect['post_link'] %}{% if prospect['post_link'].startswith('http://') or prospect['post_link'].startswith('https://') %}<a href="{{ prospect['post_link'] }}" target="_blank" rel="noopener noreferrer">{{ prospect['post_link'] }}</a>{% else %}<strong>{{ prospect['post_link'] }}</strong>{% endif %}{% else %}<strong>—</strong>{% endif %}</div>
+        <div class="prospect-field"><span>Post Date</span><strong>{{ prospect['post_date']|dateonly if prospect['post_date'] else '—' }}</strong></div>
+        <div class="prospect-field prospect-field-wide"><span>System They Want</span><strong>{{ prospect['system_wanted'] or '—' }}</strong></div>
+        <div class="prospect-field"><span>Budget</span><strong>{{ prospect['budget'] or '—' }}</strong></div>
+        <div class="prospect-field prospect-field-company"><span>Company</span><strong>{{ prospect['name'] }}</strong></div>
+        <div class="prospect-field"><span>Location</span><strong>{{ prospect['location'] or '—' }}</strong></div>
+        <div class="prospect-field"><span>Website</span>{% if prospect['website'] %}{% if prospect['website'].startswith('http://') or prospect['website'].startswith('https://') %}<a href="{{ prospect['website'] }}" target="_blank" rel="noopener noreferrer">{{ prospect['website'] }}</a>{% else %}<strong>{{ prospect['website'] }}</strong>{% endif %}{% else %}<strong>—</strong>{% endif %}</div>
+        <div class="prospect-field"><span>Contact</span><strong>{{ prospect['contact'] or '—' }}</strong></div>
+        <div class="prospect-field"><span>Email</span><strong>{{ prospect['email'] or '—' }}</strong></div>
+        <div class="prospect-field"><span>Phone</span><strong>{{ prospect['phone'] or '—' }}</strong></div>
+        <div class="prospect-field"><span>Status</span><strong class="prospect-status">{{ prospect_status_labels.get(prospect['status'], prospect['status']|human_status) }}</strong></div>
       </div>
     </div>
-    <span class="prospect-card-chevron" aria-hidden="true">⌄</span>
-  </summary>
+  </details>
 
   <form class="prospect-delete-form prospect-card-delete" method="post" action="{{ url_for('main.prospect_delete', prospect_id=prospect['id']) }}" data-prospect-delete-form>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -25,31 +54,4 @@
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h10l-1 11H8L7 9Zm3 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z" fill="currentColor"/></svg>
     </button>
   </form>
-
-  <div class="prospect-card-details">
-    <div class="prospect-record-meta">
-      {% if is_today and prospect['recorded_date'] != selected_date %}
-        <small class="prospect-carry">Carried forward · Recorded {{ prospect['recorded_date']|dateonly }}</small>
-      {% else %}
-        <small>Recorded {{ prospect['recorded_date']|dateonly }}</small>
-      {% endif %}
-    </div>
-
-    <div class="prospect-fields">
-      <div class="prospect-field"><span>Business Type</span><strong>{{ prospect['business_type'] or '—' }}</strong></div>
-      <div class="prospect-field prospect-field-wide"><span>Problem</span><strong>{{ prospect['problem'] or '—' }}</strong></div>
-      <div class="prospect-field"><span>Platform They Want</span><strong>{{ prospect['platform_wanted'] or '—' }}</strong></div>
-      <div class="prospect-field"><span>Post Link</span>{% if prospect['post_link'] %}{% if prospect['post_link'].startswith('http://') or prospect['post_link'].startswith('https://') %}<a href="{{ prospect['post_link'] }}" target="_blank" rel="noopener noreferrer">{{ prospect['post_link'] }}</a>{% else %}<strong>{{ prospect['post_link'] }}</strong>{% endif %}{% else %}<strong>—</strong>{% endif %}</div>
-      <div class="prospect-field"><span>Post Date</span><strong>{{ prospect['post_date']|dateonly if prospect['post_date'] else '—' }}</strong></div>
-      <div class="prospect-field prospect-field-wide"><span>System They Want</span><strong>{{ prospect['system_wanted'] or '—' }}</strong></div>
-      <div class="prospect-field"><span>Budget</span><strong>{{ prospect['budget'] or '—' }}</strong></div>
-      <div class="prospect-field prospect-field-company"><span>Company</span><strong>{{ prospect['name'] }}</strong></div>
-      <div class="prospect-field"><span>Location</span><strong>{{ prospect['location'] or '—' }}</strong></div>
-      <div class="prospect-field"><span>Website</span>{% if prospect['website'] %}{% if prospect['website'].startswith('http://') or prospect['website'].startswith('https://') %}<a href="{{ prospect['website'] }}" target="_blank" rel="noopener noreferrer">{{ prospect['website'] }}</a>{% else %}<strong>{{ prospect['website'] }}</strong>{% endif %}{% else %}<strong>—</strong>{% endif %}</div>
-      <div class="prospect-field"><span>Contact</span><strong>{{ prospect['contact'] or '—' }}</strong></div>
-      <div class="prospect-field"><span>Email</span><strong>{{ prospect['email'] or '—' }}</strong></div>
-      <div class="prospect-field"><span>Phone</span><strong>{{ prospect['phone'] or '—' }}</strong></div>
-      <div class="prospect-field"><span>Status</span><strong class="prospect-status">{{ prospect_status_labels.get(prospect['status'], prospect['status']|human_status) }}</strong></div>
-    </div>
-  </div>
-</details>
+</div>
