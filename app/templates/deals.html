@@ -162,10 +162,21 @@
     <div class="deal-document-viewer-card">
       <header class="deal-document-viewer-head">
         <h2 id="deal-document-viewer-title" data-deal-document-viewer-title>File Preview</h2>
-        <button class="deal-document-viewer-close" type="button" data-deal-document-viewer-close aria-label="Close file preview" title="Close">×</button>
+        <div class="deal-document-viewer-tools">
+          <button
+            class="deal-document-pan-button"
+            type="button"
+            data-deal-document-pan-toggle
+            aria-pressed="false"
+            aria-label="Hand / Grab tool"
+            title="Hand / Grab tool"
+          >✋</button>
+          <button class="deal-document-viewer-close" type="button" data-deal-document-viewer-close aria-label="Close file preview" title="Close">×</button>
+        </div>
       </header>
-      <div class="deal-document-viewer-body">
+      <div class="deal-document-viewer-body" data-deal-document-viewer-body>
         <iframe data-deal-document-viewer-frame title="Deal file preview"></iframe>
+        <div class="deal-document-pan-layer" data-deal-document-pan-layer hidden aria-hidden="true"></div>
       </div>
       <footer class="deal-document-viewer-footer">
         <a class="button primary" href="#" data-deal-document-viewer-download>Download</a>

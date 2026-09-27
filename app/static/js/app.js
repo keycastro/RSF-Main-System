@@ -2164,10 +2164,86 @@
   const viewer = page.querySelector('[data-deal-document-viewer]');
   const viewerTitle = page.querySelector('[data-deal-document-viewer-title]');
   const viewerFrame = page.querySelector('[data-deal-document-viewer-frame]');
+  const viewerBody = page.querySelector('[data-deal-document-viewer-body]');
   const viewerDownload = page.querySelector('[data-deal-document-viewer-download]');
   const viewerClose = page.querySelector('[data-deal-document-viewer-close]');
+  const panToggle = page.querySelector('[data-deal-document-pan-toggle]');
+  const panLayer = page.querySelector('[data-deal-document-pan-layer]');
+
+  let viewerZoom = 1;
+  let panEnabled = false;
+  let dragging = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let dragStartScrollX = 0;
+  let dragStartScrollY = 0;
+  let frameWheelTarget = null;
+
+  const viewerWindow = () => {
+    try {
+      return viewerFrame?.contentWindow || null;
+    } catch (_error) {
+      return null;
+    }
+  };
+
+  const applyViewerZoom = (nextZoom) => {
+    const target = Math.min(4, Math.max(0.5, Math.round(nextZoom * 10) / 10));
+    viewerZoom = target;
+    try {
+      const doc = viewerFrame?.contentDocument;
+      if (doc?.body) {
+        doc.body.style.zoom = String(viewerZoom);
+        doc.body.style.transformOrigin = '0 0';
+      }
+    } catch (_error) {
+      // Browser-managed previews such as native PDF viewers may handle Ctrl+wheel themselves.
+    }
+  };
+
+  const handleViewerWheel = (event) => {
+    if (!event.ctrlKey) return;
+    event.preventDefault();
+    applyViewerZoom(viewerZoom + (event.deltaY < 0 ? 0.1 : -0.1));
+  };
+
+  const bindFrameWheel = () => {
+    try {
+      const target = viewerFrame?.contentWindow;
+      if (!target) return;
+      if (frameWheelTarget) frameWheelTarget.removeEventListener('wheel', handleViewerWheel);
+      target.addEventListener('wheel', handleViewerWheel, {passive:false});
+      frameWheelTarget = target;
+      applyViewerZoom(viewerZoom);
+    } catch (_error) {
+      frameWheelTarget = null;
+    }
+  };
+
+  const setPanEnabled = (enabled) => {
+    panEnabled = Boolean(enabled);
+    if (panToggle) panToggle.setAttribute('aria-pressed', panEnabled ? 'true' : 'false');
+    if (panLayer) {
+      panLayer.hidden = !panEnabled;
+      panLayer.classList.remove('is-dragging');
+    }
+    dragging = false;
+  };
+
+  const resetViewerTools = () => {
+    viewerZoom = 1;
+    setPanEnabled(false);
+    try {
+      const doc = viewerFrame?.contentDocument;
+      if (doc?.body) doc.body.style.zoom = '1';
+      viewerFrame?.contentWindow?.scrollTo(0, 0);
+    } catch (_error) {
+      // Ignore browser-managed preview limitations.
+    }
+  };
 
   const closeDealViewer = () => {
+    resetViewerTools();
     if (viewer?.open) viewer.close();
     viewerFrame?.removeAttribute('src');
   };
@@ -2180,10 +2256,61 @@
     const title = trigger.dataset.documentTitle || 'File Preview';
     if (viewerTitle) viewerTitle.textContent = title;
     if (viewerDownload) viewerDownload.href = downloadUrl;
+    resetViewerTools();
     if (viewerFrame) viewerFrame.src = previewUrl;
     if (viewer && typeof viewer.showModal === 'function') viewer.showModal();
     else window.open(previewUrl, '_blank', 'noopener');
   });
+
+  viewerFrame?.addEventListener('load', bindFrameWheel);
+  viewerBody?.addEventListener('wheel', handleViewerWheel, {passive:false});
+
+  panToggle?.addEventListener('click', () => {
+    setPanEnabled(!panEnabled);
+  });
+
+  panLayer?.addEventListener('pointerdown', (event) => {
+    if (!panEnabled || event.button !== 0) return;
+    const targetWindow = viewerWindow();
+    if (!targetWindow) return;
+    dragging = true;
+    dragStartX = event.clientX;
+    dragStartY = event.clientY;
+    try {
+      dragStartScrollX = targetWindow.scrollX || 0;
+      dragStartScrollY = targetWindow.scrollY || 0;
+    } catch (_error) {
+      dragStartScrollX = 0;
+      dragStartScrollY = 0;
+    }
+    panLayer.classList.add('is-dragging');
+    panLayer.setPointerCapture?.(event.pointerId);
+    event.preventDefault();
+  });
+
+  panLayer?.addEventListener('pointermove', (event) => {
+    if (!dragging) return;
+    const targetWindow = viewerWindow();
+    if (!targetWindow) return;
+    const dx = event.clientX - dragStartX;
+    const dy = event.clientY - dragStartY;
+    try {
+      targetWindow.scrollTo(dragStartScrollX - dx, dragStartScrollY - dy);
+    } catch (_error) {
+      // Ignore browser-managed preview limitations.
+    }
+  });
+
+  const stopViewerDrag = (event) => {
+    if (!dragging) return;
+    dragging = false;
+    panLayer?.classList.remove('is-dragging');
+    if (event?.pointerId !== undefined) panLayer?.releasePointerCapture?.(event.pointerId);
+  };
+
+  panLayer?.addEventListener('pointerup', stopViewerDrag);
+  panLayer?.addEventListener('pointercancel', stopViewerDrag);
+  panLayer?.addEventListener('lostpointercapture', stopViewerDrag);
 
   viewerClose?.addEventListener('click', closeDealViewer);
   viewer?.addEventListener('cancel', () => {
