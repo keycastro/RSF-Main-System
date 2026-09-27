@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 20
-SCHEMA_NAME = "rsf-main-system-v1.16.0-deals"
+SCHEMA_VERSION = 21
+SCHEMA_NAME = "rsf-main-system-v1.16.1-interested-deal-status"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals"}
 
 
@@ -798,7 +798,7 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
             CREATE TABLE IF NOT EXISTS deals (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 prospect_id INTEGER NOT NULL UNIQUE REFERENCES prospects(id) ON DELETE CASCADE,
-                stage TEXT NOT NULL DEFAULT 'INTERESTED' CHECK (stage IN ('INTERESTED','DEMO','PROPOSAL','DECISION','WON','LOST')),
+                status TEXT NOT NULL DEFAULT 'INTERESTED' CHECK (status IN ('INTERESTED','DEMO','PROPOSAL','DECISION','WON','LOST')),
                 demo_date TEXT NOT NULL DEFAULT '',
                 followup_date TEXT NOT NULL DEFAULT '',
                 next_step TEXT NOT NULL DEFAULT '',
@@ -810,13 +810,29 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             );
-            CREATE INDEX IF NOT EXISTS idx_deals_stage_updated ON deals(stage,updated_at DESC,id DESC);
-            CREATE INDEX IF NOT EXISTS idx_deals_followup ON deals(followup_date,stage,id);
+            CREATE INDEX IF NOT EXISTS idx_deals_status_updated ON deals(status,updated_at DESC,id DESC);
+            CREATE INDEX IF NOT EXISTS idx_deals_followup ON deals(followup_date,status,id);
             """
         )
         db.execute(
             "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
             (20, "rsf-v1.16.0-linked-deals-workflow"),
+        )
+
+    # V21 renames the Deal workflow field from Stage to Status while preserving
+    # any existing Deal rows created by v1.16.0.
+    if 21 not in applied:
+        deal_columns = {row["name"] for row in db.execute("PRAGMA table_info(deals)").fetchall()}
+        if "stage" in deal_columns and "status" not in deal_columns:
+            db.execute("ALTER TABLE deals RENAME COLUMN stage TO status")
+        db.execute("DROP INDEX IF EXISTS idx_deals_stage_updated")
+        db.execute("DROP INDEX IF EXISTS idx_deals_status_updated")
+        db.execute("DROP INDEX IF EXISTS idx_deals_followup")
+        db.execute("CREATE INDEX IF NOT EXISTS idx_deals_status_updated ON deals(status,updated_at DESC,id DESC)")
+        db.execute("CREATE INDEX IF NOT EXISTS idx_deals_followup ON deals(followup_date,status,id)")
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (21, "rsf-v1.16.1-interested-prospect-deal-status"),
         )
 
 
@@ -882,6 +898,8 @@ def _import_seed_payload(db) -> None:
             clean_row = dict(row)
             if table == "voice_calls" and "receiver_seeen_at" in clean_row and "receiver_seen_at" not in clean_row:
                 clean_row["receiver_seen_at"] = clean_row.pop("receiver_seeen_at")
+            if table == "deals" and "stage" in clean_row and "status" not in clean_row:
+                clean_row["status"] = clean_row.pop("stage")
             # One-time Render recovery payloads can carry SQLite BLOB values as
             # explicit base64 sentinels. Decode them only during the trusted
             # migration import; ordinary application JSON is never interpreted here.

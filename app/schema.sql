@@ -81,7 +81,7 @@ CREATE INDEX IF NOT EXISTS idx_prospects_daily_queue ON prospects(recorded_date,
 CREATE TABLE IF NOT EXISTS deals (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     prospect_id INTEGER NOT NULL UNIQUE REFERENCES prospects(id) ON DELETE CASCADE,
-    stage TEXT NOT NULL DEFAULT 'INTERESTED' CHECK (stage IN ('INTERESTED','DEMO','PROPOSAL','DECISION','WON','LOST')),
+    status TEXT NOT NULL DEFAULT 'INTERESTED' CHECK (status IN ('INTERESTED','DEMO','PROPOSAL','DECISION','WON','LOST')),
     demo_date TEXT NOT NULL DEFAULT '',
     followup_date TEXT NOT NULL DEFAULT '',
     next_step TEXT NOT NULL DEFAULT '',
@@ -93,8 +93,8 @@ CREATE TABLE IF NOT EXISTS deals (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_deals_stage_updated ON deals(stage,updated_at DESC,id DESC);
-CREATE INDEX IF NOT EXISTS idx_deals_followup ON deals(followup_date,stage,id);
+CREATE INDEX IF NOT EXISTS idx_deals_status_updated ON deals(status,updated_at DESC,id DESC);
+CREATE INDEX IF NOT EXISTS idx_deals_followup ON deals(followup_date,status,id);
 
 CREATE TABLE IF NOT EXISTS leads (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

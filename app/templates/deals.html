@@ -19,17 +19,17 @@
             <span>Linked Prospect</span>
             <a href="{{ url_for('main.prospects', date=deal['prospect_recorded_date']) }}#prospect-{{ deal['prospect_id'] }}">{{ deal['prospect_name'] }}</a>
           </div>
-          <span class="deal-stage-chip">{{ deal_stage_labels.get(deal['stage'], deal['stage']) }}</span>
+          <span class="deal-status-chip">{{ deal_status_labels.get(deal['status'], deal['status']) }}</span>
         </header>
 
         <form class="deal-form" method="post" action="{{ url_for('main.deal_update', deal_id=deal['id']) }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="deal-form-grid">
             <label>
-              <span>Stage</span>
-              <select name="stage">
-                {% for code, label in deal_stage_labels.items() %}
-                  <option value="{{ code }}" {% if deal['stage'] == code %}selected{% endif %}>{{ label }}</option>
+              <span>Status</span>
+              <select name="status">
+                {% for code, label in deal_status_labels.items() %}
+                  <option value="{{ code }}" {% if deal['status'] == code %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
               </select>
             </label>

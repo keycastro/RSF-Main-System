@@ -1900,6 +1900,7 @@
   const statusOptions = [
     ['NOT_CONTACTED', 'Not Contacted'],
     ['NO_ANSWER', 'No Answer'],
+    ['INTERESTED', 'Interested'],
     ['REJECTED', 'Rejected'],
     ['CLOSED', 'Closed']
   ];

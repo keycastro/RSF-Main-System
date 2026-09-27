@@ -71,11 +71,12 @@ PROSPECT_UNFINISHED_STATUSES = ("NOT_CONTACTED", "NO_ANSWER")
 PROSPECT_STATUS_LABELS = {
     "NOT_CONTACTED": "Not Contacted",
     "NO_ANSWER": "No Answer",
+    "INTERESTED": "Interested",
     "REJECTED": "Rejected",
     "CLOSED": "Closed",
 }
 
-DEAL_STAGE_LABELS = {
+DEAL_STATUS_LABELS = {
     "INTERESTED": "Interested",
     "DEMO": "Demo",
     "PROPOSAL": "Proposal",
@@ -98,6 +99,50 @@ def _selected_prospect_date(raw: str | None) -> date:
     except ValueError:
         return today
     return min(selected, today)
+
+
+def _ensure_deal_for_prospect(db, prospect_id: int, created_by_user_id: int, now: str) -> tuple[int, bool]:
+    existing = db.execute("SELECT id FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
+    if existing:
+        return int(existing["id"]), False
+
+    prospect = db.execute("SELECT id,email,phone FROM prospects WHERE id=?", (prospect_id,)).fetchone()
+    if not prospect:
+        raise ValueError("Prospect not found.")
+
+    db.execute(
+        """INSERT OR IGNORE INTO deals(
+               prospect_id,status,demo_date,followup_date,next_step,price,
+               contact_number,email,notes_after_conversation,
+               created_by_user_id,created_at,updated_at
+           ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (
+            prospect_id,
+            "INTERESTED",
+            "",
+            "",
+            "",
+            "",
+            (prospect["phone"] or "").strip()[:120],
+            (prospect["email"] or "").strip()[:320],
+            "",
+            created_by_user_id,
+            now,
+            now,
+        ),
+    )
+    deal = db.execute("SELECT id FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
+    if not deal:
+        raise RuntimeError("Deal could not be created.")
+    deal_id = int(deal["id"])
+    log_activity(
+        "DEAL_CREATED",
+        "deal",
+        deal_id,
+        "Deal created automatically from Interested Prospect.",
+        {"prospect_id": prospect_id},
+    )
+    return deal_id, True
 
 
 def _clean_account_name(value: str) -> str:
@@ -930,6 +975,9 @@ def prospect_new():
         "Prospect added.",
         {"recorded_date": recorded_date},
     )
+    linked_deal_id = None
+    if submitted_status == "INTERESTED":
+        linked_deal_id, _ = _ensure_deal_for_prospect(db, prospect_id, g.user["id"], now)
     db.commit()
 
     prospect = db.execute("SELECT * FROM prospects WHERE id=?", (prospect_id,)).fetchone()
@@ -941,6 +989,7 @@ def prospect_new():
             is_today=True,
             selected_date=recorded_date,
             prospect_status_labels=PROSPECT_STATUS_LABELS,
+            prospect_deal_ids={prospect_id: linked_deal_id} if linked_deal_id else {},
         )
         return jsonify(
             {
@@ -986,6 +1035,7 @@ def prospect_update(prospect_id: int):
         return jsonify({"ok": False, "error": "invalid_field", "message": "That Prospect field cannot be edited."}), 400
 
     now = utcnow_iso()
+    deal_created = False
     if field_name == "company":
         company = " ".join(raw_value.split())
         if not company:
@@ -1021,6 +1071,8 @@ def prospect_update(prospect_id: int):
         if status not in PROSPECT_STATUS_LABELS:
             return jsonify({"ok": False, "error": "validation", "message": "Invalid prospect status."}), 400
         db.execute("UPDATE prospects SET status=?,updated_at=? WHERE id=?", (status, now, prospect_id))
+        if status == "INTERESTED":
+            _, deal_created = _ensure_deal_for_prospect(db, prospect_id, g.user["id"], now)
     elif field_name == "post_date":
         post_date = raw_value.strip()[:10]
         if post_date:
@@ -1055,7 +1107,7 @@ def prospect_update(prospect_id: int):
     return jsonify(
         {
             "ok": True,
-            "message": "Prospect updated.",
+            "message": "Prospect updated. Deal created." if deal_created else "Prospect updated.",
             "status": prospect["status"],
             "remove_from_view": remove_from_view,
             "row_html": row_html,
@@ -1124,7 +1176,7 @@ def deals():
         "deals.html",
         title="Deals",
         deals=rows,
-        deal_stage_labels=DEAL_STAGE_LABELS,
+        deal_status_labels=DEAL_STATUS_LABELS,
     )
 
 
@@ -1146,43 +1198,7 @@ def deal_create_from_prospect(prospect_id: int):
         return redirect(url_for("main.deals") + f"#deal-{existing['id']}")
 
     now = utcnow_iso()
-    try:
-        cur = db.execute(
-            """INSERT INTO deals(
-                   prospect_id,stage,demo_date,followup_date,next_step,price,
-                   contact_number,email,notes_after_conversation,
-                   created_by_user_id,created_at,updated_at
-               ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
-            (
-                prospect_id,
-                "INTERESTED",
-                "",
-                "",
-                "",
-                "",
-                (prospect["phone"] or "").strip()[:120],
-                (prospect["email"] or "").strip()[:320],
-                "",
-                g.user["id"],
-                now,
-                now,
-            ),
-        )
-    except (sqlite3.IntegrityError, IntegrityError):
-        db.rollback()
-        existing = db.execute("SELECT id FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
-        if existing:
-            return redirect(url_for("main.deals") + f"#deal-{existing['id']}")
-        raise
-
-    deal_id = cur.lastrowid
-    log_activity(
-        "DEAL_CREATED",
-        "deal",
-        deal_id,
-        "Deal created from Prospect.",
-        {"prospect_id": prospect_id},
-    )
+    deal_id, _ = _ensure_deal_for_prospect(db, prospect_id, g.user["id"], now)
     db.commit()
     flash("Deal created.", "success")
     return redirect(url_for("main.deals") + f"#deal-{deal_id}")
@@ -1197,9 +1213,9 @@ def deal_update(deal_id: int):
     if not deal:
         abort(404)
 
-    stage = (request.form.get("stage", "") or "").strip().upper()
-    if stage not in DEAL_STAGE_LABELS:
-        flash("Invalid Deal stage.", "error")
+    status = (request.form.get("status", "") or "").strip().upper()
+    if status not in DEAL_STATUS_LABELS:
+        flash("Invalid Deal status.", "error")
         return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
     demo_date = (request.form.get("demo_date", "") or "").strip()[:10]
@@ -1221,11 +1237,11 @@ def deal_update(deal_id: int):
 
     db.execute(
         """UPDATE deals
-           SET stage=?,demo_date=?,followup_date=?,next_step=?,price=?,
+           SET status=?,demo_date=?,followup_date=?,next_step=?,price=?,
                contact_number=?,email=?,notes_after_conversation=?,updated_at=?
            WHERE id=?""",
         (
-            stage,
+            status,
             demo_date,
             followup_date,
             next_step,

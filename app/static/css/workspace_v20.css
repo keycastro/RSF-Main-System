@@ -853,7 +853,7 @@ textarea.prospect-inline-editor{resize:vertical}
   overflow-wrap:anywhere
 }
 .deal-card-head a:hover{color:var(--workspace-emerald)}
-.deal-stage-chip{
+.deal-status-chip{
   flex:0 0 auto;
   padding:5px 9px;
   border:1px solid #d7e2dd;
