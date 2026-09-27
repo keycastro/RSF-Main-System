@@ -297,15 +297,30 @@ def main(argv=None) -> int:
         else:
             run(["git", "add", "--"] + changes, repo)
             run(["git", "diff", "--cached", "--check"], repo)
-            # Use existing identity when available; otherwise set a local release-only identity.
-            if not optional_text(["git", "config", "user.name"], repo):
-                run(["git", "config", "user.name", "RSF Release"], repo)
-            if not optional_text(["git", "config", "user.email"], repo):
-                run(["git", "config", "user.email", "rsf-release@users.noreply.github.com"], repo)
-            run(["git", "commit", "-m", f"Deploy RSF private workspace v{version}"], repo)
-            commit_id = text(["git", "rev-parse", "HEAD"], repo)
-            print("Pushing the verified private-workspace commit to GitHub...")
-            run(["git", "push", "origin", "HEAD:main"], repo)
+
+            # Windows Git can report a path as changed before staging because the
+            # release copy uses different line endings, then normalize it back to
+            # the exact repository bytes during `git add`. Re-check the staged
+            # index before committing so an already-current GitHub source is a
+            # successful no-op instead of `git commit` exit code 1.
+            staged = run(["git", "diff", "--cached", "--quiet"], repo, check=False)
+            if staged.returncode == 0:
+                commit_id = previous_commit
+                print("GitHub source already has these private-workspace changes after normalization.")
+            elif staged.returncode == 1:
+                # Use existing identity when available; otherwise set a local release-only identity.
+                if not optional_text(["git", "config", "user.name"], repo):
+                    run(["git", "config", "user.name", "RSF Release"], repo)
+                if not optional_text(["git", "config", "user.email"], repo):
+                    run(["git", "config", "user.email", "rsf-release@users.noreply.github.com"], repo)
+                run(["git", "commit", "-m", f"Deploy RSF private workspace v{version}"], repo)
+                commit_id = text(["git", "rev-parse", "HEAD"], repo)
+                print("Pushing the verified private-workspace commit to GitHub...")
+                run(["git", "push", "origin", "HEAD:main"], repo)
+            else:
+                raise RuntimeError(
+                    f"Git staged-diff verification failed with exit code {staged.returncode}."
+                )
 
         # A successful local commit is not enough. Confirm GitHub main actually
         # points to the exact commit before Render is allowed to deploy it.
