@@ -1,7 +1,7 @@
 {
   "project": "RSF_MAIN_SYSTEM",
   "handoff_date": "2026-09-21",
-  "version": "1.11.2",
+  "version": "1.12.0",
   "owner_public_name": "Key Castro",
   "positioning": "Technology built for real estate operations",
   "framework": "Flask",
@@ -916,5 +916,29 @@
     },
     "public_website": "No public template, public CSS, public JavaScript, sitemap, SEO, or marketing-content redesign is part of this release.",
     "authoritative_source": "RSF Main System(20260926-062346).zip"
+  },
+  "release_v1_12_0": {
+    "scope": "Ultra-simple private Founder/Partner workspace navigation and workflow; public website unchanged.",
+    "primary_navigation": [
+      "Home",
+      "Clients",
+      "Money"
+    ],
+    "more_menu": [
+      "Team chat",
+      "Team (Founder)",
+      "Resources",
+      "Profile",
+      "Settings (Founder)",
+      "Activity (Founder)",
+      "Website"
+    ],
+    "clients_hub": "Combines new inquiries, client/lead records, and open tasks into one daily workspace.",
+    "money_hub": "Combines sales and commissions into one financial workspace.",
+    "messages_postgres_fix": "Founder Team chat conversation list now orders through an outer query so PostgreSQL can use computed unread/last-message aliases safely.",
+    "launcher": "RSF Partner System launcher opens the protected partner-rsf.onrender.com alias with the v1.12.0 workspace.",
+    "public_website_changed": false,
+    "database_schema_changed": false,
+    "accounts_ids_hashes_vault_history_preserved": true
   }
 }
