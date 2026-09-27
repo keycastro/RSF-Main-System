@@ -1358,7 +1358,7 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 
 
-/* v1.18.8 — compact inline Deal identifiers and label-only linked Prospect */
+/* v1.18.9 — natural colon-style left Deal identifiers; right side unchanged */
 .deal-card-identifiers{
   display:grid;
   gap:7px;
@@ -1367,10 +1367,9 @@ textarea.prospect-inline-editor{resize:vertical}
   max-width:470px
 }
 .deal-card-identifiers label{
-  display:grid;
-  grid-template-columns:110px minmax(0,1fr);
+  display:flex;
   align-items:center;
-  gap:12px;
+  gap:4px;
   min-width:0
 }
 .deal-card-identifiers label>span{
@@ -1382,7 +1381,8 @@ textarea.prospect-inline-editor{resize:vertical}
   white-space:nowrap
 }
 .deal-card-identifiers .deal-identifier-input{
-  width:100%;
+  flex:0 1 280px;
+  width:280px;
   min-width:0;
   min-height:20px;
   padding:0;
@@ -1432,10 +1432,13 @@ textarea.prospect-inline-editor{resize:vertical}
     gap:14px
   }
   .deal-card-identifiers{max-width:none}
+  .deal-card-identifiers .deal-identifier-input{
+    flex:1 1 auto;
+    width:auto
+  }
 }
 @media(max-width:460px){
   .deal-card-head{grid-template-columns:1fr}
-  .deal-card-identifiers label{grid-template-columns:104px minmax(0,1fr);gap:9px}
   .deal-card-linked{
     padding-top:2px;
     text-align:left
