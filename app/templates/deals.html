@@ -124,9 +124,15 @@
                   <span>{{ document['document_type'] }}</span>
                   <strong>{{ document['display_name'] }}</strong>
                 </div>
-                <div class="deal-document-date">
-                  <span>Upload Date</span>
-                  <strong>{{ document['created_at']|dateonly }}</strong>
+                <div class="deal-document-meta">
+                  <div class="deal-document-format">
+                    <span>Format</span>
+                    <strong>{{ document['original_name'].rsplit('.', 1)[-1]|upper if '.' in document['original_name'] else 'FILE' }}</strong>
+                  </div>
+                  <div class="deal-document-date">
+                    <span>Upload Date</span>
+                    <strong>{{ document['created_at']|dateonly }}</strong>
+                  </div>
                 </div>
                 <div class="deal-document-actions">
                   <button

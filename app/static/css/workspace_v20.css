@@ -1002,6 +1002,7 @@ textarea.prospect-inline-editor{resize:vertical}
 .deal-document-upload label{display:grid;gap:5px;min-width:0}
 .deal-document-upload label>span,
 .deal-document-main>span,
+.deal-document-format>span,
 .deal-document-date>span{
   color:#6f7f79;
   font-size:9px;
@@ -1098,7 +1099,15 @@ textarea.prospect-inline-editor{resize:vertical}
   line-height:1.35;
   overflow-wrap:anywhere
 }
+.deal-document-meta{
+  display:grid;
+  grid-template-columns:auto auto;
+  gap:18px;
+  align-items:center
+}
+.deal-document-format{min-width:54px}
 .deal-document-date{min-width:95px}
+.deal-document-format strong,
 .deal-document-date strong{
   display:block;
   margin-top:3px;
@@ -1147,7 +1156,12 @@ textarea.prospect-inline-editor{resize:vertical}
   }
   .deal-document-upload-button{min-width:78px}
   .deal-document-row{grid-template-columns:1fr auto}
-  .deal-document-date{grid-column:1}
+  .deal-document-meta{
+    grid-column:1;
+    grid-template-columns:auto auto;
+    justify-content:start;
+    gap:16px
+  }
   .deal-document-actions{grid-column:2;grid-row:1 / span 2}
 }
 
