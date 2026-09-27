@@ -964,10 +964,13 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 .deal-document-upload{
   display:grid;
-  grid-template-columns:minmax(0,.8fr) minmax(0,1.15fr) minmax(0,1.35fr) auto;
-  gap:10px;
-  align-items:end;
-  margin-top:13px
+  gap:12px;
+  margin-top:14px
+}
+.deal-document-name-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px
 }
 .deal-document-upload label{display:grid;gap:5px;min-width:0}
 .deal-document-upload label>span,
@@ -989,17 +992,28 @@ textarea.prospect-inline-editor{resize:vertical}
   background:#fff;
   color:var(--ux-section-ink);
   font:inherit;
-  font-size:12px;
+  font-size:12.5px;
   outline:none
 }
 .deal-document-upload input:focus{
   border-color:var(--workspace-emerald);
   box-shadow:0 0 0 2px rgba(27,94,74,.10)
 }
-.deal-document-file-field input{padding:7px 8px}
-.deal-document-upload-action .button{min-height:39px}
+.deal-document-file-field{width:100%}
+.deal-document-file-field input{padding:8px 10px}
+.deal-document-upload-footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px
+}
+.deal-document-upload-footer .button{
+  min-width:82px;
+  min-height:39px;
+  flex:0 0 auto
+}
 .deal-document-formats{
-  margin:8px 0 0;
+  margin:0;
   color:#7b8b85;
   font-size:10.5px;
   line-height:1.4
@@ -1042,15 +1056,14 @@ textarea.prospect-inline-editor{resize:vertical}
   color:var(--ux-section-muted);
   font-size:11.5px
 }
-@media(max-width:1050px){
-  .deal-document-upload{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .deal-document-upload-action{display:flex;justify-content:flex-end;align-items:end}
-}
 @media(max-width:620px){
   .deal-documents{padding:14px}
-  .deal-document-upload{grid-template-columns:1fr}
-  .deal-document-upload-action{justify-content:stretch}
-  .deal-document-upload-action .button{width:100%}
+  .deal-document-name-grid{grid-template-columns:1fr}
+  .deal-document-upload-footer{
+    align-items:stretch;
+    flex-direction:column
+  }
+  .deal-document-upload-footer .button{width:100%}
   .deal-document-row{grid-template-columns:1fr auto}
   .deal-document-date{grid-column:1}
   .deal-document-row>.button{grid-column:2;grid-row:1 / span 2}

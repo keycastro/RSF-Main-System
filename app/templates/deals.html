@@ -77,24 +77,28 @@
 
           <form class="deal-document-upload" method="post" enctype="multipart/form-data" action="{{ url_for('main.deal_document_upload', deal_id=deal['id']) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <label>
-              <span>Document Type</span>
-              <input type="text" name="document_type" maxlength="100" placeholder="Proposal, Contract, Invoice..." required>
-            </label>
-            <label>
-              <span>File Name</span>
-              <input type="text" name="display_name" maxlength="180" placeholder="MAK Realty - Signed Agreement" required>
-            </label>
+
+            <div class="deal-document-name-grid">
+              <label>
+                <span>Document Type</span>
+                <input type="text" name="document_type" maxlength="100" placeholder="Proposal, Contract, Invoice..." required>
+              </label>
+              <label>
+                <span>File Name</span>
+                <input type="text" name="display_name" maxlength="180" placeholder="MAK Realty - Signed Agreement" required>
+              </label>
+            </div>
+
             <label class="deal-document-file-field">
               <span>Upload File</span>
               <input type="file" name="file" accept=".pdf,.docx,.xlsx,.csv,.png,.jpg,.jpeg,.txt,.zip" required>
             </label>
-            <div class="deal-document-upload-action">
+
+            <div class="deal-document-upload-footer">
+              <p class="deal-document-formats">Supported: PDF, DOCX, XLSX, CSV, PNG, JPG/JPEG, TXT, ZIP.</p>
               <button class="button secondary" type="submit">Upload</button>
             </div>
           </form>
-
-          <p class="deal-document-formats">Supported: PDF, DOCX, XLSX, CSV, PNG, JPG/JPEG, TXT, ZIP.</p>
 
           <div class="deal-document-list">
             {% for document in deal_documents.get(deal['id'], []) %}
