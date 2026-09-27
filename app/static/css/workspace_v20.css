@@ -391,3 +391,37 @@ a.simple-row:hover{background:#fafcfb}
 @media(max-width:620px){
   .prospect-list-head{padding:10px}
 }
+
+
+/* v1.15.0 — approved Prospect research fields */
+.prospect-quick-add{padding:14px 16px}
+.prospect-quick-form{margin:0}
+.prospect-quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 12px}
+.prospect-quick-grid label{display:grid;gap:5px;min-width:0;font-size:11px;font-weight:850;color:var(--ux-section-muted)}
+.prospect-quick-grid label>span{letter-spacing:.02em}
+.prospect-quick-grid input,.prospect-quick-grid textarea,.prospect-quick-grid select{width:100%;min-width:0;padding:9px 10px;border:1px solid #d6dfdb;border-radius:8px;background:#fff;color:var(--ux-section-ink);font:inherit;font-size:12.5px;outline:none}
+.prospect-quick-grid input,.prospect-quick-grid select{min-height:39px}
+.prospect-quick-grid textarea{resize:vertical;line-height:1.45}
+.prospect-quick-grid input:focus,.prospect-quick-grid textarea:focus,.prospect-quick-grid select:focus{border-color:var(--workspace-emerald);box-shadow:0 0 0 2px rgba(27,94,74,.10)}
+.prospect-quick-wide{grid-column:1/-1}
+.prospect-row{display:block!important;padding:13px 16px!important}
+.prospect-record-meta{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:10px}
+.prospect-record-meta small{font-size:10.5px;color:var(--ux-section-muted)}
+.prospect-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 14px}
+.prospect-field{min-width:0;padding-top:7px;border-top:1px solid #edf2ef}
+.prospect-field>span{display:block;margin-bottom:4px;font-size:9.5px;font-weight:850;letter-spacing:.06em;text-transform:uppercase;color:var(--ux-section-muted)}
+.prospect-field>strong,.prospect-field>a{display:block;min-width:0;font-size:12px;line-height:1.45;color:var(--ux-section-ink);overflow-wrap:anywhere;white-space:pre-wrap}
+.prospect-field>a{color:var(--workspace-emerald);font-weight:750;text-decoration:none}
+.prospect-field>a:hover{text-decoration:underline}
+.prospect-field-wide{grid-column:span 2}
+.prospect-field-company>strong{font-size:13px;font-weight:850}
+.prospect-field .prospect-status{color:var(--workspace-emerald)}
+@media(max-width:900px){
+  .prospect-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px){
+  .prospect-quick-grid,.prospect-fields{grid-template-columns:1fr}
+  .prospect-quick-wide,.prospect-field-wide{grid-column:auto}
+  .prospect-row{padding:12px 10px!important}
+  .prospect-record-meta{justify-content:space-between}
+}
