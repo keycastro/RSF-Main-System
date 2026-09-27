@@ -22,7 +22,7 @@
           <span class="deal-status-chip">{{ deal_status_labels.get(deal['workflow_status'], deal['workflow_status']) }}</span>
         </header>
 
-        <form class="deal-form" method="post" action="{{ url_for('main.deal_update', deal_id=deal['id']) }}" data-deal-form>
+        <form class="deal-form" method="post" action="{{ url_for('main.deal_update', deal_id=deal['id']) }}" data-deal-form data-deal-current-status="{{ deal['workflow_status'] }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="confirm_leave_deals" value="" data-deal-confirm-field>
           <div class="deal-form-grid">

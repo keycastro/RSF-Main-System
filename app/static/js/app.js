@@ -2158,6 +2158,12 @@
   };
   let pendingForm = null;
 
+  const resetPendingStatus = () => {
+    if (!pendingForm) return;
+    const select = pendingForm.querySelector('select[name="status"]');
+    if (select) select.value = pendingForm.dataset.dealCurrentStatus || select.value;
+  };
+
   const submitConfirmed = () => {
     if (!pendingForm) return;
     const form = pendingForm;
@@ -2193,15 +2199,20 @@
     }
 
     if (window.confirm(text)) submitConfirmed();
-    else pendingForm = null;
+    else {
+      resetPendingStatus();
+      pendingForm = null;
+    }
   });
 
   yes?.addEventListener('click', submitConfirmed);
   no?.addEventListener('click', () => {
+    resetPendingStatus();
     pendingForm = null;
     if (dialog?.open) dialog.close();
   });
   dialog?.addEventListener('cancel', () => {
+    resetPendingStatus();
     pendingForm = null;
   });
 })();
