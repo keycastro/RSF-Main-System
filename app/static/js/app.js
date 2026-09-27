@@ -1668,7 +1668,27 @@
   const companyInput = page.querySelector('[data-prospect-company-input]');
   const quickMessage = page.querySelector('[data-prospect-quick-message]');
   const toast = page.querySelector('[data-prospect-toast]');
+  const filterButtons = Array.from(page.querySelectorAll('[data-prospect-filter]'));
+  const filterEmpty = page.querySelector('[data-prospect-filter-empty]');
+  let activeFilter = 'ALL';
   let toastTimer = null;
+
+  const applyProspectFilter = () => {
+    if (!list || !filterButtons.length) return;
+    const rows = Array.from(list.querySelectorAll('[data-prospect-row]'));
+    rows.forEach((row) => {
+      row.hidden = activeFilter !== 'ALL' && row.dataset.prospectStatus !== activeFilter;
+    });
+    filterButtons.forEach((button) => {
+      const active = button.dataset.prospectFilter === activeFilter;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    if (filterEmpty) {
+      const hasVisibleRows = rows.some((row) => !row.hidden);
+      filterEmpty.hidden = rows.length === 0 || activeFilter === 'ALL' || hasVisibleRows;
+    }
+  };
 
   const openTargetProspect = () => {
     if (!window.location.hash) return;
@@ -1761,6 +1781,16 @@
     });
   }
 
+  if (filterButtons.length && list) {
+    filterButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        activeFilter = button.dataset.prospectFilter || 'ALL';
+        applyProspectFilter();
+      });
+    });
+    applyProspectFilter();
+  }
+
   if (quick && quickForm && primaryInput && companyInput && list) {
     const params = new URLSearchParams(window.location.search);
     if (params.get('add') === '1') {
@@ -1814,6 +1844,7 @@
           quick.insertAdjacentHTML('afterend', data.row_html || '');
           quickForm.reset();
           closeQuick();
+          applyProspectFilter();
           showToast(data.message || 'Prospect saved.');
           return;
         }
@@ -1872,6 +1903,7 @@
 
       form.closest('[data-prospect-row]')?.remove();
       ensureEmpty();
+      applyProspectFilter();
       showToast(data.message || 'Prospect deleted.');
     } catch (_error) {
       if (button) button.disabled = false;
