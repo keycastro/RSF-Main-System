@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 import sqlite3
 import os
-from flask import Flask, g, redirect, render_template, request, url_for
+from flask import Flask, current_app, g, redirect, render_template, request, session, url_for
 
 from config import Config, BASE_DIR
 from . import db
@@ -179,8 +179,6 @@ def create_app(test_config=None):
 
     with app.app_context():
         db.ensure_database()
-        from .credential_vault import one_time_sync_from_environment
-        one_time_sync_from_environment(db.get_db())
 
     # Background mailbox sync + protected local/off-site-capable backups. A DB lease
     # ensures only one worker is active even when multiple WSGI workers are running.
@@ -198,13 +196,21 @@ def create_app(test_config=None):
         response.headers.setdefault("Referrer-Policy", "no-referrer")
         response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(self), geolocation=(), payment=(), usb=()")
         response.headers.setdefault("X-RSF-App", "partner-system")
+        if current_app.config.get("PRODUCTION_MODE"):
+            response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
         if request.blueprint == "site":
             response.headers.setdefault(
                 "Content-Security-Policy",
                 "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; "
                 "font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
             )
-            response.headers.setdefault("Cache-Control", "public, max-age=300")
+            # Contact pages contain a session CSRF token and may show submitted data/errors.
+            # Never allow shared/public caching for that route or other session-changing public responses.
+            if request.endpoint == "site.contact" or request.method != "GET" or session.modified:
+                response.headers["Cache-Control"] = "no-store, private, max-age=0"
+                response.headers.setdefault("Pragma", "no-cache")
+            else:
+                response.headers.setdefault("Cache-Control", "public, max-age=300")
         else:
             response.headers.setdefault(
                 "Content-Security-Policy",
