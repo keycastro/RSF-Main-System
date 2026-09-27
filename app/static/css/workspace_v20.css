@@ -1505,7 +1505,7 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 
 
-/* v1.18.18 — uniform compact Prospect cards in the three-column desktop view */
+/* v1.18.19 — Prospect cards follow the Deal card visual format */
 @media(min-width:1351px){
   .prospects-page{
     max-width:none
@@ -1513,46 +1513,92 @@ textarea.prospect-inline-editor{resize:vertical}
   .prospects-page .simple-list{
     grid-template-columns:repeat(3,minmax(0,1fr))
   }
-  .prospects-page .prospect-card-shell{
-    width:100%
-  }
-  .prospects-page .prospect-card-summary{
-    min-height:174px
-  }
-  .prospects-page .prospect-card-top{
-    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-    gap:24px
-  }
-  .prospects-page .prospect-card-title,
-  .prospects-page .prospect-card-platform{
-    min-width:0
-  }
-  .prospects-page .prospect-card-title>span,
-  .prospects-page .prospect-card-platform>span,
-  .prospects-page .prospect-card-meta span{
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis
-  }
-  .prospects-page .prospect-card-title>.prospect-edit-value,
-  .prospects-page .prospect-card-platform>.prospect-edit-value,
-  .prospects-page .prospect-card-meta-item>.prospect-edit-value{
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    overflow-wrap:normal
-  }
-  .prospects-page .prospect-card-meta{
-    grid-template-columns:repeat(3,minmax(0,1fr));
-    gap:10px
-  }
-  .prospects-page .prospect-card-meta-item{
-    min-width:0;
-    min-height:62px
-  }
 }
 @media(min-width:901px) and (max-width:1350px){
   .prospects-page .simple-list{
     grid-template-columns:repeat(2,minmax(0,1fr))
   }
+}
+.prospects-page .prospect-card-shell{width:100%}
+.prospects-page .prospect-card{
+  min-width:0;
+  overflow:hidden;
+  border:1px solid #dbe4e0;
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 4px 14px rgba(25,55,46,.055)
+}
+.prospects-page .prospect-card-summary{
+  padding:0;
+  background:#fff
+}
+.prospects-page .prospect-card-top{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+  align-items:start;
+  min-height:78px;
+  padding:16px 70px 16px 18px;
+  border-bottom:1px solid #e7edea;
+  background:#fbfdfc
+}
+.prospects-page .prospect-card-title,
+.prospects-page .prospect-card-platform{min-width:0}
+.prospects-page .prospect-card-title>span,
+.prospects-page .prospect-card-platform>span,
+.prospects-page .prospect-card-meta span{
+  display:block;
+  margin-bottom:5px;
+  color:#6f7f79;
+  font-size:9px;
+  font-weight:650;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+.prospects-page .prospect-card-title>.prospect-edit-value,
+.prospects-page .prospect-card-platform>.prospect-edit-value{
+  font-size:12.5px;
+  font-weight:650;
+  line-height:1.4;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  overflow-wrap:normal
+}
+.prospects-page .prospect-card-meta{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin:0;
+  padding:16px 18px 18px;
+  border-top:0;
+  background:#fff
+}
+.prospects-page .prospect-card-meta-item{
+  min-width:0;
+  min-height:62px;
+  padding:9px 10px;
+  border:1px solid #d7e1dd;
+  border-radius:8px;
+  background:#fff
+}
+.prospects-page .prospect-card-meta-item>.prospect-edit-value{
+  font-size:12.5px;
+  font-weight:650;
+  line-height:1.4;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  overflow-wrap:normal
+}
+.prospects-page .prospect-card-delete{
+  right:47px;
+  top:16px
+}
+.prospects-page .prospect-card-chevron{
+  right:18px;
+  top:23px
 }
