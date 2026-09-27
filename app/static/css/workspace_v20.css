@@ -321,3 +321,26 @@ a.simple-row:hover{background:#fafcfb}
 .simple-home-actions span{display:block;margin-top:4px;font-size:11.5px;color:var(--ux-section-muted)}
 @media(max-width:900px){.simple-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.simple-summary-grid,.money-summary-grid,.simple-home-actions{grid-template-columns:1fr}.simple-row{align-items:flex-start}.simple-row-end{align-items:flex-end;flex-direction:column}.simple-head h1{font-size:27px}}
+
+
+/* v1.13.0 — Prospects workflow */
+.prospects-page{max-width:1180px}
+.prospects-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.prospects-head .button{flex:0 0 auto}
+.prospect-date-form{display:flex;align-items:flex-end;gap:9px;flex-wrap:wrap;margin:0 0 16px}
+.prospect-date-form label{display:grid;gap:5px;font-size:11px;font-weight:800;color:var(--ux-section-muted)}
+.prospect-date-form input[type=date]{min-width:170px}
+.prospect-date-form .today-link{align-self:center;margin-top:18px;font-size:11.5px;font-weight:800;color:var(--workspace-emerald);text-decoration:none}
+.prospect-row:target{outline:2px solid #c8aa71;outline-offset:-2px;background:#fffaf0}
+.prospect-status{font-weight:800;color:var(--workspace-emerald)!important}
+.prospect-carry{color:#866f4e!important}
+.prospect-form-wrap{max-width:680px}
+.prospect-form-card{padding:18px;border:1px solid var(--ux-section-border);border-radius:12px;background:#fff}
+.prospect-form-card label{display:grid;gap:6px;font-size:12px;font-weight:800;color:var(--ux-section-ink)}
+.prospect-form-card input{width:100%}
+.prospect-form-actions{display:flex;gap:9px;align-items:center;margin-top:16px;flex-wrap:wrap}
+.prospect-duplicate{margin-bottom:16px;padding:15px;border:1px solid #e4d2ad;border-radius:11px;background:#fffaf0}
+.prospect-duplicate strong{display:block;margin-bottom:4px;color:#6f5325}
+.prospect-duplicate p{margin:0 0 12px;font-size:12px;color:#6f5325}
+.prospect-duplicate-actions{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:620px){.prospects-head{align-items:stretch;flex-direction:column}.prospects-head .button{width:100%;text-align:center}.prospect-date-form{align-items:stretch}.prospect-date-form label,.prospect-date-form input[type=date],.prospect-date-form .button{width:100%}.prospect-date-form .today-link{margin-top:0}}
