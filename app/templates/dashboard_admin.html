@@ -1,48 +1,26 @@
 {% extends 'base.html' %}{% block content %}
-<div class="page-head workspace-page-head">
-  <div><h1>Dashboard</h1><p>What needs attention now.</p></div>
-  <a class="button primary" href="{{ url_for('main.lead_new') }}">Add Lead</a>
+<div class="page-head workspace-page-head simple-head">
+  <div><h1>Home</h1><p>Only the things that need your attention.</p></div>
+  <a class="button primary" href="{{ url_for('main.lead_new') }}">Add Client</a>
 </div>
 
-<section class="attention-strip" aria-label="Items needing attention">
-  <a class="{{ 'is-alert' if metrics.unclaimed else '' }}" href="{{ url_for('main.inquiries_list') }}"><span>Unclaimed</span><strong>{{ metrics.unclaimed }}</strong></a>
-  <a class="{{ 'is-alert' if metrics.awaiting_response else '' }}" href="{{ url_for('main.inquiries_list') }}"><span>Client replies</span><strong>{{ metrics.awaiting_response }}</strong></a>
-  <a class="{{ 'is-danger' if metrics.overdue else '' }}" href="{{ url_for('main.followups_list') }}"><span>Overdue</span><strong>{{ fmt_count(metrics.overdue, metrics.has_followup_data) }}</strong></a>
-  <a href="{{ url_for('main.followups_list') }}"><span>Due today</span><strong>{{ fmt_count(metrics.due_today, metrics.has_followup_data) }}</strong></a>
-</section>
-{% if metrics.duplicate_claims %}<a class="workspace-alert-row" href="{{ url_for('main.duplicate_claims') }}"><strong>{{ metrics.duplicate_claims }} duplicate lead review{{ '' if metrics.duplicate_claims == 1 else 's' }}</strong><span>Review duplicate leads</span></a>{% endif %}
-
-<div class="dashboard-focus-grid founder-focus-grid">
-  <section class="workspace-section" aria-labelledby="admin-priority-title">
-    <div class="section-head"><div><h2 id="admin-priority-title">Next follow-ups</h2><p>Open tasks, earliest first.</p></div><a href="{{ url_for('main.followups_list') }}">View all</a></div>
-    {% if attention %}<div class="list-stack compact-command-list">{% for f in attention[:6] %}<a class="list-row" href="{{ url_for('main.lead_detail',lead_id=f.lead_id) }}"><div><strong>{{ f.company_name }}</strong><span>{{ f.title }} · {{ f.partner_name }}</span></div><div class="row-end"><span class="badge {{ 'danger' if f.due_at[:10] < today else 'neutral' }}">{{ 'Overdue' if f.due_at[:10] < today else 'Due' }}</span><small>{{ f.due_at|dt }}</small></div></a>{% endfor %}</div>{% else %}<div class="compact-zero"><span class="status-dot is-ready"></span><div><strong>No follow-ups waiting</strong><small>The team queue is clear.</small></div></div>{% endif %}
-  </section>
-
-  <section class="workspace-section" aria-labelledby="team-load-title">
-    <div class="section-head"><div><h2 id="team-load-title">Partner work</h2><p>Active work by Partner.</p></div><a href="{{ url_for('main.partners_list') }}">Partners</a></div>
-    {% if partner_workloads %}<div class="team-load-list">{% for p in partner_workloads[:6] %}<a class="team-load-row" href="{{ url_for('main.partner_detail',partner_id=p.id) }}"><div class="team-load-person"><span class="team-avatar">{{ p.full_name[:1]|upper }}</span><strong>{{ p.full_name }}</strong></div><div class="team-load-stats"><span><strong>{{ p.active_leads }}</strong> leads</span><span><strong>{{ p.open_followups }}</strong> follow-ups</span>{% if p.overdue_followups %}<span class="load-danger"><strong>{{ p.overdue_followups }}</strong> overdue</span>{% endif %}</div></a>{% endfor %}</div>{% else %}<div class="compact-zero"><span class="status-dot"></span><div><strong>No active Partners</strong><small>Create a Partner from Partners when needed.</small></div></div>{% endif %}
-  </section>
+<div class="simple-summary-grid home-summary-grid">
+  <a href="{{ url_for('main.clients_hub') }}#new-requests"><span>New requests</span><strong>{{ metrics.unclaimed }}</strong></a>
+  <a href="{{ url_for('main.clients_hub') }}#tasks"><span>Tasks today</span><strong>{{ fmt_count(metrics.due_today, metrics.has_followup_data) }}</strong></a>
+  <a href="{{ url_for('main.clients_hub') }}#tasks" class="{{ 'is-danger' if metrics.overdue else '' }}"><span>Overdue</span><strong>{{ fmt_count(metrics.overdue, metrics.has_followup_data) }}</strong></a>
+  <a href="{{ url_for('main.money_hub') }}"><span>Collected</span><strong>{{ fmt_money(metrics.collected, metrics.has_sales_data, setting('currency_code','USD')) }}</strong></a>
 </div>
 
-<section class="workspace-section pipeline-section" aria-labelledby="admin-pipeline-title">
-  <div class="section-head"><div><h2 id="admin-pipeline-title">Pipeline</h2><p>Current lead movement.</p></div><a href="{{ url_for('main.leads_list') }}">View leads</a></div>
-  <div class="pipeline-track founder-pipeline-track">
-    <a href="{{ url_for('main.leads_list',status='NEW') }}"><span>New</span><strong>{{ fmt_count(metrics.new, metrics.has_lead_data) }}</strong></a>
-    <a href="{{ url_for('main.leads_list',status='CONTACTED') }}"><span>Contacted</span><strong>{{ fmt_count(metrics.contacted, metrics.has_lead_data) }}</strong></a>
-    <a href="{{ url_for('main.leads_list',status='QUALIFIED') }}"><span>Qualified</span><strong>{{ fmt_count(metrics.qualified, metrics.has_lead_data) }}</strong></a>
-    <a href="{{ url_for('main.leads_list',status='DEMO_BOOKED') }}"><span>Demo</span><strong>{{ fmt_count(metrics.demos, metrics.has_lead_data) }}</strong></a>
-    <a href="{{ url_for('main.leads_list',status='PROPOSAL') }}"><span>Proposal</span><strong>{{ fmt_count(metrics.proposal, metrics.has_lead_data) }}</strong></a>
-    <a class="pipeline-success" href="{{ url_for('main.leads_list',status='WON') }}"><span>Won</span><strong>{{ fmt_count(metrics.won, metrics.has_lead_data) }}</strong></a>
-    <a class="pipeline-muted" href="{{ url_for('main.leads_list',status='LOST') }}"><span>Lost</span><strong>{{ fmt_count(metrics.lost, metrics.has_lead_data) }}</strong></a>
-  </div>
+{% if metrics.awaiting_response %}<a class="simple-alert" href="{{ url_for('main.clients_hub') }}"><strong>{{ metrics.awaiting_response }} client repl{{ 'y' if metrics.awaiting_response==1 else 'ies' }} waiting</strong><span>Open Clients</span></a>{% endif %}
+{% if metrics.duplicate_claims %}<a class="simple-alert" href="{{ url_for('main.duplicate_claims') }}"><strong>{{ metrics.duplicate_claims }} duplicate review{{ '' if metrics.duplicate_claims==1 else 's' }}</strong><span>Review</span></a>{% endif %}
+
+<section class="simple-section">
+  <div class="simple-section-head"><div><h2>Next tasks</h2><p>Earliest tasks first.</p></div><a href="{{ url_for('main.clients_hub') }}#tasks">All tasks</a></div>
+  {% if attention %}<div class="simple-list">{% for f in attention[:8] %}<a class="simple-row" href="{{ url_for('main.lead_detail',lead_id=f.lead_id) }}"><div><strong>{{ f.company_name }}</strong><span>{{ f.title }} · {{ f.partner_name }}</span></div><div class="simple-row-end"><span class="badge {{ 'danger' if f.due_at[:10] < today else 'neutral' }}">{{ 'Overdue' if f.due_at[:10] < today else 'Due' }}</span><small>{{ f.due_at|dt }}</small></div></a>{% endfor %}</div>{% else %}<div class="simple-empty good">✓ Nothing needs attention right now.</div>{% endif %}
 </section>
 
-<section class="workspace-section finance-brief-section" aria-labelledby="finance-title">
-  <div class="section-head"><div><h2 id="finance-title">Money overview</h2></div><div class="section-links"><a href="{{ url_for('main.sales_list') }}">Sales</a><a href="{{ url_for('main.commissions_list') }}">Commissions</a></div></div>
-  <div class="finance-brief">
-    <div><span>Collected</span><strong>{{ fmt_money(metrics.collected, metrics.has_sales_data, setting('currency_code','USD')) }}</strong></div>
-    <div><span>Commission due</span><strong>{{ fmt_money(metrics.pending_commission + metrics.approved_commission, metrics.has_commission_data, setting('currency_code','USD')) }}</strong></div>
-    <div><span>Commission paid</span><strong>{{ fmt_money(metrics.paid_commission, metrics.has_commission_data, setting('currency_code','USD')) }}</strong></div>
-  </div>
-</section>
+<div class="simple-home-actions">
+  <a href="{{ url_for('main.clients_hub') }}"><strong>Clients</strong><span>Requests, client records, and tasks</span></a>
+  <a href="{{ url_for('main.money_hub') }}"><strong>Money</strong><span>Sales and commissions</span></a>
+</div>
 {% endblock %}
