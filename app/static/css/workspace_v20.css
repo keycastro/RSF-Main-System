@@ -1356,3 +1356,48 @@ textarea.prospect-inline-editor{resize:vertical}
   .deal-document-viewer-head{padding:10px 11px}
   .deal-document-viewer-footer{padding:9px 11px}
 }
+
+
+/* v1.18.6 — linked Prospect identifiers in Deal header */
+.deal-card-linked{flex:1 1 auto;min-width:0}
+.deal-card-head>div>.deal-linked-label{font-size:8.5px}
+.deal-card-identifiers{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  width:min(58%,360px);
+  flex:0 1 360px
+}
+.deal-card-identifiers label{display:grid;gap:4px;min-width:0}
+.deal-card-identifiers label>span{
+  color:#6f7f79;
+  font-size:9px;
+  font-weight:650;
+  letter-spacing:.055em;
+  text-transform:uppercase
+}
+.deal-card-identifiers input{
+  width:100%;
+  min-width:0;
+  min-height:34px;
+  padding:7px 8px;
+  border:1px solid #d7e1dd;
+  border-radius:8px;
+  background:#fff;
+  color:var(--ux-section-ink);
+  font:inherit;
+  font-size:12px;
+  line-height:1.35;
+  outline:none
+}
+.deal-card-identifiers input:focus{
+  border-color:var(--workspace-emerald);
+  box-shadow:0 0 0 2px rgba(27,94,74,.10)
+}
+@media(max-width:620px){
+  .deal-card-head{display:grid;grid-template-columns:1fr;gap:12px}
+  .deal-card-identifiers{width:100%;max-width:none}
+}
+@media(max-width:420px){
+  .deal-card-identifiers{grid-template-columns:1fr}
+}

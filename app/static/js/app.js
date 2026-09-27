@@ -2176,6 +2176,11 @@
   });
 
   const dealAutosaveState = new WeakMap();
+  const dealFormForField = (field) => {
+    const associatedForm = field?.form;
+    if (associatedForm?.matches?.('[data-deal-form]')) return associatedForm;
+    return field?.closest?.('[data-deal-form]') || null;
+  };
   const autosaveStateFor = (form) => {
     let state = dealAutosaveState.get(form);
     if (!state) {
@@ -2449,20 +2454,22 @@
     'email',
     'price',
     'contact_number',
+    'contact_person',
+    'location',
     'next_step',
     'notes_after_conversation'
   ]);
 
   page.addEventListener('focusin', (event) => {
     const field = event.target;
-    const form = field?.closest?.('[data-deal-form]');
+    const form = dealFormForField(field);
     if (!form || !dealAutosaveFields.has(field.name || '')) return;
     field.dataset.dealStartValue = field.value || '';
   });
 
   page.addEventListener('focusout', (event) => {
     const field = event.target;
-    const form = field?.closest?.('[data-deal-form]');
+    const form = dealFormForField(field);
     if (!form || !dealAutosaveFields.has(field.name || '')) return;
     const previous = field.dataset.dealStartValue ?? field.value;
     if (field.value === previous) return;
@@ -2486,7 +2493,7 @@
   page.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter' || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey) return;
     const target = event.target;
-    const form = target?.closest?.('[data-deal-form]');
+    const form = dealFormForField(target);
     if (!form) return;
     if (target instanceof HTMLTextAreaElement && !target.matches('[data-deal-next-step]')) return;
     event.preventDefault();

@@ -1363,7 +1363,8 @@ def deals():
     db = get_db()
     rows = db.execute(
         """SELECT d.*,p.name AS prospect_name,p.recorded_date AS prospect_recorded_date,
-                  p.status AS workflow_status
+                  p.status AS workflow_status,p.contact AS prospect_contact,
+                  p.location AS prospect_location
            FROM deals d
            JOIN prospects p ON p.id=d.prospect_id
            WHERE p.status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','LOST')
@@ -1668,6 +1669,8 @@ def deal_update(deal_id: int):
     price = (request.form.get("price", "") or "").strip()[:200]
     contact_number = (request.form.get("contact_number", "") or "").strip()[:120]
     email = (request.form.get("email", "") or "").strip()[:320]
+    contact_person = (request.form.get("contact_person", "") or "").strip()[:200]
+    location = (request.form.get("location", "") or "").strip()[:200]
     notes_after_conversation = (request.form.get("notes_after_conversation", "") or "").strip()[:3000]
     now = utcnow_iso()
 
@@ -1710,7 +1713,10 @@ def deal_update(deal_id: int):
                 deal_id,
             ),
         )
-    db.execute("UPDATE prospects SET status=?,updated_at=? WHERE id=?", (status, now, deal["prospect_id"]))
+    db.execute(
+        "UPDATE prospects SET status=?,contact=?,location=?,updated_at=? WHERE id=?",
+        (status, contact_person, location, now, deal["prospect_id"]),
+    )
     db.commit()
     if async_request:
         return jsonify({

@@ -15,13 +15,23 @@
     {% for deal in deals %}
       <article class="deal-card" id="deal-{{ deal['id'] }}">
         <header class="deal-card-head">
-          <div>
-            <span>Linked Prospect</span>
+          <div class="deal-card-linked">
+            <span class="deal-linked-label">LINKED IN PROSPECT</span>
             <a href="{{ url_for('main.prospects', date=deal['prospect_recorded_date']) }}#prospect-{{ deal['prospect_id'] }}">{{ deal['prospect_name'] }}</a>
+          </div>
+          <div class="deal-card-identifiers">
+            <label>
+              <span>Contact Person</span>
+              <input form="deal-form-{{ deal['id'] }}" type="text" name="contact_person" maxlength="200" value="{{ deal['prospect_contact'] }}">
+            </label>
+            <label>
+              <span>Location</span>
+              <input form="deal-form-{{ deal['id'] }}" type="text" name="location" maxlength="200" value="{{ deal['prospect_location'] }}">
+            </label>
           </div>
         </header>
 
-        <form class="deal-form" method="post" action="{{ url_for('main.deal_update', deal_id=deal['id']) }}" data-deal-form data-deal-current-status="{{ deal['workflow_status'] }}">
+        <form id="deal-form-{{ deal['id'] }}" class="deal-form" method="post" action="{{ url_for('main.deal_update', deal_id=deal['id']) }}" data-deal-form data-deal-current-status="{{ deal['workflow_status'] }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="confirm_leave_deals" value="" data-deal-confirm-field>
           <div class="deal-form-grid">
