@@ -2146,6 +2146,38 @@
   const page = document.querySelector('.deals-page');
   if (!page) return;
 
+  const viewer = page.querySelector('[data-deal-document-viewer]');
+  const viewerTitle = page.querySelector('[data-deal-document-viewer-title]');
+  const viewerFrame = page.querySelector('[data-deal-document-viewer-frame]');
+  const viewerDownload = page.querySelector('[data-deal-document-viewer-download]');
+  const viewerClose = page.querySelector('[data-deal-document-viewer-close]');
+
+  const closeDealViewer = () => {
+    if (viewer?.open) viewer.close();
+    viewerFrame?.removeAttribute('src');
+  };
+
+  page.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-deal-document-view]');
+    if (!trigger) return;
+    const previewUrl = trigger.dataset.previewUrl || '';
+    const downloadUrl = trigger.dataset.downloadUrl || '';
+    const title = trigger.dataset.documentTitle || 'File Preview';
+    if (viewerTitle) viewerTitle.textContent = title;
+    if (viewerDownload) viewerDownload.href = downloadUrl;
+    if (viewerFrame) viewerFrame.src = previewUrl;
+    if (viewer && typeof viewer.showModal === 'function') viewer.showModal();
+    else window.open(previewUrl, '_blank', 'noopener');
+  });
+
+  viewerClose?.addEventListener('click', closeDealViewer);
+  viewer?.addEventListener('cancel', () => {
+    window.setTimeout(() => viewerFrame?.removeAttribute('src'), 0);
+  });
+  viewer?.addEventListener('click', (event) => {
+    if (event.target === viewer) closeDealViewer();
+  });
+
   const dialog = page.querySelector('[data-deal-status-confirm]');
   const message = page.querySelector('[data-deal-status-confirm-message]');
   const yes = page.querySelector('[data-deal-status-confirm-yes]');

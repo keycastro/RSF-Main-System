@@ -1,14 +1,17 @@
 from __future__ import annotations
 
+import html as html_lib
 import json
 import os
 import sqlite3
+import zipfile
+import xml.etree.ElementTree as ET
 from io import BytesIO
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from uuid import uuid4
 
-from flask import Blueprint, abort, current_app, flash, g, jsonify, redirect, render_template, request, send_file, session, url_for
+from flask import Blueprint, Response, abort, current_app, flash, g, jsonify, redirect, render_template, request, send_file, session, url_for
 from werkzeug.utils import secure_filename
 
 from .auth import (
@@ -138,6 +141,119 @@ def _deal_document_download_name(row) -> str:
     if suffix and not base.lower().endswith(suffix):
         return (base + suffix)[:220]
     return base[:220]
+
+
+def _deal_document_preview_shell(title: str, body_html: str) -> Response:
+    safe_title = html_lib.escape(title or "Deal file")
+    content = f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{safe_title}</title><style>
+html,body{{margin:0;min-height:100%;background:#f5f7f6;color:#1b322b;font:14px/1.5 Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}}
+main{{box-sizing:border-box;max-width:1100px;margin:0 auto;padding:24px}}.preview-card{{background:#fff;border:1px solid #dfe7e3;border-radius:12px;padding:20px;box-shadow:0 4px 16px rgba(25,55,46,.06)}}
+h1{{margin:0 0 16px;font-size:18px;line-height:1.3}}h2{{margin:22px 0 10px;font-size:15px}}pre{{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace}}
+table{{width:100%;border-collapse:collapse;font-size:12px}}td{{border:1px solid #dfe7e3;padding:7px 8px;vertical-align:top;overflow-wrap:anywhere}}.archive{{display:grid;gap:7px}}
+.archive-row{{display:flex;justify-content:space-between;gap:18px;padding:8px 10px;border:1px solid #e3eae7;border-radius:8px;background:#fbfdfc}}.muted{{color:#6f7f79}}.empty{{padding:20px;text-align:center;color:#6f7f79}}
+</style></head><body><main><section class="preview-card"><h1>{safe_title}</h1>{body_html}</section></main></body></html>"""
+    response = Response(content, mimetype="text/html")
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["Content-Security-Policy"] = "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'self'; base-uri 'none'; form-action 'none'"
+    response.headers["Cache-Control"] = "no-store, private, max-age=0"
+    return response
+
+
+def _zip_read_limited(archive: zipfile.ZipFile, name: str, limit: int = 8 * 1024 * 1024) -> bytes:
+    info = archive.getinfo(name)
+    if info.file_size > limit:
+        raise ValueError("Preview content is too large.")
+    with archive.open(info, "r") as handle:
+        data = handle.read(limit + 1)
+    if len(data) > limit:
+        raise ValueError("Preview content is too large.")
+    return data
+
+
+def _deal_document_docx_preview(data: bytes) -> str:
+    with zipfile.ZipFile(BytesIO(data)) as archive:
+        xml_data = _zip_read_limited(archive, "word/document.xml")
+    root = ET.fromstring(xml_data)
+    ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+    paragraphs = []
+    for paragraph in root.findall(".//w:p", ns)[:600]:
+        value = "".join((node.text or "") for node in paragraph.findall(".//w:t", ns)).strip()
+        if value:
+            paragraphs.append(value)
+    if not paragraphs:
+        return '<div class="empty">No readable text found in this DOCX file.</div>'
+    joined = (chr(10) * 2).join(paragraphs)[:120000]
+    return f"<pre>{html_lib.escape(joined)}</pre>"
+
+
+def _deal_document_xlsx_preview(data: bytes) -> str:
+    ns = {"m": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
+    with zipfile.ZipFile(BytesIO(data)) as archive:
+        shared = []
+        if "xl/sharedStrings.xml" in archive.namelist():
+            root = ET.fromstring(_zip_read_limited(archive, "xl/sharedStrings.xml"))
+            for item in root.findall(".//m:si", ns):
+                shared.append("".join((node.text or "") for node in item.findall(".//m:t", ns)))
+        sheet_names = sorted(name for name in archive.namelist() if name.startswith("xl/worksheets/sheet") and name.endswith(".xml"))[:8]
+        if not sheet_names:
+            return '<div class="empty">No worksheet data found in this XLSX file.</div>'
+        sections = []
+        for index, sheet_name in enumerate(sheet_names, start=1):
+            root = ET.fromstring(_zip_read_limited(archive, sheet_name))
+            rows_html = []
+            for row in root.findall(".//m:sheetData/m:row", ns)[:250]:
+                cells = []
+                for cell in row.findall("m:c", ns)[:60]:
+                    cell_type = cell.attrib.get("t", "")
+                    value = ""
+                    if cell_type == "inlineStr":
+                        value = "".join((node.text or "") for node in cell.findall(".//m:t", ns))
+                    else:
+                        node = cell.find("m:v", ns)
+                        value = node.text if node is not None and node.text is not None else ""
+                        if cell_type == "s" and value.isdigit():
+                            pos = int(value)
+                            value = shared[pos] if 0 <= pos < len(shared) else value
+                    cells.append(f"<td>{html_lib.escape(value)}</td>")
+                if cells:
+                    rows_html.append("<tr>" + "".join(cells) + "</tr>")
+            table = "<table>" + "".join(rows_html) + "</table>" if rows_html else '<div class="empty">No visible cells.</div>'
+            sections.append(f"<h2>Sheet {index}</h2>{table}")
+        return "".join(sections)
+
+
+def _deal_document_zip_preview(data: bytes) -> str:
+    with zipfile.ZipFile(BytesIO(data)) as archive:
+        items = archive.infolist()
+    if not items:
+        return '<div class="empty">This ZIP archive is empty.</div>'
+    rows = []
+    for item in items[:500]:
+        rows.append('<div class="archive-row"><span>' + html_lib.escape(item.filename) + '</span><span class="muted">' + html_lib.escape(f"{item.file_size:,} bytes") + '</span></div>')
+    if len(items) > 500:
+        rows.append(f'<p class="muted">Showing first 500 of {len(items)} archive items.</p>')
+    return '<div class="archive">' + "".join(rows) + "</div>"
+
+
+def _deal_document_html_preview(row) -> Response:
+    data = bytes(row["data_blob"] or b"")
+    suffix = Path(row["original_name"] or "").suffix.lower()
+    title = row["display_name"] or row["original_name"] or "Deal file"
+    try:
+        if suffix == ".docx":
+            body = _deal_document_docx_preview(data)
+        elif suffix == ".xlsx":
+            body = _deal_document_xlsx_preview(data)
+        elif suffix == ".zip":
+            body = _deal_document_zip_preview(data)
+        elif suffix in {".txt", ".csv"}:
+            value = data[:2 * 1024 * 1024].decode("utf-8-sig", errors="replace")
+            body = f"<pre>{html_lib.escape(value)}</pre>"
+        else:
+            body = '<div class="empty">Preview is not available for this file.</div>'
+    except (ValueError, KeyError, zipfile.BadZipFile, ET.ParseError):
+        body = '<div class="empty">This file could not be rendered safely. Use Download to open the original file.</div>'
+    return _deal_document_preview_shell(title, body)
 
 
 def _normalize_prospect_name(value: str) -> str:
@@ -1370,6 +1486,56 @@ def deal_document_download(deal_id: int, document_id: int):
         conditional=False,
         max_age=0,
     )
+
+
+@bp.get("/deals/<int:deal_id>/documents/<int:document_id>/preview")
+@login_required
+def deal_document_preview(deal_id: int, document_id: int):
+    row = get_db().execute(
+        """SELECT * FROM deal_documents WHERE id=? AND deal_id=?""",
+        (document_id, deal_id),
+    ).fetchone()
+    if not row or row["data_blob"] is None:
+        abort(404)
+    suffix = Path(row["original_name"] or "").suffix.lower()
+    if suffix in {".pdf", ".png", ".jpg", ".jpeg"}:
+        response = send_file(
+            BytesIO(bytes(row["data_blob"])),
+            mimetype=row["mime_type"],
+            as_attachment=False,
+            download_name=_deal_document_download_name(row),
+            conditional=False,
+            max_age=0,
+        )
+        response.headers["X-Frame-Options"] = "SAMEORIGIN"
+        response.headers["Content-Security-Policy"] = "default-src 'self' data: blob:; frame-ancestors 'self'; object-src 'self'; base-uri 'none'"
+        response.headers["Cache-Control"] = "no-store, private, max-age=0"
+        return response
+    return _deal_document_html_preview(row)
+
+
+@bp.post("/deals/<int:deal_id>/documents/<int:document_id>/delete")
+@login_required
+def deal_document_delete(deal_id: int, document_id: int):
+    validate_csrf()
+    db = get_db()
+    row = db.execute(
+        """SELECT id,document_type,display_name FROM deal_documents WHERE id=? AND deal_id=?""",
+        (document_id, deal_id),
+    ).fetchone()
+    if not row:
+        abort(404)
+    db.execute("DELETE FROM deal_documents WHERE id=? AND deal_id=?", (document_id, deal_id))
+    log_activity(
+        "DEAL_DOCUMENT_DELETED",
+        "deal",
+        deal_id,
+        "Deal document deleted.",
+        {"document_id": document_id, "document_type": row["document_type"], "display_name": row["display_name"]},
+    )
+    db.commit()
+    flash("Deal file deleted.", "success")
+    return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
 
 @bp.post("/deals/<int:deal_id>/update")

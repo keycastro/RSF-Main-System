@@ -108,7 +108,22 @@
                   <span>Upload Date</span>
                   <strong>{{ document['created_at']|dateonly }}</strong>
                 </div>
-                <a class="button secondary" href="{{ url_for('main.deal_document_download', deal_id=deal['id'], document_id=document['id']) }}">Download</a>
+                <div class="deal-document-actions">
+                  <button
+                    class="button secondary"
+                    type="button"
+                    data-deal-document-view
+                    data-preview-url="{{ url_for('main.deal_document_preview', deal_id=deal['id'], document_id=document['id']) }}"
+                    data-download-url="{{ url_for('main.deal_document_download', deal_id=deal['id'], document_id=document['id']) }}"
+                    data-document-title="{{ document['display_name'] }}"
+                  >View</button>
+                  <form class="deal-document-delete-form" method="post" action="{{ url_for('main.deal_document_delete', deal_id=deal['id'], document_id=document['id']) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="deal-document-delete-button" type="submit" aria-label="Delete {{ document['display_name'] }}" title="Delete file">
+                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h10l-1 11H8L7 9Zm3 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z" fill="currentColor"/></svg>
+                    </button>
+                  </form>
+                </div>
               </div>
             {% else %}
               <div class="deal-document-empty">No files uploaded yet.</div>
@@ -122,6 +137,21 @@
       </div>
     {% endfor %}
   </div>
+
+  <dialog class="deal-document-viewer" data-deal-document-viewer aria-labelledby="deal-document-viewer-title">
+    <div class="deal-document-viewer-card">
+      <header class="deal-document-viewer-head">
+        <h2 id="deal-document-viewer-title" data-deal-document-viewer-title>File Preview</h2>
+        <button class="deal-document-viewer-close" type="button" data-deal-document-viewer-close aria-label="Close file preview" title="Close">×</button>
+      </header>
+      <div class="deal-document-viewer-body">
+        <iframe data-deal-document-viewer-frame title="Deal file preview"></iframe>
+      </div>
+      <footer class="deal-document-viewer-footer">
+        <a class="button primary" href="#" data-deal-document-viewer-download>Download</a>
+      </footer>
+    </div>
+  </dialog>
 
   <dialog class="deal-status-confirm" data-deal-status-confirm aria-labelledby="deal-status-confirm-title">
     <div class="deal-status-confirm-card">

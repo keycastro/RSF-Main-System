@@ -1048,7 +1048,30 @@ textarea.prospect-inline-editor{resize:vertical}
   font-size:11.5px;
   white-space:nowrap
 }
-.deal-document-row>.button{min-height:32px;padding:6px 10px;font-size:10.5px}
+.deal-document-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:6px
+}
+.deal-document-actions>.button{min-height:32px;padding:6px 10px;font-size:10.5px}
+.deal-document-delete-form{display:flex;margin:0}
+.deal-document-delete-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:32px;
+  height:32px;
+  padding:0;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:#b54138;
+  cursor:pointer
+}
+.deal-document-delete-button:hover{background:#fff0ee;color:#9f2f27}
+.deal-document-delete-button:focus-visible{outline:2px solid #d38b84;outline-offset:1px}
+.deal-document-delete-button svg{display:block;width:16px;height:16px}
 .deal-document-empty{
   padding:10px 0 2px;
   color:var(--ux-section-muted);
@@ -1064,5 +1087,80 @@ textarea.prospect-inline-editor{resize:vertical}
   .deal-document-upload-footer .button{width:100%}
   .deal-document-row{grid-template-columns:1fr auto}
   .deal-document-date{grid-column:1}
-  .deal-document-row>.button{grid-column:2;grid-row:1 / span 2}
+  .deal-document-actions{grid-column:2;grid-row:1 / span 2}
+}
+
+/* v1.17.3 — Deal file viewer and direct delete */
+.deal-document-viewer{
+  width:min(1040px,calc(100vw - 28px));
+  height:min(820px,calc(100vh - 28px));
+  padding:0;
+  border:0;
+  border-radius:14px;
+  background:transparent
+}
+.deal-document-viewer::backdrop{background:rgba(14,27,23,.58)}
+.deal-document-viewer-card{
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  border:1px solid #d8e2de;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 24px 70px rgba(14,27,23,.28)
+}
+.deal-document-viewer-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:13px 15px;
+  border-bottom:1px solid #e3eae7
+}
+.deal-document-viewer-head h2{
+  min-width:0;
+  margin:0;
+  overflow:hidden;
+  color:var(--ux-section-ink);
+  font-size:14px;
+  line-height:1.35;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+.deal-document-viewer-close{
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  flex:0 0 auto;
+  padding:0;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:#4f625b;
+  font:inherit;
+  font-size:25px;
+  line-height:1;
+  cursor:pointer
+}
+.deal-document-viewer-close:hover{background:#f0f4f2;color:#1b322b}
+.deal-document-viewer-body{min-height:0;background:#eef2f0}
+.deal-document-viewer-body iframe{display:block;width:100%;height:100%;border:0;background:#fff}
+.deal-document-viewer-footer{
+  display:flex;
+  justify-content:flex-end;
+  padding:11px 15px;
+  border-top:1px solid #e3eae7;
+  background:#fff
+}
+.deal-document-viewer-footer .button{min-width:92px;text-align:center}
+@media(max-width:620px){
+  .deal-document-viewer{
+    width:calc(100vw - 14px);
+    height:calc(100vh - 14px)
+  }
+  .deal-document-viewer-head{padding:10px 11px}
+  .deal-document-viewer-footer{padding:9px 11px}
 }
