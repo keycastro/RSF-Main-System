@@ -1505,7 +1505,7 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 
 
-/* v1.18.16 — match Deals desktop threshold: three Prospect cards per row without compressing internals */
+/* v1.18.17 — exact compact Prospect card look with maximum three cards per row */
 @media(min-width:1351px){
   .prospects-page{
     max-width:none
@@ -1514,8 +1514,7 @@ textarea.prospect-inline-editor{resize:vertical}
     grid-template-columns:repeat(3,minmax(0,1fr))
   }
   .prospects-page .prospect-card-shell{
-    width:128.205128%;
-    zoom:.78
+    width:100%
   }
 }
 @media(min-width:901px) and (max-width:1350px){
