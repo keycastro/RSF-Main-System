@@ -259,29 +259,27 @@ body.page-messages .content-wrap{padding-top:13px}.messages-page-title{margin-bo
 /* Mobile drawer is controlled by app.js through body.menu-open. */
 @media(max-width:880px){body.menu-open .sidebar{transform:translateX(0)}}
 
-/* v1.9 Founder-controlled Partner accounts */
-.password-control{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:start}.password-actions{display:flex;gap:6px;flex-wrap:wrap}.credential-secret{display:flex;flex-direction:column;gap:8px;margin-top:4px}.credential-secret input{font-weight:800;letter-spacing:.02em}.permanent-delete-zone{margin-top:22px;padding-top:18px;border-top:1px solid #ead7d3;display:flex;align-items:flex-end;justify-content:space-between;gap:18px}.permanent-delete-zone>div{max-width:460px}.permanent-delete-zone strong{font-size:12px;color:#8d3028}.permanent-delete-zone p{margin:5px 0 0;color:var(--muted);font-size:10.5px;line-height:1.5}.button.destructive{background:#fff;color:#8d3028;border-color:#d8a39d}.button.destructive:hover{background:#fff4f2;border-color:#c97f76}@media(max-width:620px){.password-control{grid-template-columns:1fr}.password-actions .button{flex:1}.permanent-delete-zone{align-items:stretch;flex-direction:column}.permanent-delete-zone .button{width:100%}}
+/* v1.9.0 — Founder-controlled Partner account management */
+.partner-password-row{grid-template-columns:minmax(0,1fr) auto auto}
+.partner-security-stack{gap:12px}
+.button.danger{background:var(--danger);color:#fff;border-color:var(--danger);box-shadow:0 8px 22px rgba(167,73,64,.14)}
+.button.danger:hover{background:#913d36}
+.danger-zone{border-color:#e7c7c3;background:linear-gradient(180deg,#fff,var(--danger-soft))}
+.credential-copy{margin-top:8px;align-self:flex-start}
+.credential-grid-single{grid-template-columns:1fr}
+.profile-readonly-details{grid-template-columns:1fr}
+.deleted-message-note{min-height:74px;border-top:1px solid var(--line);background:var(--surface-alt)}
+@media(max-width:620px){.partner-password-row{grid-template-columns:1fr 1fr}.partner-password-row input{grid-column:1/-1}.partner-password-row .button{width:100%}}
 
 
 /* v1.9.2 — centralized Founder Account & Security workspace */
 .nav-list>a.nav-subitem{min-height:31px;margin:-1px 0 1px 27px;padding:5px 9px 5px 10px;font-size:11px;color:#9fb8af;background:transparent}
-.nav-list>a.nav-subitem:hover{background:rgba(255,255,255,.045);color:#fff}
-.nav-list>a.nav-subitem.active{background:rgba(216,185,131,.11);box-shadow:inset 2px 0 0 #d5af70;color:#fff9ef}
-.nav-subitem-dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.72;flex:0 0 5px}
-.settings-subnav{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:-3px 0 14px;padding:5px;border:1px solid var(--workspace-border);border-radius:10px;background:rgba(255,255,255,.76);width:max-content;max-width:100%}
-.settings-subnav a{display:inline-flex;align-items:center;min-height:31px;padding:6px 10px;border-radius:7px;color:var(--workspace-muted);font-size:11px;font-weight:800}
-.settings-subnav a:hover{background:#edf2ef;color:var(--workspace-emerald)}
-.settings-subnav a.active{background:#0a4a3f;color:#fff9ef}
-.founder-account-panel,.partner-accounts-panel{margin-top:14px}
-.account-panel-head{align-items:flex-start}.role-chip{display:inline-flex;align-items:center;justify-content:center;min-height:24px;padding:4px 8px;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
-.founder-role-chip{background:#f2e3c9;color:#6b4c1c;border:1px solid #e0c08d}.partner-role-chip{background:#e8f1ed;color:#0b5a4b;border:1px solid #c8ddd4}
-.account-security-grid{display:grid;grid-template-columns:minmax(230px,.7fr) minmax(320px,1.3fr);gap:14px;align-items:start}
-.account-identity-card{min-height:126px;padding:15px;border:1px solid var(--workspace-border);border-radius:10px;background:linear-gradient(145deg,#f8fbf9,#eef4f1);display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:5px}
-.account-identity-label{font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:#8f6b36}.account-identity-card strong{font-size:18px;color:var(--workspace-ink)}.account-identity-card a{font-size:11.5px;color:var(--workspace-emerald);overflow-wrap:anywhere}
-.account-password-form{padding:14px;border:1px solid var(--workspace-border);border-radius:10px;background:#fff}.account-password-reveal{margin-bottom:14px}
+.nav-list>a.nav-subitem:hover{background:rgba(255,255,255,.045);color:#fff}.nav-list>a.nav-subitem.active{background:rgba(216,185,131,.11);box-shadow:inset 2px 0 0 #d5af70;color:#fff9ef}.nav-subitem-dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.72;flex:0 0 5px}
+.settings-subnav{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:-3px 0 14px;padding:5px;border:1px solid var(--workspace-border);border-radius:10px;background:rgba(255,255,255,.76);width:max-content;max-width:100%}.settings-subnav a{display:inline-flex;align-items:center;min-height:31px;padding:6px 10px;border-radius:7px;color:var(--workspace-muted);font-size:11px;font-weight:800}.settings-subnav a:hover{background:#edf2ef;color:var(--workspace-emerald)}.settings-subnav a.active{background:#0a4a3f;color:#fff9ef}
+.founder-account-panel,.partner-accounts-panel{margin-top:14px}.account-panel-head{align-items:flex-start}.role-chip{display:inline-flex;align-items:center;justify-content:center;min-height:24px;padding:4px 8px;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}.founder-role-chip{background:#f2e3c9;color:#6b4c1c;border:1px solid #e0c08d}.partner-role-chip{background:#e8f1ed;color:#0b5a4b;border:1px solid #c8ddd4}
+.account-security-grid{display:grid;grid-template-columns:minmax(230px,.7fr) minmax(320px,1.3fr);gap:14px;align-items:start}.account-identity-card{min-height:126px;padding:15px;border:1px solid var(--workspace-border);border-radius:10px;background:linear-gradient(145deg,#f8fbf9,#eef4f1);display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:5px}.account-identity-label{font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:#8f6b36}.account-identity-card strong{font-size:18px;color:var(--workspace-ink)}.account-identity-card a{font-size:11.5px;color:var(--workspace-emerald);overflow-wrap:anywhere}.account-password-form{padding:14px;border:1px solid var(--workspace-border);border-radius:10px;background:#fff}.account-password-reveal{margin-bottom:14px}
 .partner-account-list{display:flex;flex-direction:column;gap:9px}.partner-account-item{border:1px solid var(--workspace-border);border-radius:10px;background:#fff;overflow:visible}.partner-account-main{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:13px}.partner-account-identity{display:flex;align-items:flex-start;gap:10px;min-width:200px}.partner-account-identity>div{display:flex;flex-direction:column;gap:3px;min-width:0}.partner-account-identity strong{font-size:13px;color:var(--workspace-ink)}.partner-account-identity span:not(.role-chip){font-size:10.5px;color:var(--workspace-muted);overflow-wrap:anywhere}.partner-account-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;max-width:760px}.partner-account-actions form{margin:0}.partner-account-meta{display:flex;gap:16px;flex-wrap:wrap;padding:8px 13px;border-top:1px solid #edf1ef;background:#fafcfb;color:var(--workspace-muted);font-size:9.5px}.partner-account-meta strong{color:#43564f}.partner-password-details{position:relative}.partner-password-details>summary{list-style:none;cursor:pointer}.partner-password-details>summary::-webkit-details-marker{display:none}.partner-password-details[open]>summary{background:#edf2ef;border-color:#b9c9c4}.partner-password-popover{position:absolute;right:0;top:40px;z-index:8;width:min(390px,calc(100vw - 52px));padding:13px;border:1px solid var(--workspace-border-strong);border-radius:10px;background:#fff;box-shadow:0 14px 34px rgba(3,38,32,.16)}.partner-delete-form .button{white-space:nowrap}.account-security-link-panel{align-self:start}
-@media(max-width:900px){.account-security-grid{grid-template-columns:1fr}.partner-account-main{flex-direction:column}.partner-account-actions{justify-content:flex-start;max-width:none}.partner-password-popover{left:0;right:auto}}
-@media(max-width:620px){.settings-subnav{width:100%}.settings-subnav a{flex:1;justify-content:center}.partner-account-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}.partner-account-actions .button,.partner-account-actions form,.partner-account-actions details{width:100%}.partner-account-actions form .button,.partner-account-actions details>summary{width:100%;justify-content:center}.partner-account-meta{gap:8px 12px}.nav-list>a.nav-subitem{margin-left:20px}}
+@media(max-width:900px){.account-security-grid{grid-template-columns:1fr}.partner-account-main{flex-direction:column}.partner-account-actions{justify-content:flex-start;max-width:none}.partner-password-popover{left:0;right:auto}}@media(max-width:620px){.settings-subnav{width:100%}.settings-subnav a{flex:1;justify-content:center}.partner-account-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}.partner-account-actions .button,.partner-account-actions form,.partner-account-actions details{width:100%}.partner-account-actions form .button,.partner-account-actions details>summary{width:100%;justify-content:center}.partner-account-meta{gap:8px 12px}.nav-list>a.nav-subitem{margin-left:20px}}
 
 
 /* v1.9.3 — compact Account & Security control dashboard */
@@ -300,52 +298,5 @@ body.page-messages .content-wrap{padding-top:13px}.messages-page-title{margin-bo
 @media(max-width:900px){.account-security-shell{max-width:none}.compact-password-form{grid-template-columns:1fr 1fr}.compact-password-submit{grid-column:1/-1}.one-time-password-banner{align-items:flex-start;flex-direction:column}.one-time-password-control{width:100%;grid-template-columns:minmax(0,1fr) auto auto}.partner-compact-main{align-items:flex-start}.partner-compact-identity>div{display:grid;gap:1px}.partner-compact-identity div>span{max-width:220px}}
 @media(max-width:680px){.account-compact-head,.partner-management-head,.partner-compact-main{flex-direction:column;align-items:stretch}.current-password-state{min-width:0}.compact-password-form{grid-template-columns:1fr}.compact-password-submit{grid-column:auto}.one-time-password-control{grid-template-columns:1fr auto}.one-time-password-control .button.secondary{grid-column:1/-1}.partner-management-actions{justify-content:space-between}.partner-compact-actions{justify-content:flex-start}.partner-compact-identity div>span{max-width:100%}.compact-empty-state{align-items:flex-start;flex-direction:column}.compact-empty-state>div{display:grid;gap:2px}}
 
-
-/* v1.9.4 CSP-safe Founder credential visibility */
-.account-password-vault {
-  min-width: 290px;
-}
-.account-password-vault > span,
-.partner-inline-vault > span {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.vault-password-control {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.vault-password-control input {
-  width: 180px;
-  min-width: 0;
-  height: 36px;
-  padding: 7px 10px;
-  border: 1px solid var(--line, #d9dfda);
-  border-radius: 9px;
-  background: #fff;
-  font: inherit;
-}
-.account-password-vault small {
-  display: block;
-  margin-top: 6px;
-}
-.partner-inline-vault {
-  min-width: 270px;
-}
-.partner-inline-vault .vault-password-control input {
-  width: 150px;
-}
-@media (max-width: 900px) {
-  .account-password-vault,
-  .partner-inline-vault {
-    width: 100%;
-    min-width: 0;
-  }
-  .vault-password-control {
-    flex-wrap: wrap;
-  }
-}
+/* v1.9.4 — Founder-only current password visibility */
+.account-password-vault{min-width:310px;padding:8px 10px;border:1px solid #d9e5df;border-radius:8px;background:#f7faf8;display:grid;gap:4px}.account-password-vault>span,.partner-inline-vault>span{font-size:8px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#8f6b36}.account-password-vault>small{font-size:8.5px;color:var(--workspace-muted)}.vault-password-control{display:grid;grid-template-columns:minmax(150px,1fr) auto auto;gap:5px;align-items:center}.vault-password-control input{height:34px;min-width:0;padding:6px 8px;font:600 11px/1.2 ui-monospace,SFMono-Regular,Consolas,monospace;background:#fff}.vault-password-control .button{height:34px;min-width:48px;padding:5px 8px;white-space:nowrap}.partner-inline-vault{display:grid;gap:3px;min-width:280px}.vault-password-control.compact{grid-template-columns:minmax(110px,180px) auto auto}.vault-password-control.compact input{height:30px}.vault-password-control.compact .button{height:30px;font-size:8.5px}.partner-compact-main{align-items:center}@media(max-width:980px){.partner-inline-vault{width:100%;min-width:0}.vault-password-control.compact{grid-template-columns:minmax(0,1fr) auto auto}.account-password-vault{min-width:0;width:100%}}

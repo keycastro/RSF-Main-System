@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     full_name TEXT NOT NULL,
+    -- Legacy internal compatibility key only. Private workspace login uses full_name + password.
     email TEXT NOT NULL COLLATE NOCASE UNIQUE,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('admin','partner')),
@@ -24,6 +25,12 @@ CREATE TABLE IF NOT EXISTS users (
     avatar_updated_at TEXT
 );
 
+CREATE TABLE IF NOT EXISTS account_password_vault (
+    user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    encrypted_password TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS commission_stages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     code TEXT NOT NULL UNIQUE,
@@ -36,14 +43,13 @@ CREATE TABLE IF NOT EXISTS commission_stages (
 CREATE TABLE IF NOT EXISTS partners (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE SET NULL,
-    full_name_snapshot TEXT NOT NULL DEFAULT '',
-    email_snapshot TEXT NOT NULL DEFAULT '',
-    deleted_at TEXT,
     commission_stage_id INTEGER NOT NULL REFERENCES commission_stages(id),
     phone TEXT NOT NULL DEFAULT '',
     notes TEXT NOT NULL DEFAULT '',
     joined_at TEXT NOT NULL,
-    active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0,1))
+    active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0,1)),
+    account_deleted_at TEXT,
+    historical_name TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS leads (
@@ -80,7 +86,6 @@ CREATE TABLE IF NOT EXISTS lead_notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     lead_id INTEGER NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
     author_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    author_name_snapshot TEXT NOT NULL DEFAULT '',
     body TEXT NOT NULL,
     created_at TEXT NOT NULL
 );
@@ -140,6 +145,27 @@ CREATE TABLE IF NOT EXISTS commissions (
 );
 CREATE INDEX IF NOT EXISTS idx_commissions_partner ON commissions(partner_id, status);
 
+CREATE TABLE IF NOT EXISTS sale_corrections (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sale_id INTEGER NOT NULL REFERENCES sales(id),
+    commission_id INTEGER NOT NULL REFERENCES commissions(id),
+    kind TEXT NOT NULL CHECK (kind IN ('REFUND','CHARGEBACK','REVENUE_CORRECTION','SALE_ADJUSTMENT','COMMISSION_CORRECTION')),
+    old_deal_cents INTEGER NOT NULL CHECK (old_deal_cents >= 0),
+    new_deal_cents INTEGER NOT NULL CHECK (new_deal_cents >= 0),
+    old_invoiced_cents INTEGER NOT NULL CHECK (old_invoiced_cents >= 0),
+    new_invoiced_cents INTEGER NOT NULL CHECK (new_invoiced_cents >= 0),
+    old_collected_cents INTEGER NOT NULL CHECK (old_collected_cents >= 0),
+    new_collected_cents INTEGER NOT NULL CHECK (new_collected_cents >= 0),
+    old_qualifying_cents INTEGER NOT NULL CHECK (old_qualifying_cents >= 0),
+    new_qualifying_cents INTEGER NOT NULL CHECK (new_qualifying_cents >= 0),
+    commission_change_cents INTEGER NOT NULL DEFAULT 0,
+    note TEXT NOT NULL DEFAULT '',
+    created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_sale_corrections_sale ON sale_corrections(sale_id,id);
+CREATE INDEX IF NOT EXISTS idx_sale_corrections_commission ON sale_corrections(commission_id,id);
+
 CREATE TABLE IF NOT EXISTS resources (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     category TEXT NOT NULL,
@@ -174,7 +200,6 @@ CREATE INDEX IF NOT EXISTS idx_duplicate_claims_status ON duplicate_claims(statu
 CREATE TABLE IF NOT EXISTS activity_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     actor_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    actor_name_snapshot TEXT NOT NULL DEFAULT '',
     action_type TEXT NOT NULL,
     entity_type TEXT NOT NULL,
     entity_id INTEGER,
@@ -226,7 +251,7 @@ CREATE TABLE IF NOT EXISTS voice_calls (
     receiver_seen_at TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_voice_calls_partner_status ON voice_calls(partner_id, status, id DESC);
-CREATE UNIQUE INDEX IF NOT EXISTS uq_voice_calls_open_partner ON voice_calls(partner_id) WHERE status IN ('RINGING','ACTIVE');
+CREATE UNIQUE INDEX IF NOT EXISTS uq_voice_calls_single_open ON voice_calls((1)) WHERE status IN ('RINGING','ACTIVE');
 
 CREATE TABLE IF NOT EXISTS voice_call_signals (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -296,7 +321,6 @@ CREATE TABLE IF NOT EXISTS client_messages (
     subject TEXT NOT NULL DEFAULT '',
     body TEXT NOT NULL,
     sent_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    sent_by_name_snapshot TEXT NOT NULL DEFAULT '',
     external_message_id TEXT NOT NULL DEFAULT '',
     in_reply_to TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL

@@ -255,3 +255,10 @@
 .compact-resource-details>summary{cursor:pointer;font-size:11.5px;font-weight:800;color:var(--workspace-emerald)}
 .compact-resource-details .resource-body{margin-top:7px;white-space:pre-wrap}
 .credential-note{margin:10px 0 0;font-size:12px;line-height:1.45;color:var(--ux-section-muted)}
+
+/* v1.10.1 — safe Partner deletion controls */
+.partner-delete-form{display:flex;align-items:flex-end;gap:7px;flex-wrap:wrap}
+.partner-delete-form label{font-weight:700;color:#6e403b}
+.partner-delete-form select{min-width:180px;max-width:260px}
+.partner-delete-form small{flex-basis:100%;color:#7d5a55}
+@media (max-width:700px){.partner-delete-form{width:100%;align-items:stretch}.partner-delete-form select,.partner-delete-form .button{width:100%;max-width:none}}

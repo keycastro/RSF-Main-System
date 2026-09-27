@@ -1,7 +1,7 @@
 {% extends 'base.html' %}{% block content %}
 <div class="page-head workspace-page-head client-inbox-head">
   <div><h1>Client Inbox</h1><p>New inquiries and active client conversations.</p></div>
-  {% if email_receive_ready and not auto_email_sync %}<form method="post" action="{{ url_for('main.client_sync_email') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button secondary" type="submit">Sync Email</button></form>{% endif %}
+  {% if g.user.role=='admin' and email_receive_ready and not auto_email_sync %}<form method="post" action="{{ url_for('main.client_sync_email') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button secondary" type="submit">Sync Email</button></form>{% endif %}
 </div>
 {% if not (email_send_ready and email_receive_ready) %}<div class="workspace-warning-row"><strong>Email setup incomplete</strong><span>{% if not email_send_ready %}Sending is not configured. {% endif %}{% if not email_receive_ready %}Incoming email is not configured.{% endif %}</span></div>{% endif %}
 

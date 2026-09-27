@@ -26,8 +26,8 @@ def hash_password(password: str) -> str:
 def valid_password(password: str) -> bool:
     """Accept the exact non-empty password intentionally chosen by the Founder.
 
-    RSF intentionally does not enforce composition, strength, symbol, case, or
-    generated-password rules. Passwords are still stored only as secure hashes.
+    RSF does not enforce composition, strength, symbol, case, or generated-password
+    rules. Passwords are still stored only as secure hashes.
     """
     return bool(password)
 
@@ -49,7 +49,7 @@ def load_logged_in_user() -> None:
         return
     db = get_db()
     user = db.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
-    if user is None or (user["role"] != "partner" and not user["active"]) or not hmac.compare_digest(
+    if user is None or not user["active"] or not hmac.compare_digest(
         session.get("credential", ""), session_credential(user)
     ):
         session.clear()
@@ -62,7 +62,7 @@ def load_logged_in_user() -> None:
         g.partner = db.execute(
             """SELECT p.*, cs.name AS commission_stage_name, cs.rate_bp AS commission_rate_bp
                FROM partners p JOIN commission_stages cs ON cs.id=p.commission_stage_id
-               WHERE p.user_id=?""",
+               WHERE p.user_id=? AND p.active=1 AND p.account_deleted_at IS NULL""",
             (user["id"],),
         ).fetchone()
         if g.partner is None:
@@ -106,18 +106,23 @@ def validate_csrf() -> None:
         abort(400, description="This form expired. Refresh the page and try again.")
 
 
-def authenticate(email: str, password: str):
+def authenticate(name: str, password: str):
     db = get_db()
-    email = (email or "").strip().lower()
-    user = db.execute("SELECT * FROM users WHERE lower(email)=?", (email,)).fetchone()
+    name = (name or "").strip()
+    if not name:
+        return None, "Enter your name."
+    user = db.execute(
+        "SELECT * FROM users WHERE active=1 AND lower(trim(full_name))=lower(?) LIMIT 1",
+        (name,),
+    ).fetchone()
     now = datetime.now(timezone.utc)
-    if user is None or (user["role"] != "partner" and not user["active"]):
-        return None, "Invalid email or password."
+    if user is None:
+        return None, "Name or password is wrong."
     if user["locked_until"]:
         try:
             locked_until = datetime.fromisoformat(user["locked_until"])
             if locked_until > now:
-                return None, "Too many sign-in attempts. Try again in a few minutes."
+                return None, "Too many login attempts. Try again in a few minutes."
         except ValueError:
             pass
     if not check_password_hash(user["password_hash"], password or ""):
@@ -131,7 +136,7 @@ def authenticate(email: str, password: str):
             (failures, locked_until, utcnow_iso(), user["id"]),
         )
         db.commit()
-        return None, "Invalid email or password."
+        return None, "Name or password is wrong."
     db.execute(
         "UPDATE users SET failed_login_count=0, locked_until=NULL, last_login_at=?, updated_at=? WHERE id=?",
         (utcnow_iso(), utcnow_iso(), user["id"]),

@@ -1,6 +1,6 @@
 {% extends 'base.html' %}{% block content %}
-<div class="page-head workspace-page-head"><div><h1>Add Lead</h1><p>Add the best contact information you have.</p></div><a class="button secondary" href="{{ url_for('main.leads_list') }}">Cancel</a></div>
-{% if duplicate_matches and g.user.role=='admin' %}<section class="alert-panel"><strong>Possible duplicate</strong><p>Review the existing lead before creating another record.</p>{% for match,reasons in duplicate_matches %}<a href="{{ url_for('main.lead_detail',lead_id=match.id) }}">Open lead #{{ match.id }} · Match: {{ reasons|join(', ') }}</a>{% endfor %}</section>{% endif %}
+<div class="page-head workspace-page-head"><div><h1>Add Lead</h1><p>Add the contact details you have.</p></div><a class="button secondary" href="{{ url_for('main.leads_list') }}">Cancel</a></div>
+{% if duplicate_matches and g.user.role=='admin' %}<section class="alert-panel"><strong>Possible duplicate</strong><p>Check the existing lead before adding another one.</p>{% for match,reasons in duplicate_matches %}<a href="{{ url_for('main.lead_detail',lead_id=match.id) }}">Open lead #{{ match.id }} · Match: {{ reasons|join(', ') }}</a>{% endfor %}</section>{% endif %}
 <section class="panel form-panel refined-form-panel"><form method="post" class="form-grid">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 {% if g.user.role=='admin' %}<label class="span-2">Lead owner <span class="required">Required</span><select name="owner_partner_id" required><option value="">Choose Partner</option>{% for p in partners %}<option value="{{ p.id }}" {{ 'selected' if request.form.get('owner_partner_id')|int==p.id else '' }}>{{ p.full_name }}</option>{% endfor %}</select></label>{% endif %}

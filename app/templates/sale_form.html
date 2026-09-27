@@ -22,7 +22,7 @@
     </label>
     <div class="form-section span-2">
       <strong>Revenue</strong>
-      <span>Keep the agreed, invoiced, collected, and commissionable amounts clear.</span>
+      <span>Enter the sale and payment amounts.</span>
     </div>
     <label>Agreed amount
       <input type="number" name="deal_amount" inputmode="decimal" min="0" step="0.01" value="{{ request.form.get('deal_amount','0.00') }}">
@@ -44,7 +44,7 @@
       <input type="date" name="sale_date" value="{{ request.form.get('sale_date', today) }}">
     </label>
     <label class="span-2">Notes
-      <textarea name="notes" rows="4" maxlength="4000" placeholder="Optional internal context">{{ request.form.get('notes','') }}</textarea>
+      <textarea name="notes" rows="4" maxlength="4000" placeholder="Optional private note">{{ request.form.get('notes','') }}</textarea>
     </label>
     <div class="form-actions span-2"><button class="button primary" type="submit">Create Sale</button></div>
   </form>

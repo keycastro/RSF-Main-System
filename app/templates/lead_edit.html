@@ -1,6 +1,6 @@
 {% extends 'base.html' %}{% block content %}
-<div class="page-head workspace-page-head"><div><h1>Edit Lead</h1><p>Update contact and source information.</p></div><a class="button secondary" href="{{ url_for('main.lead_detail',lead_id=lead.id) }}">Cancel</a></div>
-{% if duplicate_matches and g.user.role=='admin' %}<section class="alert-panel"><strong>Possible duplicate</strong><p>These details match another lead.</p>{% for match,reasons in duplicate_matches %}<a href="{{ url_for('main.lead_detail',lead_id=match.id) }}">Open lead #{{ match.id }} · Match: {{ reasons|join(', ') }}</a>{% endfor %}</section>{% endif %}
+<div class="page-head workspace-page-head"><div><h1>Edit Lead</h1><p>Update the lead details.</p></div><a class="button secondary" href="{{ url_for('main.lead_detail',lead_id=lead.id) }}">Cancel</a></div>
+{% if duplicate_matches and g.user.role=='admin' %}<section class="alert-panel"><strong>Possible duplicate</strong><p>These details may match another lead.</p>{% for match,reasons in duplicate_matches %}<a href="{{ url_for('main.lead_detail',lead_id=match.id) }}">Open lead #{{ match.id }} · Match: {{ reasons|join(', ') }}</a>{% endfor %}</section>{% endif %}
 <section class="panel form-panel refined-form-panel"><form method="post" class="form-grid">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <label>Company <span class="required">Required</span><input name="company_name" required maxlength="200" value="{{ request.form.get('company_name',lead.company_name) }}" autocomplete="organization"></label>

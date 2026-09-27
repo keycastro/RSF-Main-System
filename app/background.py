@@ -30,6 +30,21 @@ def _lease(name: str, holder: str, seconds: int) -> bool:
     now = _now()
     until = now + timedelta(seconds=seconds)
     try:
+        if using_postgres():
+            # One atomic PostgreSQL statement prevents two workers from taking the
+            # same expired lease at the same time.
+            row = db.execute(
+                """INSERT INTO background_leases(name,holder,lease_until,updated_at)
+                   VALUES (?,?,?,?)
+                   ON CONFLICT(name) DO UPDATE SET
+                     holder=excluded.holder,lease_until=excluded.lease_until,updated_at=excluded.updated_at
+                   WHERE background_leases.lease_until<=? OR background_leases.holder=?
+                   RETURNING holder""",
+                (name, holder, _iso(until), _iso(now), _iso(now), holder),
+            ).fetchone()
+            db.commit()
+            return bool(row and row["holder"] == holder)
+
         db.execute("BEGIN IMMEDIATE")
         row = db.execute("SELECT holder,lease_until FROM background_leases WHERE name=?", (name,)).fetchone()
         if row:

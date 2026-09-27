@@ -92,6 +92,42 @@
     }
   });
 
+  const accountSecurityShell = document.querySelector('.account-security-shell[data-password-vault-url]');
+  if (accountSecurityShell) {
+    const vaultUrl = accountSecurityShell.dataset.passwordVaultUrl;
+    const vaultCsrf = accountSecurityShell.dataset.passwordVaultCsrf;
+    const loadVaultPassword = async (button) => {
+      const target = document.getElementById(button.dataset.target || '');
+      if (!(target instanceof HTMLInputElement)) return null;
+      if (target.dataset.loaded === '1') return target.value;
+      const body = new URLSearchParams({csrf_token: vaultCsrf || '', user_id: button.dataset.userId || ''});
+      const response = await fetch(vaultUrl, {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}, body, credentials: 'same-origin'});
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.ok) { window.alert(payload.error || 'Current password could not be revealed.'); return null; }
+      target.value = payload.password; target.dataset.loaded = '1'; return payload.password;
+    };
+    document.querySelectorAll('[data-vault-reveal]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const target = document.getElementById(button.dataset.target || '');
+        if (!(target instanceof HTMLInputElement)) return;
+        if (target.dataset.loaded !== '1' && await loadVaultPassword(button) === null) return;
+        const reveal = target.type === 'password';
+        target.type = reveal ? 'text' : 'password';
+        button.textContent = reveal ? 'Hide' : 'Show';
+      });
+    });
+    document.querySelectorAll('[data-vault-copy]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const target = document.getElementById(button.dataset.target || '');
+        if (!(target instanceof HTMLInputElement)) return;
+        let value = target.dataset.loaded === '1' ? target.value : await loadVaultPassword(button);
+        if (!value) return;
+        try { await navigator.clipboard.writeText(value); const original=button.textContent; button.textContent='Copied'; window.setTimeout(()=>{button.textContent=original;},1400); }
+        catch (_error) { target.type='text'; target.focus(); target.select(); }
+      });
+    });
+  }
+
   document.querySelectorAll('[data-account-disclosure]').forEach((button) => {
     button.addEventListener('click', () => {
       const targetId = button.dataset.target;
@@ -119,35 +155,54 @@
   document.querySelectorAll('[data-password-toggle],[data-toggle-password]').forEach((button) => {
     button.addEventListener('click', () => {
       const target = document.getElementById(button.dataset.target);
-      if (!(target instanceof HTMLInputElement)) return;
-      const reveal = target.type === 'password';
-      target.type = reveal ? 'text' : 'password';
-      button.textContent = reveal ? 'Hide' : 'Show';
+      if (!target) return;
+      const revealing = target.type === 'password';
+      target.type = revealing ? 'text' : 'password';
+      button.textContent = revealing ? 'Hide' : 'Show';
       target.focus();
     });
   });
 
-  document.querySelectorAll('[data-copy-target],[data-copy-input],[data-copy-text]').forEach((button) => {
-    button.addEventListener('click', async () => {
-      const targetId = button.dataset.copyTarget || button.dataset.target;
-      const target = targetId ? document.getElementById(targetId) : null;
-      const value = target instanceof HTMLInputElement ? target.value : (target?.textContent || '').trim();
-      if (!value) return;
-      try {
-        await navigator.clipboard.writeText(value);
-        const original = button.textContent;
-        button.textContent = 'Copied';
-        window.setTimeout(() => { button.textContent = original; }, 1400);
-      } catch (_error) {
-        if (target instanceof HTMLInputElement) {
-          target.type = 'text';
-          target.focus();
-          target.select();
-        }
-      }
+  const copyValue = async (value, button) => {
+    if (!value) return;
+    try {
+      await navigator.clipboard.writeText(value);
+    } catch (_error) {
+      const area = document.createElement('textarea');
+      area.value = value;
+      area.setAttribute('readonly', '');
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      document.body.appendChild(area);
+      area.select();
+      document.execCommand('copy');
+      area.remove();
+    }
+    const previous = button.textContent;
+    button.textContent = 'Copied';
+    window.setTimeout(() => { button.textContent = previous; }, 1400);
+  };
+
+  document.querySelectorAll('[data-copy-input]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const target = document.getElementById(button.dataset.target);
+      if (target) copyValue(target.value, button);
     });
   });
 
+  document.querySelectorAll('[data-copy-text]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const target = document.getElementById(button.dataset.target);
+      if (target) copyValue(target.textContent || '', button);
+    });
+  });
+
+  document.querySelectorAll('[data-copy-target]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const target = document.getElementById(button.dataset.copyTarget);
+      if (target) copyValue(target.value || target.textContent || '', button);
+    });
+  });
 
   // Show status-specific lead fields only when they are relevant.
   document.querySelectorAll('[data-lead-status-form]').forEach((form) => {
@@ -1565,66 +1620,6 @@
       pollCall();
     }
   });
-
-
-  const credentialShell = document.querySelector('.account-security-shell[data-password-vault-url]');
-  if (credentialShell) {
-    const revealUrl = credentialShell.dataset.passwordVaultUrl || '';
-    const credentialCsrf = credentialShell.dataset.passwordVaultCsrf || csrf || '';
-
-    const loadCredential = async (button) => {
-      const target = document.getElementById(button.dataset.target || '');
-      if (!(target instanceof HTMLInputElement)) throw new Error('Password field unavailable.');
-      if (target.dataset.loaded === '1') return target;
-
-      const body = new URLSearchParams({
-        csrf_token: credentialCsrf,
-        user_id: button.dataset.userId || ''
-      });
-      const response = await fetch(revealUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
-        body,
-        credentials: 'same-origin',
-        cache: 'no-store'
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || !data.ok) {
-        throw new Error(data.error || 'Current password is not available yet.');
-      }
-      target.value = data.password || '';
-      target.dataset.loaded = '1';
-      return target;
-    };
-
-    credentialShell.addEventListener('click', async (event) => {
-      const show = event.target.closest('[data-vault-reveal]');
-      if (show) {
-        try {
-          const input = await loadCredential(show);
-          const reveal = input.type === 'password';
-          input.type = reveal ? 'text' : 'password';
-          show.textContent = reveal ? 'Hide' : 'Show';
-        } catch (error) {
-          window.alert(error.message);
-        }
-        return;
-      }
-
-      const copy = event.target.closest('[data-vault-copy]');
-      if (copy) {
-        try {
-          const input = await loadCredential(copy);
-          await navigator.clipboard.writeText(input.value);
-          const previous = copy.textContent;
-          copy.textContent = 'Copied';
-          window.setTimeout(() => { copy.textContent = previous; }, 1200);
-        } catch (error) {
-          window.alert(error.message);
-        }
-      }
-    });
-  }
 
   scrollMessages();
   window.setTimeout(pollGlobal, 150);

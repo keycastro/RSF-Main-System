@@ -45,6 +45,31 @@ def normalize_phone(value: str | None) -> str:
     return digits[:20]
 
 
+def file_signature_matches(suffix: str, data: bytes) -> bool:
+    """Basic file-content check for allowed business uploads."""
+    suffix = (suffix or "").lower()
+    head = bytes(data[:4096])
+    if suffix == ".png":
+        return head.startswith(b"\x89PNG\r\n\x1a\n")
+    if suffix in {".jpg", ".jpeg"}:
+        return head.startswith(b"\xff\xd8\xff")
+    if suffix == ".gif":
+        return head.startswith((b"GIF87a", b"GIF89a"))
+    if suffix == ".webp":
+        return len(head) >= 12 and head[:4] == b"RIFF" and head[8:12] == b"WEBP"
+    if suffix == ".pdf":
+        return head.startswith(b"%PDF-")
+    if suffix in {".doc", ".xls", ".ppt"}:
+        return head.startswith(b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1")
+    if suffix in {".docx", ".xlsx", ".pptx"}:
+        return head.startswith((b"PK\x03\x04", b"PK\x05\x06", b"PK\x07\x08"))
+    if suffix == ".rtf":
+        return head.lstrip().startswith(b"{\\rtf")
+    if suffix in {".txt", ".csv"}:
+        return b"\x00" not in head
+    return False
+
+
 def normalize_domain(value: str | None) -> str:
     raw = (value or "").strip().casefold()
     if not raw or any(ch.isspace() for ch in raw):
@@ -131,6 +156,12 @@ def commission_amount(qualifying_cents: int, rate_bp: int, adjustment_cents: int
     return max(0, int(base) + int(adjustment_cents))
 
 
+def commission_change_for_revenue(revenue_change_cents: int, rate_bp: int) -> int:
+    """Calculate a signed commission change from a signed revenue change."""
+    value = (Decimal(revenue_change_cents) * Decimal(rate_bp) / Decimal(10000)).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    return int(value)
+
+
 def setting(key: str, default: str = "") -> str:
     row = get_db().execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
     return row["value"] if row else default
@@ -139,13 +170,9 @@ def setting(key: str, default: str = "") -> str:
 def log_activity(action_type: str, entity_type: str, entity_id: int | None, description: str, metadata: dict | None = None, actor_user_id: int | None = None) -> None:
     db = get_db()
     actor = actor_user_id if actor_user_id is not None else (g.user["id"] if getattr(g, "user", None) else None)
-    actor_name = ""
-    if actor is not None:
-        row = db.execute("SELECT full_name FROM users WHERE id=?", (actor,)).fetchone()
-        actor_name = row["full_name"] if row else ""
     db.execute(
-        "INSERT INTO activity_log(actor_user_id,actor_name_snapshot,action_type,entity_type,entity_id,description,metadata_json,created_at) VALUES (?,?,?,?,?,?,?,?)",
-        (actor, actor_name, action_type, entity_type, entity_id, description[:500], json.dumps(metadata or {}, separators=(",", ":")), utcnow_iso()),
+        "INSERT INTO activity_log(actor_user_id,action_type,entity_type,entity_id,description,metadata_json,created_at) VALUES (?,?,?,?,?,?,?)",
+        (actor, action_type, entity_type, entity_id, description[:500], json.dumps(metadata or {}, separators=(",", ":")), utcnow_iso()),
     )
 
 
@@ -196,6 +223,100 @@ def duplicate_candidates(data: dict, exclude_lead_id: int | None = None):
     matches.sort(key=lambda item: (-item[2], item[0]["id"]))
     return [(row, reasons) for row, reasons, _score in matches], fields
 
+
+
+def transfer_lead_ownership(lead_id: int, new_partner_id: int, *, allow_sale_history: bool = False) -> dict:
+    """Move active CRM work for one lead to an active Partner.
+
+    Sales and commission rows are never changed. When allow_sale_history is False,
+    ownership is locked after a sale. The delete-account flow may set it True so
+    active client work can continue while sale history stays with the old Partner.
+    """
+    db = get_db()
+    lead = db.execute("SELECT * FROM leads WHERE id=?", (lead_id,)).fetchone()
+    if not lead:
+        raise ValueError("Lead not found.")
+    target = db.execute(
+        """SELECT p.id,p.user_id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id
+           WHERE p.id=? AND p.active=1 AND u.active=1 AND p.account_deleted_at IS NULL""",
+        (new_partner_id,),
+    ).fetchone()
+    if not target:
+        raise ValueError("That Partner is not available.")
+    old_partner_id = int(lead["owner_partner_id"])
+    if old_partner_id == int(new_partner_id):
+        return {"changed": False, "old_partner_id": old_partner_id, "new_partner_id": int(new_partner_id), "target_name": target["full_name"]}
+    if not allow_sale_history and db.execute("SELECT 1 FROM sales WHERE lead_id=?", (lead_id,)).fetchone():
+        raise ValueError("This Lead already has a sale. Its owner cannot be changed here.")
+
+    now = utcnow_iso()
+    db.execute("UPDATE leads SET owner_partner_id=?,last_activity_at=? WHERE id=?", (new_partner_id, now, lead_id))
+    db.execute("UPDATE followups SET owner_partner_id=?,updated_at=? WHERE lead_id=? AND status='OPEN'", (new_partner_id, now, lead_id))
+    db.execute("UPDATE client_conversations SET owner_partner_id=?,updated_at=? WHERE lead_id=? AND status='ACTIVE'", (new_partner_id, now, lead_id))
+    db.execute("UPDATE website_inquiries SET claimed_by_partner_id=?,updated_at=? WHERE lead_id=? AND status='CLAIMED'", (new_partner_id, now, lead_id))
+
+    old_user = db.execute("SELECT user_id FROM partners WHERE id=?", (old_partner_id,)).fetchone()
+    new_user_id = target["user_id"]
+    conversations = db.execute(
+        "SELECT id FROM client_conversations WHERE lead_id=? AND status='ACTIVE' ORDER BY id",
+        (lead_id,),
+    ).fetchall()
+    inquiry_ids = db.execute(
+        "SELECT id FROM website_inquiries WHERE lead_id=? AND status='CLAIMED'",
+        (lead_id,),
+    ).fetchall()
+    if old_user and old_user["user_id"]:
+        for row in conversations:
+            db.execute(
+                """UPDATE client_notifications SET read_at=COALESCE(read_at,?)
+                   WHERE user_id=? AND entity_type='conversation' AND entity_id=?""",
+                (now, old_user["user_id"], row["id"]),
+            )
+        for row in inquiry_ids:
+            db.execute(
+                """UPDATE client_notifications SET read_at=COALESCE(read_at,?)
+                   WHERE user_id=? AND entity_type='inquiry' AND entity_id=?""",
+                (now, old_user["user_id"], row["id"]),
+            )
+    if new_user_id:
+        for row in conversations:
+            exists = db.execute(
+                """SELECT 1 FROM client_notifications WHERE user_id=? AND kind='CLIENT_REASSIGNED'
+                   AND entity_type='conversation' AND entity_id=? AND read_at IS NULL LIMIT 1""",
+                (new_user_id, row["id"]),
+            ).fetchone()
+            if not exists:
+                db.execute(
+                    """INSERT INTO client_notifications(user_id,kind,entity_type,entity_id,title,body,created_at)
+                       VALUES (?,'CLIENT_REASSIGNED','conversation',?,?,'This client is now assigned to you.',?)""",
+                    (new_user_id, row["id"], f"Client moved: {lead['company_name']}", now),
+                )
+    return {
+        "changed": True,
+        "old_partner_id": old_partner_id,
+        "new_partner_id": int(new_partner_id),
+        "target_name": target["full_name"],
+    }
+
+
+def validate_sale_amounts(deal_cents: int, invoiced_cents: int, collected_cents: int, qualifying_cents: int, payment_status: str) -> list[str]:
+    """Return simple business-rule errors for sale money fields."""
+    errors: list[str] = []
+    if invoiced_cents > deal_cents:
+        errors.append("Invoiced amount cannot be more than the deal amount.")
+    if collected_cents > invoiced_cents:
+        errors.append("Collected amount cannot be more than the invoiced amount.")
+    if qualifying_cents > collected_cents:
+        errors.append("Commission revenue cannot be more than the collected amount.")
+    if payment_status == "UNPAID" and collected_cents != 0:
+        errors.append("Unpaid sales must have $0 collected.")
+    if payment_status == "PAID" and (invoiced_cents <= 0 or collected_cents != invoiced_cents):
+        errors.append("Paid sales need a full invoiced amount and full payment.")
+    if payment_status == "PARTIALLY_PAID" and not (0 < collected_cents < invoiced_cents):
+        errors.append("Partially paid sales need some payment, but not the full amount.")
+    if payment_status == "REFUNDED_ADJUSTED" and collected_cents > invoiced_cents:
+        errors.append("Adjusted collected amount cannot be more than the invoiced amount.")
+    return errors
 
 def create_commission_for_sale(sale_id: int, partner_id: int, qualifying_cents: int):
     db = get_db()

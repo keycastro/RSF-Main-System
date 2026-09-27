@@ -7,14 +7,14 @@
 
 <div class="sale-record-layout">
   <section class="workspace-section sale-commercial-section">
-    <div class="section-head"><div><h2>Sale details</h2><p>Commercial and payment record.</p></div></div>
+    <div class="section-head"><div><h2>Sale details</h2><p>Sale and payment details.</p></div></div>
     {% if g.user.role=='admin' %}
     <form method="post" class="form-grid compact-grid">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <label>Agreed amount<input type="number" name="deal_amount" inputmode="decimal" min="0" step="0.01" value="{{ request.form.get('deal_amount', '%.2f'|format(sale.deal_amount_cents/100)) }}"></label>
       <label>Invoiced<input type="number" name="amount_invoiced" inputmode="decimal" min="0" step="0.01" value="{{ request.form.get('amount_invoiced', '%.2f'|format(sale.invoiced_cents/100)) }}"></label>
       <label>Collected<input type="number" name="amount_collected" inputmode="decimal" min="0" step="0.01" value="{{ request.form.get('amount_collected', '%.2f'|format(sale.collected_cents/100)) }}"></label>
-      <label>Commission revenue<input type="number" name="qualifying_revenue" inputmode="decimal" min="0" step="0.01" value="{{ request.form.get('qualifying_revenue', '%.2f'|format(sale.qualifying_revenue_cents/100)) }}" {% if commission and commission.status!='PENDING' %}readonly{% endif %}><small class="help">{% if commission and commission.status!='PENDING' %}Locked after commission approval.{% else %}Used to calculate commission.{% endif %}</small></label>
+      <label>Commission revenue<input type="number" name="qualifying_revenue" inputmode="decimal" min="0" step="0.01" value="{{ request.form.get('qualifying_revenue', '%.2f'|format(sale.qualifying_revenue_cents/100)) }}" {% if commission and commission.status!='PENDING' %}readonly{% endif %}><small class="help">{% if commission and commission.status!='PENDING' %}Use Add Correction after approval.{% else %}Used to calculate commission.{% endif %}</small></label>
       <label>Payment status<select name="payment_status">{% for s in payment_statuses %}<option value="{{ s }}" {{ 'selected' if request.form.get('payment_status', sale.payment_status)==s else '' }}>{{ s|human_status }}</option>{% endfor %}</select></label>
       <label class="span-2">Notes<textarea name="notes" rows="4">{{ request.form.get('notes', sale.notes) }}</textarea></label>
       <div class="form-actions span-2"><button class="button primary" type="submit">Save Sale</button></div>
@@ -32,10 +32,32 @@
   </section>
 
   <aside class="workspace-section sale-linked-section">
-    <div class="section-head"><div><h2>Commission</h2><p>Managed in Commissions.</p></div><a href="{{ url_for('main.commissions_list') }}">View all</a></div>
-    {% if commission %}<div class="linked-summary-list"><div><span>Status</span><strong><span class="badge status-{{ commission.status|lower }}">{{ commission.status|human_status }}</span></strong></div><div><span>Rate</span><strong>{{ commission.rate_bp_snapshot|rate }}</strong></div><div><span>Amount</span><strong>{{ fmt_money(commission.commission_amount_cents, True, setting('currency_code','USD')) }}</strong></div></div>{% else %}<div class="empty compact-empty"><strong>No commission record</strong></div>{% endif %}
+    <div class="section-head"><div><h2>Commission</h2><p>Commission for this sale.</p></div><a href="{{ url_for('main.commissions_list') }}">View all</a></div>
+    {% if commission %}<div class="linked-summary-list"><div><span>Status</span><strong><span class="badge status-{{ commission.status|lower }}">{{ commission.status|human_status }}</span></strong></div><div><span>Rate</span><strong>{{ commission.rate_bp_snapshot|rate }}</strong></div><div><span>Original</span><strong>{{ fmt_money(commission.commission_amount_cents, True, setting('currency_code','USD')) }}</strong></div>{% if correction_total %}<div><span>Corrections</span><strong>{{ fmt_money(correction_total, True, setting('currency_code','USD')) }}</strong></div><div><span>Current total</span><strong>{{ fmt_money(adjusted_commission, True, setting('currency_code','USD')) }}</strong></div>{% endif %}</div>{% else %}<div class="empty compact-empty"><strong>No commission record</strong></div>{% endif %}
   </aside>
 </div>
+
+{% if g.user.role=='admin' and commission and commission.status!='PENDING' %}
+<section class="workspace-section sale-correction-section">
+  <div class="section-head"><div><h2>Add Correction</h2><p>Use this for a refund or money change. The original commission stays in history.</p></div></div>
+  <form method="post" action="{{ url_for('main.sale_correction_add', sale_id=sale.id) }}" class="form-grid compact-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Type<select name="kind" required><option value="">Choose type</option><option value="REFUND">Refund</option><option value="CHARGEBACK">Chargeback</option><option value="REVENUE_CORRECTION">Revenue correction</option><option value="SALE_ADJUSTMENT">Sale adjustment</option><option value="COMMISSION_CORRECTION">Commission correction</option></select></label>
+    <label>Agreed amount now<input type="number" name="deal_amount" min="0" step="0.01" value="{{ '%.2f'|format(sale.deal_amount_cents/100) }}" required></label>
+    <label>Invoiced now<input type="number" name="amount_invoiced" min="0" step="0.01" value="{{ '%.2f'|format(sale.invoiced_cents/100) }}" required></label>
+    <label>Collected now<input type="number" name="amount_collected" min="0" step="0.01" value="{{ '%.2f'|format(sale.collected_cents/100) }}" required></label>
+    <label>Commission revenue now<input type="number" name="qualifying_revenue" min="0" step="0.01" value="{{ '%.2f'|format(sale.qualifying_revenue_cents/100) }}" required></label>
+    <label>Payment status<select name="payment_status" required>{% for s in payment_statuses %}<option value="{{ s }}" {{ 'selected' if sale.payment_status==s else '' }}>{{ s|human_status }}</option>{% endfor %}</select></label>
+    <label>Commission change <small class="help">Use this only for a commission change. Use a minus sign to reduce it.</small><input type="number" name="commission_change" step="0.01" value="0.00"></label>
+    <label class="span-2">Reason<textarea name="note" rows="3" maxlength="2000" required placeholder="Why is this correction needed?"></textarea></label>
+    <div class="form-actions span-2"><button class="button primary" type="submit">Save Correction</button></div>
+  </form>
+</section>
+{% endif %}
+
+{% if corrections %}
+<section class="workspace-section"><div class="section-head"><div><h2>Corrections</h2><p>These changes do not edit the original approved or paid commission.</p></div></div><div class="list-stack">{% for c in corrections %}<div class="list-row"><div><strong>{{ c.kind|human_status }}</strong><span>{{ c.note }}</span></div><div class="row-end"><strong>{{ fmt_money(c.commission_change_cents, True, setting('currency_code','USD')) }}</strong><small>{{ c.actor_name }} · {{ c.created_at|dt }}</small></div></div>{% endfor %}</div></section>
+{% endif %}
 
 <details class="history-disclosure"><summary>History{% if activity %} <span>{{ activity|length }}</span>{% endif %}</summary>{% if activity %}<div class="timeline audit-timeline">{% for a in activity %}<div class="timeline-item"><span class="timeline-dot"></span><div><strong>{{ a.description }}</strong><span>{{ a.actor_name }} · {{ a.created_at|dt }}</span></div></div>{% endfor %}</div>{% else %}<div class="empty compact-empty"><span>No activity yet.</span></div>{% endif %}</details>
 {% endblock %}

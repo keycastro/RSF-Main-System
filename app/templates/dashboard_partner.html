@@ -1,6 +1,6 @@
 {% extends 'base.html' %}{% block content %}
 <div class="page-head workspace-page-head">
-  <div><h1>Dashboard</h1><p>Your next actions and pipeline at a glance.</p></div>
+  <div><h1>Dashboard</h1><p>Your next work and lead status.</p></div>
   <a class="button primary" href="{{ url_for('main.lead_new') }}">Add Lead</a>
 </div>
 
@@ -12,11 +12,11 @@
 </section>
 
 <section class="workspace-section" aria-labelledby="partner-priority-title">
-  <div class="section-head"><div><h2 id="partner-priority-title">Priority work</h2><p>Follow-ups first, then active leads.</p></div><div class="section-links"><a href="{{ url_for('main.followups_list') }}">Follow-ups</a><a href="{{ url_for('main.leads_list') }}">Leads</a></div></div>
+  <div class="section-head"><div><h2 id="partner-priority-title">Next work</h2><p>Follow-ups first. Then active leads.</p></div><div class="section-links"><a href="{{ url_for('main.followups_list') }}">Follow-ups</a><a href="{{ url_for('main.leads_list') }}">Leads</a></div></div>
   {% if followups or leads %}<div class="command-columns streamlined-command-columns">
     <div class="command-list-block"><div class="command-list-title"><strong>Next follow-ups</strong></div>{% if followups %}<div class="list-stack compact-command-list">{% for f in followups[:5] %}<a class="list-row" href="{{ url_for('main.lead_detail',lead_id=f.lead_id) }}"><div><strong>{{ f.company_name }}</strong><span>{{ f.title }}</span></div><div class="row-end"><span class="badge {{ 'danger' if f.due_at[:10] < today else 'neutral' }}">{{ 'Overdue' if f.due_at[:10] < today else 'Due' }}</span><small>{{ f.due_at|dt }}</small></div></a>{% endfor %}</div>{% else %}<div class="compact-zero"><span class="status-dot is-ready"></span><div><strong>No follow-ups waiting</strong><small>Your queue is clear.</small></div></div>{% endif %}</div>
     <div class="command-list-block"><div class="command-list-title"><strong>Active leads</strong></div>{% if leads %}<div class="list-stack compact-command-list">{% for l in leads[:5] %}<a class="list-row" href="{{ url_for('main.lead_detail',lead_id=l.id) }}"><div><strong>{{ l.company_name }}</strong><span>{{ l.contact_name }}{% if l.next_followup %} · next {{ l.next_followup|dt }}{% endif %}</span></div><span class="badge status-{{ l.status|lower }}">{{ l.status|human_status }}</span></a>{% endfor %}</div>{% else %}<div class="compact-zero"><span class="status-dot"></span><div><strong>No active leads</strong><small>Claim an inquiry or add a lead.</small></div></div>{% endif %}</div>
-  </div>{% else %}<div class="command-empty-state compact"><div class="command-empty-icon" aria-hidden="true">✓</div><div><strong>Your work queue is clear</strong><span>No active leads or scheduled follow-ups.</span></div>{% if metrics.unclaimed %}<a class="button primary small" href="{{ url_for('main.inquiries_list') }}">View opportunities</a>{% endif %}</div>{% endif %}
+  </div>{% else %}<div class="command-empty-state compact"><div class="command-empty-icon" aria-hidden="true">✓</div><div><strong>Your work queue is clear</strong><span>No active leads or scheduled follow-ups.</span></div>{% if metrics.unclaimed %}<a class="button primary small" href="{{ url_for('main.inquiries_list') }}">View new inquiries</a>{% endif %}</div>{% endif %}
 </section>
 
 <section class="workspace-section pipeline-section" aria-labelledby="partner-pipeline-title">

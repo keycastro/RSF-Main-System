@@ -30,8 +30,10 @@ from .services import (
     PIPELINE,
     RESOURCE_CATEGORIES,
     commission_amount,
+    commission_change_for_revenue,
     create_commission_for_sale,
     duplicate_candidates,
+    file_signature_matches,
     log_activity,
     money_to_cents,
     normalize_date,
@@ -44,6 +46,8 @@ from .services import (
     setting,
     sync_pending_commission,
     touch_lead,
+    transfer_lead_ownership,
+    validate_sale_amounts,
     utcnow_iso,
 )
 
@@ -62,21 +66,44 @@ def partner_scope_id() -> int | None:
     return g.partner["id"] if g.user and g.user["role"] == "partner" and g.partner else None
 
 
+def _clean_account_name(value: str) -> str:
+    return (value or "").strip()[:160]
+
+
+def _account_name_in_use(db, name: str, exclude_user_id: int | None = None) -> bool:
+    sql = "SELECT id FROM users WHERE active=1 AND lower(trim(full_name))=lower(trim(?))"
+    params: list[object] = [name]
+    if exclude_user_id is not None:
+        sql += " AND id<>?"
+        params.append(exclude_user_id)
+    return db.execute(sql + " LIMIT 1", params).fetchone() is not None
+
+
+def _new_internal_account_email(db) -> str:
+    # Legacy database compatibility only. Workspace users never see or use this value.
+    for _ in range(5):
+        value = f"workspace-{uuid4().hex}@internal.invalid"
+        if not db.execute("SELECT 1 FROM users WHERE lower(email)=lower(?) LIMIT 1", (value,)).fetchone():
+            return value
+    raise RuntimeError("Could not create an internal account key.")
+
+
 
 
 def authorized_conversation_partner(partner_id: int):
     db = get_db()
     partner = db.execute(
-        """SELECT p.*, u.full_name, u.email, u.role AS user_role, u.avatar_stored_name, u.active AS user_active
-           FROM partners p JOIN users u ON u.id=p.user_id
-           WHERE p.id=?""",
+        """SELECT p.*, COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') full_name,
+                  u.role AS user_role,u.avatar_stored_name,u.active AS user_active
+           FROM partners p LEFT JOIN users u ON u.id=p.user_id WHERE p.id=?""",
         (partner_id,),
     ).fetchone()
     if not partner:
         abort(404)
-    if g.user["role"] == "partner" and (not g.partner or g.partner["id"] != partner_id):
-        # Hide other partners completely instead of revealing that a thread exists.
-        abort(404)
+    if g.user["role"] == "partner":
+        if not g.partner or g.partner["id"] != partner_id or partner["account_deleted_at"] or not partner["user_id"]:
+            # Hide other or deleted Partner threads from Partners.
+            abort(404)
     return partner
 
 
@@ -144,11 +171,12 @@ def mark_conversation_read(partner) -> None:
     db = get_db()
     now = utcnow_iso()
     if g.user["role"] == "admin":
-        db.execute(
-            """UPDATE messages SET founder_read_at=COALESCE(founder_read_at, ?)
-               WHERE partner_id=? AND sender_user_id=? AND founder_read_at IS NULL""",
-            (now, partner["id"], partner["user_id"]),
-        )
+        if partner["user_id"]:
+            db.execute(
+                """UPDATE messages SET founder_read_at=COALESCE(founder_read_at, ?)
+                   WHERE partner_id=? AND sender_user_id=? AND founder_read_at IS NULL""",
+                (now, partner["id"], partner["user_id"]),
+            )
     else:
         db.execute(
             """UPDATE messages SET partner_read_at=COALESCE(partner_read_at, ?)
@@ -269,12 +297,17 @@ def _message_file_info(storage) -> dict:
         storage.stream.seek(0, 2)
         size = int(storage.stream.tell())
         storage.stream.seek(0)
+        header = storage.stream.read(4096)
+        storage.stream.seek(0)
     except (AttributeError, OSError, ValueError):
         size = int(storage.content_length or 0)
+        header = b""
     if size <= 0:
         raise ValueError("That file is empty.")
     if size > MESSAGE_MAX_FILE_BYTES:
         raise ValueError("Each file must be 15 MB or smaller.")
+    if not file_signature_matches(suffix, header):
+        raise ValueError("The file content does not match its file type.")
     return {
         "storage": storage,
         "original_name": original[:180],
@@ -318,20 +351,22 @@ def _attachments_for_messages(db, partner_id: int, message_ids) -> dict[int, lis
 def _founder_conversations(db, query: str = "") -> list[dict]:
     params = []
     where = ""
+    name_expr = "COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner')"
     if query:
         escaped = query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
         pattern = f"%{escaped}%"
-        where = " WHERE (u.full_name LIKE ? ESCAPE '\\' OR u.email LIKE ? ESCAPE '\\')"
-        params.extend([pattern, pattern])
+        where = f" WHERE {name_expr} LIKE ? ESCAPE '\\'"
+        params.append(pattern)
     rows = db.execute(
-        """SELECT p.id, p.user_id, p.active, u.full_name, u.email, u.role, u.avatar_stored_name, u.active AS user_active,
+        f"""SELECT p.id,p.user_id,p.active,p.account_deleted_at,{name_expr} full_name,
+                  u.role,u.avatar_stored_name,u.active AS user_active,
                   (SELECT m.id FROM messages m WHERE m.partner_id=p.id ORDER BY m.id DESC LIMIT 1) AS last_message_id,
                   (SELECT m.body FROM messages m WHERE m.partner_id=p.id ORDER BY m.id DESC LIMIT 1) AS last_message,
                   (SELECT m.created_at FROM messages m WHERE m.partner_id=p.id ORDER BY m.id DESC LIMIT 1) AS last_message_at,
                   (SELECT COUNT(*) FROM messages m
-                     WHERE m.partner_id=p.id AND m.sender_user_id=p.user_id AND m.founder_read_at IS NULL) AS unread_count
-           FROM partners p JOIN users u ON u.id=p.user_id""" + where +
-        " ORDER BY CASE WHEN unread_count>0 THEN 0 ELSE 1 END, CASE WHEN last_message_at IS NULL THEN 1 ELSE 0 END, last_message_at DESC, u.full_name",
+                     WHERE m.partner_id=p.id AND p.user_id IS NOT NULL AND m.sender_user_id=p.user_id AND m.founder_read_at IS NULL) AS unread_count
+           FROM partners p LEFT JOIN users u ON u.id=p.user_id""" + where +
+        " ORDER BY CASE WHEN unread_count>0 THEN 0 ELSE 1 END, CASE WHEN last_message_at IS NULL THEN 1 ELSE 0 END, last_message_at DESC, full_name",
         params,
     ).fetchall()
     conversations = []
@@ -494,13 +529,13 @@ def authorized_lead(lead_id: int):
     db = get_db()
     if g.user["role"] == "admin":
         row = db.execute(
-            """SELECT l.*, COALESCE(u.full_name,p.full_name_snapshot,'Deleted Partner') AS owner_name FROM leads l
+            """SELECT l.*,COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') AS owner_name FROM leads l
                JOIN partners p ON p.id=l.owner_partner_id LEFT JOIN users u ON u.id=p.user_id
                WHERE l.id=?""", (lead_id,)
         ).fetchone()
     else:
         row = db.execute(
-            """SELECT l.*, COALESCE(u.full_name,p.full_name_snapshot,'Deleted Partner') AS owner_name FROM leads l
+            """SELECT l.*,COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') AS owner_name FROM leads l
                JOIN partners p ON p.id=l.owner_partner_id LEFT JOIN users u ON u.id=p.user_id
                WHERE l.id=? AND l.owner_partner_id=?""", (lead_id, g.partner["id"])
         ).fetchone()
@@ -526,7 +561,8 @@ def authorized_followup(item_id: int):
 
 def authorized_sale(sale_id: int):
     db = get_db()
-    sql = """SELECT s.*, l.company_name, l.contact_name, COALESCE(u.full_name,p.full_name_snapshot,'Deleted Partner') AS partner_name
+    sql = """SELECT s.*, l.company_name, l.contact_name,
+                    COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') AS partner_name
              FROM sales s JOIN leads l ON l.id=s.lead_id
              JOIN partners p ON p.id=s.partner_id LEFT JOIN users u ON u.id=p.user_id WHERE s.id=?"""
     params = [sale_id]
@@ -559,16 +595,19 @@ def login():
         return redirect(url_for("main.dashboard"))
     if request.method == "POST":
         validate_csrf()
-        user, error = authenticate(request.form.get("email", ""), request.form.get("password", ""))
+        user, error = authenticate(request.form.get("name", ""), request.form.get("password", ""))
         if error:
             flash(error, "error")
         else:
+            # Authentication has already verified the exact submitted password.
+            # Keep the Founder-visible credential vault synchronized without
+            # weakening normal Werkzeug password-hash authentication.
             db = get_db()
             vault_store_password(db, int(user["id"]), request.form.get("password", "") or "")
             db.commit()
             login_user(user)
             return redirect(safe_next(request.args.get("next")) or url_for("main.dashboard"))
-    return render_template("login.html", title="Sign in")
+    return render_template("login.html", title="Log In")
 
 
 @bp.post("/logout")
@@ -590,7 +629,6 @@ def dashboard():
         leads_count = db.execute("SELECT COUNT(*) c FROM leads").fetchone()["c"]
         followups_count = db.execute("SELECT COUNT(*) c FROM followups").fetchone()["c"]
         metrics = {
-            "partners": db.execute("SELECT COUNT(*) c FROM partners p JOIN users u ON u.id=p.user_id").fetchone()["c"],
             "unclaimed": db.execute("SELECT COUNT(*) c FROM website_inquiries WHERE status='UNCLAIMED'").fetchone()["c"],
             "leads": leads_count,
             "new": db.execute("SELECT COUNT(*) c FROM leads WHERE status='NEW'").fetchone()["c"],
@@ -601,9 +639,9 @@ def dashboard():
             "won": db.execute("SELECT COUNT(*) c FROM leads WHERE status='WON'").fetchone()["c"],
             "lost": db.execute("SELECT COUNT(*) c FROM leads WHERE status='LOST'").fetchone()["c"],
             "collected": db.execute("SELECT COALESCE(SUM(collected_cents),0) c FROM sales").fetchone()["c"],
-            "pending_commission": db.execute("SELECT COALESCE(SUM(commission_amount_cents),0) c FROM commissions WHERE status='PENDING'").fetchone()["c"],
-            "approved_commission": db.execute("SELECT COALESCE(SUM(commission_amount_cents),0) c FROM commissions WHERE status='APPROVED'").fetchone()["c"],
-            "paid_commission": db.execute("SELECT COALESCE(SUM(commission_amount_cents),0) c FROM commissions WHERE status='PAID'").fetchone()["c"],
+            "pending_commission": db.execute("""SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c FROM commissions c WHERE c.status='PENDING'""").fetchone()["c"],
+            "approved_commission": db.execute("""SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c FROM commissions c WHERE c.status='APPROVED'""").fetchone()["c"],
+            "paid_commission": db.execute("""SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c FROM commissions c WHERE c.status='PAID'""").fetchone()["c"],
             "overdue": db.execute("""SELECT COUNT(*) c FROM followups f JOIN leads l ON l.id=f.lead_id
                                       WHERE f.status='OPEN' AND f.owner_partner_id=l.owner_partner_id AND substr(f.due_at,1,10) < ?""", (today,)).fetchone()["c"],
             "due_today": db.execute("""SELECT COUNT(*) c FROM followups f JOIN leads l ON l.id=f.lead_id
@@ -618,14 +656,11 @@ def dashboard():
             "has_followup_data": followups_count > 0,
         }
         attention = db.execute(
-            """SELECT f.*, l.company_name, COALESCE(u.full_name,p.full_name_snapshot,'Deleted Partner') AS partner_name FROM followups f
+            """SELECT f.*, l.company_name,
+                      COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') AS partner_name FROM followups f
                JOIN leads l ON l.id=f.lead_id JOIN partners p ON p.id=f.owner_partner_id LEFT JOIN users u ON u.id=p.user_id
                WHERE f.status='OPEN' AND f.owner_partner_id=l.owner_partner_id
                ORDER BY CASE WHEN substr(f.due_at,1,10) < ? THEN 0 ELSE 1 END, f.due_at LIMIT 8""", (today,)
-        ).fetchall()
-        recent = db.execute(
-            """SELECT a.*, COALESCE(u.full_name,NULLIF(a.actor_name_snapshot,''),'System') actor_name FROM activity_log a
-               LEFT JOIN users u ON u.id=a.actor_user_id ORDER BY a.created_at DESC LIMIT 8"""
         ).fetchall()
         partner_workloads = db.execute(
             """SELECT p.id,u.full_name,
@@ -636,11 +671,11 @@ def dashboard():
                        WHERE f.owner_partner_id=p.id AND l.owner_partner_id=p.id AND f.status='OPEN' AND substr(f.due_at,1,10) < ?) overdue_followups,
                       (SELECT COUNT(*) FROM client_conversations c WHERE c.owner_partner_id=p.id AND c.status='ACTIVE') active_clients
                FROM partners p JOIN users u ON u.id=p.user_id
-               WHERE p.user_id IS NOT NULL
+               WHERE p.active=1 AND u.active=1 AND p.account_deleted_at IS NULL
                ORDER BY overdue_followups DESC, open_followups DESC, active_leads DESC, u.full_name
                LIMIT 8""", (today,)
         ).fetchall()
-        return render_template("dashboard_admin.html", title="Dashboard", metrics=metrics, attention=attention, recent=recent, partner_workloads=partner_workloads, today=today)
+        return render_template("dashboard_admin.html", title="Dashboard", metrics=metrics, attention=attention, partner_workloads=partner_workloads, today=today)
 
     pid = g.partner["id"]
     leads_count = db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=?", (pid,)).fetchone()["c"]
@@ -652,8 +687,6 @@ def dashboard():
         "awaiting_response": db.execute("""SELECT COUNT(*) c FROM client_conversations
                                            WHERE owner_partner_id=? AND status='ACTIVE' AND last_client_message_at IS NOT NULL
                                              AND (last_outbound_message_at IS NULL OR last_client_message_at > last_outbound_message_at)""", (pid,)).fetchone()["c"],
-        "leads": leads_count,
-        "active": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status NOT IN ('WON','LOST')", (pid,)).fetchone()["c"],
         "new": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status='NEW'", (pid,)).fetchone()["c"],
         "contacted": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status='CONTACTED'", (pid,)).fetchone()["c"],
         "qualified": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status='QUALIFIED'", (pid,)).fetchone()["c"],
@@ -665,10 +698,9 @@ def dashboard():
                                 WHERE f.owner_partner_id=? AND l.owner_partner_id=? AND f.status='OPEN' AND substr(f.due_at,1,10)<?""", (pid, pid, today)).fetchone()["c"],
         "demos": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status='DEMO_BOOKED'", (pid,)).fetchone()["c"],
         "won": sales_count,
-        "qualifying": db.execute("SELECT COALESCE(SUM(qualifying_revenue_cents),0) c FROM sales WHERE partner_id=?", (pid,)).fetchone()["c"],
-        "pending": db.execute("SELECT COALESCE(SUM(commission_amount_cents),0) c FROM commissions WHERE partner_id=? AND status='PENDING'", (pid,)).fetchone()["c"],
-        "approved": db.execute("SELECT COALESCE(SUM(commission_amount_cents),0) c FROM commissions WHERE partner_id=? AND status='APPROVED'", (pid,)).fetchone()["c"],
-        "paid": db.execute("SELECT COALESCE(SUM(commission_amount_cents),0) c FROM commissions WHERE partner_id=? AND status='PAID'", (pid,)).fetchone()["c"],
+        "pending": db.execute("""SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c FROM commissions c WHERE c.partner_id=? AND c.status='PENDING'""", (pid,)).fetchone()["c"],
+        "approved": db.execute("""SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c FROM commissions c WHERE c.partner_id=? AND c.status='APPROVED'""", (pid,)).fetchone()["c"],
+        "paid": db.execute("""SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c FROM commissions c WHERE c.partner_id=? AND c.status='PAID'""", (pid,)).fetchone()["c"],
         "has_lead_data": leads_count > 0,
         "has_sales_data": sales_count > 0,
         "has_commission_data": commissions_count > 0,
@@ -704,7 +736,7 @@ def leads_list():
         pattern = f"%{escaped}%"
         where.append("(l.company_name LIKE ? ESCAPE '\\' OR l.contact_name LIKE ? ESCAPE '\\' OR l.email LIKE ? ESCAPE '\\' OR l.phone LIKE ? ESCAPE '\\' OR l.website LIKE ? ESCAPE '\\')")
         params.extend([pattern] * 5)
-    sql = """SELECT l.*, COALESCE(u.full_name,p.full_name_snapshot,'Deleted Partner') owner_name,
+    sql = """SELECT l.*,COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') owner_name,
              (SELECT MIN(due_at) FROM followups f WHERE f.lead_id=l.id AND f.status='OPEN' AND f.owner_partner_id=l.owner_partner_id) next_followup
              FROM leads l JOIN partners p ON p.id=l.owner_partner_id LEFT JOIN users u ON u.id=p.user_id"""
     if where:
@@ -720,7 +752,7 @@ def lead_new():
     db = get_db()
     partners = []
     if g.user["role"] == "admin":
-        partners = db.execute("""SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.user_id IS NOT NULL ORDER BY u.full_name""").fetchall()
+        partners = db.execute("""SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND u.active=1 AND p.account_deleted_at IS NULL ORDER BY u.full_name""").fetchall()
     if request.method == "POST":
         validate_csrf()
         owner_partner_id = g.partner["id"] if g.user["role"] == "partner" else request.form.get("owner_partner_id", type=int)
@@ -730,7 +762,7 @@ def lead_new():
         if not owner_partner_id:
             errors.append("Choose a lead owner.")
         elif g.user["role"] == "admin" and not db.execute(
-            "SELECT 1 FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=? AND p.user_id IS NOT NULL",
+            "SELECT 1 FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=? AND p.active=1 AND u.active=1 AND p.account_deleted_at IS NULL",
             (owner_partner_id,),
         ).fetchone():
             errors.append("Choose a Partner.")
@@ -848,16 +880,16 @@ def lead_detail(lead_id: int):
     lead = authorized_lead(lead_id)
     if g.user["role"] == "admin":
         notes = db.execute(
-            """SELECT n.*,COALESCE(u.full_name,n.author_name_snapshot,'Deleted Partner') author_name FROM lead_notes n LEFT JOIN users u ON u.id=n.author_user_id
+            """SELECT n.*,COALESCE(u.full_name,'Deleted Partner') author_name FROM lead_notes n LEFT JOIN users u ON u.id=n.author_user_id
                WHERE n.lead_id=? ORDER BY n.created_at DESC""", (lead_id,)
         ).fetchall()
         followups = db.execute(
-            """SELECT f.*, COALESCE(u.full_name,p.full_name_snapshot,'Deleted Partner') owner_name FROM followups f
+            """SELECT f.*,COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') owner_name FROM followups f
                JOIN partners p ON p.id=f.owner_partner_id LEFT JOIN users u ON u.id=p.user_id
                WHERE f.lead_id=? ORDER BY CASE f.status WHEN 'OPEN' THEN 0 ELSE 1 END, f.due_at""", (lead_id,)
         ).fetchall()
         activity = db.execute(
-            "SELECT a.*,COALESCE(u.full_name,NULLIF(a.actor_name_snapshot,''),'System') actor_name FROM activity_log a LEFT JOIN users u ON u.id=a.actor_user_id WHERE a.entity_type='lead' AND a.entity_id=? ORDER BY a.created_at DESC LIMIT 20",
+            "SELECT a.*,COALESCE(u.full_name,'System') actor_name FROM activity_log a LEFT JOIN users u ON u.id=a.actor_user_id WHERE a.entity_type='lead' AND a.entity_id=? ORDER BY a.created_at DESC LIMIT 20",
             (lead_id,),
         ).fetchall()
     else:
@@ -871,7 +903,7 @@ def lead_detail(lead_id: int):
             (lead_id, g.partner["id"]),
         ).fetchall()
         activity = db.execute(
-            """SELECT a.*,COALESCE(u.full_name,NULLIF(a.actor_name_snapshot,''),'System') actor_name FROM activity_log a
+            """SELECT a.*,COALESCE(u.full_name,'System') actor_name FROM activity_log a
                LEFT JOIN users u ON u.id=a.actor_user_id
                WHERE a.entity_type='lead' AND a.entity_id=?
                  AND (a.actor_user_id=? OR u.role='admin' OR a.actor_user_id IS NULL)
@@ -882,17 +914,15 @@ def lead_detail(lead_id: int):
     client_conversation = db.execute(
         "SELECT * FROM client_conversations WHERE lead_id=? ORDER BY updated_at DESC,id DESC LIMIT 1", (lead_id,)
     ).fetchone()
-    client_messages = []
+    client_message_count = 0
     if client_conversation:
-        client_messages = db.execute(
-            """SELECT m.*,COALESCE(u.full_name,NULLIF(m.sent_by_name_snapshot,'')) sent_by_name FROM client_messages m
-               LEFT JOIN users u ON u.id=m.sent_by_user_id
-               WHERE m.conversation_id=? ORDER BY m.id""", (client_conversation["id"],)
-        ).fetchall()
+        client_message_count = db.execute(
+            "SELECT COUNT(*) c FROM client_messages WHERE conversation_id=?", (client_conversation["id"],)
+        ).fetchone()["c"]
     partners = []
     if g.user["role"] == "admin":
-        partners = db.execute("SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.user_id IS NOT NULL ORDER BY u.full_name").fetchall()
-    return render_template("lead_detail.html", title=lead["company_name"], lead=lead, notes=notes, followups=followups, sale=sale, activity=activity, pipeline=PIPELINE, partner_allowed=PARTNER_ALLOWED_STATUSES, partners=partners, now_input=local_now_input(), client_conversation=client_conversation, client_messages=client_messages)
+        partners = db.execute("SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND u.active=1 AND p.account_deleted_at IS NULL ORDER BY u.full_name").fetchall()
+    return render_template("lead_detail.html", title=lead["company_name"], lead=lead, notes=notes, followups=followups, sale=sale, activity=activity, pipeline=PIPELINE, partner_allowed=PARTNER_ALLOWED_STATUSES, partners=partners, now_input=local_now_input(), client_conversation=client_conversation, client_message_count=client_message_count)
 
 
 @bp.post("/leads/<int:lead_id>/note")
@@ -905,7 +935,7 @@ def lead_add_note(lead_id: int):
         flash("Write a note before saving.", "error")
         return redirect(url_for("main.lead_detail", lead_id=lead_id))
     db = get_db()
-    db.execute("INSERT INTO lead_notes(lead_id,author_user_id,author_name_snapshot,body,created_at) VALUES (?,?,?,?,?)", (lead_id, g.user["id"], g.user["full_name"], body[:4000], utcnow_iso()))
+    db.execute("INSERT INTO lead_notes(lead_id,author_user_id,body,created_at) VALUES (?,?,?,?)", (lead_id, g.user["id"], body[:4000], utcnow_iso()))
     touch_lead(lead_id)
     log_activity("NOTE_ADDED", "lead", lead_id, "Lead note added.")
     db.commit()
@@ -956,42 +986,24 @@ def lead_update_status(lead_id: int):
 @admin_required
 def lead_reassign(lead_id: int):
     validate_csrf()
-    lead = authorized_lead(lead_id)
-    db = get_db()
-    if db.execute("SELECT 1 FROM sales WHERE lead_id=?", (lead_id,)).fetchone():
-        flash("Owner cannot change after a sale is created.", "error")
-        return redirect(url_for("main.lead_detail", lead_id=lead_id))
+    authorized_lead(lead_id)
     new_partner = request.form.get("owner_partner_id", type=int)
-    target = db.execute("SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=? AND p.user_id IS NOT NULL", (new_partner,)).fetchone()
-    if not target:
+    if not new_partner:
         abort(400)
-    old_partner = lead["owner_partner_id"]
-    if new_partner == old_partner:
+    try:
+        result = transfer_lead_ownership(lead_id, new_partner)
+    except ValueError as exc:
+        flash(str(exc), "error")
         return redirect(url_for("main.lead_detail", lead_id=lead_id))
-    now = utcnow_iso()
-    db.execute("UPDATE leads SET owner_partner_id=?,last_activity_at=? WHERE id=?", (new_partner, now, lead_id))
-    # Ownership moves as one business unit: lead + open follow-ups + client conversation.
-    db.execute("UPDATE followups SET owner_partner_id=?,updated_at=? WHERE lead_id=? AND status='OPEN'", (new_partner, now, lead_id))
-    db.execute("UPDATE client_conversations SET owner_partner_id=?,updated_at=? WHERE lead_id=?", (new_partner, now, lead_id))
-    db.execute("UPDATE website_inquiries SET claimed_by_partner_id=?,updated_at=? WHERE lead_id=? AND status='CLAIMED'", (new_partner, now, lead_id))
-    old_user = db.execute("SELECT user_id FROM partners WHERE id=?", (old_partner,)).fetchone()
-    new_user = db.execute("SELECT user_id FROM partners WHERE id=?", (new_partner,)).fetchone()
-    conversation = db.execute("SELECT id FROM client_conversations WHERE lead_id=? ORDER BY id DESC LIMIT 1", (lead_id,)).fetchone()
-    if conversation and old_user:
-        db.execute(
-            """UPDATE client_notifications SET read_at=COALESCE(read_at,?)
-               WHERE user_id=? AND entity_type='conversation' AND entity_id=?""",
-            (now, old_user["user_id"], conversation["id"]),
-        )
-    if conversation and new_user:
-        db.execute(
-            """INSERT INTO client_notifications(user_id,kind,entity_type,entity_id,title,body,created_at)
-               VALUES (?,'CLIENT_REASSIGNED','conversation',?,?,'This client is now your responsibility.',?)""",
-            (new_user["user_id"], conversation["id"], f"Client reassigned: {lead['company_name']}", now),
-        )
-    log_activity("LEAD_REASSIGNED", "lead", lead_id, "Lead, open follow-ups, and client conversation owner changed.", {"from_partner_id": old_partner, "to_partner_id": new_partner})
-    db.commit()
-    flash(f"Lead reassigned to {target['full_name']}.", "success")
+    if not result["changed"]:
+        return redirect(url_for("main.lead_detail", lead_id=lead_id))
+    log_activity(
+        "LEAD_REASSIGNED", "lead", lead_id,
+        "Lead and active client work moved to another Partner.",
+        {"from_partner_id": result["old_partner_id"], "to_partner_id": result["new_partner_id"]},
+    )
+    get_db().commit()
+    flash(f"Lead moved to {result['target_name']}.", "success")
     return redirect(url_for("main.lead_detail", lead_id=lead_id))
 
 
@@ -1009,7 +1021,8 @@ def followups_list():
         where.append("f.status='OPEN'")
     elif show == "completed":
         where.append("f.status='COMPLETED'")
-    sql = """SELECT f.*,l.company_name,l.contact_name,l.owner_partner_id AS current_owner_partner_id,COALESCE(u.full_name,p.full_name_snapshot,'Deleted Partner') owner_name FROM followups f
+    sql = """SELECT f.*,l.company_name,l.contact_name,l.owner_partner_id AS current_owner_partner_id,
+                    COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') owner_name FROM followups f
              JOIN leads l ON l.id=f.lead_id JOIN partners p ON p.id=f.owner_partner_id LEFT JOIN users u ON u.id=p.user_id"""
     if where:
         sql += " WHERE " + " AND ".join(where)
@@ -1072,7 +1085,8 @@ def sales_list():
         where = " WHERE s.partner_id=?"
         params.append(g.partner["id"])
     rows = db.execute(
-        """SELECT s.*,l.company_name,COALESCE(u.full_name,p.full_name_snapshot,'Deleted Partner') partner_name,c.status commission_status,c.commission_amount_cents
+        """SELECT s.*,l.company_name,COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') partner_name,
+                  c.status commission_status,c.commission_amount_cents
            FROM sales s JOIN leads l ON l.id=s.lead_id JOIN partners p ON p.id=s.partner_id LEFT JOIN users u ON u.id=p.user_id
            LEFT JOIN commissions c ON c.sale_id=s.id""" + where + " ORDER BY s.sale_date DESC,s.id DESC", params
     ).fetchall()
@@ -1085,19 +1099,16 @@ def sale_new():
     db = get_db()
     lead_id = request.args.get("lead_id", type=int) or request.form.get("lead_id", type=int)
     eligible = db.execute(
-        """SELECT l.id,l.company_name,l.contact_name,l.owner_partner_id,COALESCE(u.full_name,p.full_name_snapshot,'Deleted Partner') owner_name
-           FROM leads l JOIN partners p ON p.id=l.owner_partner_id LEFT JOIN users u ON u.id=p.user_id
+        """SELECT l.id,l.company_name,l.contact_name,l.owner_partner_id,u.full_name owner_name
+           FROM leads l JOIN partners p ON p.id=l.owner_partner_id JOIN users u ON u.id=p.user_id
            LEFT JOIN sales s ON s.lead_id=l.id WHERE s.id IS NULL AND l.status!='LOST' ORDER BY l.last_activity_at DESC"""
     ).fetchall()
-    lead = db.execute("""SELECT l.*,p.user_id AS owner_user_id FROM leads l JOIN partners p ON p.id=l.owner_partner_id LEFT JOIN sales s ON s.lead_id=l.id WHERE l.id=? AND s.id IS NULL AND l.status!='LOST'""", (lead_id,)).fetchone() if lead_id else None
+    lead = db.execute("""SELECT l.* FROM leads l LEFT JOIN sales s ON s.lead_id=l.id WHERE l.id=? AND s.id IS NULL AND l.status!='LOST'""", (lead_id,)).fetchone() if lead_id else None
     if request.method == "POST":
         validate_csrf()
         if not lead:
             flash("Choose a lead that does not already have a sale.", "error")
             return render_template("sale_form.html", title="Create Sale", leads=eligible, selected_lead_id=lead_id, today=today_str())
-        if not lead["owner_user_id"]:
-            flash("Reassign this Lead to a current Partner before creating a sale.", "error")
-            return redirect(url_for("main.lead_detail", lead_id=lead["id"]))
         product_service = (request.form.get("product_service", "") or "").strip()
         notes = (request.form.get("notes", "") or "").strip()
         payment_status = (request.form.get("payment_status", "UNPAID") or "").upper()
@@ -1117,8 +1128,7 @@ def sale_new():
             invoiced = money_to_cents(request.form.get("amount_invoiced"))
             collected = money_to_cents(request.form.get("amount_collected"))
             qualifying = money_to_cents(request.form.get("qualifying_revenue"))
-            if qualifying > collected:
-                errors.append("Commission revenue cannot be higher than the amount collected.")
+            errors.extend(validate_sale_amounts(deal, invoiced, collected, qualifying, payment_status))
         except ValueError as exc:
             errors.append(str(exc))
             deal = invoiced = collected = qualifying = 0
@@ -1161,10 +1171,17 @@ def sale_detail(sale_id: int):
             invoiced = money_to_cents(request.form.get("amount_invoiced"))
             collected = money_to_cents(request.form.get("amount_collected"))
             qualifying = money_to_cents(request.form.get("qualifying_revenue"))
-            if qualifying > collected:
-                errors.append("Commission revenue cannot be higher than the amount collected.")
-            if commission and commission["status"] != "PENDING" and qualifying != commission["qualifying_revenue_cents"]:
-                errors.append("Commission revenue cannot change after the commission is approved.")
+            errors.extend(validate_sale_amounts(deal, invoiced, collected, qualifying, payment_status))
+            if commission and commission["status"] != "PENDING":
+                money_changed = any((
+                    deal != sale["deal_amount_cents"],
+                    invoiced != sale["invoiced_cents"],
+                    collected != sale["collected_cents"],
+                    qualifying != sale["qualifying_revenue_cents"],
+                    payment_status != sale["payment_status"],
+                ))
+                if money_changed:
+                    errors.append("Use Add Correction to change money details after approval.")
         except ValueError as exc:
             errors.append(str(exc))
             deal = invoiced = collected = qualifying = 0
@@ -1179,12 +1196,115 @@ def sale_detail(sale_id: int):
             if qualifying != sale["qualifying_revenue_cents"]:
                 log_activity("QUALIFYING_REVENUE_UPDATED", "sale", sale_id, "Commission revenue updated.", {"from_cents": sale["qualifying_revenue_cents"], "to_cents": qualifying})
             db.commit()
-            flash("Sale updated. Pending commission recalculated.", "success")
+            flash("Sale updated. Commission updated.", "success")
             return redirect(url_for("main.sale_detail", sale_id=sale_id))
     sale = authorized_sale(sale_id)
     commission = db.execute("SELECT * FROM commissions WHERE sale_id=?", (sale_id,)).fetchone()
-    activity = db.execute("SELECT a.*,COALESCE(u.full_name,NULLIF(a.actor_name_snapshot,''),'System') actor_name FROM activity_log a LEFT JOIN users u ON u.id=a.actor_user_id WHERE (a.entity_type='sale' AND a.entity_id=?) OR (a.entity_type='commission' AND a.entity_id=?) ORDER BY a.created_at DESC", (sale_id, commission["id"] if commission else -1)).fetchall()
-    return render_template("sale_detail.html", title=sale["client_name"], sale=sale, commission=commission, payment_statuses=PAYMENT_STATUSES, activity=activity)
+    corrections = db.execute(
+        """SELECT sc.*,COALESCE(u.full_name,'System') actor_name FROM sale_corrections sc
+           LEFT JOIN users u ON u.id=sc.created_by_user_id WHERE sc.sale_id=? ORDER BY sc.id DESC""",
+        (sale_id,),
+    ).fetchall()
+    correction_total = sum(int(row["commission_change_cents"]) for row in corrections)
+    adjusted_commission = max(0, int(commission["commission_amount_cents"]) + correction_total) if commission else 0
+    activity = db.execute("SELECT a.*,COALESCE(u.full_name,'System') actor_name FROM activity_log a LEFT JOIN users u ON u.id=a.actor_user_id WHERE (a.entity_type='sale' AND a.entity_id=?) OR (a.entity_type='commission' AND a.entity_id=?) ORDER BY a.created_at DESC", (sale_id, commission["id"] if commission else -1)).fetchall()
+    return render_template(
+        "sale_detail.html", title=sale["client_name"], sale=sale, commission=commission,
+        payment_statuses=PAYMENT_STATUSES, activity=activity, corrections=corrections,
+        correction_total=correction_total, adjusted_commission=adjusted_commission,
+    )
+
+
+@bp.post("/sales/<int:sale_id>/corrections")
+@admin_required
+def sale_correction_add(sale_id: int):
+    validate_csrf()
+    sale = authorized_sale(sale_id)
+    db = get_db()
+    commission = db.execute("SELECT * FROM commissions WHERE sale_id=?", (sale_id,)).fetchone()
+    if not commission or commission["status"] == "PENDING":
+        flash("Edit the sale normally while the commission is pending.", "warning")
+        return redirect(url_for("main.sale_detail", sale_id=sale_id))
+
+    kinds = {"REFUND", "CHARGEBACK", "REVENUE_CORRECTION", "SALE_ADJUSTMENT", "COMMISSION_CORRECTION"}
+    kind = (request.form.get("kind", "") or "").strip().upper()
+    note = (request.form.get("note", "") or "").strip()
+    payment_status = (request.form.get("payment_status", sale["payment_status"]) or "").upper()
+    errors = []
+    if kind not in kinds:
+        errors.append("Choose a correction type.")
+    if not note:
+        errors.append("Add a short reason for this correction.")
+    if payment_status not in PAYMENT_STATUSES:
+        errors.append("Choose a valid payment status.")
+    try:
+        new_deal = money_to_cents(request.form.get("deal_amount"))
+        new_invoiced = money_to_cents(request.form.get("amount_invoiced"))
+        new_collected = money_to_cents(request.form.get("amount_collected"))
+        new_qualifying = money_to_cents(request.form.get("qualifying_revenue"))
+        errors.extend(validate_sale_amounts(
+            new_deal, new_invoiced, new_collected, new_qualifying, payment_status,
+        ))
+    except ValueError as exc:
+        errors.append(str(exc))
+        new_deal = int(sale["deal_amount_cents"])
+        new_invoiced = int(sale["invoiced_cents"])
+        new_collected = int(sale["collected_cents"])
+        new_qualifying = int(sale["qualifying_revenue_cents"])
+
+    revenue_change = new_qualifying - int(sale["qualifying_revenue_cents"])
+    if kind == "COMMISSION_CORRECTION":
+        try:
+            commission_change = signed_money_to_cents(request.form.get("commission_change"))
+        except ValueError as exc:
+            errors.append(str(exc))
+            commission_change = 0
+    else:
+        commission_change = commission_change_for_revenue(revenue_change, int(commission["rate_bp_snapshot"]))
+
+    prior_correction_total = db.execute(
+        "SELECT COALESCE(SUM(commission_change_cents),0) c FROM sale_corrections WHERE commission_id=?",
+        (commission["id"],),
+    ).fetchone()["c"]
+    resulting_commission = int(commission["commission_amount_cents"]) + int(prior_correction_total) + int(commission_change)
+    if resulting_commission < 0:
+        errors.append("This correction would make the commission less than zero.")
+    no_money_change = all((
+        new_deal == int(sale["deal_amount_cents"]),
+        new_invoiced == int(sale["invoiced_cents"]),
+        new_collected == int(sale["collected_cents"]),
+        new_qualifying == int(sale["qualifying_revenue_cents"]),
+        payment_status == sale["payment_status"],
+    ))
+    if no_money_change and commission_change == 0:
+        errors.append("Nothing changed. Enter the corrected amounts.")
+    if errors:
+        for error in errors:
+            flash(error, "error")
+        return redirect(url_for("main.sale_detail", sale_id=sale_id))
+
+    now = utcnow_iso()
+    db.execute(
+        """INSERT INTO sale_corrections(
+               sale_id,commission_id,kind,old_deal_cents,new_deal_cents,old_invoiced_cents,new_invoiced_cents,
+               old_collected_cents,new_collected_cents,old_qualifying_cents,new_qualifying_cents,
+               commission_change_cents,note,created_by_user_id,created_at
+           ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (sale_id, commission["id"], kind, sale["deal_amount_cents"], new_deal,
+         sale["invoiced_cents"], new_invoiced, sale["collected_cents"], new_collected,
+         sale["qualifying_revenue_cents"], new_qualifying, commission_change, note[:2000], g.user["id"], now),
+    )
+    db.execute(
+        """UPDATE sales SET deal_amount_cents=?,invoiced_cents=?,collected_cents=?,qualifying_revenue_cents=?,payment_status=?,updated_at=? WHERE id=?""",
+        (new_deal, new_invoiced, new_collected, new_qualifying, payment_status, now, sale_id),
+    )
+    log_activity(
+        "SALE_CORRECTION_ADDED", "sale", sale_id, "Sale correction added. Original commission history was kept.",
+        {"kind": kind, "commission_change_cents": commission_change, "old_deal_cents": sale["deal_amount_cents"], "new_deal_cents": new_deal, "old_invoiced_cents": sale["invoiced_cents"], "new_invoiced_cents": new_invoiced, "old_qualifying_cents": sale["qualifying_revenue_cents"], "new_qualifying_cents": new_qualifying},
+    )
+    db.commit()
+    flash("Correction saved. Original commission history was kept.", "success")
+    return redirect(url_for("main.sale_detail", sale_id=sale_id))
 
 
 @bp.route("/commissions")
@@ -1197,18 +1317,29 @@ def commissions_list():
         where = " WHERE c.partner_id=?"
         params.append(g.partner["id"])
     rows = db.execute(
-        """SELECT c.*,s.client_name,s.product_service,s.sale_date,COALESCE(u.full_name,p.full_name_snapshot,'Deleted Partner') partner_name
+        """SELECT c.*,s.client_name,s.product_service,s.sale_date,
+                  COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') partner_name,
+                  COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0) correction_total_cents,
+                  c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0) adjusted_commission_cents
            FROM commissions c JOIN sales s ON s.id=c.sale_id JOIN partners p ON p.id=c.partner_id LEFT JOIN users u ON u.id=p.user_id""" + where + " ORDER BY c.created_at DESC", params
     ).fetchall()
     summary = {}
     if g.user["role"] == "partner":
         has_commission_data = db.execute("SELECT COUNT(*) c FROM commissions WHERE partner_id=?", (g.partner["id"],)).fetchone()["c"] > 0
         for status in ["PENDING","APPROVED","PAID"]:
-            summary[status] = db.execute("SELECT COALESCE(SUM(commission_amount_cents),0) c FROM commissions WHERE partner_id=? AND status=?", (g.partner["id"], status)).fetchone()["c"]
+            summary[status] = db.execute(
+                """SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c
+                   FROM commissions c WHERE c.partner_id=? AND c.status=?""",
+                (g.partner["id"], status),
+            ).fetchone()["c"]
     else:
         has_commission_data = db.execute("SELECT COUNT(*) c FROM commissions").fetchone()["c"] > 0
         for status in ["PENDING","APPROVED","PAID"]:
-            summary[status] = db.execute("SELECT COALESCE(SUM(commission_amount_cents),0) c FROM commissions WHERE status=?", (status,)).fetchone()["c"]
+            summary[status] = db.execute(
+                """SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c
+                   FROM commissions c WHERE c.status=?""",
+                (status,),
+            ).fetchone()["c"]
     return render_template("commissions.html", title="Commissions", commissions=rows, summary=summary, has_commission_data=has_commission_data)
 
 
@@ -1218,7 +1349,7 @@ def commission_adjust(commission_id: int):
     validate_csrf()
     commission = authorized_commission(commission_id)
     if commission["status"] != "PENDING":
-        flash("Only pending commissions can be adjusted.", "error")
+        flash("Only pending commissions can be changed.", "error")
         return redirect(url_for("main.commissions_list"))
     try:
         adjustment = signed_money_to_cents(request.form.get("adjustment"))
@@ -1258,7 +1389,7 @@ def commission_paid(commission_id: int):
     validate_csrf()
     commission = authorized_commission(commission_id)
     if commission["status"] != "APPROVED":
-        flash("Only approved commissions can be marked paid.", "error")
+        flash("Only approved commissions can be marked as paid.", "error")
         return redirect(url_for("main.commissions_list"))
     db = get_db()
     now = utcnow_iso()
@@ -1273,11 +1404,15 @@ def commission_paid(commission_id: int):
 @admin_required
 def partners_list():
     db = get_db()
-    rows = db.execute("""SELECT p.*,u.full_name,u.email,u.created_at account_created_at,cs.name commission_stage_name,cs.rate_bp commission_rate_bp,
-        (SELECT COUNT(*) FROM leads l WHERE l.owner_partner_id=p.id) lead_count,
-        (SELECT SUM(c.commission_amount_cents) FROM commissions c WHERE c.partner_id=p.id AND c.status='PAID') paid_commission
-        FROM partners p JOIN users u ON u.id=p.user_id JOIN commission_stages cs ON cs.id=p.commission_stage_id
-        WHERE p.user_id IS NOT NULL ORDER BY u.full_name""").fetchall()
+    rows = db.execute(
+        """SELECT p.id,p.user_id,p.commission_stage_id,p.phone,p.notes,p.joined_at,p.account_deleted_at,
+                  u.full_name,u.created_at,cs.name commission_stage_name,cs.rate_bp commission_rate_bp
+           FROM partners p
+           JOIN users u ON u.id=p.user_id
+           JOIN commission_stages cs ON cs.id=p.commission_stage_id
+           WHERE p.account_deleted_at IS NULL
+           ORDER BY lower(u.full_name),p.id"""
+    ).fetchall()
     return render_template("partners_list.html", title="Partners", partners=rows)
 
 
@@ -1288,87 +1423,122 @@ def partner_new():
     stages = db.execute("SELECT * FROM commission_stages WHERE active=1 ORDER BY sort_order").fetchall()
     if request.method == "POST":
         validate_csrf()
-        full_name = (request.form.get("full_name", "") or "").strip()
-        email = (request.form.get("email", "") or "").strip().lower()
-        password = request.form.get("password", "") or ""
+        full_name = _clean_account_name(request.form.get("full_name", ""))
+        password = request.form.get("partner_password", "") or ""
         phone = (request.form.get("phone", "") or "").strip()
         notes = (request.form.get("notes", "") or "").strip()
         stage_id = request.form.get("commission_stage_id", type=int)
         stage = db.execute("SELECT * FROM commission_stages WHERE id=? AND active=1", (stage_id,)).fetchone()
         errors = []
-        if len(full_name) < 2: errors.append("Partner name is required.")
-        if not valid_email(email): errors.append("Enter a valid partner email.")
-        if not valid_password(password): errors.append("Enter the Partner password you want to use.")
-        if not stage: errors.append("Choose a commission level.")
+        if len(full_name) < 2:
+            errors.append("Enter the Partner name.")
+        elif _account_name_in_use(db, full_name):
+            errors.append("This name is already in use.")
+        if password == "":
+            errors.append("Enter the Partner password.")
+        if not stage:
+            errors.append("Choose a commission level.")
         if errors:
-            for e in errors: flash(e, "error")
-            return render_template("partner_form.html", title="Add Partner", stages=stages)
+            for error in errors:
+                flash(error, "error")
+            return render_template("partner_form.html", title="Create Partner", stages=stages)
         now = utcnow_iso()
+        internal_email = _new_internal_account_email(db)
         try:
-            cur = db.execute("""INSERT INTO users(full_name,email,password_hash,role,active,force_password_change,created_at,updated_at)
-                                VALUES (?,?,?,'partner',1,0,?,?)""", (full_name[:160], email, hash_password(password), now, now))
+            cur = db.execute(
+                """INSERT INTO users(full_name,email,password_hash,role,active,force_password_change,created_at,updated_at)
+                   VALUES (?,?,?,'partner',1,0,?,?)""",
+                (full_name, internal_email, hash_password(password), now, now),
+            )
             user_id = cur.lastrowid
             vault_store_password(db, user_id, password)
-            cur = db.execute("""INSERT INTO partners(user_id,full_name_snapshot,email_snapshot,commission_stage_id,phone,notes,joined_at,active)
-                                VALUES (?,?,?,?,?,?,?,1)""", (user_id, full_name[:160], email, stage_id, phone[:60], notes[:2000], now))
+            cur = db.execute(
+                """INSERT INTO partners(user_id,commission_stage_id,phone,notes,joined_at,active,account_deleted_at,historical_name)
+                   VALUES (?,?,?,?,?,1,NULL,?)""",
+                (user_id, stage_id, phone[:60], notes[:2000], now, full_name),
+            )
             partner_id = cur.lastrowid
         except (sqlite3.IntegrityError, IntegrityError):
             db.rollback()
-            flash("An account with that email already exists.", "error")
-            return render_template("partner_form.html", title="Add Partner", stages=stages)
-        log_activity("PARTNER_CREATED", "partner", partner_id, "Partner account created.", {"stage": stage["name"], "rate_bp": stage["rate_bp"]})
+            flash("This name is already in use.", "error")
+            return render_template("partner_form.html", title="Create Partner", stages=stages)
+        log_activity(
+            "PARTNER_CREATED",
+            "partner",
+            partner_id,
+            "Partner account created.",
+            {"stage": stage["name"], "rate_bp": stage["rate_bp"]},
+        )
         db.commit()
-        return render_template("partner_created.html", title="Partner Created", partner={"id":partner_id,"full_name":full_name,"email":email}, chosen_password=password)
-    return render_template("partner_form.html", title="Add Partner", stages=stages)
+        return render_template(
+            "partner_created.html",
+            title="Partner Created",
+            partner={"id": partner_id, "full_name": full_name},
+            chosen_password=password,
+        )
+    return render_template("partner_form.html", title="Create Partner", stages=stages)
 
 
 @bp.route("/admin/partners/<int:partner_id>", methods=["GET", "POST"])
 @admin_required
 def partner_detail(partner_id: int):
     db = get_db()
-    partner = db.execute("""SELECT p.*,u.full_name,u.email,u.created_at account_created_at,
-        cs.name commission_stage_name,cs.rate_bp commission_rate_bp
-        FROM partners p JOIN users u ON u.id=p.user_id JOIN commission_stages cs ON cs.id=p.commission_stage_id
-        WHERE p.id=? AND p.user_id IS NOT NULL""", (partner_id,)).fetchone()
-    if not partner: abort(404)
+    partner = db.execute(
+        """SELECT p.*,u.full_name,u.created_at,cs.name commission_stage_name,cs.rate_bp commission_rate_bp
+           FROM partners p
+           JOIN users u ON u.id=p.user_id
+           JOIN commission_stages cs ON cs.id=p.commission_stage_id
+           WHERE p.id=? AND p.account_deleted_at IS NULL""",
+        (partner_id,),
+    ).fetchone()
+    if not partner:
+        abort(404)
     stages = db.execute("SELECT * FROM commission_stages WHERE active=1 ORDER BY sort_order").fetchall()
     if request.method == "POST":
         validate_csrf()
-        full_name = (request.form.get("full_name", "") or "").strip()
-        email = (request.form.get("email", "") or "").strip().lower()
-        stage_id = request.form.get("commission_stage_id", type=int)
+        full_name = _clean_account_name(request.form.get("full_name", ""))
         phone = (request.form.get("phone", "") or "").strip()
         notes = (request.form.get("notes", "") or "").strip()
+        stage_id = request.form.get("commission_stage_id", type=int)
         stage = db.execute("SELECT * FROM commission_stages WHERE id=? AND active=1", (stage_id,)).fetchone()
         errors = []
-        if len(full_name) < 2: errors.append("Partner name is required.")
-        if not valid_email(email): errors.append("Enter a valid Partner email.")
-        if not stage: errors.append("Choose a commission level.")
+        if len(full_name) < 2:
+            errors.append("Enter the Partner name.")
+        elif _account_name_in_use(db, full_name, int(partner["user_id"])):
+            errors.append("This name is already in use.")
+        if not stage:
+            errors.append("Choose a commission level.")
         if errors:
-            for message in errors: flash(message, "error")
-            return redirect(url_for("main.partner_detail", partner_id=partner_id))
-        try:
-            if stage_id != partner["commission_stage_id"]:
-                log_activity("PARTNER_COMMISSION_RATE_CHANGED", "partner", partner_id, "Partner commission level changed.", {"from": partner["commission_stage_name"], "from_rate_bp": partner["commission_rate_bp"], "to": stage["name"], "to_rate_bp": stage["rate_bp"]})
-            db.execute("UPDATE users SET full_name=?,email=?,updated_at=? WHERE id=?", (full_name[:160], email, utcnow_iso(), partner["user_id"]))
-            db.execute("UPDATE partners SET full_name_snapshot=?,email_snapshot=?,commission_stage_id=?,phone=?,notes=? WHERE id=?", (full_name[:160], email, stage_id, phone[:60], notes[:2000], partner_id))
+            for error in errors:
+                flash(error, "error")
+            return render_template("partner_detail.html", title=partner["full_name"], partner=partner, stages=stages)
+        if stage_id != partner["commission_stage_id"]:
+            log_activity(
+                "PARTNER_COMMISSION_RATE_CHANGED",
+                "partner",
+                partner_id,
+                "Partner commission level changed.",
+                {"from": partner["commission_stage_name"], "from_rate_bp": partner["commission_rate_bp"], "to": stage["name"], "to_rate_bp": stage["rate_bp"]},
+            )
+        if full_name != partner["full_name"] or phone[:60] != partner["phone"] or notes[:2000] != partner["notes"]:
             log_activity("PARTNER_UPDATED", "partner", partner_id, "Partner details updated.")
+        try:
+            db.execute(
+                "UPDATE users SET full_name=?,updated_at=? WHERE id=?",
+                (full_name, utcnow_iso(), partner["user_id"]),
+            )
+            db.execute(
+                "UPDATE partners SET commission_stage_id=?,phone=?,notes=?,historical_name=? WHERE id=?",
+                (stage_id, phone[:60], notes[:2000], full_name, partner_id),
+            )
             db.commit()
         except (sqlite3.IntegrityError, IntegrityError):
             db.rollback()
-            flash("That email is already in use.", "error")
+            flash("This name is already in use.", "error")
             return redirect(url_for("main.partner_detail", partner_id=partner_id))
-        flash("Partner updated. Past commissions are unchanged.", "success")
+        flash("Partner saved. Old commissions stay the same.", "success")
         return redirect(url_for("main.partner_detail", partner_id=partner_id))
-    stats = {
-        "leads": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=?", (partner_id,)).fetchone()["c"],
-        "sales": db.execute("SELECT COUNT(*) c FROM sales WHERE partner_id=?", (partner_id,)).fetchone()["c"],
-        "qualifying": db.execute("SELECT SUM(qualifying_revenue_cents) c FROM sales WHERE partner_id=?", (partner_id,)).fetchone()["c"],
-        "commissions": db.execute("SELECT SUM(commission_amount_cents) c FROM commissions WHERE partner_id=?", (partner_id,)).fetchone()["c"],
-        "has_sales_data": db.execute("SELECT COUNT(*) c FROM sales WHERE partner_id=?", (partner_id,)).fetchone()["c"] > 0,
-        "has_commission_data": db.execute("SELECT COUNT(*) c FROM commissions WHERE partner_id=?", (partner_id,)).fetchone()["c"] > 0,
-    }
-    return render_template("partner_detail.html", title=partner["full_name"], partner=partner, stages=stages, stats=stats)
+    return render_template("partner_detail.html", title=partner["full_name"], partner=partner, stages=stages)
 
 
 @bp.post("/admin/partners/<int:partner_id>/reset-password")
@@ -1381,14 +1551,13 @@ def partner_reset_password(partner_id: int):
         flash("Enter the new Partner password you want to use.", "error")
         return redirect(url_for("main.account_security", _anchor=f"partner-{partner_id}"))
     if password != confirm_password:
-        flash("Partner password confirmation does not match.", "error")
+        flash("Passwords do not match.", "error")
         return redirect(url_for("main.account_security", _anchor=f"partner-{partner_id}"))
-
     db = get_db()
     partner = db.execute(
-        """SELECT p.id,p.user_id,u.full_name,u.email
+        """SELECT p.id,p.user_id,u.full_name
            FROM partners p JOIN users u ON u.id=p.user_id
-           WHERE p.id=? AND p.user_id IS NOT NULL AND u.active=1""",
+           WHERE p.id=? AND p.account_deleted_at IS NULL AND u.active=1""",
         (partner_id,),
     ).fetchone()
     if not partner:
@@ -1402,17 +1571,13 @@ def partner_reset_password(partner_id: int):
     vault_store_password(db, partner["user_id"], password)
     log_activity("PARTNER_PASSWORD_RESET", "partner", partner_id, "Partner password changed from Account & Security.")
     db.commit()
-
     founder, partners = _account_security_context(db)
-    flash(f"Password changed successfully for {partner['full_name']}.", "success")
+    flash(f"Password changed for {partner['full_name']}.", "success")
     return render_template(
         "account_security.html",
         title="Account & Security",
         founder=founder,
         partners=partners,
-        revealed_founder_password=None,
-        revealed_partner=partner,
-        chosen_password=password,
     )
 
 
@@ -1421,49 +1586,128 @@ def partner_reset_password(partner_id: int):
 def partner_delete(partner_id: int):
     validate_csrf()
     if request.form.get("confirm_delete") != "1":
-        abort(400, description="Confirm permanent Partner deletion.")
+        abort(400, description="Confirm Partner deletion.")
     db = get_db()
     partner = db.execute(
-        """SELECT p.*,u.full_name,u.email,u.avatar_stored_name
+        """SELECT p.*,u.full_name,u.avatar_stored_name
            FROM partners p JOIN users u ON u.id=p.user_id
-           WHERE p.id=? AND p.user_id IS NOT NULL""",
+           WHERE p.id=? AND p.account_deleted_at IS NULL""",
         (partner_id,),
     ).fetchone()
     if not partner:
         abort(404)
-    user_id = int(partner["user_id"])
-    old_avatar = partner["avatar_stored_name"]
+
+    active_leads = db.execute(
+        """SELECT DISTINCT l.id FROM leads l
+           LEFT JOIN followups f ON f.lead_id=l.id AND f.status='OPEN'
+           LEFT JOIN client_conversations c ON c.lead_id=l.id AND c.status='ACTIVE'
+           LEFT JOIN website_inquiries w ON w.lead_id=l.id AND w.status='CLAIMED'
+           WHERE l.owner_partner_id=? AND (l.status NOT IN ('WON','LOST') OR f.id IS NOT NULL OR c.id IS NOT NULL OR w.id IS NOT NULL)
+           ORDER BY l.id""",
+        (partner_id,),
+    ).fetchall()
+    extra_active_conversations = db.execute(
+        "SELECT id FROM client_conversations WHERE owner_partner_id=? AND status='ACTIVE' AND lead_id IS NULL",
+        (partner_id,),
+    ).fetchall()
+    extra_claimed_inquiries = db.execute(
+        "SELECT id FROM website_inquiries WHERE claimed_by_partner_id=? AND status='CLAIMED' AND lead_id IS NULL",
+        (partner_id,),
+    ).fetchall()
+    has_active_work = bool(active_leads or extra_active_conversations or extra_claimed_inquiries)
+    replacement_partner_id = request.form.get("move_active_to_partner_id", type=int)
+    replacement = None
+    if has_active_work:
+        if not replacement_partner_id or replacement_partner_id == partner_id:
+            flash("This Partner still has active work. Choose another Partner to receive it first.", "error")
+            return redirect(url_for("main.account_security", _anchor=f"partner-{partner_id}"))
+        replacement = db.execute(
+            """SELECT p.id,p.user_id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id
+               WHERE p.id=? AND p.id<>? AND p.active=1 AND u.active=1 AND p.account_deleted_at IS NULL""",
+            (replacement_partner_id, partner_id),
+        ).fetchone()
+        if not replacement:
+            flash("Choose an active Partner to receive the work.", "error")
+            return redirect(url_for("main.account_security", _anchor=f"partner-{partner_id}"))
+
     now = utcnow_iso()
+    old_avatar = partner["avatar_stored_name"]
+    user_id = int(partner["user_id"])
     try:
-        # Keep only historical business attribution on the Partner row. The actual
-        # authentication user, password hash, email login, and profile are deleted.
+        if replacement:
+            for row in active_leads:
+                result = transfer_lead_ownership(int(row["id"]), int(replacement["id"]), allow_sale_history=True)
+                if result["changed"]:
+                    log_activity(
+                        "LEAD_REASSIGNED_BEFORE_PARTNER_DELETE", "lead", int(row["id"]),
+                        "Active work moved before Partner account deletion.",
+                        {"from_partner_id": partner_id, "to_partner_id": int(replacement["id"])},
+                    )
+            # Handle rare active client records that are not linked to a Lead.
+            db.execute(
+                "UPDATE client_conversations SET owner_partner_id=?,updated_at=? WHERE owner_partner_id=? AND status='ACTIVE' AND lead_id IS NULL",
+                (replacement["id"], now, partner_id),
+            )
+            db.execute(
+                "UPDATE website_inquiries SET claimed_by_partner_id=?,updated_at=? WHERE claimed_by_partner_id=? AND status='CLAIMED' AND lead_id IS NULL",
+                (replacement["id"], now, partner_id),
+            )
+
+        # Keep the Partner ID as business history, but remove the login/profile.
         db.execute(
-            "UPDATE partners SET full_name_snapshot=?,email_snapshot='',phone='',notes='',deleted_at=? WHERE id=?",
-            (partner["full_name"], now, partner_id),
+            """UPDATE partners
+               SET historical_name=?,user_id=NULL,phone='',notes='',active=0,account_deleted_at=?
+               WHERE id=?""",
+            (partner["full_name"][:160], now, partner_id),
         )
-        db.execute(
-            "UPDATE client_messages SET sent_by_name_snapshot=COALESCE(NULLIF(sent_by_name_snapshot,''),?) WHERE sent_by_user_id=?",
-            (partner["full_name"], user_id),
+
+        # Detach user references that are history, then remove the login account.
+        for table, column in (
+            ("leads", "created_by_user_id"),
+            ("lead_notes", "author_user_id"),
+            ("followups", "created_by_user_id"),
+            ("sales", "created_by_user_id"),
+            ("resources", "created_by_user_id"),
+            ("messages", "sender_user_id"),
+            ("voice_calls", "started_by_user_id"),
+            ("voice_calls", "ended_by_user_id"),
+            ("voice_call_signals", "sender_user_id"),
+            ("duplicate_claims", "resolved_by_user_id"),
+            ("activity_log", "actor_user_id"),
+            ("settings", "updated_by_user_id"),
+            ("client_messages", "sent_by_user_id"),
+            ("sale_corrections", "created_by_user_id"),
+        ):
+            try:
+                db.execute(f'UPDATE "{table}" SET "{column}"=NULL WHERE "{column}"=?', (user_id,))
+            except Exception:
+                # sale_corrections does not exist on pre-V15 databases until bootstrap runs.
+                if table != "sale_corrections":
+                    raise
+        db.execute("DELETE FROM client_notifications WHERE user_id=?", (user_id,))
+        deleted = db.execute("DELETE FROM users WHERE id=? AND role='partner'", (user_id,))
+        if deleted.rowcount != 1:
+            raise RuntimeError("Partner account deletion did not remove exactly one login account.")
+
+        log_activity(
+            "PARTNER_DELETED", "partner", partner_id,
+            "Partner account deleted. Business history was kept.",
+            {"partner_name": partner["full_name"], "active_work_moved_to": int(replacement["id"]) if replacement else None},
         )
-        db.execute(
-            """UPDATE voice_calls SET status=CASE WHEN status='RINGING' THEN 'MISSED' ELSE 'ENDED' END,
-               end_reason='partner_deleted',ended_at=?,ended_by_user_id=?
-               WHERE partner_id=? AND status IN ('RINGING','ACTIVE')""",
-            (now, g.user["id"], partner_id),
-        )
-        db.execute("DELETE FROM voice_call_signals WHERE call_id IN (SELECT id FROM voice_calls WHERE partner_id=?)", (partner_id,))
-        log_activity("PARTNER_DELETED", "partner", partner_id, "Partner account permanently deleted.", {"partner_name": partner["full_name"]})
-        db.execute("DELETE FROM users WHERE id=?", (user_id,))
         db.commit()
     except Exception:
         db.rollback()
         raise
-    if old_avatar and not using_postgres():
+
+    if old_avatar:
         try:
             (_profile_picture_dir() / Path(old_avatar).name).unlink(missing_ok=True)
         except OSError:
             pass
-    flash("Partner deleted permanently. Historical business records were preserved.", "success")
+    if replacement:
+        flash(f"Partner deleted. Active work moved to {replacement['full_name']}. Business history was kept.", "success")
+    else:
+        flash("Partner deleted. Business history was kept.", "success")
     return redirect(url_for("main.account_security"))
 
 
@@ -1472,9 +1716,8 @@ def partner_delete(partner_id: int):
 def duplicate_claims():
     db = get_db()
     claims = db.execute("""SELECT d.*,
-        COALESCE(claimant.full_name,cp.full_name_snapshot,'Deleted Partner') claimant_name,
-        COALESCE(owner.full_name,op.full_name_snapshot,'Deleted Partner') owner_name,
-        l.company_name matched_company
+        COALESCE(claimant.full_name,NULLIF(cp.historical_name,''),'Deleted Partner') claimant_name,
+        COALESCE(owner.full_name,NULLIF(op.historical_name,''),'Deleted Partner') owner_name,l.company_name matched_company
         FROM duplicate_claims d
         JOIN partners cp ON cp.id=d.attempted_by_partner_id LEFT JOIN users claimant ON claimant.id=cp.user_id
         JOIN leads l ON l.id=d.matched_lead_id JOIN partners op ON op.id=l.owner_partner_id LEFT JOIN users owner ON owner.id=op.user_id
@@ -1499,15 +1742,23 @@ def duplicate_resolve(claim_id: int):
         old_owner = lead["owner_partner_id"]
         new_owner = claim["attempted_by_partner_id"]
         target = db.execute(
-            "SELECT 1 FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=? AND p.user_id IS NOT NULL",
+            "SELECT 1 FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=? AND p.active=1 AND u.active=1 AND p.account_deleted_at IS NULL",
             (new_owner,),
         ).fetchone()
         if not target:
-            flash("Choose an existing Partner account.", "error")
+            flash("That Partner is not available. Keep the current owner or choose another Partner.", "error")
             return redirect(url_for("main.duplicate_claims"))
-        db.execute("UPDATE leads SET owner_partner_id=?,last_activity_at=? WHERE id=?", (new_owner, utcnow_iso(), lead["id"]))
+        try:
+            result = transfer_lead_ownership(lead["id"], new_owner)
+        except ValueError as exc:
+            flash(str(exc), "error")
+            return redirect(url_for("main.duplicate_claims"))
         status = "REASSIGNED"
-        log_activity("OWNERSHIP_OVERRIDDEN", "lead", lead["id"], "Lead owner changed after duplicate review.", {"from_partner_id": old_owner, "to_partner_id": new_owner, "duplicate_claim_id": claim_id})
+        log_activity(
+            "OWNERSHIP_OVERRIDDEN", "lead", lead["id"],
+            "Lead and active client work moved after duplicate review.",
+            {"from_partner_id": old_owner, "to_partner_id": result["new_partner_id"], "duplicate_claim_id": claim_id},
+        )
     elif action == "dismiss":
         status = "DISMISSED"
         log_activity("DUPLICATE_CLAIM_RESOLVED", "lead", lead["id"], "Duplicate review kept the current owner.", {"duplicate_claim_id": claim_id})
@@ -1557,8 +1808,9 @@ def messages_thread(partner_id: int):
     db.commit()
 
     message_rows = db.execute(
-        """SELECT m.id,m.partner_id,m.sender_user_id,m.body,m.created_at,u.full_name AS sender_name
-           FROM messages m JOIN users u ON u.id=m.sender_user_id
+        """SELECT m.id,m.partner_id,m.sender_user_id,m.body,m.created_at,
+                  COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted account') AS sender_name
+           FROM messages m JOIN partners p ON p.id=m.partner_id LEFT JOIN users u ON u.id=m.sender_user_id
            WHERE m.partner_id=? ORDER BY m.id DESC LIMIT 200""",
         (partner_id,),
     ).fetchall()
@@ -1619,7 +1871,9 @@ def messages_thread(partner_id: int):
 @login_required
 def message_send(partner_id: int):
     validate_csrf()
-    authorized_conversation_partner(partner_id)
+    partner = authorized_conversation_partner(partner_id)
+    if partner["account_deleted_at"]:
+        abort(410)
     body = (request.form.get("body", "") or "").strip()
     raw_files = [item for item in request.files.getlist("attachments") if item and item.filename]
 
@@ -1833,6 +2087,8 @@ def message_unread():
 def voice_call_start(partner_id: int):
     validate_csrf()
     partner = authorized_conversation_partner(partner_id)
+    if partner["account_deleted_at"]:
+        return jsonify({"ok": False, "error": "This Partner has been deleted."}), 410
     expire_stale_voice_calls()
     db = get_db()
     existing = db.execute(
@@ -2070,26 +2326,30 @@ def resource_edit(resource_id: int):
 @admin_required
 def activity():
     db = get_db()
-    rows = db.execute("""SELECT a.*,COALESCE(u.full_name,NULLIF(a.actor_name_snapshot,''),'System') actor_name FROM activity_log a
+    rows = db.execute("""SELECT a.*,COALESCE(u.full_name,'System') actor_name FROM activity_log a
                         LEFT JOIN users u ON u.id=a.actor_user_id ORDER BY a.created_at DESC LIMIT 500""").fetchall()
     return render_template("activity.html", title="Activity", activities=rows)
 
 
 def _account_security_context(db):
     founder = db.execute(
-        """SELECT id,full_name,email,created_at,updated_at
+        """SELECT id,full_name,created_at,updated_at
            FROM users WHERE id=? AND role='admin' AND active=1""",
         (g.user["id"],),
     ).fetchone()
     if not founder:
         abort(403)
     partners = db.execute(
-        """SELECT p.id,p.user_id,u.full_name,u.email,u.created_at,
-                  cs.name commission_stage_name,cs.rate_bp commission_rate_bp
+        """SELECT p.id,p.user_id,u.full_name,u.created_at,
+                  cs.name commission_stage_name,cs.rate_bp commission_rate_bp,
+                  ((SELECT COUNT(*) FROM leads l WHERE l.owner_partner_id=p.id AND l.status NOT IN ('WON','LOST')) +
+                   (SELECT COUNT(*) FROM followups f WHERE f.owner_partner_id=p.id AND f.status='OPEN') +
+                   (SELECT COUNT(*) FROM client_conversations c WHERE c.owner_partner_id=p.id AND c.status='ACTIVE') +
+                   (SELECT COUNT(*) FROM website_inquiries w WHERE w.claimed_by_partner_id=p.id AND w.status='CLAIMED')) AS active_work_count
            FROM partners p
            JOIN users u ON u.id=p.user_id
            JOIN commission_stages cs ON cs.id=p.commission_stage_id
-           WHERE p.user_id IS NOT NULL AND p.deleted_at IS NULL AND u.active=1
+           WHERE p.account_deleted_at IS NULL AND u.active=1
            ORDER BY lower(u.full_name),p.id"""
     ).fetchall()
     return founder, partners
@@ -2105,9 +2365,6 @@ def account_security():
         title="Account & Security",
         founder=founder,
         partners=partners,
-        revealed_founder_password=None,
-        revealed_partner=None,
-        chosen_password=None,
     )
 
 
@@ -2121,11 +2378,11 @@ def account_security_reveal_password():
         abort(400)
     db = get_db()
     target = db.execute(
-        """SELECT u.id,u.full_name,u.email,u.role
+        """SELECT u.id,u.full_name,u.role
            FROM users u
            LEFT JOIN partners p ON p.user_id=u.id
            WHERE u.id=? AND u.active=1
-             AND (u.role='admin' OR (u.role='partner' AND p.deleted_at IS NULL))
+             AND (u.role='admin' OR (u.role='partner' AND p.account_deleted_at IS NULL))
            LIMIT 1""",
         (user_id,),
     ).fetchone()
@@ -2135,7 +2392,7 @@ def account_security_reveal_password():
         abort(403)
     password = vault_current_password(db, user_id)
     if password is None:
-        return jsonify({"ok": False, "error": "Current password visibility is not initialized for this account yet. Change or reset its password once."}), 404
+        return jsonify({"ok": False, "error": "This account is not initialized for Founder password visibility yet. Change/reset its password once, or run the password visibility initializer."}), 404
     log_activity("ACCOUNT_PASSWORD_REVEALED", "user", user_id, f"Founder revealed current {target['role']} account password from Account & Security.")
     db.commit()
     response = jsonify({"ok": True, "password": password})
@@ -2154,9 +2411,8 @@ def founder_password_change():
         flash("Enter the new Founder password you want to use.", "error")
         return redirect(url_for("main.account_security"))
     if new_password != confirm_password:
-        flash("Founder password confirmation does not match.", "error")
+        flash("Passwords do not match.", "error")
         return redirect(url_for("main.account_security"))
-
     db = get_db()
     db.execute(
         """UPDATE users
@@ -2167,12 +2423,10 @@ def founder_password_change():
     vault_store_password(db, g.user["id"], new_password)
     log_activity("FOUNDER_PASSWORD_CHANGED", "user", g.user["id"], "Founder password changed from Account & Security.")
     db.commit()
-
     refreshed = db.execute("SELECT * FROM users WHERE id=? AND role='admin'", (g.user["id"],)).fetchone()
     if not refreshed:
         abort(403)
     login_user(refreshed)
-
     if not current_app.testing:
         try:
             from config import BASE_DIR
@@ -2188,9 +2442,6 @@ def founder_password_change():
         title="Account & Security",
         founder=founder,
         partners=partners,
-        revealed_founder_password=new_password,
-        revealed_partner=None,
-        chosen_password=None,
     )
 
 
@@ -2314,22 +2565,23 @@ def profile():
             flash("Founder password controls are in Settings → Account & Security.", "success")
             return redirect(url_for("main.account_security"))
         else:
-            full_name = (request.form.get("full_name", "") or "").strip()
-            email = (request.form.get("email", "") or "").strip().lower()
-            if len(full_name) < 2 or not valid_email(email):
-                flash("Enter a valid name and email.", "error")
+            if g.user["role"] != "admin":
+                abort(403)
+            full_name = _clean_account_name(request.form.get("full_name", ""))
+            if len(full_name) < 2:
+                flash("Enter your name.", "error")
+            elif _account_name_in_use(db, full_name, int(g.user["id"])):
+                flash("This name is already in use.", "error")
             else:
                 try:
-                    db.execute("UPDATE users SET full_name=?,email=?,updated_at=? WHERE id=?", (full_name[:160], email, utcnow_iso(), g.user["id"]))
-                    if g.user["role"] == "partner":
-                        db.execute("UPDATE partners SET phone=? WHERE id=?", ((request.form.get("phone", "") or "").strip()[:60], g.partner["id"]))
+                    db.execute("UPDATE users SET full_name=?,updated_at=? WHERE id=?", (full_name, utcnow_iso(), g.user["id"]))
                     log_activity("PROFILE_UPDATED", "user", g.user["id"], "Profile updated.")
                     db.commit()
-                    flash("Profile updated.", "success")
+                    flash("Profile saved.", "success")
                     return redirect(url_for("main.profile"))
                 except (sqlite3.IntegrityError, IntegrityError):
                     db.rollback()
-                    flash("That email is already in use.", "error")
+                    flash("This name is already in use.", "error")
     return render_template("profile.html", title="Profile")
 
 # ---------------------------------------------------------------------------
@@ -2339,7 +2591,7 @@ def profile():
 def _authorized_inquiry(inquiry_id: int, allow_unclaimed: bool = True):
     db = get_db()
     row = db.execute(
-        """SELECT i.*,COALESCE(u.full_name,p.full_name_snapshot,'Deleted Partner') claimed_by_name
+        """SELECT i.*,COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') claimed_by_name
            FROM website_inquiries i
            LEFT JOIN partners p ON p.id=i.claimed_by_partner_id
            LEFT JOIN users u ON u.id=p.user_id
@@ -2359,7 +2611,7 @@ def _authorized_client_conversation(conversation_id: int):
     db = get_db()
     row = db.execute(
         """SELECT c.*,i.status inquiry_status,i.id inquiry_record_id,l.company_name lead_company,l.status lead_status,
-                  COALESCE(u.full_name,p.full_name_snapshot,'Deleted Partner') owner_name
+                  COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') owner_name
            FROM client_conversations c
            LEFT JOIN website_inquiries i ON i.client_conversation_id=c.id
            LEFT JOIN leads l ON l.id=c.lead_id
@@ -2382,7 +2634,7 @@ def inquiries_list():
     claimed_select = """SELECT c.id AS client_conversation_id,c.lead_id,c.owner_partner_id,c.client_name AS name,
                c.client_email AS email,c.company,c.subject,c.status,c.created_at,c.updated_at,
                c.first_response_due_at,c.first_responded_at,c.last_client_message_at,c.last_outbound_message_at,
-               COALESCE(u.full_name,p.full_name_snapshot,'Deleted Partner') claimed_by_name,l.status AS lead_status
+               COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') claimed_by_name,l.status AS lead_status
                FROM client_conversations c
                JOIN partners p ON p.id=c.owner_partner_id
                LEFT JOIN users u ON u.id=p.user_id
@@ -2404,11 +2656,10 @@ def inquiries_list():
     partners = []
     if g.user["role"] == "admin":
         partners = db.execute(
-            "SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.user_id IS NOT NULL ORDER BY u.full_name"
+            "SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND u.active=1 AND p.account_deleted_at IS NULL ORDER BY u.full_name"
         ).fetchall()
     now = utcnow_iso()
     overdue = [row for row in claimed if row["first_response_due_at"] and not row["first_responded_at"] and row["first_response_due_at"] < now]
-    mark_client_notifications_read()
     from .client_ops import email_receive_configured, email_send_configured
     return render_template(
         "inquiries.html", title="Client Inbox", unclaimed=unclaimed, claimed=claimed, partners=partners, overdue=overdue, current_time_iso=now,
@@ -2427,23 +2678,30 @@ def inquiry_detail(inquiry_id: int):
     partners = []
     if g.user["role"] == "admin":
         partners = get_db().execute(
-            "SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.user_id IS NOT NULL ORDER BY u.full_name"
+            "SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND u.active=1 AND p.account_deleted_at IS NULL ORDER BY u.full_name"
         ).fetchall()
     matches, _normalized = duplicate_candidates({
         "company_name": inquiry["company"], "contact_name": inquiry["name"], "email": inquiry["email"],
         "phone": "", "website": "",
     })
     duplicate_leads = []
-    for row, reasons in matches[:5]:
-        detail = get_db().execute(
-            """SELECT l.id,l.company_name,l.contact_name,l.status,COALESCE(u.full_name,p.full_name_snapshot,'Deleted Partner') owner_name
-               FROM leads l JOIN partners p ON p.id=l.owner_partner_id LEFT JOIN users u ON u.id=p.user_id WHERE l.id=?""",
-            (row["id"],),
-        ).fetchone()
-        if detail:
-            duplicate_leads.append((detail, reasons))
+    duplicate_warning = bool(matches)
+    # Full duplicate details are Founder-only. Partners only get a simple warning.
+    if g.user["role"] == "admin":
+        for row, reasons in matches[:5]:
+            detail = get_db().execute(
+                """SELECT l.id,l.company_name,l.contact_name,l.status,
+                          COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') owner_name
+                   FROM leads l JOIN partners p ON p.id=l.owner_partner_id LEFT JOIN users u ON u.id=p.user_id WHERE l.id=?""",
+                (row["id"],),
+            ).fetchone()
+            if detail:
+                duplicate_leads.append((detail, reasons))
     mark_client_notifications_read(entity_type="inquiry", entity_id=inquiry_id)
-    return render_template("inquiry_detail.html", title="New Inquiry", inquiry=inquiry, partners=partners, duplicate_leads=duplicate_leads)
+    return render_template(
+        "inquiry_detail.html", title="New Inquiry", inquiry=inquiry, partners=partners,
+        duplicate_leads=duplicate_leads, duplicate_warning=duplicate_warning,
+    )
 
 
 @bp.post("/inquiries/<int:inquiry_id>/claim")
@@ -2488,7 +2746,7 @@ def inquiry_archive(inquiry_id: int):
     db.execute("""UPDATE client_notifications SET read_at=COALESCE(read_at,?)
                   WHERE entity_type='inquiry' AND entity_id=?""", (now, inquiry_id))
     db.commit()
-    flash("Inquiry archived.", "success")
+    flash("Inquiry removed from Inbox.", "success")
     return redirect(url_for("main.inquiries_list"))
 
 
@@ -2513,7 +2771,7 @@ def client_conversation(conversation_id: int):
     conv = _authorized_client_conversation(conversation_id)
     db = get_db()
     messages = db.execute(
-        """SELECT m.*,COALESCE(u.full_name,NULLIF(m.sent_by_name_snapshot,'')) sent_by_name FROM client_messages m
+        """SELECT m.*,u.full_name sent_by_name FROM client_messages m
            LEFT JOIN users u ON u.id=m.sent_by_user_id
            WHERE m.conversation_id=? ORDER BY m.id""", (conversation_id,)
     ).fetchall()
@@ -2564,14 +2822,14 @@ def client_reply(conversation_id: int):
         flash(str(exc), "error")
     except Exception:
         current_app.logger.exception("Client email send failed")
-        flash("RSF could not send that email. Check the official email configuration and try again.", "error")
+        flash("RSF could not send that email. Check the email setup and try again.", "error")
     else:
         flash("Reply sent from the official RSF email.", "success")
     return redirect(url_for("main.client_conversation", conversation_id=conversation_id))
 
 
 @bp.post("/clients/sync-email")
-@login_required
+@admin_required
 def client_sync_email():
     from .client_ops import sync_inbound_email
     try:
@@ -2580,8 +2838,8 @@ def client_sync_email():
         flash(str(exc), "warning")
     except Exception:
         current_app.logger.exception("Client email sync failed")
-        flash("Could not sync the official RSF mailbox right now.", "error")
+        flash("Email sync failed. Try again later.", "error")
     else:
         extra = f" {result.get('bounced', 0)} bounce(s) detected." if result.get("bounced") else ""
-        flash(f"Email synced. {result['imported']} new message(s) imported.{extra}", "success")
+        flash(f"Email sync finished. {result['imported']} new message(s).{extra}", "success")
     return redirect(request.referrer or url_for("main.inquiries_list"))

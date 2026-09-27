@@ -1,5 +1,5 @@
 {% extends 'base.html' %}{% block content %}
-<div class="page-head workspace-page-head"><div><h1>Settings</h1><p>Workspace identity and commission structure.</p></div></div>
+<div class="page-head workspace-page-head"><div><h1>Settings</h1><p>Workspace name, currency, and commission levels.</p></div></div>
 <nav class="settings-subnav compact-settings-nav" aria-label="Settings sections"><a class="active" aria-current="page" href="{{ url_for('main.settings') }}">Workspace</a><a href="{{ url_for('main.account_security') }}">Security</a></nav>
 <div class="two-col settings-layout simplified-settings-layout">
   <section class="workspace-section"><div class="section-head"><div><h2>Workspace</h2></div></div><form method="post" class="form-stack"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Company name<input name="company_name" value="{{ company_name }}" maxlength="160"></label><label>Currency<input name="currency_code" value="{{ currency_code }}" maxlength="3" autocapitalize="characters"><small class="help">Three-letter code such as USD or PHP.</small></label><button class="button primary" type="submit">Save Settings</button></form></section>

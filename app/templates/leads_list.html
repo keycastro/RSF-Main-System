@@ -1,6 +1,6 @@
 {% extends 'base.html' %}{% block content %}
 <div class="page-head workspace-page-head">
-  <div><h1>{{ title }}</h1><p>Search, filter, and manage the pipeline.</p></div>
+  <div><h1>{{ title }}</h1><p>Find and manage leads.</p></div>
   <a class="button primary" href="{{ url_for('main.lead_new') }}">Add Lead</a>
 </div>
 
@@ -22,7 +22,7 @@
 
 <section class="panel table-panel operational-table">
 {% if leads %}
-<div class="table-wrap"><table><caption class="sr-only">Lead pipeline results</caption><thead><tr><th>Lead</th>{% if g.user.role=='admin' %}<th>Owner</th>{% endif %}<th>Status</th><th>Last activity</th><th>Next follow-up</th><th class="action-column"><span class="sr-only">Action</span></th></tr></thead><tbody>{% for l in leads %}<tr><td data-label="Lead"><strong>{{ l.company_name }}</strong><small>{{ l.contact_name }}{% if l.email %} · {{ l.email }}{% endif %}</small></td>{% if g.user.role=='admin' %}<td data-label="Owner">{{ l.owner_name }}</td>{% endif %}<td data-label="Status"><span class="badge status-{{ l.status|lower }}">{{ l.status|human_status }}</span></td><td data-label="Last activity">{{ l.last_activity_at|dt }}</td><td data-label="Next follow-up">{% if l.next_followup %}{{ l.next_followup|dt }}{% else %}<span class="table-empty-value">None scheduled</span>{% endif %}</td><td class="action-column" data-label="Action"><a class="text-link row-action" href="{{ url_for('main.lead_detail',lead_id=l.id) }}">Open</a></td></tr>{% endfor %}</tbody></table></div>
+<div class="table-wrap"><table><caption class="sr-only">Lead results</caption><thead><tr><th>Lead</th>{% if g.user.role=='admin' %}<th>Owner</th>{% endif %}<th>Status</th><th>Last activity</th><th>Next follow-up</th><th class="action-column"><span class="sr-only">Action</span></th></tr></thead><tbody>{% for l in leads %}<tr><td data-label="Lead"><strong>{{ l.company_name }}</strong><small>{{ l.contact_name }}{% if l.email %} · {{ l.email }}{% endif %}</small></td>{% if g.user.role=='admin' %}<td data-label="Owner">{{ l.owner_name }}</td>{% endif %}<td data-label="Status"><span class="badge status-{{ l.status|lower }}">{{ l.status|human_status }}</span></td><td data-label="Last activity">{{ l.last_activity_at|dt }}</td><td data-label="Next follow-up">{% if l.next_followup %}{{ l.next_followup|dt }}{% else %}<span class="table-empty-value">None scheduled</span>{% endif %}</td><td class="action-column" data-label="Action"><a class="text-link row-action" href="{{ url_for('main.lead_detail',lead_id=l.id) }}">Open</a></td></tr>{% endfor %}</tbody></table></div>
 {% else %}
 <div class="empty"><strong>{{ 'No matching leads' if query or selected_status else 'No leads yet' }}</strong>{% if query or selected_status %}<span>Try another search or filter.</span>{% endif %}{% if not query and not selected_status %}<a class="button primary small" href="{{ url_for('main.lead_new') }}">Add Lead</a>{% endif %}</div>
 {% endif %}

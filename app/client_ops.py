@@ -7,6 +7,7 @@ import smtplib
 import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from html.parser import HTMLParser
 from email.header import decode_header, make_header
 from email.message import EmailMessage
 from email.utils import formataddr, make_msgid, parseaddr
@@ -15,26 +16,66 @@ from typing import Any
 from flask import current_app
 
 from .db import get_db, using_postgres
-from .services import log_activity, normalize_email, normalize_text, utcnow_iso
+from .services import file_signature_matches, log_activity, normalize_email, normalize_text, utcnow_iso
+
+
+class _PlainTextHTML(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.parts: list[str] = []
+
+    def handle_data(self, data: str) -> None:
+        text = " ".join((data or "").split())
+        if text:
+            self.parts.append(text)
+
+    def handle_starttag(self, tag: str, attrs) -> None:
+        if tag.lower() in {"br", "p", "div", "li", "tr", "h1", "h2", "h3", "h4", "h5", "h6"}:
+            self.parts.append("\n")
+
+    def text(self) -> str:
+        out = " ".join(self.parts)
+        out = out.replace(" \n ", "\n").replace(" \n", "\n").replace("\n ", "\n")
+        return "\n".join(line.strip() for line in out.splitlines() if line.strip()).strip()
+
+
+def _decode_part(part) -> str:
+    try:
+        return part.get_content().strip()
+    except Exception:
+        payload = part.get_payload(decode=True) or b""
+        return payload.decode(part.get_content_charset() or "utf-8", errors="replace").strip()
+
+
+def _html_to_text(value: str) -> str:
+    parser = _PlainTextHTML()
+    try:
+        parser.feed(value or "")
+        parser.close()
+        return parser.text()
+    except Exception:
+        return ""
 
 
 def _text_part(message) -> str:
+    """Read safe plain text. HTML-only messages are converted to text, never rendered as raw HTML."""
+    html_fallback = ""
     if message.is_multipart():
         for part in message.walk():
             ctype = part.get_content_type()
             disp = (part.get("Content-Disposition") or "").lower()
-            if ctype == "text/plain" and "attachment" not in disp:
-                try:
-                    return part.get_content().strip()
-                except Exception:
-                    payload = part.get_payload(decode=True) or b""
-                    return payload.decode(part.get_content_charset() or "utf-8", errors="replace").strip()
-        return ""
-    try:
-        return message.get_content().strip()
-    except Exception:
-        payload = message.get_payload(decode=True) or b""
-        return payload.decode(message.get_content_charset() or "utf-8", errors="replace").strip()
+            if "attachment" in disp:
+                continue
+            if ctype == "text/plain":
+                text = _decode_part(part)
+                if text:
+                    return text
+            elif ctype == "text/html" and not html_fallback:
+                html_fallback = _decode_part(part)
+        return _html_to_text(html_fallback) if html_fallback else ""
+    ctype = message.get_content_type()
+    text = _decode_part(message)
+    return _html_to_text(text) if ctype == "text/html" else text
 
 
 def email_send_configured() -> bool:
@@ -97,10 +138,10 @@ def _notify_founders(kind: str, title: str, body: str = "", *, entity_type: str 
         _notify(user_id, kind, title, body, entity_type=entity_type, entity_id=entity_id)
 
 
-def _notify_all_partners(kind: str, title: str, body: str = "", *, entity_type: str = "", entity_id: int | None = None) -> None:
+def _notify_all_active_partners(kind: str, title: str, body: str = "", *, entity_type: str = "", entity_id: int | None = None) -> None:
     rows = get_db().execute(
         """SELECT u.id FROM partners p JOIN users u ON u.id=p.user_id
-           WHERE p.user_id IS NOT NULL"""
+           WHERE p.active=1 AND u.active=1"""
     ).fetchall()
     for row in rows:
         _notify(int(row["id"]), kind, title, body, entity_type=entity_type, entity_id=entity_id)
@@ -145,6 +186,8 @@ def _store_attachment_bytes(message_id: int, filename: str, data: bytes, mime_ty
     guessed = CLIENT_FILE_TYPES.get(suffix) or mimetypes.guess_type(original)[0] or "application/octet-stream"
     if suffix not in CLIENT_FILE_TYPES:
         return None
+    if not file_signature_matches(suffix, data):
+        return None
     stored = f"{uuid.uuid4().hex}{suffix}"
     data_blob = data if using_postgres() else None
     if not using_postgres():
@@ -180,6 +223,8 @@ def _prepare_outbound_attachments(storages) -> list[tuple[str, str, bytes]]:
             pass
         if not data:
             raise ValueError(f"Attachment is empty: {name}")
+        if not file_signature_matches(suffix, data):
+            raise ValueError(f"File content does not match its type: {name}")
         if len(data) > max_file:
             raise ValueError(f"Each client attachment must be {current_app.config.get('CLIENT_MAX_FILE_MB', 15)} MB or smaller.")
         total += len(data)
@@ -209,7 +254,7 @@ def _extract_inbound_attachments(message) -> list[tuple[str, str, bytes]]:
         if suffix not in CLIENT_FILE_TYPES:
             continue
         data = part.get_payload(decode=True) or b""
-        if not data:
+        if not data or not file_signature_matches(suffix, data):
             continue
         total += len(data)
         if total > max_total:
@@ -218,11 +263,11 @@ def _extract_inbound_attachments(message) -> list[tuple[str, str, bytes]]:
     return items
 
 
-def _current_partner(partner_id: int):
+def _active_partner(partner_id: int):
     return get_db().execute(
-        """SELECT p.id,p.user_id,u.full_name
+        """SELECT p.id,p.user_id,u.full_name,u.active AS user_active,p.active AS partner_active
            FROM partners p JOIN users u ON u.id=p.user_id
-           WHERE p.id=? AND p.user_id IS NOT NULL""",
+           WHERE p.id=? AND p.active=1 AND u.active=1""",
         (partner_id,),
     ).fetchone()
 
@@ -232,8 +277,8 @@ def _find_exact_email_lead(email_value: str):
     if not email_norm:
         return None
     return get_db().execute(
-        """SELECT l.*,p.user_id AS owner_user_id
-           FROM leads l JOIN partners p ON p.id=l.owner_partner_id LEFT JOIN users u ON u.id=p.user_id
+        """SELECT l.*,p.active AS partner_active,u.active AS user_active
+           FROM leads l JOIN partners p ON p.id=l.owner_partner_id JOIN users u ON u.id=p.user_id
            WHERE l.email_norm=? AND l.status NOT IN ('WON','LOST') ORDER BY l.last_activity_at DESC,l.id DESC LIMIT 1""",
         (email_norm,),
     ).fetchone()
@@ -274,7 +319,7 @@ def create_public_inquiry(record: dict[str, str]) -> int:
     owner_partner_id = None
     lead_id = None
     status = "UNCLAIMED"
-    if existing and existing["owner_user_id"]:
+    if existing and existing["partner_active"] and existing["user_active"]:
         owner_partner_id = int(existing["owner_partner_id"])
         lead_id = int(existing["id"])
         status = "CLAIMED"
@@ -327,7 +372,7 @@ def create_public_inquiry(record: dict[str, str]) -> int:
         _notify_founders("CLIENT_REPLY", f"{company or name} contacted RSF again", "A returning client sent a new website message.", entity_type="conversation", entity_id=conversation_id)
     else:
         title = f"New inquiry: {company or name}"
-        _notify_all_partners("NEW_INQUIRY", title, "A new unclaimed website opportunity is available.", entity_type="inquiry", entity_id=inquiry_id)
+        _notify_all_active_partners("NEW_INQUIRY", title, "A new unclaimed website opportunity is available.", entity_type="inquiry", entity_id=inquiry_id)
         _notify_founders("NEW_INQUIRY", title, "A new unclaimed website opportunity is available.", entity_type="inquiry", entity_id=inquiry_id)
     db.commit()
     return inquiry_id
@@ -336,9 +381,9 @@ def create_public_inquiry(record: dict[str, str]) -> int:
 def claim_inquiry(inquiry_id: int, partner_id: int, actor_user_id: int) -> tuple[bool, str, int | None]:
     """Atomically claim an unclaimed inquiry and create/link its CRM lead."""
     db = get_db()
-    partner = _current_partner(partner_id)
+    partner = _active_partner(partner_id)
     if not partner:
-        return False, "Partner account was not found.", None
+        return False, "Partner is not active.", None
     inquiry = db.execute("SELECT * FROM website_inquiries WHERE id=?", (inquiry_id,)).fetchone()
     if not inquiry:
         return False, "Inquiry not found.", None
@@ -349,12 +394,12 @@ def claim_inquiry(inquiry_id: int, partner_id: int, actor_user_id: int) -> tuple
     # matching lead was created after the public inquiry first arrived.
     existing = _find_exact_email_lead(inquiry["email"])
     now = utcnow_iso()
-    if existing and not existing["owner_user_id"]:
+    if existing and (not existing["partner_active"] or not existing["user_active"]):
         _notify_founders("OWNERSHIP_REVIEW", f"Ownership review needed: {inquiry['company'] or inquiry['name']}",
-                         "This contact matches an existing Lead whose previous Partner account was deleted. Reassign that Lead before claiming this inquiry.",
+                         "This contact matches an active Lead whose Partner account is inactive. Reassign that Lead before claiming this inquiry.",
                          entity_type="inquiry", entity_id=inquiry_id)
         db.commit()
-        return False, "This contact already has an RSF lead with a deleted Partner account. Founder must reassign that lead first.", inquiry["client_conversation_id"]
+        return False, "This contact already has an RSF lead with an inactive owner. Founder must reassign that lead first.", inquiry["client_conversation_id"]
     if existing:
         owner_id = int(existing["owner_partner_id"])
         conversation = _conversation_for_lead(int(existing["id"]))
@@ -436,7 +481,7 @@ def assign_inquiry(inquiry_id: int, partner_id: int, actor_user_id: int) -> tupl
 
 def send_client_email(conversation_id: int, actor_user_id: int, body: str, attachments=None) -> int:
     if not email_send_configured():
-        raise RuntimeError("Official RSF email sending is not configured yet.")
+        raise RuntimeError("Email sending is not set up yet.")
     db = get_db()
     conv = db.execute("SELECT * FROM client_conversations WHERE id=?", (conversation_id,)).fetchone()
     if not conv:
@@ -458,18 +503,35 @@ def send_client_email(conversation_id: int, actor_user_id: int, body: str, attac
         """SELECT external_message_id FROM client_messages
            WHERE conversation_id=? AND external_message_id<>'' ORDER BY id DESC LIMIT 1""", (conversation_id,)
     ).fetchone()
-    actor_row = db.execute("SELECT full_name FROM users WHERE id=?", (actor_user_id,)).fetchone()
-    actor_name = actor_row["full_name"] if actor_row else ""
+    reply_to_id = last_msg["external_message_id"] if last_msg else ""
+    message_id = make_msgid(domain=(sender.split("@", 1)[1] if "@" in sender else None))
+    now = utcnow_iso()
+
+    # Save the outgoing message before contacting SMTP. If the network succeeds but
+    # a later database step fails, RSF still has a durable message record to review.
+    cur = db.execute(
+        """INSERT INTO client_messages
+           (conversation_id,direction,channel,sender_email,recipient_email,subject,body,sent_by_user_id,external_message_id,in_reply_to,created_at,delivery_status,delivery_error)
+           VALUES (?,'OUTBOUND','EMAIL',?,?,?,?,?,?,?,?,'PENDING','')""",
+        (conversation_id, sender, conv["client_email"], subject, body, actor_user_id, message_id, reply_to_id, now),
+    )
+    message_row_id = int(cur.lastrowid)
+    for name, mime_type, data in prepared:
+        stored_id = _store_attachment_bytes(message_row_id, name, data, mime_type)
+        if stored_id is None:
+            db.rollback()
+            raise ValueError(f"Attachment could not be saved safely: {name}")
+    db.commit()
+
     msg = EmailMessage()
     msg["From"] = formataddr((display, sender))
     msg["To"] = conv["client_email"]
     msg["Reply-To"] = sender
     msg["Subject"] = subject
-    message_id = make_msgid(domain=(sender.split("@", 1)[1] if "@" in sender else None))
     msg["Message-ID"] = message_id
-    if last_msg and last_msg["external_message_id"]:
-        msg["In-Reply-To"] = last_msg["external_message_id"]
-        msg["References"] = last_msg["external_message_id"]
+    if reply_to_id:
+        msg["In-Reply-To"] = reply_to_id
+        msg["References"] = reply_to_id
     msg.set_content(body or "Please see the attached file(s).")
     for name, mime_type, data in prepared:
         maintype, subtype = (mime_type.split("/", 1) + ["octet-stream"])[:2]
@@ -482,74 +544,78 @@ def send_client_email(conversation_id: int, actor_user_id: int, body: str, attac
     use_ssl = bool(current_app.config.get("SMTP_USE_SSL", True))
     use_tls = bool(current_app.config.get("SMTP_USE_TLS", False))
     try:
-        if use_ssl:
-            server = smtplib.SMTP_SSL(host, port, timeout=20)
-        else:
-            server = smtplib.SMTP(host, port, timeout=20)
+        server = smtplib.SMTP_SSL(host, port, timeout=20) if use_ssl else smtplib.SMTP(host, port, timeout=20)
         try:
             server.ehlo()
             if use_tls and not use_ssl:
-                server.starttls(); server.ehlo()
+                server.starttls()
+                server.ehlo()
             server.login(username, password)
             refused = server.send_message(msg)
             if refused:
-                raise RuntimeError("The mail server refused the client recipient.")
+                raise RuntimeError("The mail server refused the client email address.")
         finally:
             try:
                 server.quit()
             except Exception:
                 pass
     except Exception as exc:
-        now = utcnow_iso()
+        try:
+            db.execute(
+                "UPDATE client_messages SET delivery_status='FAILED',delivery_error=? WHERE id=?",
+                (str(exc)[:500], message_row_id),
+            )
+            db.commit()
+        except Exception:
+            db.rollback()
+        raise RuntimeError("RSF could not send that email. Check the email setup and try again.") from exc
+
+    # Save SMTP success immediately. Later CRM updates are a separate transaction.
+    sent_at = utcnow_iso()
+    try:
         db.execute(
-            """INSERT INTO client_messages
-               (conversation_id,direction,channel,sender_email,recipient_email,subject,body,sent_by_user_id,sent_by_name_snapshot,external_message_id,in_reply_to,created_at,delivery_status,delivery_error)
-               VALUES (?,'OUTBOUND','EMAIL',?,?,?,?,?,?,?,?,?,'FAILED',?)""",
-            (conversation_id, sender, conv["client_email"], subject, body, actor_user_id, actor_name, message_id,
-             last_msg["external_message_id"] if last_msg else "", now, str(exc)[:500]),
+            "UPDATE client_messages SET delivery_status='SENT',delivery_error='',created_at=? WHERE id=?",
+            (sent_at, message_row_id),
         )
         db.commit()
-        raise RuntimeError("RSF could not send that email. Check the official email configuration and try again.") from exc
+    except Exception:
+        db.rollback()
+        current_app.logger.exception("Email was sent but RSF could not update delivery status for message %s", message_row_id)
+        # The pre-send PENDING record remains as proof that the send was attempted.
+        raise RuntimeError("The email was sent, but RSF could not finish saving its status. Check the message history before sending again.")
 
-    now = utcnow_iso()
-    cur = db.execute(
-        """INSERT INTO client_messages
-           (conversation_id,direction,channel,sender_email,recipient_email,subject,body,sent_by_user_id,sent_by_name_snapshot,external_message_id,in_reply_to,created_at,delivery_status,delivery_error)
-           VALUES (?,'OUTBOUND','EMAIL',?,?,?,?,?,?,?,?,?,'SENT','')""",
-        (conversation_id, sender, conv["client_email"], subject, body, actor_user_id, actor_name, message_id,
-         last_msg["external_message_id"] if last_msg else "", now),
-    )
-    message_row_id = int(cur.lastrowid)
-    for name, mime_type, data in prepared:
-        _store_attachment_bytes(message_row_id, name, data, mime_type)
-    db.execute(
-        """UPDATE client_conversations SET updated_at=?,subject=?,last_outbound_message_at=?,
-           first_responded_at=COALESCE(first_responded_at,?) WHERE id=?""",
-        (now, subject.removeprefix("Re: "), now, now, conversation_id),
-    )
-    if conv["lead_id"]:
-        lead = db.execute("SELECT status FROM leads WHERE id=?", (conv["lead_id"],)).fetchone()
-        if lead and lead["status"] == "NEW":
-            db.execute("UPDATE leads SET status='CONTACTED',last_activity_at=? WHERE id=?", (now, conv["lead_id"]))
+    try:
+        db.execute(
+            """UPDATE client_conversations SET updated_at=?,subject=?,last_outbound_message_at=?,
+               first_responded_at=COALESCE(first_responded_at,?) WHERE id=?""",
+            (sent_at, subject.removeprefix("Re: "), sent_at, sent_at, conversation_id),
+        )
+        if conv["lead_id"]:
+            lead = db.execute("SELECT status FROM leads WHERE id=?", (conv["lead_id"],)).fetchone()
+            if lead and lead["status"] == "NEW":
+                db.execute("UPDATE leads SET status='CONTACTED',last_activity_at=? WHERE id=?", (sent_at, conv["lead_id"]))
+                db.execute(
+                    """INSERT INTO activity_log(actor_user_id,action_type,entity_type,entity_id,description,metadata_json,created_at)
+                       VALUES (?,'LEAD_STATUS_CHANGED','lead',?,'Lead moved from New to Contacted after the first client reply.','{"from":"NEW","to":"CONTACTED"}',?)""",
+                    (actor_user_id, conv["lead_id"], sent_at),
+                )
+            else:
+                db.execute("UPDATE leads SET last_activity_at=? WHERE id=?", (sent_at, conv["lead_id"]))
             db.execute(
                 """INSERT INTO activity_log(actor_user_id,action_type,entity_type,entity_id,description,metadata_json,created_at)
-                   VALUES (?,'LEAD_STATUS_CHANGED','lead',?,'Lead automatically moved from New to Contacted after the first client reply.','{"from":"NEW","to":"CONTACTED"}',?)""",
-                (actor_user_id, conv["lead_id"], now),
+                   VALUES (?,'CLIENT_EMAIL_SENT','lead',?,'Client email sent from RSF.',?,?)""",
+                (actor_user_id, conv["lead_id"], '{"conversation_id":%d}' % conversation_id, sent_at),
             )
-        else:
-            db.execute("UPDATE leads SET last_activity_at=? WHERE id=?", (now, conv["lead_id"]))
         db.execute(
-            """INSERT INTO activity_log(actor_user_id,action_type,entity_type,entity_id,description,metadata_json,created_at)
-               VALUES (?,'CLIENT_EMAIL_SENT','lead',?,'Client email sent from RSF.',?,?)""",
-            (actor_user_id, conv["lead_id"], '{"conversation_id":%d}' % conversation_id, now),
+            """UPDATE client_notifications SET read_at=COALESCE(read_at,?)
+               WHERE user_id=? AND entity_type='conversation' AND entity_id=?""",
+            (sent_at, actor_user_id, conversation_id),
         )
-    # Opening/replying to a client resolves this user's unread client alerts for the thread.
-    db.execute(
-        """UPDATE client_notifications SET read_at=COALESCE(read_at,?)
-           WHERE user_id=? AND entity_type='conversation' AND entity_id=?""",
-        (now, actor_user_id, conversation_id),
-    )
-    db.commit()
+        db.commit()
+    except Exception:
+        db.rollback()
+        current_app.logger.exception("Email was sent but post-send CRM updates failed for message %s", message_row_id)
+        # Do not raise here: delivery and its durable SENT record are already confirmed.
     return message_row_id
 
 
@@ -639,7 +705,7 @@ def _mark_bounce_if_applicable(message, sender_email: str, subject: str) -> bool
 
 def sync_inbound_email(limit: int = 40) -> dict[str, int]:
     if not email_receive_configured():
-        raise RuntimeError("Official RSF email receiving is not configured yet.")
+        raise RuntimeError("Email receiving is not set up yet.")
     host = current_app.config["IMAP_HOST"]
     port = int(current_app.config.get("IMAP_PORT", 993))
     username = current_app.config["IMAP_USERNAME"]

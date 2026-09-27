@@ -29,7 +29,16 @@ class Config:
     CREDENTIAL_VAULT_KEY = os.environ.get("RSF_CREDENTIAL_VAULT_KEY", "").strip()
     DATABASE = os.environ.get("DATABASE_PATH", str(BASE_DIR / "instance" / "rsf_sales_partner.db"))
     DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+    # ONLINE_MODE means database-backed file storage (PostgreSQL), not whether HTTPS is used.
     ONLINE_MODE = bool(DATABASE_URL.startswith(("postgres://", "postgresql://")))
+    PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").strip().rstrip("/")
+    ENV_NAME = os.environ.get("RSF_ENV", os.environ.get("FLASK_ENV", "local")).strip().lower()
+    PRODUCTION_MODE = (
+        ENV_NAME in {"prod", "production"}
+        or PUBLIC_BASE_URL.lower().startswith("https://")
+        or os.environ.get("RENDER", "").strip().lower() in {"1", "true", "yes", "on"}
+        or bool(os.environ.get("RENDER_EXTERNAL_URL", "").strip())
+    )
     HOST = os.environ.get("HOST", "127.0.0.1")
     PORT = int(os.environ.get("PORT", "5078"))
     SESSION_HOURS = max(1, min(24, int(os.environ.get("SESSION_HOURS", "8"))))
@@ -37,16 +46,15 @@ class Config:
     SESSION_COOKIE_NAME = "rsf_partner_session"
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
-    SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "1" if ONLINE_MODE else "0") == "1"
+    SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "1" if PRODUCTION_MODE else "0").strip().lower() in {"1","true","yes","on"}
     MAX_CONTENT_LENGTH = 32 * 1024 * 1024
     MESSAGE_UPLOAD_DIR = os.environ.get("MESSAGE_UPLOAD_DIR", "")
     PROFILE_PICTURE_DIR = os.environ.get("PROFILE_PICTURE_DIR", "")
     CLIENT_ATTACHMENT_DIR = os.environ.get("CLIENT_ATTACHMENT_DIR", "")
     BACKUP_DIR = os.environ.get("BACKUP_DIR", "")
-    TRUSTED_HOSTS = [h.strip() for h in os.environ.get("TRUSTED_HOSTS", "realtysystemsfoundry.onrender.com,partner-rsf.onrender.com,127.0.0.1,localhost" if ONLINE_MODE else "127.0.0.1,localhost").split(",") if h.strip()]
+    TRUSTED_HOSTS = [h.strip() for h in os.environ.get("TRUSTED_HOSTS", "realtysystemsfoundry.onrender.com,partner-rsf.onrender.com,127.0.0.1,localhost" if PRODUCTION_MODE else "127.0.0.1,localhost").split(",") if h.strip()]
 
     # Unified public website + official RSF client email
-    PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").strip().rstrip("/")
     CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", os.environ.get("RSF_EMAIL_ADDRESS", "")).strip()
     ENVIRONMENT_LABEL = os.environ.get("ENVIRONMENT_LABEL", "Local").strip() or "Local"
     LINKEDIN_URL = os.environ.get("LINKEDIN_URL", "").strip()
