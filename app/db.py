@@ -25,9 +25,9 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 16
-SCHEMA_NAME = "rsf-main-system-v1.11.0-name-password-login"
-SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications"}
+SCHEMA_VERSION = 17
+SCHEMA_NAME = "rsf-main-system-v1.13.0-prospects"
+SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects"}
 
 
 def using_postgres() -> bool:
@@ -728,6 +728,32 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
         )
 
 
+    # V17 adds the shared Prospects work queue documented in the RSF workflow.
+    # New prospects start as NOT_CONTACTED. The same record carries forward while
+    # it remains NOT_CONTACTED or NO_ANSWER; no daily duplicate row is created.
+    if 17 not in applied:
+        db.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS prospects (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                name_norm TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'NOT_CONTACTED',
+                recorded_date TEXT NOT NULL,
+                created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS uq_prospects_name_norm ON prospects(name_norm);
+            CREATE INDEX IF NOT EXISTS idx_prospects_daily_queue ON prospects(recorded_date,status,id);
+            """
+        )
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (17, "rsf-v1.13.0-prospects-work-queue"),
+        )
+
+
 def _table_exists_postgres(db, table: str) -> bool:
     row = db.execute(
         "SELECT 1 AS ok FROM information_schema.tables WHERE table_schema='public' AND table_name=? LIMIT 1",
@@ -779,7 +805,7 @@ def _import_seed_payload(db) -> None:
         "users", "account_password_vault", "commission_stages", "partners", "leads", "lead_notes", "followups", "sales", "commissions", "sale_corrections",
         "resources", "duplicate_claims", "activity_log", "messages", "message_attachments", "voice_calls",
         "voice_call_signals", "settings", "website_inquiries", "client_conversations", "client_messages",
-        "client_attachments", "client_notifications"
+        "client_attachments", "client_notifications", "prospects"
     ]
     for table in order:
         rows = tables.get(table) or []
