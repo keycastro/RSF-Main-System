@@ -67,6 +67,31 @@ def partner_scope_id() -> int | None:
     return g.partner["id"] if g.user and g.user["role"] == "partner" and g.partner else None
 
 
+PROSPECT_UNFINISHED_STATUSES = ("NOT_CONTACTED", "NO_ANSWER")
+PROSPECT_STATUS_LABELS = {
+    "NOT_CONTACTED": "Not Contacted",
+    "NO_ANSWER": "No Answer",
+    "REJECTED": "Rejected",
+    "CLOSED": "Closed",
+    "CONVERTED_CLIENT": "Converted / Client",
+}
+
+
+def _normalize_prospect_name(value: str) -> str:
+    return " ".join((value or "").split()).casefold()
+
+
+def _selected_prospect_date(raw: str | None) -> date:
+    today = date.today()
+    if not raw:
+        return today
+    try:
+        selected = date.fromisoformat(raw)
+    except ValueError:
+        return today
+    return min(selected, today)
+
+
 def _clean_account_name(value: str) -> str:
     return (value or "").strip()[:160]
 
@@ -717,6 +742,129 @@ def dashboard():
            FROM leads l WHERE l.owner_partner_id=? AND l.status NOT IN ('WON','LOST') ORDER BY l.last_activity_at DESC LIMIT 8""", (pid,)
     ).fetchall()
     return render_template("dashboard_partner.html", title="Home", metrics=metrics, followups=followups, leads=leads, today=today)
+
+
+@bp.get("/prospects")
+@login_required
+def prospects():
+    db = get_db()
+    selected = _selected_prospect_date(request.args.get("date"))
+    selected_str = selected.isoformat()
+    today = date.today()
+    is_today = selected == today
+
+    if is_today:
+        rows = db.execute(
+            """SELECT p.* FROM prospects p
+               WHERE p.recorded_date=?
+                  OR (p.recorded_date<? AND p.status IN ('NOT_CONTACTED','NO_ANSWER'))
+               ORDER BY CASE WHEN p.recorded_date=? THEN 0 ELSE 1 END,
+                        p.recorded_date ASC,p.id ASC""",
+            (selected_str, selected_str, selected_str),
+        ).fetchall()
+    else:
+        rows = db.execute(
+            "SELECT p.* FROM prospects p WHERE p.recorded_date=? ORDER BY p.id ASC",
+            (selected_str,),
+        ).fetchall()
+
+    return render_template(
+        "prospects.html",
+        title="Prospects",
+        prospects=rows,
+        selected_date=selected_str,
+        today=today.isoformat(),
+        is_today=is_today,
+        prospect_status_labels=PROSPECT_STATUS_LABELS,
+    )
+
+
+@bp.route("/prospects/new", methods=["GET", "POST"])
+@login_required
+def prospect_new():
+    db = get_db()
+    duplicate = None
+    submitted_name = ""
+
+    if request.method == "POST":
+        validate_csrf()
+        submitted_name = " ".join((request.form.get("name", "") or "").split())
+        errors = []
+
+        if not submitted_name:
+            errors.append("Prospect name is required.")
+        elif len(submitted_name) > 200:
+            errors.append("Prospect name must be 200 characters or fewer.")
+
+        name_norm = _normalize_prospect_name(submitted_name)
+
+        if not errors:
+            duplicate = db.execute(
+                "SELECT id,name,status,recorded_date FROM prospects WHERE name_norm=? LIMIT 1",
+                (name_norm,),
+            ).fetchone()
+
+        if duplicate:
+            return render_template(
+                "prospect_form.html",
+                title="Add Prospect",
+                submitted_name=submitted_name,
+                duplicate=duplicate,
+                prospect_status_labels=PROSPECT_STATUS_LABELS,
+            )
+
+        if errors:
+            for error in errors:
+                flash(error, "error")
+            return render_template(
+                "prospect_form.html",
+                title="Add Prospect",
+                submitted_name=submitted_name,
+                duplicate=None,
+                prospect_status_labels=PROSPECT_STATUS_LABELS,
+            )
+
+        now = utcnow_iso()
+        recorded_date = today_str()
+        try:
+            cur = db.execute(
+                """INSERT INTO prospects(name,name_norm,status,recorded_date,created_by_user_id,created_at,updated_at)
+                   VALUES (?,?,'NOT_CONTACTED',?,?,?,?)""",
+                (submitted_name, name_norm, recorded_date, g.user["id"], now, now),
+            )
+        except (sqlite3.IntegrityError, IntegrityError):
+            db.rollback()
+            duplicate = db.execute(
+                "SELECT id,name,status,recorded_date FROM prospects WHERE name_norm=? LIMIT 1",
+                (name_norm,),
+            ).fetchone()
+            return render_template(
+                "prospect_form.html",
+                title="Add Prospect",
+                submitted_name=submitted_name,
+                duplicate=duplicate,
+                prospect_status_labels=PROSPECT_STATUS_LABELS,
+            )
+
+        prospect_id = cur.lastrowid
+        log_activity(
+            "PROSPECT_CREATED",
+            "prospect",
+            prospect_id,
+            "Prospect added.",
+            {"recorded_date": recorded_date},
+        )
+        db.commit()
+        flash("Prospect added.", "success")
+        return redirect(url_for("main.prospects") + f"#prospect-{prospect_id}")
+
+    return render_template(
+        "prospect_form.html",
+        title="Add Prospect",
+        submitted_name=submitted_name,
+        duplicate=None,
+        prospect_status_labels=PROSPECT_STATUS_LABELS,
+    )
 
 
 @bp.get("/clients")
