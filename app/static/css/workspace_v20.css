@@ -1505,13 +1505,16 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 
 
-/* v1.18.13 — three Prospect cards per row on wide desktop; card internals unchanged */
-@media(min-width:1351px){
+/* v1.18.14 — keep three Prospect cards roomy enough to preserve the existing card shape */
+@media(min-width:1550px){
+  .prospects-page{
+    max-width:none
+  }
   .prospects-page .simple-list{
     grid-template-columns:repeat(3,minmax(0,1fr))
   }
 }
-@media(min-width:901px) and (max-width:1350px){
+@media(min-width:901px) and (max-width:1549px){
   .prospects-page .simple-list{
     grid-template-columns:repeat(2,minmax(0,1fr))
   }
