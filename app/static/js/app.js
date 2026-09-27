@@ -1938,7 +1938,17 @@
 
     editor.className = 'prospect-inline-editor';
     editor.dataset.prospectEditorActive = '';
-    editor.value = originalValue;
+    const uppercaseIdentityField = fieldName === 'contact' || fieldName === 'location';
+    if (uppercaseIdentityField) editor.classList.add('prospect-uppercase-editor');
+    editor.value = uppercaseIdentityField ? originalValue.toUpperCase() : originalValue;
+    if (uppercaseIdentityField) {
+      editor.addEventListener('input', () => {
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        editor.value = editor.value.toUpperCase();
+        if (start !== null && end !== null) editor.setSelectionRange(start, end);
+      });
+    }
     field.dataset.prospectEditing = '1';
     display.hidden = true;
     field.appendChild(editor);
@@ -2048,6 +2058,15 @@
       }, 0);
     }
   };
+
+  page.querySelectorAll('.prospect-uppercase-input').forEach((field) => {
+    field.addEventListener('input', () => {
+      const start = field.selectionStart;
+      const end = field.selectionEnd;
+      field.value = field.value.toUpperCase();
+      if (start !== null && end !== null) field.setSelectionRange(start, end);
+    });
+  });
 
   page.addEventListener('click', (event) => {
     const triggerEdit = event.target.closest('[data-prospect-edit-trigger]');
@@ -2173,6 +2192,16 @@
   });
   window.addEventListener('resize', () => {
     nextStepFields.forEach(resizeNextStep);
+  });
+
+  page.querySelectorAll('input[name="contact_person"], input[name="location"]').forEach((field) => {
+    field.value = (field.value || '').toUpperCase();
+    field.addEventListener('input', () => {
+      const start = field.selectionStart;
+      const end = field.selectionEnd;
+      field.value = field.value.toUpperCase();
+      if (start !== null && end !== null) field.setSelectionRange(start, end);
+    });
   });
 
   const dealAutosaveState = new WeakMap();

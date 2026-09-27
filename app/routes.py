@@ -1054,9 +1054,9 @@ def prospect_new():
         "post_date": submitted_post_date,
         "system_wanted": field("system_wanted", 2000),
         "budget": field("budget", 200),
-        "location": field("location", 200),
+        "location": field("location", 200).upper(),
         "website": field("website", 1000),
-        "contact": field("contact", 200),
+        "contact": field("contact", 200).upper(),
         "email": field("email", 320),
         "phone": field("phone", 120),
     }
@@ -1274,6 +1274,8 @@ def prospect_update(prospect_id: int):
         db.execute("UPDATE prospects SET post_date=?,updated_at=? WHERE id=?", (post_date, now, prospect_id))
     else:
         value = raw_value.strip()[:limits[field_name]]
+        if field_name in ("contact", "location"):
+            value = value.upper()
         db.execute(f'UPDATE prospects SET "{field_name}"=?,updated_at=? WHERE id=?', (value, now, prospect_id))
         if field_name == "email":
             db.execute(
@@ -1674,8 +1676,8 @@ def deal_update(deal_id: int):
     price = (request.form.get("price", "") or "").strip()[:200]
     contact_number = (request.form.get("contact_number", "") or "").strip()[:120]
     email = (request.form.get("email", "") or "").strip()[:320]
-    contact_person = (request.form.get("contact_person", "") or "").strip()[:200]
-    location = (request.form.get("location", "") or "").strip()[:200]
+    contact_person = (request.form.get("contact_person", "") or "").strip()[:200].upper()
+    location = (request.form.get("location", "") or "").strip()[:200].upper()
     notes_after_conversation = (request.form.get("notes_after_conversation", "") or "").strip()[:3000]
     now = utcnow_iso()
 
