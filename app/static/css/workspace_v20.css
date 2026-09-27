@@ -477,3 +477,54 @@ a.simple-row:hover{background:#fafcfb}
   .prospect-card-shell>.prospect-card-delete{right:36px;top:8px}
   .prospect-card-shell .prospect-card-summary{padding-right:70px}
 }
+
+
+/* v1.15.2 — real Prospect cards; no repeated fields on expand */
+.prospects-page .simple-list{display:grid;gap:14px;padding:14px;background:#f4f7f5}
+.prospect-card-shell{position:relative;min-width:0}
+.prospect-card{width:100%;border:1px solid #dbe4e0;border-radius:16px;background:#fff;overflow:hidden;box-shadow:0 4px 14px rgba(25,55,46,.055);transition:border-color .16s ease,box-shadow .16s ease,transform .16s ease}
+.prospect-card:hover{border-color:#c7d5cf;box-shadow:0 8px 22px rgba(25,55,46,.08)}
+.prospect-card-shell:target .prospect-card{outline:2px solid #c8aa71;outline-offset:2px}
+.prospect-card-summary{position:relative;display:block;padding:20px 78px 17px 20px;cursor:pointer;list-style:none;background:#fff}
+.prospect-card-summary::-webkit-details-marker{display:none}
+.prospect-card-summary::marker{display:none}
+.prospect-card-summary:focus-visible{outline:2px solid #c8aa71;outline-offset:-4px}
+.prospect-card-top{display:grid;grid-template-columns:minmax(180px,.72fr) minmax(0,1.7fr);gap:26px;align-items:start}
+.prospect-card-title,.prospect-card-system{min-width:0}
+.prospect-card-title>span,.prospect-card-system>span,.prospect-card-meta span,.prospect-detail>span{display:block;margin-bottom:5px;font-size:9px;font-weight:850;letter-spacing:.07em;text-transform:uppercase;color:var(--ux-section-muted)}
+.prospect-card-title>strong{display:block;font-size:18px;line-height:1.28;color:var(--ux-section-ink);overflow-wrap:anywhere}
+.prospect-card-system>strong{display:block;font-size:14px;line-height:1.45;color:var(--ux-section-ink);overflow-wrap:anywhere}
+.prospect-card-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:17px;padding-top:14px;border-top:1px solid #edf1ef}
+.prospect-card-meta-item{min-width:130px;padding:9px 12px;border:1px solid #e1e8e5;border-radius:10px;background:#fafcfb}
+.prospect-card-meta-item strong{display:block;font-size:12px;line-height:1.35;color:var(--ux-section-ink);overflow-wrap:anywhere}
+.prospect-card-meta-item .prospect-status{color:var(--workspace-emerald)!important}
+.prospect-card-chevron{position:absolute;right:18px;top:23px;font-size:20px;line-height:1;color:#6f817a;transition:transform .16s ease}
+.prospect-card[open] .prospect-card-chevron{transform:rotate(180deg)}
+.prospect-card-delete{display:flex;position:absolute;right:47px;top:16px;z-index:3}
+.prospect-card[open]{border-color:#cbd8d3;box-shadow:0 10px 26px rgba(25,55,46,.09)}
+.prospect-card[open] .prospect-card-summary{background:#fbfdfc}
+.prospect-card-details{padding:18px 20px 20px;border-top:1px solid #e3eae7;background:#fff}
+.prospect-card-carry{margin-bottom:12px;font-size:10.5px;font-weight:750;color:#866f4e}
+.prospect-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.prospect-detail{min-width:0;padding:12px 13px;border:1px solid #e6ece9;border-radius:11px;background:#fbfcfb}
+.prospect-detail-wide{grid-column:span 2}
+.prospect-detail>strong,.prospect-detail>a{display:block;min-width:0;font-size:12.5px;line-height:1.5;color:var(--ux-section-ink);overflow-wrap:anywhere;white-space:pre-wrap}
+.prospect-detail>a{color:var(--workspace-emerald);font-weight:800;text-decoration:none}
+.prospect-detail>a:hover{text-decoration:underline}
+@media(max-width:900px){
+  .prospect-card-top{grid-template-columns:1fr}
+  .prospect-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px){
+  .prospects-page .simple-list{padding:9px;gap:10px}
+  .prospect-card-summary{padding:16px 68px 14px 15px}
+  .prospect-card-title>strong{font-size:16px}
+  .prospect-card-system>strong{font-size:13px}
+  .prospect-card-meta{gap:8px;margin-top:13px;padding-top:12px}
+  .prospect-card-meta-item{flex:1 1 30%;min-width:0;padding:8px 9px}
+  .prospect-card-details{padding:14px 15px 15px}
+  .prospect-detail-grid{grid-template-columns:1fr;gap:9px}
+  .prospect-detail-wide{grid-column:auto}
+  .prospect-card-delete{right:39px;top:11px}
+  .prospect-card-chevron{right:14px;top:18px}
+}
