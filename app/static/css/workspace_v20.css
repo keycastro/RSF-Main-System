@@ -878,6 +878,12 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 .deal-form-grid input,.deal-form-grid select{min-height:39px}
 .deal-form-grid textarea{resize:vertical}
+.deal-form-grid textarea[data-deal-next-step]{
+  height:39px;
+  min-height:39px;
+  overflow:hidden;
+  resize:none
+}
 .deal-form-grid input:focus,.deal-form-grid select:focus,.deal-form-grid textarea:focus{
   border-color:var(--workspace-emerald);
   box-shadow:0 0 0 2px rgba(27,94,74,.10)
