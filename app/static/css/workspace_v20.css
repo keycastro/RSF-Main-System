@@ -569,3 +569,65 @@ a.simple-row:hover{background:#fafcfb}
 @media(max-width:620px){
   .prospect-card-platform>strong{font-size:13px}
 }
+
+
+/* v1.15.4 — Prospect header controls and Today status filters */
+.prospects-head{display:block}
+.prospects-head-main{width:100%}
+.prospects-title-row{display:flex;align-items:center;gap:10px}
+.prospects-title-row h1{margin:0}
+.prospect-add-plus{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:31px;
+  height:31px;
+  padding:0;
+  border:1px solid #cfdad6;
+  border-radius:9px;
+  background:#fff;
+  color:var(--workspace-emerald);
+  font:inherit;
+  font-size:23px;
+  font-weight:650;
+  line-height:1;
+  cursor:pointer;
+  transition:border-color .16s ease,background .16s ease,box-shadow .16s ease
+}
+.prospect-add-plus:hover{border-color:#c8aa71;background:#fffdf8}
+.prospect-add-plus:focus-visible{outline:2px solid #c8aa71;outline-offset:2px}
+.prospects-head .prospect-head-date{margin:14px 0 0}
+.prospects-head .prospect-head-date .prospect-date-nav{border-radius:9px}
+
+.prospect-filter-head{padding:10px 14px}
+.prospect-status-filters{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.prospect-filter-button{
+  min-height:34px;
+  padding:7px 12px;
+  border:1px solid #d9e2de;
+  border-radius:9px;
+  background:#fff;
+  color:var(--ux-section-muted);
+  font:inherit;
+  font-size:11.5px;
+  font-weight:800;
+  cursor:pointer
+}
+.prospect-filter-button:hover{border-color:#c8aa71;background:#fffdf8;color:var(--ux-section-ink)}
+.prospect-filter-button.is-active{
+  border-color:var(--workspace-emerald);
+  background:var(--workspace-emerald);
+  color:#fff
+}
+.prospect-filter-button:focus-visible{outline:2px solid #c8aa71;outline-offset:2px}
+.prospect-filter-empty[hidden]{display:none!important}
+.prospect-card-shell[hidden]{display:none!important}
+
+@media(max-width:620px){
+  .prospects-title-row{gap:8px}
+  .prospect-add-plus{width:29px;height:29px;font-size:21px}
+  .prospects-head .prospect-head-date{margin-top:12px}
+  .prospect-filter-head{padding:9px 10px}
+  .prospect-status-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .prospect-filter-button{width:100%;padding:7px 6px;font-size:10.5px}
+}
