@@ -2146,6 +2146,21 @@
   const page = document.querySelector('.deals-page');
   if (!page) return;
 
+  page.addEventListener('click', (event) => {
+    const toggle = event.target.closest('[data-deal-document-upload-toggle]');
+    if (!toggle) return;
+    const targetId = toggle.getAttribute('aria-controls') || '';
+    const uploadForm = targetId ? document.getElementById(targetId) : null;
+    if (!uploadForm) return;
+    const opening = uploadForm.hidden;
+    uploadForm.hidden = !opening;
+    toggle.setAttribute('aria-expanded', opening ? 'true' : 'false');
+    if (opening) {
+      const firstInput = uploadForm.querySelector('input[name="document_type"]');
+      if (firstInput) window.setTimeout(() => firstInput.focus(), 0);
+    }
+  });
+
   const viewer = page.querySelector('[data-deal-document-viewer]');
   const viewerTitle = page.querySelector('[data-deal-document-viewer-title]');
   const viewerFrame = page.querySelector('[data-deal-document-viewer-frame]');

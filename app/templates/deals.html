@@ -70,9 +70,25 @@
               <h3 id="deal-documents-{{ deal['id'] }}">Documents / Files</h3>
               <p>Keep important Deal documents organized here.</p>
             </div>
+            <button
+              class="deal-document-add-button"
+              type="button"
+              aria-label="Add Deal file"
+              aria-expanded="false"
+              aria-controls="deal-document-upload-{{ deal['id'] }}"
+              data-deal-document-upload-toggle
+            >+</button>
           </div>
 
-          <form class="deal-document-upload" method="post" enctype="multipart/form-data" action="{{ url_for('main.deal_document_upload', deal_id=deal['id']) }}">
+          <form
+            class="deal-document-upload"
+            id="deal-document-upload-{{ deal['id'] }}"
+            method="post"
+            enctype="multipart/form-data"
+            action="{{ url_for('main.deal_document_upload', deal_id=deal['id']) }}"
+            data-deal-document-upload
+            hidden
+          >
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <div class="deal-document-name-grid">

@@ -948,6 +948,34 @@ textarea.prospect-inline-editor{resize:vertical}
   border-top:1px solid #e7edea;
   background:#fbfdfc
 }
+.deal-documents-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px
+}
+.deal-documents-head>div{min-width:0}
+.deal-document-add-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:31px;
+  height:31px;
+  flex:0 0 auto;
+  padding:0;
+  border:1px solid #cfdad6;
+  border-radius:9px;
+  background:#fff;
+  color:var(--workspace-emerald);
+  font:inherit;
+  font-size:22px;
+  font-weight:650;
+  line-height:1;
+  cursor:pointer;
+  transition:border-color .16s ease,background .16s ease,box-shadow .16s ease
+}
+.deal-document-add-button:hover{border-color:#c8aa71;background:#fffdf8}
+.deal-document-add-button:focus-visible{outline:2px solid #c8aa71;outline-offset:2px}
 .deal-documents-head h3{
   margin:0;
   color:var(--ux-section-ink);
@@ -960,6 +988,7 @@ textarea.prospect-inline-editor{resize:vertical}
   font-size:11.5px;
   line-height:1.45
 }
+.deal-document-upload[hidden]{display:none!important}
 .deal-document-upload{
   display:grid;
   gap:12px;
