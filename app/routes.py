@@ -7,6 +7,8 @@ import sqlite3
 import zipfile
 import xml.etree.ElementTree as ET
 from io import BytesIO
+
+import pymupdf
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from uuid import uuid4
@@ -151,10 +153,12 @@ main{{box-sizing:border-box;max-width:1100px;margin:0 auto;padding:24px}}.previe
 h1{{margin:0 0 16px;font-size:18px;line-height:1.3}}h2{{margin:22px 0 10px;font-size:15px}}pre{{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace}}
 table{{width:100%;border-collapse:collapse;font-size:12px}}td{{border:1px solid #dfe7e3;padding:7px 8px;vertical-align:top;overflow-wrap:anywhere}}.archive{{display:grid;gap:7px}}
 .archive-row{{display:flex;justify-content:space-between;gap:18px;padding:8px 10px;border:1px solid #e3eae7;border-radius:8px;background:#fbfdfc}}.muted{{color:#6f7f79}}.empty{{padding:20px;text-align:center;color:#6f7f79}}
+.image-preview{{display:flex;justify-content:center;min-width:0}}.image-preview img{{display:block;max-width:100%;height:auto}}
+.pdf-pages{{display:grid;gap:18px}}.pdf-page{{display:block;width:100%;height:auto;margin:0 auto;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.12)}}
 </style></head><body><main><section class="preview-card"><h1>{safe_title}</h1>{body_html}</section></main></body></html>"""
     response = Response(content, mimetype="text/html")
     response.headers["X-Frame-Options"] = "SAMEORIGIN"
-    response.headers["Content-Security-Policy"] = "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'self'; base-uri 'none'; form-action 'none'"
+    response.headers["Content-Security-Policy"] = "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; frame-ancestors 'self'; base-uri 'none'; form-action 'none'"
     response.headers["Cache-Control"] = "no-store, private, max-age=0"
     return response
 
@@ -235,12 +239,23 @@ def _deal_document_zip_preview(data: bytes) -> str:
     return '<div class="archive">' + "".join(rows) + "</div>"
 
 
-def _deal_document_html_preview(row) -> Response:
+def _deal_document_html_preview(row, *, deal_id: int, document_id: int) -> Response:
     data = bytes(row["data_blob"] or b"")
     suffix = Path(row["original_name"] or "").suffix.lower()
     title = row["display_name"] or row["original_name"] or "Deal file"
     try:
-        if suffix == ".docx":
+        if suffix in {".png", ".jpg", ".jpeg"}:
+            asset_url = url_for(
+                "main.deal_document_preview_asset",
+                deal_id=deal_id,
+                document_id=document_id,
+            )
+            body = (
+                '<div class="image-preview"><img alt="' +
+                html_lib.escape(title, quote=True) +
+                '" src="' + html_lib.escape(asset_url, quote=True) + '"></div>'
+            )
+        elif suffix == ".docx":
             body = _deal_document_docx_preview(data)
         elif suffix == ".xlsx":
             body = _deal_document_xlsx_preview(data)
@@ -1497,21 +1512,98 @@ def deal_document_preview(deal_id: int, document_id: int):
     ).fetchone()
     if not row or row["data_blob"] is None:
         abort(404)
+
     suffix = Path(row["original_name"] or "").suffix.lower()
-    if suffix in {".pdf", ".png", ".jpg", ".jpeg"}:
-        response = send_file(
-            BytesIO(bytes(row["data_blob"])),
-            mimetype=row["mime_type"],
-            as_attachment=False,
-            download_name=_deal_document_download_name(row),
-            conditional=False,
-            max_age=0,
-        )
-        response.headers["X-Frame-Options"] = "SAMEORIGIN"
-        response.headers["Content-Security-Policy"] = "default-src 'self' data: blob:; frame-ancestors 'self'; object-src 'self'; base-uri 'none'"
-        response.headers["Cache-Control"] = "no-store, private, max-age=0"
-        return response
-    return _deal_document_html_preview(row)
+    if suffix == ".pdf":
+        title = row["display_name"] or row["original_name"] or "Deal file"
+        try:
+            with pymupdf.open(stream=bytes(row["data_blob"]), filetype="pdf") as pdf:
+                page_count = int(pdf.page_count)
+            if page_count <= 0:
+                raise ValueError("PDF has no pages.")
+            pages = []
+            for page_number in range(page_count):
+                page_url = url_for(
+                    "main.deal_document_preview_pdf_page",
+                    deal_id=deal_id,
+                    document_id=document_id,
+                    page_number=page_number,
+                )
+                pages.append(
+                    '<img class="pdf-page" loading="lazy" alt="PDF page ' +
+                    str(page_number + 1) +
+                    '" src="' + html_lib.escape(page_url, quote=True) + '">'
+                )
+            return _deal_document_preview_shell(title, '<div class="pdf-pages">' + "".join(pages) + "</div>")
+        except (ValueError, RuntimeError, pymupdf.FileDataError):
+            return _deal_document_preview_shell(
+                title,
+                '<div class="empty">This PDF could not be rendered safely. Use Download to open the original file.</div>',
+            )
+
+    return _deal_document_html_preview(
+        row,
+        deal_id=deal_id,
+        document_id=document_id,
+    )
+
+
+@bp.get("/deals/<int:deal_id>/documents/<int:document_id>/preview/asset")
+@login_required
+def deal_document_preview_asset(deal_id: int, document_id: int):
+    row = get_db().execute(
+        """SELECT original_name,mime_type,data_blob
+           FROM deal_documents WHERE id=? AND deal_id=?""",
+        (document_id, deal_id),
+    ).fetchone()
+    if not row or row["data_blob"] is None:
+        abort(404)
+    suffix = Path(row["original_name"] or "").suffix.lower()
+    if suffix not in {".png", ".jpg", ".jpeg"}:
+        abort(404)
+    response = send_file(
+        BytesIO(bytes(row["data_blob"])),
+        mimetype=row["mime_type"],
+        as_attachment=False,
+        conditional=False,
+        max_age=0,
+    )
+    response.headers["Cache-Control"] = "no-store, private, max-age=0"
+    return response
+
+
+@bp.get("/deals/<int:deal_id>/documents/<int:document_id>/preview/page/<int:page_number>")
+@login_required
+def deal_document_preview_pdf_page(deal_id: int, document_id: int, page_number: int):
+    row = get_db().execute(
+        """SELECT original_name,data_blob
+           FROM deal_documents WHERE id=? AND deal_id=?""",
+        (document_id, deal_id),
+    ).fetchone()
+    if not row or row["data_blob"] is None:
+        abort(404)
+    if Path(row["original_name"] or "").suffix.lower() != ".pdf":
+        abort(404)
+
+    try:
+        with pymupdf.open(stream=bytes(row["data_blob"]), filetype="pdf") as pdf:
+            if page_number < 0 or page_number >= pdf.page_count:
+                abort(404)
+            page = pdf.load_page(page_number)
+            pixmap = page.get_pixmap(matrix=pymupdf.Matrix(1.5, 1.5), alpha=False)
+            png_data = pixmap.tobytes("png")
+    except (RuntimeError, pymupdf.FileDataError):
+        abort(422)
+
+    response = send_file(
+        BytesIO(png_data),
+        mimetype="image/png",
+        as_attachment=False,
+        conditional=False,
+        max_age=0,
+    )
+    response.headers["Cache-Control"] = "no-store, private, max-age=0"
+    return response
 
 
 @bp.post("/deals/<int:deal_id>/documents/<int:document_id>/delete")

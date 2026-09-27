@@ -2164,10 +2164,8 @@
   const viewer = page.querySelector('[data-deal-document-viewer]');
   const viewerTitle = page.querySelector('[data-deal-document-viewer-title]');
   const viewerFrame = page.querySelector('[data-deal-document-viewer-frame]');
-  const viewerBody = page.querySelector('[data-deal-document-viewer-body]');
   const viewerDownload = page.querySelector('[data-deal-document-viewer-download]');
   const viewerClose = page.querySelector('[data-deal-document-viewer-close]');
-  const panLayer = page.querySelector('[data-deal-document-pan-layer]');
 
   let viewerZoom = 1;
   let dragging = false;
@@ -2175,7 +2173,8 @@
   let dragStartY = 0;
   let dragStartScrollX = 0;
   let dragStartScrollY = 0;
-  let frameWheelTarget = null;
+  let frameWindow = null;
+  let frameDocument = null;
 
   const viewerWindow = () => {
     try {
@@ -2185,69 +2184,105 @@
     }
   };
 
-  const applyViewerZoom = (nextZoom) => {
-    const target = Math.min(4, Math.max(0.5, Math.round(nextZoom * 10) / 10));
-    viewerZoom = target;
+  const viewerDocument = () => {
     try {
-      const doc = viewerFrame?.contentDocument;
-      if (doc?.body) {
-        doc.body.style.zoom = String(viewerZoom);
-        doc.body.style.transformOrigin = '0 0';
-      }
+      return viewerFrame?.contentDocument || null;
     } catch (_error) {
-      // Browser-managed previews such as native PDF viewers may handle Ctrl+wheel themselves.
+      return null;
     }
   };
 
-  const handleViewerWheel = (event) => {
-    if (event.ctrlKey) {
-      event.preventDefault();
-      applyViewerZoom(viewerZoom + (event.deltaY < 0 ? 0.1 : -0.1));
-      return;
-    }
+  const applyViewerZoom = (nextZoom) => {
+    viewerZoom = Math.min(4, Math.max(0.5, Math.round(nextZoom * 10) / 10));
+    const doc = viewerDocument();
+    if (!doc?.body) return;
+    doc.body.style.zoom = String(viewerZoom);
+    doc.body.style.transformOrigin = '0 0';
+  };
 
+  const handleFrameWheel = (event) => {
+    if (!event.ctrlKey) return;
+    event.preventDefault();
+    applyViewerZoom(viewerZoom + (event.deltaY < 0 ? 0.1 : -0.1));
+  };
+
+  const handleFramePointerDown = (event) => {
+    if (event.button !== 0) return;
     const targetWindow = viewerWindow();
     if (!targetWindow) return;
+
+    dragging = true;
+    dragStartX = event.clientX;
+    dragStartY = event.clientY;
+    dragStartScrollX = targetWindow.scrollX || 0;
+    dragStartScrollY = targetWindow.scrollY || 0;
+
+    const doc = viewerDocument();
+    if (doc?.documentElement) doc.documentElement.style.cursor = 'grabbing';
     event.preventDefault();
-    try {
-      targetWindow.scrollBy({
-        left: event.deltaX || 0,
-        top: event.deltaY || 0,
-        behavior: 'auto'
-      });
-    } catch (_error) {
-      // Ignore browser-managed preview limitations.
-    }
   };
 
-  const bindFrameWheel = () => {
-    try {
-      const target = viewerFrame?.contentWindow;
-      if (!target) return;
-      if (frameWheelTarget) frameWheelTarget.removeEventListener('wheel', handleViewerWheel);
-      target.addEventListener('wheel', handleViewerWheel, {passive:false});
-      frameWheelTarget = target;
-      applyViewerZoom(viewerZoom);
-    } catch (_error) {
-      frameWheelTarget = null;
+  const handleFramePointerMove = (event) => {
+    if (!dragging) return;
+    const targetWindow = viewerWindow();
+    if (!targetWindow) return;
+
+    const dx = event.clientX - dragStartX;
+    const dy = event.clientY - dragStartY;
+    targetWindow.scrollTo(dragStartScrollX - dx, dragStartScrollY - dy);
+  };
+
+  const stopFrameDrag = () => {
+    dragging = false;
+    const doc = viewerDocument();
+    if (doc?.documentElement) doc.documentElement.style.cursor = 'grab';
+  };
+
+  const unbindFrameInteractions = () => {
+    if (frameWindow) {
+      frameWindow.removeEventListener('wheel', handleFrameWheel);
+      frameWindow.removeEventListener('pointermove', handleFramePointerMove);
+      frameWindow.removeEventListener('pointerup', stopFrameDrag);
+      frameWindow.removeEventListener('pointercancel', stopFrameDrag);
     }
+    if (frameDocument) {
+      frameDocument.removeEventListener('pointerdown', handleFramePointerDown);
+    }
+    frameWindow = null;
+    frameDocument = null;
+  };
+
+  const bindFrameInteractions = () => {
+    unbindFrameInteractions();
+
+    const targetWindow = viewerWindow();
+    const doc = viewerDocument();
+    if (!targetWindow || !doc?.documentElement) return;
+
+    frameWindow = targetWindow;
+    frameDocument = doc;
+    doc.documentElement.style.cursor = 'grab';
+
+    targetWindow.addEventListener('wheel', handleFrameWheel, {passive:false});
+    doc.addEventListener('pointerdown', handleFramePointerDown, {passive:false});
+    targetWindow.addEventListener('pointermove', handleFramePointerMove);
+    targetWindow.addEventListener('pointerup', stopFrameDrag);
+    targetWindow.addEventListener('pointercancel', stopFrameDrag);
+    applyViewerZoom(viewerZoom);
   };
 
   const resetViewerTools = () => {
     viewerZoom = 1;
     dragging = false;
-    panLayer?.classList.remove('is-dragging');
-    try {
-      const doc = viewerFrame?.contentDocument;
-      if (doc?.body) doc.body.style.zoom = '1';
-      viewerFrame?.contentWindow?.scrollTo(0, 0);
-    } catch (_error) {
-      // Ignore browser-managed preview limitations.
-    }
+    const doc = viewerDocument();
+    if (doc?.body) doc.body.style.zoom = '1';
+    if (doc?.documentElement) doc.documentElement.style.cursor = 'grab';
+    viewerWindow()?.scrollTo(0, 0);
   };
 
   const closeDealViewer = () => {
     resetViewerTools();
+    unbindFrameInteractions();
     if (viewer?.open) viewer.close();
     viewerFrame?.removeAttribute('src');
   };
@@ -2260,60 +2295,18 @@
     const title = trigger.dataset.documentTitle || 'File Preview';
     if (viewerTitle) viewerTitle.textContent = title;
     if (viewerDownload) viewerDownload.href = downloadUrl;
-    resetViewerTools();
+    viewerZoom = 1;
+    dragging = false;
     if (viewerFrame) viewerFrame.src = previewUrl;
     if (viewer && typeof viewer.showModal === 'function') viewer.showModal();
     else window.open(previewUrl, '_blank', 'noopener');
   });
 
-  viewerFrame?.addEventListener('load', bindFrameWheel);
-  viewerBody?.addEventListener('wheel', handleViewerWheel, {passive:false});
-
-  panLayer?.addEventListener('pointerdown', (event) => {
-    if (event.button !== 0) return;
-    const targetWindow = viewerWindow();
-    if (!targetWindow) return;
-    dragging = true;
-    dragStartX = event.clientX;
-    dragStartY = event.clientY;
-    try {
-      dragStartScrollX = targetWindow.scrollX || 0;
-      dragStartScrollY = targetWindow.scrollY || 0;
-    } catch (_error) {
-      dragStartScrollX = 0;
-      dragStartScrollY = 0;
-    }
-    panLayer.classList.add('is-dragging');
-    panLayer.setPointerCapture?.(event.pointerId);
-    event.preventDefault();
-  });
-
-  panLayer?.addEventListener('pointermove', (event) => {
-    if (!dragging) return;
-    const targetWindow = viewerWindow();
-    if (!targetWindow) return;
-    const dx = event.clientX - dragStartX;
-    const dy = event.clientY - dragStartY;
-    try {
-      targetWindow.scrollTo(dragStartScrollX - dx, dragStartScrollY - dy);
-    } catch (_error) {
-      // Ignore browser-managed preview limitations.
-    }
-  });
-
-  const stopViewerDrag = (event) => {
-    if (!dragging) return;
-    dragging = false;
-    panLayer?.classList.remove('is-dragging');
-    if (event?.pointerId !== undefined) panLayer?.releasePointerCapture?.(event.pointerId);
-  };
-
-  panLayer?.addEventListener('pointerup', stopViewerDrag);
-  panLayer?.addEventListener('pointercancel', stopViewerDrag);
-  panLayer?.addEventListener('lostpointercapture', stopViewerDrag);
+  viewerFrame?.addEventListener('load', bindFrameInteractions);
 
   viewerClose?.addEventListener('click', closeDealViewer);
   viewer?.addEventListener('cancel', () => {
+    unbindFrameInteractions();
     window.setTimeout(() => viewerFrame?.removeAttribute('src'), 0);
   });
   viewer?.addEventListener('click', (event) => {
