@@ -1,7 +1,7 @@
 {% extends 'base.html' %}{% block content %}
 <div class="page-head workspace-page-head">
   <div><div class="title-line"><span class="badge status-new">Unclaimed</span><span class="muted">Received {{ inquiry.created_at|dt }}</span></div><h1>{{ inquiry.company or inquiry.name }}</h1><p>Check the request. Then claim or assign it.</p></div>
-  <a class="button secondary" href="{{ url_for('main.inquiries_list') }}">Back to Inbox</a>
+  <a class="button secondary" href="{{ url_for('main.clients_hub') }}">Back to Clients</a>
 </div>
 
 <div class="detail-grid inquiry-detail-grid simplified-detail-grid">
@@ -11,8 +11,8 @@
   </section>
 
   <section class="workspace-section action-panel">
-    <div class="section-head"><div><h2>{{ 'Claim inquiry' if g.user.role=='partner' else 'Assign inquiry' }}</h2><p>{% if g.user.role=='partner' %}Claim it to make this client yours.{% else %}Choose the Partner who will handle this client.{% endif %}</p></div></div>
-    {% if g.user.role=='partner' %}<form method="post" action="{{ url_for('main.inquiry_claim',inquiry_id=inquiry.id) }}" data-confirm="Claim this inquiry? Only you and the Founder can manage this client."><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button primary wide" type="submit">Claim Inquiry</button></form>{% else %}<form method="post" action="{{ url_for('main.inquiry_assign',inquiry_id=inquiry.id) }}" class="form-stack"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Partner<select name="partner_id" required><option value="">Choose Partner</option>{% for p in partners %}<option value="{{ p.id }}">{{ p.full_name }}</option>{% endfor %}</select></label><button class="button primary" type="submit">Assign and Create Lead</button></form><div class="secondary-action"><form method="post" action="{{ url_for('main.inquiry_archive',inquiry_id=inquiry.id) }}" data-confirm="Remove this unclaimed inquiry from the Inbox?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button ghost small" type="submit">Remove from Inbox</button></form></div>{% endif %}
+    <div class="section-head"><div><h2>{{ 'Claim client' if g.user.role=='partner' else 'Assign client' }}</h2><p>{% if g.user.role=='partner' %}Claim it to make this client yours.{% else %}Choose the Partner who will handle this client.{% endif %}</p></div></div>
+    {% if g.user.role=='partner' %}<form method="post" action="{{ url_for('main.inquiry_claim',inquiry_id=inquiry.id) }}" data-confirm="Claim this inquiry? Only you and the Founder can manage this client."><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button primary wide" type="submit">Claim Client</button></form>{% else %}<form method="post" action="{{ url_for('main.inquiry_assign',inquiry_id=inquiry.id) }}" class="form-stack"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Partner<select name="partner_id" required><option value="">Choose Partner</option>{% for p in partners %}<option value="{{ p.id }}">{{ p.full_name }}</option>{% endfor %}</select></label><button class="button primary" type="submit">Assign Client</button></form><div class="secondary-action"><form method="post" action="{{ url_for('main.inquiry_archive',inquiry_id=inquiry.id) }}" data-confirm="Remove this unclaimed inquiry from the Inbox?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button ghost small" type="submit">Remove from Inbox</button></form></div>{% endif %}
   </section>
 </div>
 
