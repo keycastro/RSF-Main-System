@@ -43,8 +43,10 @@
     </a>
 
     <nav class="nav-list simple-primary-nav" aria-label="Workspace navigation">
-      {% set prospects_active = request.endpoint in ['main.prospects','main.prospect_new'] %}
+      {% set prospects_active = request.endpoint in ['main.prospects','main.prospect_new','main.prospect_update','main.prospect_contact_attempt','main.prospect_delete'] %}
+      {% set deals_active = request.endpoint in ['main.deals','main.deal_create_from_prospect','main.deal_update'] %}
       <a class="{{ 'active' if prospects_active else '' }}" {% if prospects_active %}aria-current="page"{% endif %} href="{{ url_for('main.prospects') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("leads") }}</span><span class="nav-text">Prospects</span></a>
+      <a class="{{ 'active' if deals_active else '' }}" {% if deals_active %}aria-current="page"{% endif %} href="{{ url_for('main.deals') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("sales") }}</span><span class="nav-text">Deals</span></a>
     </nav>
 
     <div class="sidebar-footer">
@@ -59,7 +61,7 @@
   </aside>
 
   <main class="main-area" id="main-content" tabindex="-1">
-    {% if request.endpoint != 'main.prospects' %}
+    {% if request.endpoint not in ['main.prospects','main.deals'] %}
     <header class="topbar">
       <div class="topbar-left">
         <button class="menu-button" type="button" data-menu aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">☰</button>

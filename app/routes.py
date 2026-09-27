@@ -75,6 +75,15 @@ PROSPECT_STATUS_LABELS = {
     "CLOSED": "Closed",
 }
 
+DEAL_STAGE_LABELS = {
+    "INTERESTED": "Interested",
+    "DEMO": "Demo",
+    "PROPOSAL": "Proposal",
+    "DECISION": "Decision",
+    "WON": "Won",
+    "LOST": "Lost",
+}
+
 
 def _normalize_prospect_name(value: str) -> str:
     return " ".join((value or "").split()).casefold()
@@ -767,6 +776,9 @@ def prospects():
             (selected_str,),
         ).fetchall()
 
+    deal_rows = db.execute("SELECT id,prospect_id FROM deals").fetchall()
+    prospect_deal_ids = {int(row["prospect_id"]): int(row["id"]) for row in deal_rows}
+
     previous_date = (selected - timedelta(days=1)).isoformat()
     next_date = (selected + timedelta(days=1)).isoformat() if selected < today else None
 
@@ -780,6 +792,7 @@ def prospects():
         today=today.isoformat(),
         is_today=is_today,
         prospect_status_labels=PROSPECT_STATUS_LABELS,
+        prospect_deal_ids=prospect_deal_ids,
     )
 
 
@@ -1030,12 +1043,14 @@ def prospect_update(prospect_id: int):
         and prospect["recorded_date"] != selected_str
         and prospect["status"] not in PROSPECT_UNFINISHED_STATUSES
     )
+    linked_deal = db.execute("SELECT id FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
     row_html = render_template(
         "_prospect_row.html",
         prospect=prospect,
         is_today=is_today,
         selected_date=selected_str,
         prospect_status_labels=PROSPECT_STATUS_LABELS,
+        prospect_deal_ids={prospect_id: int(linked_deal["id"])} if linked_deal else {},
     )
     return jsonify(
         {
@@ -1093,6 +1108,138 @@ def prospect_delete(prospect_id: int):
     selected = _selected_prospect_date(request.form.get("date"))
     flash("Prospect deleted.", "success")
     return redirect(url_for("main.prospects", date=selected.isoformat()))
+
+
+@bp.get("/deals")
+@login_required
+def deals():
+    db = get_db()
+    rows = db.execute(
+        """SELECT d.*,p.name AS prospect_name,p.recorded_date AS prospect_recorded_date
+           FROM deals d
+           JOIN prospects p ON p.id=d.prospect_id
+           ORDER BY d.updated_at DESC,d.id DESC"""
+    ).fetchall()
+    return render_template(
+        "deals.html",
+        title="Deals",
+        deals=rows,
+        deal_stage_labels=DEAL_STAGE_LABELS,
+    )
+
+
+@bp.post("/deals/from-prospect/<int:prospect_id>")
+@login_required
+def deal_create_from_prospect(prospect_id: int):
+    validate_csrf()
+    db = get_db()
+    prospect = db.execute(
+        "SELECT id,name,email,phone FROM prospects WHERE id=?",
+        (prospect_id,),
+    ).fetchone()
+    if not prospect:
+        abort(404)
+
+    existing = db.execute("SELECT id FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
+    if existing:
+        flash("Deal already exists.", "success")
+        return redirect(url_for("main.deals") + f"#deal-{existing['id']}")
+
+    now = utcnow_iso()
+    try:
+        cur = db.execute(
+            """INSERT INTO deals(
+                   prospect_id,stage,demo_date,followup_date,next_step,price,
+                   contact_number,email,notes_after_conversation,
+                   created_by_user_id,created_at,updated_at
+               ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (
+                prospect_id,
+                "INTERESTED",
+                "",
+                "",
+                "",
+                "",
+                (prospect["phone"] or "").strip()[:120],
+                (prospect["email"] or "").strip()[:320],
+                "",
+                g.user["id"],
+                now,
+                now,
+            ),
+        )
+    except (sqlite3.IntegrityError, IntegrityError):
+        db.rollback()
+        existing = db.execute("SELECT id FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
+        if existing:
+            return redirect(url_for("main.deals") + f"#deal-{existing['id']}")
+        raise
+
+    deal_id = cur.lastrowid
+    log_activity(
+        "DEAL_CREATED",
+        "deal",
+        deal_id,
+        "Deal created from Prospect.",
+        {"prospect_id": prospect_id},
+    )
+    db.commit()
+    flash("Deal created.", "success")
+    return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+
+
+@bp.post("/deals/<int:deal_id>/update")
+@login_required
+def deal_update(deal_id: int):
+    validate_csrf()
+    db = get_db()
+    deal = db.execute("SELECT id,prospect_id FROM deals WHERE id=?", (deal_id,)).fetchone()
+    if not deal:
+        abort(404)
+
+    stage = (request.form.get("stage", "") or "").strip().upper()
+    if stage not in DEAL_STAGE_LABELS:
+        flash("Invalid Deal stage.", "error")
+        return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+
+    demo_date = (request.form.get("demo_date", "") or "").strip()[:10]
+    followup_date = (request.form.get("followup_date", "") or "").strip()[:10]
+    for label, value in (("Demo Date", demo_date), ("Follow-up Date", followup_date)):
+        if value:
+            try:
+                date.fromisoformat(value)
+            except ValueError:
+                flash(f"{label} must be a valid date.", "error")
+                return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+
+    next_step = (request.form.get("next_step", "") or "").strip()[:500]
+    price = (request.form.get("price", "") or "").strip()[:200]
+    contact_number = (request.form.get("contact_number", "") or "").strip()[:120]
+    email = (request.form.get("email", "") or "").strip()[:320]
+    notes_after_conversation = (request.form.get("notes_after_conversation", "") or "").strip()[:3000]
+    now = utcnow_iso()
+
+    db.execute(
+        """UPDATE deals
+           SET stage=?,demo_date=?,followup_date=?,next_step=?,price=?,
+               contact_number=?,email=?,notes_after_conversation=?,updated_at=?
+           WHERE id=?""",
+        (
+            stage,
+            demo_date,
+            followup_date,
+            next_step,
+            price,
+            contact_number,
+            email,
+            notes_after_conversation,
+            now,
+            deal_id,
+        ),
+    )
+    db.commit()
+    flash("Deal updated.", "success")
+    return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
 
 @bp.get("/clients")

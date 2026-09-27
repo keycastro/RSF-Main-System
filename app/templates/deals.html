@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="deals-page">
+  <div class="simple-head deals-head">
+    <div class="deals-title-row">
+      <button class="menu-button deal-mobile-menu" type="button" data-menu aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">☰</button>
+      <div>
+        <h1>Deals</h1>
+        <p>Interested prospects moving toward a deal.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="deals-list">
+    {% for deal in deals %}
+      <article class="deal-card" id="deal-{{ deal['id'] }}">
+        <header class="deal-card-head">
+          <div>
+            <span>Linked Prospect</span>
+            <a href="{{ url_for('main.prospects', date=deal['prospect_recorded_date']) }}#prospect-{{ deal['prospect_id'] }}">{{ deal['prospect_name'] }}</a>
+          </div>
+          <span class="deal-stage-chip">{{ deal_stage_labels.get(deal['stage'], deal['stage']) }}</span>
+        </header>
+
+        <form class="deal-form" method="post" action="{{ url_for('main.deal_update', deal_id=deal['id']) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="deal-form-grid">
+            <label>
+              <span>Stage</span>
+              <select name="stage">
+                {% for code, label in deal_stage_labels.items() %}
+                  <option value="{{ code }}" {% if deal['stage'] == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>
+              <span>Demo Date</span>
+              <input type="date" name="demo_date" value="{{ deal['demo_date'] }}">
+            </label>
+            <label>
+              <span>Follow-up Date</span>
+              <input type="date" name="followup_date" value="{{ deal['followup_date'] }}">
+            </label>
+            <label>
+              <span>Next Step</span>
+              <input type="text" name="next_step" maxlength="500" value="{{ deal['next_step'] }}">
+            </label>
+            <label>
+              <span>Price</span>
+              <input type="text" name="price" maxlength="200" value="{{ deal['price'] }}">
+            </label>
+            <label>
+              <span>Contact Number</span>
+              <input type="text" name="contact_number" maxlength="120" value="{{ deal['contact_number'] }}">
+            </label>
+            <label class="deal-field-wide">
+              <span>Email</span>
+              <input type="email" name="email" maxlength="320" value="{{ deal['email'] }}">
+            </label>
+            <label class="deal-field-wide">
+              <span>Notes After Conversation</span>
+              <textarea name="notes_after_conversation" maxlength="3000" rows="4">{{ deal['notes_after_conversation'] }}</textarea>
+            </label>
+          </div>
+          <div class="deal-form-actions">
+            <button class="button primary" type="submit">Save</button>
+          </div>
+        </form>
+      </article>
+    {% else %}
+      <div class="simple-empty deals-empty">
+        No deals yet. Create a Deal from an interested Prospect.
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

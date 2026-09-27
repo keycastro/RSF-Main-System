@@ -25,9 +25,9 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 18
-SCHEMA_NAME = "rsf-main-system-v1.15.0-prospect-fields"
-SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects"}
+SCHEMA_VERSION = 20
+SCHEMA_NAME = "rsf-main-system-v1.16.0-deals"
+SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals"}
 
 
 def using_postgres() -> bool:
@@ -790,6 +790,35 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
             (19, "rsf-v1.15.5-prospect-inline-edit-contact-attempt"),
         )
 
+    # V20 adds the approved Deals workflow. A Deal links to one existing Prospect;
+    # the original Prospect row stays intact and Company is not duplicated in Deals.
+    if 20 not in applied:
+        db.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS deals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                prospect_id INTEGER NOT NULL UNIQUE REFERENCES prospects(id) ON DELETE CASCADE,
+                stage TEXT NOT NULL DEFAULT 'INTERESTED' CHECK (stage IN ('INTERESTED','DEMO','PROPOSAL','DECISION','WON','LOST')),
+                demo_date TEXT NOT NULL DEFAULT '',
+                followup_date TEXT NOT NULL DEFAULT '',
+                next_step TEXT NOT NULL DEFAULT '',
+                price TEXT NOT NULL DEFAULT '',
+                contact_number TEXT NOT NULL DEFAULT '',
+                email TEXT NOT NULL DEFAULT '',
+                notes_after_conversation TEXT NOT NULL DEFAULT '',
+                created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_deals_stage_updated ON deals(stage,updated_at DESC,id DESC);
+            CREATE INDEX IF NOT EXISTS idx_deals_followup ON deals(followup_date,stage,id);
+            """
+        )
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (20, "rsf-v1.16.0-linked-deals-workflow"),
+        )
+
 
 def _table_exists_postgres(db, table: str) -> bool:
     row = db.execute(
@@ -842,7 +871,7 @@ def _import_seed_payload(db) -> None:
         "users", "account_password_vault", "commission_stages", "partners", "leads", "lead_notes", "followups", "sales", "commissions", "sale_corrections",
         "resources", "duplicate_claims", "activity_log", "messages", "message_attachments", "voice_calls",
         "voice_call_signals", "settings", "website_inquiries", "client_conversations", "client_messages",
-        "client_attachments", "client_notifications", "prospects"
+        "client_attachments", "client_notifications", "prospects", "deals"
     ]
     for table in order:
         rows = tables.get(table) or []

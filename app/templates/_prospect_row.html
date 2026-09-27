@@ -54,6 +54,18 @@
           </div>
         </div>
       </div>
+
+      {% set linked_deal_id = prospect_deal_ids.get(prospect['id']) if prospect_deal_ids is defined else none %}
+      <div class="prospect-deal-action">
+        {% if linked_deal_id %}
+          <a class="button secondary" href="{{ url_for('main.deals') }}#deal-{{ linked_deal_id }}">View Deal</a>
+        {% else %}
+          <form method="post" action="{{ url_for('main.deal_create_from_prospect', prospect_id=prospect['id']) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="button primary" type="submit">Create Deal</button>
+          </form>
+        {% endif %}
+      </div>
     </div>
   </details>
 
