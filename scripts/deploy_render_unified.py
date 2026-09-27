@@ -26,6 +26,7 @@ PRIVATE_FILES = [
     "VERSION.txt",
     "config.py",
     "bootstrap.py",
+    "app/__init__.py",
     "app/auth.py",
     "app/background.py",
     "app/client_ops.py",
