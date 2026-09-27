@@ -1628,3 +1628,13 @@
   window.setInterval(pollThread, 2000);
   window.setInterval(pollCall, 1200);
 })();
+
+
+(() => {
+  const input = document.querySelector('[data-prospect-date-input]');
+  if (!input) return;
+  input.addEventListener('change', () => {
+    if (!input.value || !input.form) return;
+    input.form.submit();
+  });
+})();
