@@ -52,6 +52,19 @@ CREATE TABLE IF NOT EXISTS partners (
     historical_name TEXT NOT NULL DEFAULT ''
 );
 
+CREATE TABLE IF NOT EXISTS prospects (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    name_norm TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'NOT_CONTACTED',
+    recorded_date TEXT NOT NULL,
+    created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_prospects_name_norm ON prospects(name_norm);
+CREATE INDEX IF NOT EXISTS idx_prospects_daily_queue ON prospects(recorded_date,status,id);
+
 CREATE TABLE IF NOT EXISTS leads (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     owner_partner_id INTEGER NOT NULL REFERENCES partners(id),
