@@ -2637,6 +2637,13 @@ body{font-size:17px;line-height:1.68}
   font-size:15px;
   line-height:1.42;
 }
+
+/* v1.15.10 — align management pricing panels across the two desktop cards */
+@media(min-width:901px){
+  #management-options .management-choice>p:not(.choice-label):not(.management-billing-note):not(.management-upgrades-note){
+    min-height:4.26em;
+  }
+}
 #management-options .management-detail-block{margin-top:18px;padding-top:14px;border-top:1px solid rgba(21,41,52,.12)}
 #management-options .management-detail-title{display:block;margin-bottom:9px;color:var(--ink);font-size:15px;font-weight:800}
 #management-options .management-handle-list{gap:12px}
