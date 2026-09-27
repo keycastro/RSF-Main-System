@@ -528,3 +528,44 @@ a.simple-row:hover{background:#fafcfb}
   .prospect-card-delete{right:39px;top:11px}
   .prospect-card-chevron{right:14px;top:18px}
 }
+
+
+/* v1.15.3 — two-column Prospect card grid and Platform intro field */
+.prospects-page .simple-list{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:start;
+  column-gap:14px;
+  row-gap:14px;
+}
+.prospects-page .prospect-quick-add,
+.prospects-page .simple-empty{
+  grid-column:1/-1;
+}
+.prospect-card-title,.prospect-card-platform{min-width:0}
+.prospect-card-platform>span{
+  display:block;
+  margin-bottom:5px;
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  color:var(--ux-section-muted)
+}
+.prospect-card-platform>strong{
+  display:block;
+  font-size:14px;
+  line-height:1.45;
+  color:var(--ux-section-ink);
+  overflow-wrap:anywhere
+}
+.prospect-card-meta{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+.prospect-card-meta-item{min-width:0}
+@media(max-width:900px){
+  .prospects-page .simple-list{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+  .prospect-card-platform>strong{font-size:13px}
+}
