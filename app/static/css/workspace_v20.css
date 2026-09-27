@@ -465,3 +465,15 @@ a.simple-row:hover{background:#fafcfb}
   .prospect-card-chevron{right:13px}
   .prospect-card-details{padding:2px 13px 13px}
 }
+
+
+/* v1.15.1 card-shell fix — keep permanent delete visible while cards are collapsed */
+.prospect-card-shell{position:relative;min-width:0}
+.prospect-card-shell:target .prospect-card{outline:2px solid #c8aa71;outline-offset:2px}
+.prospect-card-shell>.prospect-card-delete{display:flex;position:absolute;right:45px;top:12px;z-index:3}
+.prospect-card-shell>.prospect-card{width:100%}
+.prospect-card-shell .prospect-card-summary{padding-right:82px}
+@media(max-width:620px){
+  .prospect-card-shell>.prospect-card-delete{right:36px;top:8px}
+  .prospect-card-shell .prospect-card-summary{padding-right:70px}
+}
