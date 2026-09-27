@@ -2025,10 +2025,23 @@
       editor.addEventListener('change', save);
     }
 
-    window.setTimeout(() => {
-      editor.focus();
-      if (editor.select && editorType !== 'date' && editorType !== 'status') editor.select();
-    }, 0);
+    if (editorType === 'status') {
+      editor.focus({ preventScroll: true });
+      try {
+        if (typeof editor.showPicker === 'function') {
+          editor.showPicker();
+        } else {
+          editor.click();
+        }
+      } catch (_error) {
+        editor.focus({ preventScroll: true });
+      }
+    } else {
+      window.setTimeout(() => {
+        editor.focus();
+        if (editor.select && editorType !== 'date') editor.select();
+      }, 0);
+    }
   };
 
   page.addEventListener('click', (event) => {
