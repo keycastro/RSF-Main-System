@@ -1634,6 +1634,7 @@ def deal_document_delete(deal_id: int, document_id: int):
 @login_required
 def deal_update(deal_id: int):
     validate_csrf()
+    async_request = request.headers.get("X-RSF-Async") == "1"
     db = get_db()
     deal = db.execute("SELECT id,prospect_id FROM deals WHERE id=?", (deal_id,)).fetchone()
     if not deal:
@@ -1641,9 +1642,13 @@ def deal_update(deal_id: int):
 
     status = (request.form.get("status", "") or "").strip().upper()
     if status not in PROSPECT_STATUS_LABELS:
+        if async_request:
+            return jsonify({"ok": False, "message": "Invalid Deal status."}), 400
         flash("Invalid Deal status.", "error")
         return redirect(url_for("main.deals") + f"#deal-{deal_id}")
     if status in DEAL_PRE_STATUS_STATUSES and (request.form.get("confirm_leave_deals", "") or "").strip().lower() != "yes":
+        if async_request:
+            return jsonify({"ok": False, "message": "Confirm the backward Status change before removing this record from Deals."}), 409
         flash("Confirm the backward Status change before removing this record from Deals.", "warning")
         return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
@@ -1654,6 +1659,8 @@ def deal_update(deal_id: int):
             try:
                 date.fromisoformat(value)
             except ValueError:
+                if async_request:
+                    return jsonify({"ok": False, "message": f"{label} must be a valid date."}), 400
                 flash(f"{label} must be a valid date.", "error")
                 return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
@@ -1705,6 +1712,12 @@ def deal_update(deal_id: int):
         )
     db.execute("UPDATE prospects SET status=?,updated_at=? WHERE id=?", (status, now, deal["prospect_id"]))
     db.commit()
+    if async_request:
+        return jsonify({
+            "ok": True,
+            "status": status,
+            "removed_from_deals": status in DEAL_PRE_STATUS_STATUSES,
+        })
     if status in DEAL_PRE_STATUS_STATUSES:
         flash("Status updated. Record removed from Deals.", "success")
         return redirect(url_for("main.deals"))

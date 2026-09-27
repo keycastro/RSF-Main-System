@@ -2175,12 +2175,73 @@
     nextStepFields.forEach(resizeNextStep);
   });
 
+  const dealAutosaveState = new WeakMap();
+  const autosaveStateFor = (form) => {
+    let state = dealAutosaveState.get(form);
+    if (!state) {
+      state = {saving:false, pending:false};
+      dealAutosaveState.set(form, state);
+    }
+    return state;
+  };
+
+  const saveDealFormInBackground = async (form) => {
+    if (!(form instanceof HTMLFormElement)) return;
+    const state = autosaveStateFor(form);
+    if (state.saving) {
+      state.pending = true;
+      return;
+    }
+
+    state.saving = true;
+    try {
+      do {
+        state.pending = false;
+        const body = new URLSearchParams();
+        for (const [key, value] of new FormData(form).entries()) body.append(key, String(value));
+
+        const response = await fetch(form.action, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-RSF-Async': '1'
+          },
+          body: body.toString(),
+          credentials: 'same-origin',
+          cache: 'no-store',
+          keepalive: true
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok) {
+          throw new Error(data.message || 'Deal changes could not be saved.');
+        }
+        if (data.status) form.dataset.dealCurrentStatus = data.status;
+      } while (state.pending);
+    } catch (error) {
+      state.pending = false;
+      window.alert(error.message || 'Deal changes could not be saved. Try again.');
+    } finally {
+      state.saving = false;
+    }
+  };
+
   const notesViewer = page.querySelector('[data-deal-notes-viewer]');
   const notesViewerInput = page.querySelector('[data-deal-notes-viewer-input]');
   const notesViewerClose = page.querySelector('[data-deal-notes-viewer-close]');
   let notesSource = null;
 
+  const saveExpandedNotesIfChanged = () => {
+    if (!notesSource) return;
+    const previous = notesSource.dataset.dealStartValue ?? notesSource.value;
+    if (notesSource.value === previous) return;
+    notesSource.dataset.dealStartValue = notesSource.value;
+    const form = notesSource.closest('[data-deal-form]');
+    if (form) saveDealFormInBackground(form);
+  };
+
   const closeDealNotesViewer = () => {
+    saveExpandedNotesIfChanged();
     if (notesViewer?.open) notesViewer.close();
     notesSource = null;
   };
@@ -2193,6 +2254,7 @@
     if (!source) return;
 
     notesSource = source;
+    notesSource.dataset.dealStartValue = source.value || '';
     if (notesViewerInput) notesViewerInput.value = source.value || '';
 
     if (notesViewer && typeof notesViewer.showModal === 'function') {
@@ -2207,9 +2269,11 @@
   notesViewerInput?.addEventListener('input', () => {
     if (notesSource) notesSource.value = notesViewerInput.value;
   });
+  notesViewerInput?.addEventListener('blur', saveExpandedNotesIfChanged);
 
   notesViewerClose?.addEventListener('click', closeDealNotesViewer);
   notesViewer?.addEventListener('cancel', () => {
+    saveExpandedNotesIfChanged();
     notesSource = null;
   });
   notesViewer?.addEventListener('click', (event) => {
@@ -2379,6 +2443,45 @@
     REJECTED: 'Rejected'
   };
   let pendingForm = null;
+  const dealAutosaveFields = new Set([
+    'demo_date',
+    'followup_date',
+    'email',
+    'price',
+    'contact_number',
+    'next_step',
+    'notes_after_conversation'
+  ]);
+
+  page.addEventListener('focusin', (event) => {
+    const field = event.target;
+    const form = field?.closest?.('[data-deal-form]');
+    if (!form || !dealAutosaveFields.has(field.name || '')) return;
+    field.dataset.dealStartValue = field.value || '';
+  });
+
+  page.addEventListener('focusout', (event) => {
+    const field = event.target;
+    const form = field?.closest?.('[data-deal-form]');
+    if (!form || !dealAutosaveFields.has(field.name || '')) return;
+    const previous = field.dataset.dealStartValue ?? field.value;
+    if (field.value === previous) return;
+    field.dataset.dealStartValue = field.value;
+    saveDealFormInBackground(form);
+  });
+
+  page.addEventListener('change', (event) => {
+    const field = event.target;
+    const form = field?.closest?.('[data-deal-form]');
+    if (!form || field?.name !== 'status') return;
+    const status = field.value || '';
+    if (status === (form.dataset.dealCurrentStatus || '')) return;
+    if (preDealStatuses.has(status)) {
+      form.requestSubmit();
+      return;
+    }
+    saveDealFormInBackground(form);
+  });
 
   page.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter' || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey) return;
