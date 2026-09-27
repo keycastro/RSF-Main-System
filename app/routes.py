@@ -793,15 +793,44 @@ def prospect_new():
     validate_csrf()
     db = get_db()
     wants_json = "application/json" in request.headers.get("Accept", "")
-    submitted_name = " ".join((request.form.get("name", "") or "").split())
+
+    def field(name: str, limit: int) -> str:
+        return (request.form.get(name, "") or "").strip()[:limit]
+
+    submitted_company = " ".join((request.form.get("company", "") or "").split())
+    submitted_status = field("status", 40) or "NOT_CONTACTED"
+    submitted_post_date = field("post_date", 10)
+    values = {
+        "business_type": field("business_type", 160),
+        "problem": field("problem", 2000),
+        "platform_wanted": field("platform_wanted", 200),
+        "post_link": field("post_link", 1000),
+        "post_date": submitted_post_date,
+        "system_wanted": field("system_wanted", 2000),
+        "budget": field("budget", 200),
+        "location": field("location", 200),
+        "website": field("website", 1000),
+        "contact": field("contact", 200),
+        "email": field("email", 320),
+        "phone": field("phone", 120),
+    }
     errors = []
 
-    if not submitted_name:
-        errors.append("Prospect name is required.")
-    elif len(submitted_name) > 200:
-        errors.append("Prospect name must be 200 characters or fewer.")
+    if not submitted_company:
+        errors.append("Company is required.")
+    elif len(submitted_company) > 200:
+        errors.append("Company must be 200 characters or fewer.")
 
-    name_norm = _normalize_prospect_name(submitted_name)
+    if submitted_status not in PROSPECT_STATUS_LABELS:
+        errors.append("Invalid prospect status.")
+
+    if submitted_post_date:
+        try:
+            date.fromisoformat(submitted_post_date)
+        except ValueError:
+            errors.append("Post Date must be a valid date.")
+
+    name_norm = _normalize_prospect_name(submitted_company)
 
     def duplicate_response(duplicate):
         view_url = url_for("main.prospects", date=duplicate["recorded_date"]) + f"#prospect-{duplicate['id']}"
@@ -813,7 +842,7 @@ def prospect_new():
                     "message": "Prospect already exists.",
                     "duplicate": {
                         "id": duplicate["id"],
-                        "name": duplicate["name"],
+                        "company": duplicate["name"],
                         "recorded_date": duplicate["recorded_date"],
                         "view_url": view_url,
                     },
@@ -840,9 +869,33 @@ def prospect_new():
     recorded_date = today_str()
     try:
         cur = db.execute(
-            """INSERT INTO prospects(name,name_norm,status,recorded_date,created_by_user_id,created_at,updated_at)
-               VALUES (?,?,'NOT_CONTACTED',?,?,?,?)""",
-            (submitted_name, name_norm, recorded_date, g.user["id"], now, now),
+            """INSERT INTO prospects(
+                   name,name_norm,business_type,problem,platform_wanted,post_link,post_date,
+                   system_wanted,budget,location,website,contact,email,phone,status,
+                   recorded_date,created_by_user_id,created_at,updated_at
+               )
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (
+                submitted_company,
+                name_norm,
+                values["business_type"],
+                values["problem"],
+                values["platform_wanted"],
+                values["post_link"],
+                values["post_date"],
+                values["system_wanted"],
+                values["budget"],
+                values["location"],
+                values["website"],
+                values["contact"],
+                values["email"],
+                values["phone"],
+                submitted_status,
+                recorded_date,
+                g.user["id"],
+                now,
+                now,
+            ),
         )
     except (sqlite3.IntegrityError, IntegrityError):
         db.rollback()
