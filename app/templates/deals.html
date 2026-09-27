@@ -26,8 +26,12 @@
             </label>
           </div>
           <div class="deal-card-linked">
-            <span class="deal-linked-label">LINKED IN PROSPECT</span>
-            <a href="{{ url_for('main.prospects', date=deal['prospect_recorded_date']) }}#prospect-{{ deal['prospect_id'] }}">{{ deal['prospect_name'] }}</a>
+            <a
+              class="deal-linked-label"
+              href="{{ url_for('main.prospects', date=deal['prospect_recorded_date']) }}#prospect-{{ deal['prospect_id'] }}"
+              aria-label="Open linked Prospect {{ deal['prospect_name'] }}"
+              title="Open linked Prospect"
+            >LINKED IN PROSPECT</a>
           </div>
         </header>
 
