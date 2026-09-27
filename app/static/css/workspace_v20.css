@@ -1505,13 +1505,17 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 
 
-/* v1.18.14 — keep three Prospect cards roomy enough to preserve the existing card shape */
+/* v1.18.15 — three Prospect cards per row without compressing the card internals */
 @media(min-width:1550px){
   .prospects-page{
     max-width:none
   }
   .prospects-page .simple-list{
     grid-template-columns:repeat(3,minmax(0,1fr))
+  }
+  .prospects-page .prospect-card-shell{
+    width:128.205128%;
+    zoom:.78
   }
 }
 @media(min-width:901px) and (max-width:1549px){
