@@ -103,14 +103,17 @@
             </div>
 
             <div class="deal-document-file-row">
-              <label class="deal-document-file-field">
-                <span>Upload File</span>
-                <input type="file" name="file" accept=".pdf,.docx,.xlsx,.csv,.png,.jpg,.jpeg,.txt,.zip" required>
-                <small class="deal-document-formats">Supported: PDF, DOCX, XLSX, CSV, PNG, JPG/JPEG, TXT, ZIP.</small>
-              </label>
-              <div class="deal-document-upload-action">
-                <button class="button secondary" type="submit">Upload</button>
-              </div>
+              <label class="deal-document-file-label" for="deal-document-file-{{ deal['id'] }}">Upload File</label>
+              <input
+                class="deal-document-file-input"
+                id="deal-document-file-{{ deal['id'] }}"
+                type="file"
+                name="file"
+                accept=".pdf,.docx,.xlsx,.csv,.png,.jpg,.jpeg,.txt,.zip"
+                required
+              >
+              <button class="deal-document-upload-button" type="submit">Upload</button>
+              <small class="deal-document-formats">Supported: PDF, DOCX, XLSX, CSV, PNG, JPG/JPEG, TXT, ZIP.</small>
             </div>
           </form>
 

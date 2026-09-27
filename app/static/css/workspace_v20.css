@@ -1029,23 +1029,47 @@ textarea.prospect-inline-editor{resize:vertical}
 .deal-document-file-row{
   display:grid;
   grid-template-columns:minmax(0,1fr) auto;
-  gap:10px;
-  align-items:end
+  grid-template-areas:
+    "label ."
+    "input button"
+    "formats .";
+  column-gap:10px;
+  row-gap:4px;
+  align-items:center
 }
-.deal-document-file-field{width:100%}
-.deal-document-file-field input{padding:7px 9px}
-.deal-document-upload-action{
-  display:flex;
-  align-items:flex-end
+.deal-document-file-label{
+  grid-area:label;
+  color:#6f7f79;
+  font-size:9px;
+  font-weight:650;
+  letter-spacing:.055em;
+  text-transform:uppercase
 }
-.deal-document-upload-action .button{
+.deal-document-file-input{
+  grid-area:input;
+  padding:7px 9px
+}
+.deal-document-upload-button{
+  grid-area:button;
+  align-self:stretch;
   min-width:82px;
   min-height:36px;
-  padding:7px 12px
+  padding:7px 12px;
+  border:1px solid #bfd7cc;
+  border-radius:8px;
+  background:#e6f2ec;
+  color:#14543f;
+  font:inherit;
+  font-size:11.5px;
+  font-weight:800;
+  cursor:pointer
 }
+.deal-document-upload-button:hover{background:#dcece4;border-color:#aecdbf;color:#0f4936}
+.deal-document-upload-button:focus-visible{outline:2px solid #8fb7a5;outline-offset:2px}
 .deal-document-formats{
+  grid-area:formats;
   display:block;
-  margin:3px 0 0;
+  margin:0;
   color:#7b8b85;
   font-size:9.5px;
   line-height:1.3
@@ -1114,9 +1138,14 @@ textarea.prospect-inline-editor{resize:vertical}
 @media(max-width:620px){
   .deal-documents{padding:14px}
   .deal-document-name-grid{grid-template-columns:1fr}
-  .deal-document-file-row{grid-template-columns:1fr}
-  .deal-document-upload-action{justify-content:flex-end}
-  .deal-document-upload-action .button{min-width:82px}
+  .deal-document-file-row{
+    grid-template-columns:1fr auto;
+    grid-template-areas:
+      "label ."
+      "input button"
+      "formats ."
+  }
+  .deal-document-upload-button{min-width:78px}
   .deal-document-row{grid-template-columns:1fr auto}
   .deal-document-date{grid-column:1}
   .deal-document-actions{grid-column:2;grid-row:1 / span 2}
