@@ -49,6 +49,7 @@ WORKFLOW_FILES = [
     "installers/SETUP_RSF_MAIN_SYSTEM.bat",
     "deployment/DEPLOY_RSF_LIVE.bat",
     "deployment/PUBLISH_RSF_ONLINE.bat",
+    "installers/launchers/RSF Partner System Launcher.vbs",
     "scripts/PUBLISH_RSF_ONLINE.py",
     "scripts/deploy_render_unified.py",
     "scripts/RECOVER_NEW_RENDER_HOSTING.py",
