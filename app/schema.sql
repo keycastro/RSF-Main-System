@@ -94,6 +94,20 @@ CREATE TABLE IF NOT EXISTS deals (
     updated_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS deal_documents (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    deal_id INTEGER NOT NULL REFERENCES deals(id) ON DELETE CASCADE,
+    document_type TEXT NOT NULL,
+    display_name TEXT NOT NULL,
+    original_name TEXT NOT NULL,
+    mime_type TEXT NOT NULL,
+    size_bytes INTEGER NOT NULL CHECK (size_bytes > 0),
+    data_blob BLOB NOT NULL,
+    uploaded_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_deal_documents_deal ON deal_documents(deal_id,created_at DESC,id DESC);
+
 CREATE TABLE IF NOT EXISTS leads (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     owner_partner_id INTEGER NOT NULL REFERENCES partners(id),

@@ -66,6 +66,54 @@
             <button class="button primary" type="submit">Save</button>
           </div>
         </form>
+
+        <section class="deal-documents" aria-labelledby="deal-documents-{{ deal['id'] }}">
+          <div class="deal-documents-head">
+            <div>
+              <h3 id="deal-documents-{{ deal['id'] }}">Documents / Files</h3>
+              <p>Keep important Deal documents organized here.</p>
+            </div>
+          </div>
+
+          <form class="deal-document-upload" method="post" enctype="multipart/form-data" action="{{ url_for('main.deal_document_upload', deal_id=deal['id']) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label>
+              <span>Document Type</span>
+              <input type="text" name="document_type" maxlength="100" placeholder="Proposal, Contract, Invoice..." required>
+            </label>
+            <label>
+              <span>File Name</span>
+              <input type="text" name="display_name" maxlength="180" placeholder="MAK Realty - Signed Agreement" required>
+            </label>
+            <label class="deal-document-file-field">
+              <span>Upload File</span>
+              <input type="file" name="file" accept=".pdf,.docx,.xlsx,.csv,.png,.jpg,.jpeg,.txt,.zip" required>
+            </label>
+            <div class="deal-document-upload-action">
+              <button class="button secondary" type="submit">Upload</button>
+            </div>
+          </form>
+
+          <p class="deal-document-formats">Supported: PDF, DOCX, XLSX, CSV, PNG, JPG/JPEG, TXT, ZIP.</p>
+
+          <div class="deal-document-list">
+            {% for document in deal_documents.get(deal['id'], []) %}
+              <div class="deal-document-row">
+                <div class="deal-document-main">
+                  <span>{{ document['document_type'] }}</span>
+                  <strong>{{ document['display_name'] }}</strong>
+                </div>
+                <div class="deal-document-date">
+                  <span>Upload Date</span>
+                  <strong>{{ document['created_at']|dateonly }}</strong>
+                </div>
+                <a class="button secondary" href="{{ url_for('main.deal_document_download', deal_id=deal['id'], document_id=document['id']) }}">Download</a>
+              </div>
+            {% else %}
+              <div class="deal-document-empty">No files uploaded yet.</div>
+            {% endfor %}
+          </div>
+        </section>
       </article>
     {% else %}
       <div class="simple-empty deals-empty">

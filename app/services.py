@@ -61,7 +61,7 @@ def file_signature_matches(suffix: str, data: bytes) -> bool:
         return head.startswith(b"%PDF-")
     if suffix in {".doc", ".xls", ".ppt"}:
         return head.startswith(b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1")
-    if suffix in {".docx", ".xlsx", ".pptx"}:
+    if suffix in {".docx", ".xlsx", ".pptx", ".zip"}:
         return head.startswith((b"PK\x03\x04", b"PK\x05\x06", b"PK\x07\x08"))
     if suffix == ".rtf":
         return head.lstrip().startswith(b"{\\rtf")

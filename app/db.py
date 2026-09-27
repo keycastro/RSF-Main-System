@@ -25,9 +25,9 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 21
-SCHEMA_NAME = "rsf-main-system-v1.16.1-interested-deal-status"
-SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals"}
+SCHEMA_VERSION = 22
+SCHEMA_NAME = "rsf-main-system-v1.17.0-deal-documents"
+SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents"}
 
 
 def using_postgres() -> bool:
@@ -835,6 +835,32 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
             (21, "rsf-v1.16.1-interested-prospect-deal-status"),
         )
 
+    # V22 adds persistent, Deal-linked document storage. Files are stored in the
+    # database so production deploys/restarts do not erase signed agreements,
+    # proposals, invoices, requirements, approvals, or other Deal documents.
+    if 22 not in applied:
+        db.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS deal_documents (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                deal_id INTEGER NOT NULL REFERENCES deals(id) ON DELETE CASCADE,
+                document_type TEXT NOT NULL,
+                display_name TEXT NOT NULL,
+                original_name TEXT NOT NULL,
+                mime_type TEXT NOT NULL,
+                size_bytes INTEGER NOT NULL CHECK (size_bytes > 0),
+                data_blob BLOB NOT NULL,
+                uploaded_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                created_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_deal_documents_deal ON deal_documents(deal_id,created_at DESC,id DESC);
+            """
+        )
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (22, "rsf-v1.17.0-deal-documents"),
+        )
+
 
 def _table_exists_postgres(db, table: str) -> bool:
     row = db.execute(
@@ -887,7 +913,7 @@ def _import_seed_payload(db) -> None:
         "users", "account_password_vault", "commission_stages", "partners", "leads", "lead_notes", "followups", "sales", "commissions", "sale_corrections",
         "resources", "duplicate_claims", "activity_log", "messages", "message_attachments", "voice_calls",
         "voice_call_signals", "settings", "website_inquiries", "client_conversations", "client_messages",
-        "client_attachments", "client_notifications", "prospects", "deals"
+        "client_attachments", "client_notifications", "prospects", "deals", "deal_documents"
     ]
     for table in order:
         rows = tables.get(table) or []

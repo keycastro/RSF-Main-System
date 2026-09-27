@@ -82,6 +82,63 @@ PROSPECT_STATUS_LABELS = {
 DEAL_ACTIVE_STATUSES = ("INTERESTED", "DEMO", "PROPOSAL", "DECISION", "WON", "LOST")
 DEAL_PRE_STATUS_STATUSES = ("NOT_CONTACTED", "NO_ANSWER", "REJECTED")
 
+DEAL_DOCUMENT_MAX_FILE_BYTES = 30 * 1024 * 1024
+DEAL_DOCUMENT_FILE_TYPES = {
+    ".pdf": "application/pdf",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".csv": "text/csv",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".txt": "text/plain",
+    ".zip": "application/zip",
+}
+
+
+def _deal_document_file_info(storage) -> dict:
+    original_name = secure_filename(storage.filename or "") if storage is not None else ""
+    if not original_name:
+        raise ValueError("Choose a file first.")
+
+    suffix = Path(original_name).suffix.lower()
+    mime_type = DEAL_DOCUMENT_FILE_TYPES.get(suffix)
+    if not mime_type:
+        raise ValueError("Supported files: PDF, DOCX, XLSX, CSV, PNG, JPG/JPEG, TXT, ZIP.")
+
+    try:
+        storage.stream.seek(0, 2)
+        size_bytes = int(storage.stream.tell())
+        storage.stream.seek(0)
+        header = storage.stream.read(4096)
+        storage.stream.seek(0)
+    except (AttributeError, OSError, ValueError):
+        size_bytes = int(storage.content_length or 0)
+        header = b""
+
+    if size_bytes <= 0:
+        raise ValueError("That file is empty.")
+    if size_bytes > DEAL_DOCUMENT_MAX_FILE_BYTES:
+        raise ValueError("Each Deal file must be 30 MB or smaller.")
+    if not file_signature_matches(suffix, header):
+        raise ValueError("The file content does not match its file type.")
+
+    return {
+        "storage": storage,
+        "original_name": original_name[:180],
+        "suffix": suffix,
+        "mime_type": mime_type,
+        "size_bytes": size_bytes,
+    }
+
+
+def _deal_document_download_name(row) -> str:
+    suffix = Path(row["original_name"] or "").suffix.lower()
+    base = secure_filename(row["display_name"] or "") or Path(row["original_name"] or "document").stem
+    if suffix and not base.lower().endswith(suffix):
+        return (base + suffix)[:220]
+    return base[:220]
+
 
 def _normalize_prospect_name(value: str) -> str:
     return " ".join((value or "").split()).casefold()
@@ -1181,11 +1238,25 @@ def deals():
            WHERE p.status IN ('INTERESTED','DEMO','PROPOSAL','DECISION','WON','LOST')
            ORDER BY d.updated_at DESC,d.id DESC"""
     ).fetchall()
+    deal_ids = [int(row["id"]) for row in rows]
+    deal_documents: dict[int, list] = {}
+    if deal_ids:
+        placeholders = ",".join("?" for _ in deal_ids)
+        document_rows = db.execute(
+            f"""SELECT id,deal_id,document_type,display_name,original_name,mime_type,size_bytes,created_at
+                FROM deal_documents
+                WHERE deal_id IN ({placeholders})
+                ORDER BY deal_id,created_at DESC,id DESC""",
+            deal_ids,
+        ).fetchall()
+        for document in document_rows:
+            deal_documents.setdefault(int(document["deal_id"]), []).append(document)
     return render_template(
         "deals.html",
         title="Deals",
         deals=rows,
         deal_status_labels=PROSPECT_STATUS_LABELS,
+        deal_documents=deal_documents,
     )
 
 
@@ -1216,6 +1287,89 @@ def deal_create_from_prospect(prospect_id: int):
     db.commit()
     flash("Deal created.", "success")
     return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+
+
+@bp.post("/deals/<int:deal_id>/documents")
+@login_required
+def deal_document_upload(deal_id: int):
+    validate_csrf()
+    db = get_db()
+    deal = db.execute("SELECT id FROM deals WHERE id=?", (deal_id,)).fetchone()
+    if not deal:
+        abort(404)
+
+    document_type = " ".join((request.form.get("document_type", "") or "").split())[:100]
+    display_name = " ".join((request.form.get("display_name", "") or "").split())[:180]
+    if not document_type:
+        flash("Document Type is required.", "error")
+        return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+    if not display_name:
+        flash("File Name is required.", "error")
+        return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+
+    try:
+        info = _deal_document_file_info(request.files.get("file"))
+    except ValueError as exc:
+        flash(str(exc), "error")
+        return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+
+    data = info["storage"].read()
+    if not data or len(data) != info["size_bytes"]:
+        flash("The Deal file could not be read. Try again.", "error")
+        return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+
+    now = utcnow_iso()
+    cur = db.execute(
+        """INSERT INTO deal_documents(
+               deal_id,document_type,display_name,original_name,mime_type,size_bytes,
+               data_blob,uploaded_by_user_id,created_at
+           ) VALUES (?,?,?,?,?,?,?,?,?)""",
+        (
+            deal_id,
+            document_type,
+            display_name,
+            info["original_name"],
+            info["mime_type"],
+            info["size_bytes"],
+            data,
+            g.user["id"],
+            now,
+        ),
+    )
+    document_id = cur.lastrowid
+    log_activity(
+        "DEAL_DOCUMENT_UPLOADED",
+        "deal",
+        deal_id,
+        "Deal document uploaded.",
+        {"document_id": document_id, "document_type": document_type, "display_name": display_name},
+    )
+    db.commit()
+    flash("Deal file uploaded.", "success")
+    return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+
+
+@bp.get("/deals/<int:deal_id>/documents/<int:document_id>")
+@login_required
+def deal_document_download(deal_id: int, document_id: int):
+    row = get_db().execute(
+        """SELECT * FROM deal_documents
+           WHERE id=? AND deal_id=?""",
+        (document_id, deal_id),
+    ).fetchone()
+    if not row:
+        abort(404)
+    data_blob = row["data_blob"]
+    if data_blob is None:
+        abort(404)
+    return send_file(
+        BytesIO(bytes(data_blob)),
+        mimetype=row["mime_type"],
+        as_attachment=True,
+        download_name=_deal_document_download_name(row),
+        conditional=False,
+        max_age=0,
+    )
 
 
 @bp.post("/deals/<int:deal_id>/update")
