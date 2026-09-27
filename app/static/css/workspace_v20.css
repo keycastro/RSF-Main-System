@@ -1505,7 +1505,7 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 
 
-/* v1.18.17 — exact compact Prospect card look with maximum three cards per row */
+/* v1.18.18 — uniform compact Prospect cards in the three-column desktop view */
 @media(min-width:1351px){
   .prospects-page{
     max-width:none
@@ -1515,6 +1515,40 @@ textarea.prospect-inline-editor{resize:vertical}
   }
   .prospects-page .prospect-card-shell{
     width:100%
+  }
+  .prospects-page .prospect-card-summary{
+    min-height:174px
+  }
+  .prospects-page .prospect-card-top{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:24px
+  }
+  .prospects-page .prospect-card-title,
+  .prospects-page .prospect-card-platform{
+    min-width:0
+  }
+  .prospects-page .prospect-card-title>span,
+  .prospects-page .prospect-card-platform>span,
+  .prospects-page .prospect-card-meta span{
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis
+  }
+  .prospects-page .prospect-card-title>.prospect-edit-value,
+  .prospects-page .prospect-card-platform>.prospect-edit-value,
+  .prospects-page .prospect-card-meta-item>.prospect-edit-value{
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    overflow-wrap:normal
+  }
+  .prospects-page .prospect-card-meta{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:10px
+  }
+  .prospects-page .prospect-card-meta-item{
+    min-width:0;
+    min-height:62px
   }
 }
 @media(min-width:901px) and (max-width:1350px){
