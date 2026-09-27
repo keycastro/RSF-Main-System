@@ -874,7 +874,7 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
                    WHERE nsp.nspname='public'
                      AND rel.relname='deals'
                      AND con.contype='c'
-                     AND pg_get_constraintdef(con.oid) ILIKE '%status%'"""
+                     AND position('status' in lower(pg_get_constraintdef(con.oid))) > 0"""
             ).fetchall()
             for row in check_rows:
                 constraint_name = str(row["name"]).replace('"', '""')
