@@ -2200,9 +2200,24 @@
   };
 
   const handleViewerWheel = (event) => {
-    if (!event.ctrlKey) return;
+    if (event.ctrlKey) {
+      event.preventDefault();
+      applyViewerZoom(viewerZoom + (event.deltaY < 0 ? 0.1 : -0.1));
+      return;
+    }
+
+    const targetWindow = viewerWindow();
+    if (!targetWindow) return;
     event.preventDefault();
-    applyViewerZoom(viewerZoom + (event.deltaY < 0 ? 0.1 : -0.1));
+    try {
+      targetWindow.scrollBy({
+        left: event.deltaX || 0,
+        top: event.deltaY || 0,
+        behavior: 'auto'
+      });
+    } catch (_error) {
+      // Ignore browser-managed preview limitations.
+    }
   };
 
   const bindFrameWheel = () => {
