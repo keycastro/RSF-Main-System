@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 22
-SCHEMA_NAME = "rsf-main-system-v1.17.0-deal-documents"
+SCHEMA_VERSION = 23
+SCHEMA_NAME = "rsf-main-system-v1.18.5-deal-status"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents"}
 
 
@@ -798,7 +798,7 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
             CREATE TABLE IF NOT EXISTS deals (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 prospect_id INTEGER NOT NULL UNIQUE REFERENCES prospects(id) ON DELETE CASCADE,
-                status TEXT NOT NULL DEFAULT 'INTERESTED' CHECK (status IN ('INTERESTED','DEMO','PROPOSAL','DECISION','WON','LOST')),
+                status TEXT NOT NULL DEFAULT 'DEAL' CHECK (status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','LOST')),
                 demo_date TEXT NOT NULL DEFAULT '',
                 followup_date TEXT NOT NULL DEFAULT '',
                 next_step TEXT NOT NULL DEFAULT '',
@@ -832,7 +832,7 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
         db.execute("CREATE INDEX IF NOT EXISTS idx_deals_followup ON deals(followup_date,status,id)")
         db.execute(
             "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
-            (21, "rsf-v1.16.1-interested-prospect-deal-status"),
+            (21, "rsf-v1.16.1-deal-prospect-deal-status"),
         )
 
     # V22 adds persistent, Deal-linked document storage. Files are stored in the
@@ -859,6 +859,98 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
         db.execute(
             "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
             (22, "rsf-v1.17.0-deal-documents"),
+        )
+
+    # V23 renames the real shared Prospect/Deal workflow status from INTERESTED
+    # to DEAL. Existing records are migrated, and the Deal column default/CHECK
+    # is rebuilt so the database, backend, UI, and future code all use DEAL.
+    if 23 not in applied:
+        if using_postgres():
+            check_rows = db.execute(
+                """SELECT con.conname AS name
+                   FROM pg_constraint con
+                   JOIN pg_class rel ON rel.oid=con.conrelid
+                   JOIN pg_namespace nsp ON nsp.oid=rel.relnamespace
+                   WHERE nsp.nspname='public'
+                     AND rel.relname='deals'
+                     AND con.contype='c'
+                     AND pg_get_constraintdef(con.oid) ILIKE '%status%'"""
+            ).fetchall()
+            for row in check_rows:
+                constraint_name = str(row["name"]).replace('"', '""')
+                db.execute(f'ALTER TABLE deals DROP CONSTRAINT "{constraint_name}"')
+
+            db.execute("ALTER TABLE deals ALTER COLUMN status SET DEFAULT 'DEAL'")
+            db.execute("UPDATE deals SET status='DEAL' WHERE status='INTERESTED'")
+            db.execute("UPDATE prospects SET status='DEAL' WHERE status='INTERESTED'")
+            db.execute(
+                """ALTER TABLE deals
+                   ADD CONSTRAINT deals_status_check
+                   CHECK (status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','LOST'))"""
+            )
+        else:
+            # SQLite cannot change a CHECK constraint in place. Rebuild only the
+            # deals table from the release schema while preserving every row.
+            db.commit()
+            db.execute("PRAGMA foreign_keys=OFF")
+            try:
+                temp = "__rsf_v23_deals"
+                db.execute(f'DROP TABLE IF EXISTS "{temp}"')
+                ddl = _schema_table_ddl("deals")
+                ddl = re.sub(
+                    r"CREATE TABLE IF NOT EXISTS\s+deals",
+                    f'CREATE TABLE "{temp}"',
+                    ddl,
+                    count=1,
+                    flags=re.I,
+                )
+                db.execute(ddl)
+
+                old_columns = [row["name"] for row in db.execute('PRAGMA table_info("deals")').fetchall()]
+                new_columns = [row["name"] for row in db.execute(f'PRAGMA table_info("{temp}")').fetchall()]
+                common = [name for name in old_columns if name in new_columns]
+                if not common:
+                    raise RuntimeError("Deal status migration found no common columns.")
+
+                quoted = ",".join(f'"{name}"' for name in common)
+                select_parts = [
+                    "CASE WHEN status='INTERESTED' THEN 'DEAL' ELSE status END AS status"
+                    if name == "status"
+                    else f'"{name}"'
+                    for name in common
+                ]
+                db.execute(
+                    f'INSERT INTO "{temp}" ({quoted}) SELECT {",".join(select_parts)} FROM "deals"'
+                )
+                db.execute('DROP TABLE "deals"')
+                db.execute(f'ALTER TABLE "{temp}" RENAME TO "deals"')
+                db.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_deals_status_updated "
+                    "ON deals(status,updated_at DESC,id DESC)"
+                )
+                db.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_deals_followup "
+                    "ON deals(followup_date,status,id)"
+                )
+                db.execute("UPDATE prospects SET status='DEAL' WHERE status='INTERESTED'")
+                db.commit()
+            except Exception:
+                db.rollback()
+                raise
+            finally:
+                db.execute("PRAGMA foreign_keys=ON")
+
+            violations = db.execute("PRAGMA foreign_key_check").fetchall()
+            if violations:
+                raise RuntimeError(f"Deal status migration created foreign-key violations: {violations[:5]}")
+
+        db.execute(
+            "UPDATE schema_migrations SET name=? WHERE version=?",
+            ("rsf-v1.16.1-deal-prospect-deal-status", 21),
+        )
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (23, "rsf-v1.18.5-deal-status"),
         )
 
 

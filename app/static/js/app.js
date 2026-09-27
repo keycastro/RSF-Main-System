@@ -1901,7 +1901,7 @@
     ['NOT_CONTACTED', 'Not Contacted'],
     ['NO_ANSWER', 'No Answer'],
     ['REJECTED', 'Rejected'],
-    ['INTERESTED', 'Interested'],
+    ['DEAL', 'Deal'],
     ['DEMO', 'Demo'],
     ['PROPOSAL', 'Proposal'],
     ['DECISION', 'Decision'],

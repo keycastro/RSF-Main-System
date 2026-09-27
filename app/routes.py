@@ -77,14 +77,14 @@ PROSPECT_STATUS_LABELS = {
     "NOT_CONTACTED": "Not Contacted",
     "NO_ANSWER": "No Answer",
     "REJECTED": "Rejected",
-    "INTERESTED": "Interested",
+    "DEAL": "Deal",
     "DEMO": "Demo",
     "PROPOSAL": "Proposal",
     "DECISION": "Decision",
     "WON": "Won",
     "LOST": "Lost",
 }
-DEAL_ACTIVE_STATUSES = ("INTERESTED", "DEMO", "PROPOSAL", "DECISION", "WON", "LOST")
+DEAL_ACTIVE_STATUSES = ("DEAL", "DEMO", "PROPOSAL", "DECISION", "WON", "LOST")
 DEAL_PRE_STATUS_STATUSES = ("NOT_CONTACTED", "NO_ANSWER", "REJECTED")
 
 DEAL_DOCUMENT_MAX_FILE_BYTES = 30 * 1024 * 1024
@@ -303,7 +303,7 @@ def _ensure_deal_for_prospect(db, prospect_id: int, created_by_user_id: int, now
            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
         (
             prospect_id,
-            "INTERESTED",
+            "DEAL",
             "",
             "",
             "",
@@ -1009,7 +1009,7 @@ def prospects():
     deal_rows = db.execute(
         """SELECT d.id,d.prospect_id FROM deals d
            JOIN prospects p ON p.id=d.prospect_id
-           WHERE p.status IN ('INTERESTED','DEMO','PROPOSAL','DECISION','WON','LOST')"""
+           WHERE p.status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','LOST')"""
     ).fetchall()
     prospect_deal_ids = {int(row["prospect_id"]): int(row["id"]) for row in deal_rows}
 
@@ -1366,7 +1366,7 @@ def deals():
                   p.status AS workflow_status
            FROM deals d
            JOIN prospects p ON p.id=d.prospect_id
-           WHERE p.status IN ('INTERESTED','DEMO','PROPOSAL','DECISION','WON','LOST')
+           WHERE p.status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','LOST')
            ORDER BY d.updated_at DESC,d.id DESC"""
     ).fetchall()
     deal_ids = [int(row["id"]) for row in rows]
@@ -1407,14 +1407,14 @@ def deal_create_from_prospect(prospect_id: int):
     existing = db.execute("SELECT id FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
     if existing:
         deal_id = int(existing["id"])
-        db.execute("UPDATE prospects SET status='INTERESTED',updated_at=? WHERE id=?", (now, prospect_id))
-        db.execute("UPDATE deals SET status='INTERESTED',updated_at=? WHERE id=?", (now, deal_id))
+        db.execute("UPDATE prospects SET status='DEAL',updated_at=? WHERE id=?", (now, prospect_id))
+        db.execute("UPDATE deals SET status='DEAL',updated_at=? WHERE id=?", (now, deal_id))
         db.commit()
-        flash("Deal opened at Interested.", "success")
+        flash("Deal opened.", "success")
         return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
     deal_id, _ = _ensure_deal_for_prospect(db, prospect_id, g.user["id"], now)
-    db.execute("UPDATE prospects SET status='INTERESTED',updated_at=? WHERE id=?", (now, prospect_id))
+    db.execute("UPDATE prospects SET status='DEAL',updated_at=? WHERE id=?", (now, prospect_id))
     db.commit()
     flash("Deal created.", "success")
     return redirect(url_for("main.deals") + f"#deal-{deal_id}")
