@@ -359,6 +359,7 @@ def _founder_conversations(db, query: str = "") -> list[dict]:
         where = f" WHERE {name_expr} LIKE ? ESCAPE '\\'"
         params.append(pattern)
     rows = db.execute(
+        "SELECT * FROM (" +
         f"""SELECT p.id,p.user_id,p.active,p.account_deleted_at,{name_expr} full_name,
                   u.role,u.avatar_stored_name,u.active AS user_active,
                   (SELECT m.id FROM messages m WHERE m.partner_id=p.id ORDER BY m.id DESC LIMIT 1) AS last_message_id,
@@ -367,7 +368,7 @@ def _founder_conversations(db, query: str = "") -> list[dict]:
                   (SELECT COUNT(*) FROM messages m
                      WHERE m.partner_id=p.id AND p.user_id IS NOT NULL AND m.sender_user_id=p.user_id AND m.founder_read_at IS NULL) AS unread_count
            FROM partners p LEFT JOIN users u ON u.id=p.user_id""" + where +
-        " ORDER BY CASE WHEN unread_count>0 THEN 0 ELSE 1 END, CASE WHEN last_message_at IS NULL THEN 1 ELSE 0 END, last_message_at DESC, full_name",
+        ") conversation_rows ORDER BY CASE WHEN unread_count>0 THEN 0 ELSE 1 END, CASE WHEN last_message_at IS NULL THEN 1 ELSE 0 END, last_message_at DESC, full_name",
         params,
     ).fetchall()
     conversations = []
@@ -676,7 +677,7 @@ def dashboard():
                ORDER BY overdue_followups DESC, open_followups DESC, active_leads DESC, u.full_name
                LIMIT 8""", (today,)
         ).fetchall()
-        return render_template("dashboard_admin.html", title="Dashboard", metrics=metrics, attention=attention, partner_workloads=partner_workloads, today=today)
+        return render_template("dashboard_admin.html", title="Home", metrics=metrics, attention=attention, partner_workloads=partner_workloads, today=today)
 
     pid = g.partner["id"]
     leads_count = db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=?", (pid,)).fetchone()["c"]
@@ -715,7 +716,83 @@ def dashboard():
         """SELECT l.*, (SELECT MIN(due_at) FROM followups f WHERE f.lead_id=l.id AND f.status='OPEN' AND f.owner_partner_id=l.owner_partner_id) next_followup
            FROM leads l WHERE l.owner_partner_id=? AND l.status NOT IN ('WON','LOST') ORDER BY l.last_activity_at DESC LIMIT 8""", (pid,)
     ).fetchall()
-    return render_template("dashboard_partner.html", title="Dashboard", metrics=metrics, followups=followups, leads=leads, today=today)
+    return render_template("dashboard_partner.html", title="Home", metrics=metrics, followups=followups, leads=leads, today=today)
+
+
+@bp.get("/clients")
+@login_required
+def clients_hub():
+    db = get_db()
+    if g.user["role"] == "admin":
+        unclaimed = db.execute("SELECT * FROM website_inquiries WHERE status='UNCLAIMED' ORDER BY created_at ASC").fetchall()
+        lead_where, params = "", []
+        follow_where, follow_params = "f.status='OPEN'", []
+    else:
+        pid = g.partner["id"]
+        unclaimed = db.execute("SELECT * FROM website_inquiries WHERE status='UNCLAIMED' ORDER BY created_at ASC").fetchall()
+        lead_where, params = " WHERE l.owner_partner_id=?", [pid]
+        follow_where, follow_params = "f.status='OPEN' AND l.owner_partner_id=? AND f.owner_partner_id=?", [pid, pid]
+
+    leads = db.execute(
+        """SELECT l.*,COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') owner_name,
+                  (SELECT MIN(due_at) FROM followups f WHERE f.lead_id=l.id AND f.status='OPEN' AND f.owner_partner_id=l.owner_partner_id) next_followup,
+                  (SELECT c.id FROM client_conversations c WHERE c.lead_id=l.id AND c.status='ACTIVE' ORDER BY c.id DESC LIMIT 1) conversation_id
+           FROM leads l JOIN partners p ON p.id=l.owner_partner_id LEFT JOIN users u ON u.id=p.user_id""" +
+        lead_where + " ORDER BY l.last_activity_at DESC", params
+    ).fetchall()
+    followups = db.execute(
+        """SELECT f.*,l.company_name,l.contact_name,l.owner_partner_id AS current_owner_partner_id,
+                  COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') owner_name
+           FROM followups f JOIN leads l ON l.id=f.lead_id JOIN partners p ON p.id=f.owner_partner_id LEFT JOIN users u ON u.id=p.user_id
+           WHERE """ + follow_where + " ORDER BY f.due_at LIMIT 50", follow_params
+    ).fetchall()
+    awaiting_sql = "SELECT COUNT(*) c FROM client_conversations WHERE status='ACTIVE' AND last_client_message_at IS NOT NULL AND (last_outbound_message_at IS NULL OR last_client_message_at > last_outbound_message_at)"
+    awaiting_params = []
+    if g.user["role"] == "partner":
+        awaiting_sql += " AND owner_partner_id=?"
+        awaiting_params.append(g.partner["id"])
+    awaiting = db.execute(awaiting_sql, awaiting_params).fetchone()["c"]
+    from .client_ops import email_receive_configured, email_send_configured
+    return render_template(
+        "clients.html", title="Clients", unclaimed=unclaimed, leads=leads, followups=followups, awaiting=awaiting,
+        today=today_str(), email_send_ready=email_send_configured(), email_receive_ready=email_receive_configured(),
+    )
+
+
+@bp.get("/money")
+@login_required
+def money_hub():
+    db = get_db()
+    sale_params = []
+    sale_where = ""
+    commission_params = []
+    commission_where = ""
+    if g.user["role"] == "partner":
+        sale_where = " WHERE s.partner_id=?"
+        sale_params.append(g.partner["id"])
+        commission_where = " WHERE c.partner_id=?"
+        commission_params.append(g.partner["id"])
+    sales = db.execute(
+        """SELECT s.*,l.company_name,COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') partner_name,
+                  c.status commission_status,c.commission_amount_cents
+           FROM sales s JOIN leads l ON l.id=s.lead_id JOIN partners p ON p.id=s.partner_id LEFT JOIN users u ON u.id=p.user_id
+           LEFT JOIN commissions c ON c.sale_id=s.id""" + sale_where + " ORDER BY s.sale_date DESC,s.id DESC", sale_params
+    ).fetchall()
+    commissions = db.execute(
+        """SELECT c.*,s.client_name,s.product_service,s.sale_date,
+                  COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') partner_name,
+                  COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0) correction_total_cents,
+                  c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0) adjusted_commission_cents
+           FROM commissions c JOIN sales s ON s.id=c.sale_id JOIN partners p ON p.id=c.partner_id LEFT JOIN users u ON u.id=p.user_id""" + commission_where + " ORDER BY c.created_at DESC", commission_params
+    ).fetchall()
+    summary = {"PENDING": 0, "APPROVED": 0, "PAID": 0}
+    for c in commissions:
+        summary[c["status"]] = summary.get(c["status"], 0) + int(c["adjusted_commission_cents"] or 0)
+    collected = sum(int(s["collected_cents"] or 0) for s in sales)
+    return render_template(
+        "money.html", title="Money", sales=sales, commissions=commissions, summary=summary,
+        collected=collected, has_sales_data=bool(sales), has_commission_data=bool(commissions),
+    )
 
 
 @bp.route("/leads")
@@ -800,7 +877,7 @@ def lead_new():
         if errors:
             for error in errors:
                 flash(error, "error")
-            return render_template("lead_form.html", title="Add Lead", partners=partners, duplicate_matches=matches if g.user["role"]=="admin" else [])
+            return render_template("lead_form.html", title="Add Client", partners=partners, duplicate_matches=matches if g.user["role"]=="admin" else [])
         now = utcnow_iso()
         try:
             cur = db.execute(
@@ -822,7 +899,7 @@ def lead_new():
         db.commit()
         flash("Lead added.", "success")
         return redirect(url_for("main.lead_detail", lead_id=lead_id))
-    return render_template("lead_form.html", title="Add Lead", partners=partners, duplicate_matches=[])
+    return render_template("lead_form.html", title="Add Client", partners=partners, duplicate_matches=[])
 
 
 @bp.route("/leads/<int:lead_id>/edit", methods=["GET", "POST"])
