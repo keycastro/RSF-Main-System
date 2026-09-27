@@ -1,0 +1,42 @@
+{% extends 'base.html' %}{% block content %}
+<div class="page-head workspace-page-head simple-head">
+  <div><h1>Money</h1><p>Sales and Partner commissions in one place.</p></div>
+  {% if g.user.role=='admin' %}<a class="button primary" href="{{ url_for('main.sale_new') }}">Create Sale</a>{% endif %}
+</div>
+
+<div class="simple-summary-grid money-summary-grid">
+  <div><span>Collected</span><strong>{{ fmt_money(collected, has_sales_data, setting('currency_code','USD')) }}</strong></div>
+  <div><span>Commission due</span><strong>{{ fmt_money(summary.PENDING + summary.APPROVED, has_commission_data, setting('currency_code','USD')) }}</strong></div>
+  <div><span>Commission paid</span><strong>{{ fmt_money(summary.PAID, has_commission_data, setting('currency_code','USD')) }}</strong></div>
+</div>
+
+<section class="simple-section">
+  <div class="simple-section-head"><div><h2>Sales</h2><p>Money received from clients.</p></div></div>
+  {% if sales %}
+  <div class="simple-list">
+    {% for s in sales %}
+    <a class="simple-row" href="{{ url_for('main.sale_detail', sale_id=s.id) }}">
+      <div><strong>{{ s.client_name }}</strong><span>{{ s.product_service }}{% if g.user.role=='admin' %} · {{ s.partner_name }}{% endif %} · {{ s.sale_date|dateonly }}</span></div>
+      <div class="simple-row-end"><strong>{{ fmt_money(s.collected_cents, True, setting('currency_code','USD')) }}</strong><span class="badge neutral">{{ s.payment_status|human_status }}</span></div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}<div class="simple-empty">No sales yet.</div>{% endif %}
+</section>
+
+<section class="simple-section">
+  <div class="simple-section-head"><div><h2>Commissions</h2><p>{% if g.user.role=='partner' %}Your commission history.{% else %}Review and pay Partner commissions.{% endif %}</p></div></div>
+  {% if commissions %}
+  <div class="simple-list">
+    {% for c in commissions %}
+    <div class="simple-row simple-row-static">
+      <div><strong>{{ c.client_name }}</strong><span>{% if g.user.role=='admin' %}{{ c.partner_name }} · {% endif %}{{ c.rate_bp_snapshot|rate }} · {{ c.product_service }}</span></div>
+      <div class="simple-row-end"><strong>{{ fmt_money(c.adjusted_commission_cents, True, setting('currency_code','USD')) }}</strong><span class="badge status-{{ c.status|lower }}">{{ c.status|human_status }}</span>
+        {% if g.user.role=='admin' and c.status=='PENDING' %}<form method="post" action="{{ url_for('main.commission_approve', commission_id=c.id) }}" data-confirm="Approve this commission?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="mini-button primary-mini" type="submit">Approve</button></form>{% elif g.user.role=='admin' and c.status=='APPROVED' %}<form method="post" action="{{ url_for('main.commission_paid', commission_id=c.id) }}" data-confirm="Mark this commission paid?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="mini-button primary-mini" type="submit">Mark paid</button></form>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}<div class="simple-empty">No commissions yet.</div>{% endif %}
+</section>
+{% endblock %}
