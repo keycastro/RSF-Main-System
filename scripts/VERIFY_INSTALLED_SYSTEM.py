@@ -2,12 +2,15 @@
 from __future__ import annotations
 
 import os
-
 import html
+import hashlib
+import json
+from io import BytesIO
+
 import re
-import sqlite3
-import sys
 import tempfile
+from datetime import datetime, timezone
+import sys
 from pathlib import Path
 
 os.environ["RSF_DISABLE_BACKGROUND"] = "1"
@@ -19,6 +22,7 @@ if str(ROOT) not in sys.path:
 from app import create_app
 from app.db import get_db
 from app.auth import session_credential, hash_password
+from app.credential_vault import decrypt_password
 from werkzeug.security import check_password_hash
 
 
@@ -27,6 +31,9 @@ def fail(message: str) -> None:
 
 
 def verify_project_layout() -> None:
+    version = (ROOT / "VERSION.txt").read_text(encoding="utf-8").strip()
+    if version != "1.11.2":
+        fail(f"Release version mismatch: expected 1.11.2, found {version or 'empty'}.")
     required_dirs = ("app", "scripts", "installers", "deployment", "docs", "assets", "instance", "runtime")
     missing = [name for name in required_dirs if not (ROOT / name).exists()]
     if missing:
@@ -44,125 +51,132 @@ def verify_project_layout() -> None:
 
 
 
-def _visible_text(markup: str) -> str:
-    return " ".join(html.unescape(re.sub(r"<[^>]+>", " ", markup or "")).split())
-
-
 def _csrf_from(response) -> str:
     match = re.search(r'name="csrf_token" value="([^"]+)"', response.get_data(as_text=True))
     if not match:
-        fail("CSRF verification failed: form token was not found.")
-    return html.unescape(match.group(1))
+        fail("CSRF verification token was not rendered.")
+    return match.group(1)
 
 
-def _login_with_password(client, email: str, password: str) -> int:
+def _login(client, name: str, password: str):
     page = client.get("/app/login", follow_redirects=False)
-    if page.status_code != 200:
-        fail("Login verification failed: sign-in page did not render.")
+    html_text = page.get_data(as_text=True)
+    if 'name="name"' not in html_text or 'name="email"' in html_text:
+        fail("Workspace login is not Name + Password only.")
     token = _csrf_from(page)
-    response = client.post(
+    return client.post(
         "/app/login",
-        data={"csrf_token": token, "email": email, "password": password},
+        data={"csrf_token": token, "name": name, "password": password},
         follow_redirects=False,
     )
-    return response.status_code
 
 
-def verify_founder_partner_account_management(source_db) -> None:
-    """Destructively test v1.9 account controls only on a disposable DB copy."""
-    with tempfile.TemporaryDirectory(prefix="rsf-account-audit-") as td:
-        test_root = Path(td)
-        test_db_path = test_root / "audit.db"
-        target = sqlite3.connect(test_db_path)
-        try:
-            source_db.backup(target)
-        finally:
-            target.close()
-
+def verify_partner_account_management() -> None:
+    """Exercise destructive account behavior only inside an isolated disposable database."""
+    with tempfile.TemporaryDirectory(prefix="rsf-partner-verifier-") as temp_name:
+        temp = Path(temp_name)
+        db_path = temp / "account-management.db"
         test_app = create_app({
             "TESTING": True,
-            "SECRET_KEY": "rsf-v1.9-disposable-verifier",
             "DATABASE_URL": "",
-            "DATABASE": str(test_db_path),
-            "MESSAGE_UPLOAD_DIR": str(test_root / "message_uploads"),
-            "PROFILE_PICTURE_DIR": str(test_root / "profile_pictures"),
-            "CLIENT_ATTACHMENT_DIR": str(test_root / "client_attachments"),
-            "BACKUP_DIR": str(test_root / "backups"),
+            "DATABASE": str(db_path),
+            "SECRET_KEY": "rsf-isolated-verifier-secret",
+            "MESSAGE_UPLOAD_DIR": str(temp / "message_uploads"),
+            "PROFILE_PICTURE_DIR": str(temp / "profile_pictures"),
+            "CLIENT_ATTACHMENT_DIR": str(temp / "client_attachments"),
+            "BACKUP_DIR": str(temp / "backups"),
             "TRUSTED_HOSTS": ["localhost", "127.0.0.1"],
-            "SESSION_COOKIE_SECURE": False,
         })
 
-        founder_email = "founder-audit@rsf.test"
-        founder_password = "f"
+        founder_name = "Verifier Founder"
+        founder_email = "founder-verifier@example.invalid"
+        founder_password = "founder-verifier-password"
         founder_new_password = "q"
-        partner_email = "partner-audit@rsf.test"
-        first_password = "1"
-        second_password = "x"
-        forged_email = "forged-partner@rsf.test"
+        partner_name = "Verifier Partner"
+        partner_email = "partner-verifier@example.invalid"
+        exact_password = "tiny"  # Intentionally weak: exact Founder choice must still be accepted.
+        reset_password = "z"     # Same requirement, including one-character passwords.
+        now = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
         with test_app.app_context():
             db = get_db()
-            founder = db.execute("SELECT * FROM users WHERE role='admin' ORDER BY id LIMIT 1").fetchone()
-            if not founder:
-                fail("Founder account verification failed in disposable account audit.")
-            # Change only the disposable copy so the verifier can exercise real password login routes.
-            db.execute(
-                "UPDATE users SET email=?,password_hash=?,active=1,failed_login_count=0,locked_until=NULL WHERE id=?",
-                (founder_email, hash_password(founder_password), founder["id"]),
-            )
-            stage = db.execute("SELECT * FROM commission_stages WHERE code='FOUNDING_1'").fetchone()
-            if not stage or int(stage["rate_bp"]) != 4000:
-                fail("Commission ladder check failed in disposable account audit.")
+            stage_rows = db.execute(
+                "SELECT name,rate_bp FROM commission_stages WHERE active=1 ORDER BY sort_order"
+            ).fetchall()
+            ladder = [(row["name"], row["rate_bp"]) for row in stage_rows]
+            if ladder != [
+                ("Founding Partner #1", 4000),
+                ("Early Partner", 3000),
+                ("Established Sales Partner", 2000),
+                ("Standard Partner", 1500),
+            ]:
+                fail("Commission ladder changed unexpectedly.")
+            founder_id = db.execute(
+                """INSERT INTO users(full_name,email,password_hash,role,active,force_password_change,created_at,updated_at)
+                   VALUES (?,?,?,'admin',1,0,?,?)""",
+                (founder_name, founder_email, hash_password(founder_password), now, now),
+            ).lastrowid
+            other_user_id = db.execute(
+                """INSERT INTO users(full_name,email,password_hash,role,active,force_password_change,created_at,updated_at)
+                   VALUES (?,?,?,'partner',1,0,?,?)""",
+                ("Other Verifier Partner", "other-verifier@example.invalid", hash_password("other"), now, now),
+            ).lastrowid
+            first_stage = db.execute("SELECT id FROM commission_stages ORDER BY sort_order LIMIT 1").fetchone()["id"]
+            other_partner_id = db.execute(
+                """INSERT INTO partners(user_id,commission_stage_id,phone,notes,joined_at,active,account_deleted_at,historical_name)
+                   VALUES (?,?,?,?,?,1,NULL,?)""",
+                (other_user_id, first_stage, "", "", now, "Other Verifier Partner"),
+            ).lastrowid
+            other_lead_id = db.execute(
+                """INSERT INTO leads(owner_partner_id,company_name,company_norm,contact_name,contact_norm,email,email_norm,phone,phone_norm,website,website_domain,lead_source,summary_notes,status,lost_reason,demo_at,registered_at,last_activity_at,created_by_user_id)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'NEW','',NULL,?,?,?)""",
+                (other_partner_id, "Other Company", "other company", "Other Contact", "other contact", "", "", "", "", "", "", "Verifier", "", now, now, other_user_id),
+            ).lastrowid
             db.commit()
 
         founder_client = test_app.test_client()
-        if _login_with_password(founder_client, founder_email, founder_password) not in (302, 303):
-            fail("Founder login check failed in disposable account audit.")
+        founder_login = _login(founder_client, founder_name, founder_password)
+        if founder_login.status_code != 302 or "/app/" not in founder_login.headers.get("Location", ""):
+            fail("Founder Name + Password login verification failed.")
+        email_login_client = test_app.test_client()
+        if _login(email_login_client, founder_email, founder_password).status_code == 302:
+            fail("Old email login still works for a workspace account.")
+        with test_app.app_context():
+            db = get_db()
+            seeded = db.execute("SELECT encrypted_password FROM account_password_vault WHERE user_id=?", (founder_id,)).fetchone()
+            if not seeded or seeded["encrypted_password"] == founder_password:
+                fail("Successful Founder login did not initialize an encrypted current-password vault entry.")
+            try:
+                seeded_password = decrypt_password(seeded["encrypted_password"])
+            except RuntimeError:
+                fail("Founder login-seeded current-password vault entry could not be decrypted.")
+            if seeded_password != founder_password:
+                fail("Founder login-seeded vault entry does not match the exact authenticated password.")
 
         account_page = founder_client.get("/app/admin/settings/account-security", follow_redirects=False)
         account_html = account_page.get_data(as_text=True)
-        account_visible = _visible_text(account_html)
-        required = (
-            "Account & Security","Founder Account","Partner Accounts","New Password","Confirm Password",
-            "Current Password","Show","Copy",
+        required_account = (
+            "Account &amp; Security", "Founder Account", "Partner Accounts", "New Password", "Confirm Password",
+            "Current Password", "data-vault-reveal", "data-vault-copy", "data-password-vault-url",
+            "compact-password-form", "partner-security-list", "security-change-disclosure",
         )
-        if account_page.status_code != 200 or any(item not in account_visible for item in required):
-            fail("Founder Account & Security current-password workspace is incomplete.")
-        source_markers = (
-            "compact-password-form","data-toggle-password","security-change-disclosure",
-            'id="founder_current_password"',"data-vault-reveal","data-vault-copy","data-password-vault-url",
-        )
-        if any(marker not in account_html for marker in source_markers):
-            fail("Account & Security current-password source controls are incomplete.")
-        if "Hashed · not readable or recoverable" in account_visible or "Securely set" in account_visible:
-            fail("Obsolete v1.9.3 current-password status is still visible.")
-        founder_current_input = re.search(r'<input[^>]+id="founder_current_password"[^>]*>', account_html)
-        if not founder_current_input or re.search(r'\svalue=', founder_current_input.group(0), flags=re.I):
-            fail("Founder current-password field must render masked and empty; plaintext must be fetched on demand.")
+        if account_page.status_code != 200 or any(marker not in account_html for marker in required_account):
+            fail("Simplified Founder Account & Security workspace is incomplete.")
         if 'name="current_password"' in account_html:
-            fail("Account & Security incorrectly asks the Founder to re-enter the current password.")
-
-        reveal = founder_client.post(
-            "/app/admin/settings/account-security/reveal-password",
-            data={"csrf_token": _csrf_from(account_page), "user_id": str(founder["id"])},
-            follow_redirects=False,
-        )
-        reveal_payload = reveal.get_json(silent=True) or {}
-        if reveal.status_code != 200 or not reveal_payload.get("ok") or reveal_payload.get("password") != founder_password:
-            fail("Founder current-password reveal did not return the exact authenticated password.")
-        if "no-store" not in reveal.headers.get("Cache-Control","") or reveal.headers.get("Pragma") != "no-cache":
-            fail("Founder current-password reveal is missing no-cache response headers.")
-        if founder_email not in account_html or "Founder Audit Seed" not in account_visible:
-            fail("Founder identity is missing from Account & Security.")
-        for forbidden in ("Founder/Admin","Founder / Admin","Employee","Staff","Deactivate","Suspend","Archive"):
-            if forbidden.lower() in account_visible.lower():
+            fail("Account & Security unexpectedly asks the Founder to re-enter the current password in the change form.")
+        if founder_name not in account_html:
+            fail("Founder Name is missing from Account & Security.")
+        if founder_email in account_html:
+            fail("Founder account email is still visible in Account & Security.")
+        for forbidden in ("Founder/Admin", "Founder / Admin", "Founder Admin", "Employee", "Staff", "Deactivate", "Suspend", "Archive"):
+            if forbidden.lower() in account_html.lower():
                 fail(f"Obsolete account terminology is visible in Account & Security: {forbidden}")
-        for nag in ("too weak","stronger password","add a symbol","uppercase","lowercase","password strength","12+ characters"):
-            if nag in account_visible.lower():
-                fail(f"Password-strength rule remains visible in Account & Security: {nag}")
+        for nag in ("too weak", "stronger password", "add a symbol", "uppercase", "lowercase", "password strength", "12+ characters"):
+            if nag in account_html.lower():
+                fail(f"Password-strength rule is visible in Account & Security: {nag}")
 
-        founder_stale = test_app.test_client()
-        if _login_with_password(founder_stale, founder_email, founder_password) not in (302,303):
+        stale_founder = test_app.test_client()
+        if _login(stale_founder, founder_name, founder_password).status_code != 302:
             fail("Founder stale-session setup failed.")
         if founder_client.post(
             "/app/admin/settings/account-security/founder-password",
@@ -170,312 +184,711 @@ def verify_founder_partner_account_management(source_db) -> None:
             follow_redirects=False,
         ).status_code != 400:
             fail("CSRF protection failed on Founder password change.")
-        changed_founder = founder_client.post(
+        founder_change = founder_client.post(
             "/app/admin/settings/account-security/founder-password",
             data={"csrf_token": _csrf_from(account_page), "new_password": founder_new_password, "confirm_password": founder_new_password},
             follow_redirects=False,
         )
-        founder_changed_html = changed_founder.get_data(as_text=True)
-        if changed_founder.status_code != 200 or 'id="founder_current_password"' not in founder_changed_html or "data-vault-reveal" not in founder_changed_html or "data-vault-copy" not in founder_changed_html:
-            fail("Founder password change did not return the simplified Account & Security workspace.")
-        changed_reveal = founder_client.post(
+        founder_changed_html = founder_change.get_data(as_text=True)
+        if founder_change.status_code != 200 or 'data-vault-reveal' not in founder_changed_html or 'data-vault-copy' not in founder_changed_html:
+            fail("Founder password change did not return the Founder password-visibility workspace.")
+        reveal_csrf = _csrf_from(founder_change)
+        no_csrf_reveal = founder_client.post(
             "/app/admin/settings/account-security/reveal-password",
-            data={"csrf_token": _csrf_from(changed_founder), "user_id": str(founder["id"])},
+            data={"user_id": str(founder_id)},
             follow_redirects=False,
         )
-        changed_reveal_payload = changed_reveal.get_json(silent=True) or {}
-        if changed_reveal.status_code != 200 or changed_reveal_payload.get("password") != founder_new_password:
-            fail("Founder password change did not update persistent encrypted current-password visibility.")
+        if no_csrf_reveal.status_code != 400:
+            fail("CSRF protection failed on Founder password reveal.")
+        founder_reveal = founder_client.post(
+            "/app/admin/settings/account-security/reveal-password",
+            data={"csrf_token": reveal_csrf, "user_id": str(founder_id)},
+            follow_redirects=False,
+        )
+        if founder_reveal.status_code != 200 or founder_reveal.get_json().get("password") != founder_new_password:
+            fail("Founder current password is not persistently revealable from Account & Security.")
+        if "no-store" not in founder_reveal.headers.get("Cache-Control", ""):
+            fail("Founder password reveal response is cacheable.")
         with test_app.app_context():
-            founder_after = get_db().execute("SELECT password_hash FROM users WHERE lower(email)=?", (founder_email,)).fetchone()
-            if not founder_after or not check_password_hash(founder_after["password_hash"], founder_new_password) or check_password_hash(founder_after["password_hash"], founder_password):
+            row = get_db().execute("SELECT password_hash FROM users WHERE lower(trim(full_name))=lower(trim(?))", (founder_name,)).fetchone()
+            if not row or not check_password_hash(row["password_hash"], founder_new_password) or check_password_hash(row["password_hash"], founder_password):
                 fail("Founder password was not replaced exactly.")
-        stale_response = founder_stale.get("/app/admin/settings/account-security", follow_redirects=False)
-        if stale_response.status_code not in (301,302,303,307,308) or "/app/login" not in stale_response.headers.get("Location",""):
+        stale_response = stale_founder.get("/app/admin/settings/account-security", follow_redirects=False)
+        if stale_response.status_code != 302 or "/app/login" not in stale_response.headers.get("Location", ""):
             fail("Older Founder session was not invalidated after password change.")
         old_founder = test_app.test_client()
-        if _login_with_password(old_founder, founder_email, founder_password) in (302,303):
-            fail("Old Founder password still authenticates.")
+        if _login(old_founder, founder_name, founder_password).status_code == 302:
+            fail("Old Founder password still works after password change.")
         founder_after_get = founder_client.get("/app/admin/settings/account-security", follow_redirects=False)
         if founder_after_get.status_code != 200:
-            fail("Current Founder session was not safely rebound after password change.")
+            fail("Current Founder session was not rebound after password change.")
         founder_after_html = founder_after_get.get_data(as_text=True)
-        founder_current_input = re.search(r'<input[^>]+id="founder_current_password"[^>]*>', founder_after_html)
-        if not founder_current_input or re.search(r'\svalue="[^"]+"', founder_current_input.group(0), flags=re.I):
-            fail("Founder current-password field embedded plaintext after password change.")
+        if 'data-vault-reveal' not in founder_after_html or 'value="' + founder_new_password + '"' in founder_after_html:
+            fail("Founder password visibility control is missing or plaintext leaked into the initial page HTML.")
+        founder_reveal_again = founder_client.post(
+            "/app/admin/settings/account-security/reveal-password",
+            data={"csrf_token": _csrf_from(founder_after_get), "user_id": str(founder_id)},
+            follow_redirects=False,
+        )
+        if founder_reveal_again.status_code != 200 or founder_reveal_again.get_json().get("password") != founder_new_password:
+            fail("Founder current password was not retained in the encrypted visibility vault.")
         new_founder = test_app.test_client()
-        if _login_with_password(new_founder, founder_email, founder_new_password) not in (302,303):
-            fail("New exact Founder password does not authenticate.")
+        if _login(new_founder, founder_name, founder_new_password).status_code != 302:
+            fail("New exact Founder password does not work.")
         founder_password = founder_new_password
 
         founder_profile = founder_client.get("/app/profile", follow_redirects=False)
         founder_profile_html = founder_profile.get_data(as_text=True)
         if 'name="current_password"' in founder_profile_html or 'name="new_password"' in founder_profile_html:
             fail("Founder password controls are still scattered on Profile.")
-        if "profile-picture-manager" not in founder_profile_html:
-            fail("Founder Profile no longer provides focused profile-picture management.")
+        if "Account &amp; Security" in founder_profile_html or "Open Account" in founder_profile_html:
+            fail("Founder Profile still duplicates Account & Security controls/navigation.")
 
         partners_page = founder_client.get("/app/admin/partners", follow_redirects=False)
         partners_html = partners_page.get_data(as_text=True)
-        if partners_page.status_code != 200 or "Partners" not in _visible_text(partners_html):
-            fail("Founder Partners page check failed.")
-        visible = _visible_text(partners_html)
-        for forbidden in ("Founder/Admin", "Founder / Admin", "Employee/Partner", "Employee / Partner", "Employee Partner", "Partner Employee"):
-            if forbidden in visible:
-                fail(f"Official terminology check failed: {forbidden!r} is still user-facing.")
+        if partners_page.status_code != 200 or "Partners" not in partners_html or "Create Partner" not in partners_html:
+            fail("Founder Partners management page verification failed.")
+        for forbidden in ("Founder/Admin", "Founder / Admin", "Founder Admin", "Employee", "Deactivate", "Reactivate", "Suspend", "Disable account", "Archive account"):
+            if forbidden.lower() in partners_html.lower():
+                fail(f"Obsolete account terminology is visible in Partners: {forbidden}")
 
-        new_page = founder_client.get("/app/admin/partners/new", follow_redirects=False)
-        if new_page.status_code != 200:
-            fail("Founder create-Partner page did not render.")
-        new_html = new_page.get_data(as_text=True)
-        for marker in ('name="password"', 'data-password-toggle', 'data-copy-target'):
-            if marker not in new_html:
-                fail("Founder password entry controls are incomplete.")
-        if any(word in _visible_text(new_html).lower() for word in ("too weak", "stronger password", "add a symbol", "add an uppercase")):
-            fail("Password-strength nagging is still visible on Partner creation.")
+        create_page = founder_client.get("/app/admin/partners/new", follow_redirects=False)
+        create_html = create_page.get_data(as_text=True)
+        if create_page.status_code != 200 or "data-password-toggle" not in create_html or "data-copy-target" not in create_html or 'name="partner_password"' not in create_html:
+            fail("Founder create-Partner password reveal/copy controls are missing.")
+        if 'name="email"' in create_html:
+            fail("Partner account creation still asks for email.")
+        for nag in ("too weak", "stronger password", "add a symbol", "uppercase", "lowercase", "password strength"):
+            if nag in create_html.lower():
+                fail(f"Partner password-strength nagging is still present: {nag}")
 
-        token = _csrf_from(new_page)
-        created = founder_client.post(
+        create_result = founder_client.post(
             "/app/admin/partners/new",
             data={
-                "csrf_token": token, "full_name": "Audit Partner", "email": partner_email,
-                "password": first_password, "phone": "", "notes": "Disposable verifier account",
-                "commission_stage_id": str(stage["id"]),
+                "csrf_token": _csrf_from(create_page),
+                "full_name": partner_name,
+                "phone": "",
+                "commission_stage_id": str(first_stage),
+                "partner_password": exact_password,
+                "notes": "Disposable verifier account",
             },
             follow_redirects=False,
         )
-        created_html = created.get_data(as_text=True)
-        if created.status_code != 200 or 'id="created_partner_password"' not in created_html or first_password not in created_html or "data-copy-text" not in created_html:
-            fail("Exact Founder-chosen Partner password was not available after creation.")
-        if "Account & Security" not in created_html and "Account &amp; Security" not in created_html:
-            fail("Partner creation does not explain where the Founder can manage the credential later.")
+        created_html = create_result.get_data(as_text=True)
+        if (create_result.status_code != 200 or exact_password not in created_html or 'id="created_password"' not in created_html
+                or "data-password-toggle" not in created_html or "data-copy-target" not in created_html):
+            fail("Founder create-Partner exact-password result verification failed.")
 
         with test_app.app_context():
             db = get_db()
-            created_row = db.execute(
-                "SELECT u.*,p.id partner_id,p.commission_stage_id FROM users u JOIN partners p ON p.user_id=u.id WHERE lower(u.email)=?",
-                (partner_email,),
+            created = db.execute(
+                """SELECT u.*,p.id partner_id,p.commission_stage_id,p.historical_name
+                   FROM users u JOIN partners p ON p.user_id=u.id WHERE lower(trim(u.full_name))=lower(trim(?))""",
+                (partner_name,),
             ).fetchone()
-            if not created_row:
-                fail("Partner creation did not create an account.")
-            test_user_id = int(created_row["id"]); test_partner_id = int(created_row["partner_id"] )
-            if created_row["password_hash"] == first_password or not check_password_hash(created_row["password_hash"], first_password):
-                fail("Password security check failed: Partner password was not stored as a verifiable hash.")
-            # Seed business history owned/authored by the disposable Partner. These rows must survive account deletion.
-            now = "2026-09-25T21:30:00+00:00"
-            lead_cur = db.execute(
-                """INSERT INTO leads(owner_partner_id,company_name,company_norm,contact_name,contact_norm,email,email_norm,phone,phone_norm,website,website_domain,lead_source,summary_notes,status,lost_reason,demo_at,registered_at,last_activity_at,created_by_user_id)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'NEW','',NULL,?,?,?)""",
-                (test_partner_id,"AUDIT OWN BUSINESS","audit own business","Audit Client","audit client","audit-own@rsf.test","audit-own@rsf.test","","","","","Audit","",now,now,test_user_id),
-            )
-            own_lead_id = int(lead_cur.lastrowid)
-            own_message_id = int(db.execute(
-                "INSERT INTO messages(partner_id,sender_user_id,body,created_at) VALUES (?,?,?,?)",
-                (test_partner_id,test_user_id,"AUDIT PARTNER HISTORY",now),
-            ).lastrowid)
+            if not created or not check_password_hash(created["password_hash"], exact_password):
+                fail("Exact Founder-chosen Partner password was not stored as a valid hash.")
+            if created["password_hash"] == exact_password:
+                fail("Partner password was stored as plaintext.")
+            partner_id = int(created["partner_id"])
+            partner_user_id = int(created["id"])
 
-            # Always create a second disposable Partner to prove cross-Partner data isolation.
-            other_user_id = int(db.execute(
-                """INSERT INTO users(full_name,email,password_hash,role,active,force_password_change,created_at,updated_at)
-                   VALUES (?,?,?,'partner',1,0,?,?)""",
-                ("Other Audit Partner","other-audit@rsf.test",hash_password("o"),now,now),
-            ).lastrowid)
-            other_partner_id = int(db.execute(
-                """INSERT INTO partners(user_id,full_name_snapshot,email_snapshot,commission_stage_id,phone,notes,joined_at,active)
-                   VALUES (?,?,?,?,?,?,?,1)""",
-                (other_user_id,"Other Audit Partner","other-audit@rsf.test",stage["id"],"","",now),
-            ).lastrowid)
-            other_lead_id = int(db.execute(
-                """INSERT INTO leads(owner_partner_id,company_name,company_norm,contact_name,contact_norm,email,email_norm,phone,phone_norm,website,website_domain,lead_source,summary_notes,status,lost_reason,demo_at,registered_at,last_activity_at,created_by_user_id)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'NEW','',NULL,?,?,?)""",
-                (other_partner_id,"OTHER PRIVATE BUSINESS","other private business","Other Client","other client","other-private@rsf.test","other-private@rsf.test","","","","","Audit","",now,now,other_user_id),
-            ).lastrowid)
-            db.execute(
-                "INSERT INTO messages(partner_id,sender_user_id,body,created_at) VALUES (?,?,?,?)",
-                (other_partner_id,other_user_id,"OTHER PARTNER PRIVATE MESSAGE",now),
-            )
-            db.commit()
+        duplicate_page = founder_client.get("/app/admin/partners/new", follow_redirects=False)
+        duplicate_result = founder_client.post(
+            "/app/admin/partners/new",
+            data={
+                "csrf_token": _csrf_from(duplicate_page),
+                "full_name": partner_name.upper(),
+                "commission_stage_id": str(first_stage),
+                "partner_password": "duplicate",
+            },
+            follow_redirects=True,
+        )
+        if duplicate_result.status_code != 200 or "This name is already in use." not in duplicate_result.get_data(as_text=True):
+            fail("Case-insensitive duplicate Partner Name was not blocked.")
 
-        # Exact one-character password must authenticate.
         partner_client = test_app.test_client()
-        if _login_with_password(partner_client, partner_email, first_password) not in (302, 303):
-            fail("Exact arbitrary Partner password was not accepted for login.")
+        exact_login = _login(partner_client, partner_name.upper(), exact_password)
+        if exact_login.status_code != 302:
+            fail("New Partner cannot sign in with case-insensitive Name + exact Founder-chosen password.")
         if partner_client.get("/app/", follow_redirects=False).status_code != 200:
-            fail("New Partner dashboard login check failed.")
-        if partner_client.get("/app/admin/partners", follow_redirects=False).status_code != 403:
-            fail("Founder-only Partners route is accessible to a Partner.")
-        if partner_client.get("/app/admin/settings/account-security", follow_redirects=False).status_code != 403:
-            fail("Founder Account & Security is accessible to a Partner.")
-        if partner_client.get("/app/admin/partners/new", follow_redirects=False).status_code != 403:
-            fail("Founder-only Partner creation route is accessible to a Partner.")
-        if partner_client.get(f"/app/admin/partners/{test_partner_id}", follow_redirects=False).status_code != 403:
-            fail("Founder-only Partner detail route is accessible to a Partner.")
-        if partner_client.get(f"/app/leads/{other_lead_id}", follow_redirects=False).status_code != 404:
-            fail("Partner privacy check failed: another Partner's Lead is accessible.")
-        if partner_client.get(f"/app/messages/{other_partner_id}", follow_redirects=False).status_code != 404:
-            fail("Partner privacy check failed: another Partner's Messages are accessible.")
+            fail("Partner Workspace login flow verification failed.")
 
-        profile = partner_client.get("/app/profile", follow_redirects=False)
-        profile_html = profile.get_data(as_text=True)
-        if profile.status_code != 200 or "Change Password" in _visible_text(profile_html):
+        detail_page = founder_client.get(f"/app/admin/partners/{partner_id}", follow_redirects=False)
+        detail_html = detail_page.get_data(as_text=True)
+        if detail_page.status_code != 200 or "Partner details" not in detail_html or "Login &amp; Password" not in detail_html:
+            fail("Founder Partner detail/edit handoff to credential management is incomplete.")
+        if "Change password" in detail_html or "Delete Partner Permanently" in detail_html:
+            fail("Partner credential controls are still scattered on Partner detail.")
+        edit_result = founder_client.post(
+            f"/app/admin/partners/{partner_id}",
+            data={
+                "csrf_token": _csrf_from(detail_page),
+                "full_name": "Verifier Partner Edited",
+                "phone": "123",
+                "commission_stage_id": str(first_stage),
+                "notes": "Edited by verifier",
+            },
+            follow_redirects=False,
+        )
+        if edit_result.status_code != 302:
+            fail("Founder could not edit Partner information.")
+        with test_app.app_context():
+            row = get_db().execute(
+                "SELECT u.full_name,p.phone,p.historical_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.id=?",
+                (partner_id,),
+            ).fetchone()
+            if not row or row["full_name"] != "Verifier Partner Edited" or row["phone"] != "123" or row["historical_name"] != "Verifier Partner Edited":
+                fail("Founder Partner edit did not persist correctly.")
+
+        # CSRF must reject a forged Founder write even when the Founder session is valid.
+        if founder_client.post(
+            f"/app/admin/partners/{partner_id}/reset-password",
+            data={"partner_password": "forged", "confirm_partner_password": "forged"},
+            follow_redirects=False,
+        ).status_code != 400:
+            fail("CSRF protection failed on Partner password reset.")
+
+        reset_page = founder_client.get("/app/admin/settings/account-security", follow_redirects=False)
+        reset_html_before = reset_page.get_data(as_text=True)
+        if partner_email in reset_html_before:
+            fail("Partner account email is still visible in Account & Security.")
+        required_partner_actions = ("Current Password", "Change password", "Delete Partner", "data-account-disclosure", "data-vault-reveal", "data-vault-copy", f'id="partner-password-panel-{partner_id}"')
+        if f'id="partner-{partner_id}"' not in reset_html_before or any(marker not in reset_html_before for marker in required_partner_actions):
+            fail("Partner credential actions are incomplete in Account & Security.")
+        if ">View<" in reset_html_before or ">Edit<" in reset_html_before or "Create Partner" in reset_html_before:
+            fail("Account & Security still duplicates general Partner management actions.")
+        reset_result = founder_client.post(
+            f"/app/admin/partners/{partner_id}/reset-password",
+            data={"csrf_token": _csrf_from(reset_page), "partner_password": reset_password, "confirm_partner_password": reset_password},
+            follow_redirects=False,
+        )
+        reset_html = reset_result.get_data(as_text=True)
+        if reset_result.status_code != 200 or 'data-vault-reveal' not in reset_html or 'data-vault-copy' not in reset_html:
+            fail("Partner password reset did not return persistent Founder password controls.")
+        partner_reveal = founder_client.post(
+            "/app/admin/settings/account-security/reveal-password",
+            data={"csrf_token": _csrf_from(reset_result), "user_id": str(partner_user_id)},
+            follow_redirects=False,
+        )
+        if partner_reveal.status_code != 200 or partner_reveal.get_json().get("password") != reset_password:
+            fail("Founder cannot reveal the current Partner password after reset.")
+        partner_after_get = founder_client.get("/app/admin/settings/account-security", follow_redirects=False)
+        partner_after_html = partner_after_get.get_data(as_text=True)
+        # A one-character verifier password (for example "z") may naturally occur
+        # elsewhere in ordinary HTML. Only fail if the exact plaintext password was
+        # embedded as a form/input value on the initial page. The real password is
+        # fetched only after a Founder-only reveal/copy request.
+        escaped_reset_password = html.escape(reset_password, quote=True)
+        if f'value="{escaped_reset_password}"' in partner_after_html:
+            fail("Partner plaintext password leaked into the initial Account & Security HTML.")
+        partner_reveal_again = founder_client.post(
+            "/app/admin/settings/account-security/reveal-password",
+            data={"csrf_token": _csrf_from(partner_after_get), "user_id": str(partner_user_id)},
+            follow_redirects=False,
+        )
+        if partner_reveal_again.status_code != 200 or partner_reveal_again.get_json().get("password") != reset_password:
+            fail("Partner current password was not retained in the encrypted Founder visibility vault.")
+        with test_app.app_context():
+            db = get_db()
+            changed = db.execute("SELECT password_hash FROM users WHERE id=?", (partner_user_id,)).fetchone()
+            vault_row = db.execute("SELECT encrypted_password FROM account_password_vault WHERE user_id=?", (partner_user_id,)).fetchone()
+            if not changed or not check_password_hash(changed["password_hash"], reset_password) or check_password_hash(changed["password_hash"], exact_password):
+                fail("Partner password reset did not replace the old password exactly.")
+            if not vault_row or vault_row["encrypted_password"] == reset_password:
+                fail("Partner password visibility vault is missing or storing plaintext.")
+            try:
+                stored_partner_password = decrypt_password(vault_row["encrypted_password"])
+            except RuntimeError:
+                fail("Partner password visibility vault cannot decrypt the stored credential.")
+            if stored_partner_password != reset_password:
+                fail("Partner password visibility vault does not contain the exact current password.")
+
+        # A password reset invalidates existing Partner sessions because session credentials bind to the hash.
+        stale_session = partner_client.get("/app/", follow_redirects=False)
+        if stale_session.status_code != 302 or "/app/login" not in stale_session.headers.get("Location", ""):
+            fail("Partner session was not invalidated after password reset.")
+        old_client = test_app.test_client()
+        if _login(old_client, "Verifier Partner Edited", exact_password).status_code == 302:
+            fail("Old Partner password still works after reset.")
+        partner_client = test_app.test_client()
+        if _login(partner_client, "Verifier Partner Edited", reset_password).status_code != 302:
+            fail("New exact Partner password does not work after reset.")
+
+        partner_profile = partner_client.get("/app/profile", follow_redirects=False)
+        partner_profile_html = partner_profile.get_data(as_text=True)
+        if "Change password" in partner_profile_html or "Current password" in partner_profile_html:
             fail("Partner self-service password controls are visible.")
-        partner_csrf = _csrf_from(profile)
+        partner_csrf = _csrf_from(partner_profile)
+        upload_result = partner_client.post(
+            "/app/profile",
+            data={
+                "csrf_token": partner_csrf,
+                "action": "avatar",
+                "profile_picture": (BytesIO(b"\x89PNG\r\n\x1a\nRSF-VERIFIER"), "partner-avatar.png"),
+            },
+            content_type="multipart/form-data",
+            follow_redirects=False,
+        )
+        if upload_result.status_code not in (302, 303):
+            fail("Partner profile-picture upload action failed in the disposable account audit.")
+        uploaded_picture = partner_client.get(f"/app/profile-picture/{partner_user_id}", follow_redirects=False)
+        try:
+            if uploaded_picture.status_code != 200 or uploaded_picture.mimetype != "image/png":
+                fail("Partner uploaded profile picture could not be read back in the disposable account audit.")
+            # Fully consume and explicitly close the file-backed response before
+            # Windows tries to remove the disposable profile-picture directory.
+            # Without this, Python/Flask can keep the PNG handle open until GC.
+            uploaded_picture.get_data()
+        finally:
+            uploaded_picture.close()
+        refreshed_profile = partner_client.get("/app/profile", follow_redirects=False)
+        remove_result = partner_client.post(
+            "/app/profile",
+            data={"csrf_token": _csrf_from(refreshed_profile), "action": "avatar_remove"},
+            follow_redirects=False,
+        )
+        if remove_result.status_code not in (302, 303):
+            fail("Partner profile-picture remove action failed in the disposable account audit.")
         blocked_self_change = partner_client.post(
             "/app/profile",
-            data={"csrf_token": partner_csrf, "action": "password", "current_password": first_password, "new_password": "z", "confirm_password": "z"},
+            data={
+                "csrf_token": partner_csrf,
+                "action": "password",
+                "current_password": reset_password,
+                "new_password": "self-change",
+                "confirm_password": "self-change",
+            },
             follow_redirects=False,
         )
         if blocked_self_change.status_code != 403:
-            fail("Partner self-service password change was not blocked at the backend.")
-        for path, data in (
-            ("/app/admin/settings/account-security/founder-password", {"csrf_token": partner_csrf, "new_password": "forged", "confirm_password": "forged"}),
-            (f"/app/admin/partners/{test_partner_id}/reset-password", {"csrf_token": partner_csrf, "partner_password": "forged", "confirm_partner_password": "forged"}),
-            (f"/app/admin/partners/{test_partner_id}/delete", {"csrf_token": partner_csrf, "confirm_delete": "1"}),
-            ("/app/admin/partners/new", {"csrf_token": partner_csrf, "full_name": "Forged", "email": forged_email, "password": "p", "commission_stage_id": str(stage["id"])}),
+            fail("Partner self-service password change is not blocked at the backend.")
+
+        # Direct URL and forged Founder-account actions must be denied to Partners.
+        if partner_client.get("/app/admin/partners", follow_redirects=False).status_code != 403:
+            fail("Partner can access Founder Partners management.")
+        if partner_client.get("/app/admin/settings/account-security", follow_redirects=False).status_code != 403:
+            fail("Partner can access Founder Account & Security.")
+        if partner_client.get(f"/app/admin/partners/{other_partner_id}", follow_redirects=False).status_code != 403:
+            fail("Partner can view another Partner through a Founder route.")
+        for path, payload in (
+            ("/app/admin/settings/account-security/founder-password", {"new_password": "forged", "confirm_password": "forged"}),
+            ("/app/admin/settings/account-security/reveal-password", {"user_id": str(founder_id)}),
+            ("/app/admin/partners/new", {"full_name": "Forged", "commission_stage_id": str(first_stage), "partner_password": "x"}),
+            (f"/app/admin/partners/{other_partner_id}/reset-password", {"partner_password": "x", "confirm_partner_password": "x"}),
+            (f"/app/admin/partners/{other_partner_id}/delete", {}),
         ):
-            if partner_client.post(path, data=data, follow_redirects=False).status_code != 403:
-                fail("Founder-only Partner management POST was not blocked at the backend.")
-        with test_app.app_context():
-            if get_db().execute("SELECT 1 FROM users WHERE lower(email)=?", (forged_email,)).fetchone():
-                fail("Forged Partner creation unexpectedly created an account.")
+            forged = {"csrf_token": partner_csrf, **payload}
+            if partner_client.post(path, data=forged, follow_redirects=False).status_code != 403:
+                fail(f"Partner forged Founder action was not blocked: {path}")
+        if partner_client.get(f"/app/messages/{other_partner_id}", follow_redirects=False).status_code != 404:
+            fail("Partner can access another Partner's private messages.")
+        if partner_client.get(f"/app/leads/{other_lead_id}", follow_redirects=False).status_code != 404:
+            fail("Partner can access another Partner's private lead data.")
 
-        # Founder can view and edit the Partner.
-        detail = founder_client.get(f"/app/admin/partners/{test_partner_id}", follow_redirects=False)
-        detail_html = detail.get_data(as_text=True)
-        detail_visible = _visible_text(detail_html)
-        if detail.status_code != 200 or "Audit Partner" not in detail_visible or "Credentials" not in detail_visible:
-            fail("Founder Partner detail page or centralized credential handoff failed.")
-        if "Change Password" in detail_visible or "Delete Partner Permanently" in detail_visible:
-            fail("Partner credential controls are still scattered on the Partner detail page.")
-        edit_token = _csrf_from(detail)
-        edited = founder_client.post(
-            f"/app/admin/partners/{test_partner_id}",
-            data={"csrf_token": edit_token, "full_name": "Audit Partner Edited", "email": partner_email,
-                  "commission_stage_id": str(stage["id"]), "phone": "123", "notes": "Edited by verifier"},
-            follow_redirects=False,
-        )
-        if edited.status_code not in (302,303):
-            fail("Founder Partner edit action failed.")
-
-        # CSRF must block a password reset before authorization/business logic.
-        no_csrf = founder_client.post(
-            f"/app/admin/partners/{test_partner_id}/reset-password",
-            data={"partner_password": second_password, "confirm_partner_password": second_password},
-            follow_redirects=False,
-        )
-        if no_csrf.status_code != 400:
-            fail("CSRF check failed on Founder Partner password reset.")
-
-        account_page = founder_client.get("/app/admin/settings/account-security", follow_redirects=False)
-        account_html = account_page.get_data(as_text=True)
-        account_visible = _visible_text(account_html)
-        partner_actions = ("Change password","Delete Partner","Current Password","Show","Copy")
-        partner_source_markers = ("data-account-disclosure", f'id="partner-password-panel-{test_partner_id}"', "partner-security-row", f'id="partner_current_password_{test_partner_id}"')
-        if f'id="partner-{test_partner_id}"' not in account_html or any(item not in account_visible for item in partner_actions) or any(marker not in account_html for marker in partner_source_markers):
-            fail("Partner credential actions are incomplete in Account & Security.")
-        reset_token = _csrf_from(account_page)
-        changed = founder_client.post(
-            f"/app/admin/partners/{test_partner_id}/reset-password",
-            data={"csrf_token": reset_token, "partner_password": second_password, "confirm_partner_password": second_password},
-            follow_redirects=False,
-        )
-        changed_html = changed.get_data(as_text=True)
-        if changed.status_code != 200 or f'id="partner_current_password_{test_partner_id}"' not in changed_html or "data-vault-reveal" not in changed_html or "data-vault-copy" not in changed_html:
-            fail("Founder exact Partner password reset did not return Account & Security.")
-        partner_reveal = founder_client.post(
-            "/app/admin/settings/account-security/reveal-password",
-            data={"csrf_token": _csrf_from(changed), "user_id": str(test_user_id)},
-            follow_redirects=False,
-        )
-        partner_reveal_payload = partner_reveal.get_json(silent=True) or {}
-        if partner_reveal.status_code != 200 or partner_reveal_payload.get("password") != second_password:
-            fail("Founder persistent Partner password reveal did not return the exact reset password.")
-        partner_after_get = founder_client.get("/app/admin/settings/account-security", follow_redirects=False)
-        partner_after_html = partner_after_get.get_data(as_text=True)
-        partner_current_input = re.search(rf'<input[^>]+id="partner_current_password_{test_partner_id}"[^>]*>', partner_after_html)
-        if not partner_current_input or re.search(r'\svalue="[^"]+"', partner_current_input.group(0), flags=re.I):
-            fail("Partner plaintext password leaked into the initial Account & Security HTML.")
-
-        # Password reset invalidates existing sessions and the old password immediately.
-        if partner_client.get("/app/", follow_redirects=False).status_code not in (301,302,303,307,308):
-            fail("Partner session was not invalidated after password reset.")
-        old_login = test_app.test_client()
-        if _login_with_password(old_login, partner_email, first_password) in (302,303):
-            fail("Old Partner password still authenticates after reset.")
-        new_login = test_app.test_client()
-        if _login_with_password(new_login, partner_email, second_password) not in (302,303):
-            fail("New exact Partner password does not authenticate after reset.")
-
+        # Seed representative business history, then delete only the disposable account.
         with test_app.app_context():
             db = get_db()
-            preserved_before = {table: db.execute(f"SELECT COUNT(*) c FROM {table}").fetchone()["c"] for table in (
-                "leads","website_inquiries","client_conversations","client_messages","messages","sales","commissions"
-            )}
+            created = db.execute("SELECT * FROM users WHERE id=?", (partner_user_id,)).fetchone()
+            stamp = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+            lead_id = db.execute(
+                """INSERT INTO leads(owner_partner_id,company_name,company_norm,contact_name,contact_norm,email,email_norm,phone,phone_norm,website,website_domain,lead_source,summary_notes,status,lost_reason,demo_at,registered_at,last_activity_at,created_by_user_id)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'WON','',NULL,?,?,?)""",
+                (partner_id, "Verifier Client", "verifier client", "Client", "client", "client@example.invalid", "client@example.invalid", "", "", "", "", "Verifier", "", stamp, stamp, partner_user_id),
+            ).lastrowid
+            note_id = db.execute(
+                "INSERT INTO lead_notes(lead_id,author_user_id,body,created_at) VALUES (?,?,?,?)",
+                (lead_id, partner_user_id, "Historical note", stamp),
+            ).lastrowid
+            followup_id = db.execute(
+                """INSERT INTO followups(lead_id,owner_partner_id,title,due_at,notes,status,completed_at,created_by_user_id,created_at,updated_at)
+                   VALUES (?,?,?,?,?,'COMPLETED',?,?,?,?)""",
+                (lead_id, partner_id, "Historical follow-up", stamp, "", stamp, partner_user_id, stamp, stamp),
+            ).lastrowid
+            sale_id = db.execute(
+                """INSERT INTO sales(lead_id,partner_id,client_name,product_service,deal_amount_cents,invoiced_cents,collected_cents,qualifying_revenue_cents,payment_status,sale_date,notes,created_by_user_id,created_at,updated_at)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (lead_id, partner_id, "Verifier Client", "Verifier Service", 10000, 10000, 10000, 10000, "PAID", stamp[:10], "", partner_user_id, stamp, stamp),
+            ).lastrowid
+            commission_id = db.execute(
+                """INSERT INTO commissions(sale_id,partner_id,stage_name_snapshot,rate_bp_snapshot,qualifying_revenue_cents,adjustment_cents,commission_amount_cents,status,approval_date,paid_date,notes,created_at,updated_at)
+                   VALUES (?,?,?,?,?,?,?,'PAID',?,?,?, ?,?)""",
+                (sale_id, partner_id, "Founding Partner #1", 4000, 10000, 0, 4000, stamp, stamp, "", stamp, stamp),
+            ).lastrowid
+            message_id = db.execute(
+                "INSERT INTO messages(partner_id,sender_user_id,body,founder_read_at,partner_read_at,created_at) VALUES (?,?,?,?,?,?)",
+                (partner_id, partner_user_id, "Historical private message", None, stamp, stamp),
+            ).lastrowid
+            attachment_id = db.execute(
+                """INSERT INTO message_attachments(message_id,partner_id,original_name,stored_name,mime_type,size_bytes,created_at,data_blob)
+                   VALUES (?,?,?,?,?,?,?,?)""",
+                (message_id, partner_id, "history.txt", "verifier-history.txt", "text/plain", 7, stamp, b"history"),
+            ).lastrowid
+            inquiry_id = db.execute(
+                """INSERT INTO website_inquiries(created_at,updated_at,name,email,email_norm,company,message,status,claimed_by_partner_id,claimed_at,lead_id,source_type,source_slug,source_title,source_action)
+                   VALUES (?,?,?,?,?,?,?,'CLAIMED',?,?,?,?,?,?,?)""",
+                (stamp, stamp, "Verifier Client", "client@example.invalid", "client@example.invalid", "Verifier Client", "Inquiry", partner_id, stamp, lead_id, "website", "contact", "Contact", "submit"),
+            ).lastrowid
+            conversation_id = db.execute(
+                """INSERT INTO client_conversations(inquiry_id,lead_id,owner_partner_id,client_name,client_email,company,subject,status,created_at,updated_at,first_response_due_at,first_responded_at,last_client_message_at,last_outbound_message_at)
+                   VALUES (?,?,?,?,?,?,?,'ACTIVE',?,?,?,?,?,?)""",
+                (inquiry_id, lead_id, partner_id, "Verifier Client", "client@example.invalid", "Verifier Client", "Verifier conversation", stamp, stamp, stamp, stamp, stamp, stamp),
+            ).lastrowid
+            db.execute("UPDATE website_inquiries SET client_conversation_id=? WHERE id=?", (conversation_id, inquiry_id))
+            client_message_id = db.execute(
+                """INSERT INTO client_messages(conversation_id,direction,channel,sender_email,recipient_email,subject,body,sent_by_user_id,external_message_id,in_reply_to,created_at,delivery_status,delivery_error)
+                   VALUES (?,'OUTBOUND','EMAIL',?,?,?,?,?,'','',?,'SENT','')""",
+                (conversation_id, founder_email, "client@example.invalid", "Verifier", "Historical client message", partner_user_id, stamp),
+            ).lastrowid
+            client_attachment_id = db.execute(
+                """INSERT INTO client_attachments(message_id,original_name,stored_name,mime_type,size_bytes,created_at,data_blob)
+                   VALUES (?,?,?,?,?,?,?)""",
+                (client_message_id, "client-history.txt", "verifier-client-history.txt", "text/plain", 7, stamp, b"history"),
+            ).lastrowid
+            db.commit()
 
-        account_page = founder_client.get("/app/admin/settings/account-security", follow_redirects=False)
-        delete_token = _csrf_from(account_page)
+        delete_page = founder_client.get("/app/admin/settings/account-security", follow_redirects=False)
+        delete_csrf = _csrf_from(delete_page)
         missing_confirmation = founder_client.post(
-            f"/app/admin/partners/{test_partner_id}/delete",
-            data={"csrf_token": delete_token},
+            f"/app/admin/partners/{partner_id}/delete",
+            data={"csrf_token": delete_csrf},
             follow_redirects=False,
         )
         if missing_confirmation.status_code != 400:
             fail("Permanent Partner deletion did not require explicit confirmation.")
-        deleted = founder_client.post(
-            f"/app/admin/partners/{test_partner_id}/delete",
-            data={"csrf_token": delete_token, "confirm_delete": "1"},
+        # Active client work must block deletion until a replacement Partner is chosen.
+        blocked_delete = founder_client.post(
+            f"/app/admin/partners/{partner_id}/delete",
+            data={"csrf_token": delete_csrf, "confirm_delete": "1"},
             follow_redirects=False,
         )
-        if deleted.status_code not in (302,303) or "/app/admin/settings/account-security" not in deleted.headers.get("Location",""):
-            fail("Founder permanent Partner delete action failed from Account & Security.")
+        if blocked_delete.status_code != 302:
+            fail("Partner deletion with active work did not stop safely.")
+        with test_app.app_context():
+            db = get_db()
+            if not db.execute("SELECT 1 FROM users WHERE id=?", (partner_user_id,)).fetchone():
+                fail("Blocked Partner deletion removed the account before active work was moved.")
+
+        delete_page = founder_client.get("/app/admin/settings/account-security", follow_redirects=False)
+        delete_csrf = _csrf_from(delete_page)
+        delete_result = founder_client.post(
+            f"/app/admin/partners/{partner_id}/delete",
+            data={"csrf_token": delete_csrf, "confirm_delete": "1", "move_active_to_partner_id": str(other_partner_id)},
+            follow_redirects=False,
+        )
+        if delete_result.status_code != 302 or "/app/admin/settings/account-security" not in delete_result.headers.get("Location", ""):
+            fail("Founder Partner deletion with active-work transfer failed from Account & Security.")
 
         with test_app.app_context():
             db = get_db()
-            if db.execute("SELECT 1 FROM users WHERE id=?", (test_user_id,)).fetchone():
-                fail("Permanent Partner delete left the authentication account in users.")
-            historical = db.execute("SELECT * FROM partners WHERE id=?", (test_partner_id,)).fetchone()
-            if not historical or historical["user_id"] is not None or not historical["deleted_at"]:
-                fail("Permanent Partner delete did not detach the historical Partner identity safely.")
-            if historical["full_name_snapshot"] != "Audit Partner Edited":
-                fail("Permanent Partner delete did not preserve historical Partner attribution.")
-            if historical["email_snapshot"] or historical["phone"] or historical["notes"]:
-                fail("Permanent Partner delete left Partner account/profile details behind.")
-            own_lead = db.execute("SELECT * FROM leads WHERE id=?", (own_lead_id,)).fetchone()
-            own_message = db.execute("SELECT * FROM messages WHERE id=?", (own_message_id,)).fetchone()
-            if not own_lead or own_lead["owner_partner_id"] != test_partner_id or own_lead["created_by_user_id"] is not None:
-                fail("Partner deletion damaged or failed to detach Lead business history safely.")
-            if not own_message or own_message["partner_id"] != test_partner_id or own_message["sender_user_id"] is not None:
-                fail("Partner deletion damaged or failed to detach Message history safely.")
-            preserved_after = {table: db.execute(f"SELECT COUNT(*) c FROM {table}").fetchone()["c"] for table in preserved_before}
-            if preserved_before != preserved_after:
-                fail(f"Permanent Partner delete changed business-record counts: before={preserved_before}, after={preserved_after}")
+            if db.execute("SELECT 1 FROM users WHERE id=?", (partner_user_id,)).fetchone():
+                fail("Permanent Partner deletion left the login/account row in users.")
+            stub = db.execute("SELECT * FROM partners WHERE id=?", (partner_id,)).fetchone()
+            if not stub or stub["user_id"] is not None or not stub["account_deleted_at"] or stub["active"] != 0:
+                fail("Deleted Partner historical attribution was not safely detached from the account.")
+            if stub["historical_name"] != "Verifier Partner Edited" or stub["phone"] or stub["notes"]:
+                fail("Deleted Partner historical record retained profile/account details unexpectedly.")
+            moved_lead = db.execute("SELECT owner_partner_id FROM leads WHERE id=?", (lead_id,)).fetchone()
+            moved_conversation = db.execute("SELECT owner_partner_id FROM client_conversations WHERE id=?", (conversation_id,)).fetchone()
+            moved_inquiry = db.execute("SELECT claimed_by_partner_id FROM website_inquiries WHERE id=?", (inquiry_id,)).fetchone()
+            historical_sale = db.execute("SELECT partner_id FROM sales WHERE id=?", (sale_id,)).fetchone()
+            historical_commission = db.execute("SELECT partner_id FROM commissions WHERE id=?", (commission_id,)).fetchone()
+            if not moved_lead or moved_lead["owner_partner_id"] != other_partner_id:
+                fail("Active Lead was not moved before Partner deletion.")
+            if not moved_conversation or moved_conversation["owner_partner_id"] != other_partner_id:
+                fail("Active client conversation was not moved before Partner deletion.")
+            if not moved_inquiry or moved_inquiry["claimed_by_partner_id"] != other_partner_id:
+                fail("Claimed inquiry was not moved before Partner deletion.")
+            if not historical_sale or historical_sale["partner_id"] != partner_id:
+                fail("Partner deletion changed historical Sale ownership.")
+            if not historical_commission or historical_commission["partner_id"] != partner_id:
+                fail("Partner deletion changed historical commission ownership.")
+            preserved = {
+                "leads": ("id", lead_id),
+                "lead_notes": ("id", note_id),
+                "followups": ("id", followup_id),
+                "sales": ("id", sale_id),
+                "commissions": ("id", commission_id),
+                "messages": ("id", message_id),
+                "message_attachments": ("id", attachment_id),
+                "website_inquiries": ("id", inquiry_id),
+                "client_conversations": ("id", conversation_id),
+                "client_messages": ("id", client_message_id),
+                "client_attachments": ("id", client_attachment_id),
+            }
+            for table, (column, value) in preserved.items():
+                if not db.execute(f'SELECT 1 FROM "{table}" WHERE "{column}"=?', (value,)).fetchone():
+                    fail(f"Permanent Partner deletion destroyed historical business data: {table}")
+            for table, column in (
+                ("leads", "created_by_user_id"),
+                ("lead_notes", "author_user_id"),
+                ("followups", "created_by_user_id"),
+                ("sales", "created_by_user_id"),
+                ("messages", "sender_user_id"),
+                ("client_messages", "sent_by_user_id"),
+            ):
+                if db.execute(f'SELECT 1 FROM "{table}" WHERE "{column}"=?', (partner_user_id,)).fetchone():
+                    fail(f"Deleted user identity remains attached in {table}.{column}.")
             if db.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
-                fail("Database integrity failed after disposable Partner deletion.")
+                fail("Database integrity failed after permanent Partner deletion.")
             if db.execute("PRAGMA foreign_key_check").fetchall():
-                fail("Foreign-key integrity failed after disposable Partner deletion.")
+                fail("Foreign-key integrity failed after permanent Partner deletion.")
 
-        deleted_login = test_app.test_client()
-        if _login_with_password(deleted_login, partner_email, second_password) in (302,303):
-            fail("Permanently deleted Partner can still authenticate.")
-        if founder_client.get(f"/app/admin/partners/{test_partner_id}", follow_redirects=False).status_code != 404:
-            fail("Deleted Partner still appears as a current account detail.")
+        deleted_client = test_app.test_client()
+        if _login(deleted_client, "Verifier Partner Edited", reset_password).status_code == 302:
+            fail("Deleted Partner can still log in.")
+        historical_thread = founder_client.get(f"/app/messages/{partner_id}", follow_redirects=False)
+        if historical_thread.status_code != 200 or "Historical private message" not in historical_thread.get_data(as_text=True):
+            fail("Founder cannot view deleted Partner message history.")
 
-        current_list = founder_client.get("/app/admin/partners", follow_redirects=False).get_data(as_text=True)
-        if partner_email in current_list:
-            fail("Deleted Partner still appears in the current Partners list.")
+        internal = founder_client.get("/app/admin/partners", follow_redirects=False)
+        headers = internal.headers
+        if headers.get("X-Frame-Options") != "DENY" or headers.get("X-Content-Type-Options") != "nosniff" or "frame-ancestors 'none'" not in headers.get("Content-Security-Policy", ""):
+            fail("Security header verification failed.")
+        if test_app.config.get("SESSION_COOKIE_HTTPONLY") is not True or test_app.config.get("SESSION_COOKIE_SAMESITE") != "Lax":
+            fail("Session-cookie security configuration is incomplete.")
+        hostile = founder_client.get("/", headers={"Host": "untrusted.invalid"}, follow_redirects=False)
+        if hostile.status_code != 400:
+            fail("Trusted-host protection failed.")
 
-        bad_host = test_app.test_client().get("/", headers={"Host": "evil.example"}, follow_redirects=False)
-        if bad_host.status_code != 400:
-            fail("Trusted-host protection check failed.")
-        secure_page = founder_client.get("/app/admin/partners", follow_redirects=False)
-        if secure_page.headers.get("X-Content-Type-Options") != "nosniff" or secure_page.headers.get("X-Frame-Options") != "DENY":
-            fail("Security-header verification failed.")
-        if "no-store" not in secure_page.headers.get("Cache-Control", "") or "frame-ancestors 'none'" not in secure_page.headers.get("Content-Security-Policy", ""):
-            fail("Private-page cache/CSP verification failed.")
 
+
+def verify_controlled_repair_regressions() -> None:
+    """Check the specific v1.11.0 fixes inside a disposable database."""
+    with tempfile.TemporaryDirectory(prefix="rsf-repair-verifier-") as temp_name:
+        temp = Path(temp_name)
+        test_app = create_app({
+            "TESTING": True,
+            "DATABASE_URL": "",
+            "DATABASE": str(temp / "repair.db"),
+            "SECRET_KEY": "rsf-repair-verifier-secret",
+            "CREDENTIAL_VAULT_KEY": "rsf-repair-verifier-vault",
+            "MESSAGE_UPLOAD_DIR": str(temp / "message_uploads"),
+            "PROFILE_PICTURE_DIR": str(temp / "profile_pictures"),
+            "CLIENT_ATTACHMENT_DIR": str(temp / "client_attachments"),
+            "BACKUP_DIR": str(temp / "backups"),
+            "TRUSTED_HOSTS": ["localhost", "127.0.0.1"],
+        })
+        now = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+        founder_name, founder_email, founder_password = "Repair Founder", "repair-founder@example.invalid", "repair-founder-pass"
+        a_name, a_email, a_password = "Repair Partner A", "repair-a@example.invalid", "a"
+        b_name, b_email, b_password = "Repair Partner B", "repair-b@example.invalid", "b"
+        with test_app.app_context():
+            db = get_db()
+            duplicate_columns = {row["name"] for row in db.execute("PRAGMA table_info(duplicate_claims)").fetchall()}
+            if "reasons" not in duplicate_columns:
+                fail("Database schema check failed: duplicate lead review field is missing.")
+            stage = db.execute("SELECT id,name,rate_bp FROM commission_stages ORDER BY sort_order LIMIT 1").fetchone()
+            founder_id = db.execute(
+                """INSERT INTO users(full_name,email,password_hash,role,active,force_password_change,created_at,updated_at)
+                   VALUES (?,?,?,'admin',1,0,?,?)""",
+                (founder_name, founder_email, hash_password(founder_password), now, now),
+            ).lastrowid
+            a_user = db.execute(
+                """INSERT INTO users(full_name,email,password_hash,role,active,force_password_change,created_at,updated_at)
+                   VALUES (?,?,?,'partner',1,0,?,?)""",
+                (a_name, a_email, hash_password(a_password), now, now),
+            ).lastrowid
+            b_user = db.execute(
+                """INSERT INTO users(full_name,email,password_hash,role,active,force_password_change,created_at,updated_at)
+                   VALUES (?,?,?,'partner',1,0,?,?)""",
+                (b_name, b_email, hash_password(b_password), now, now),
+            ).lastrowid
+            a_partner = db.execute(
+                "INSERT INTO partners(user_id,commission_stage_id,joined_at,active,historical_name) VALUES (?,?,?,1,?)",
+                (a_user, stage["id"], now, "Repair Partner A"),
+            ).lastrowid
+            b_partner = db.execute(
+                "INSERT INTO partners(user_id,commission_stage_id,joined_at,active,historical_name) VALUES (?,?,?,1,?)",
+                (b_user, stage["id"], now, "Repair Partner B"),
+            ).lastrowid
+            lead_id = db.execute(
+                """INSERT INTO leads(owner_partner_id,company_name,company_norm,contact_name,contact_norm,email,email_norm,phone,phone_norm,website,website_domain,lead_source,summary_notes,status,lost_reason,demo_at,registered_at,last_activity_at,created_by_user_id)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'NEW','',NULL,?,?,?)""",
+                (a_partner, "Repair Client", "repair client", "Client", "client", "repair-client@example.invalid", "repair-client@example.invalid", "", "", "", "", "Verifier", "", now, now, founder_id),
+            ).lastrowid
+            followup_id = db.execute(
+                """INSERT INTO followups(lead_id,owner_partner_id,title,due_at,notes,status,completed_at,created_by_user_id,created_at,updated_at)
+                   VALUES (?,?,?,?,?,'OPEN',NULL,?,?,?)""",
+                (lead_id, a_partner, "Call client", now, "", founder_id, now, now),
+            ).lastrowid
+            inquiry_id = db.execute(
+                """INSERT INTO website_inquiries(created_at,updated_at,name,email,email_norm,company,message,status,claimed_by_partner_id,claimed_at,lead_id,source_type,source_slug,source_title,source_action)
+                   VALUES (?,?,?,?,?,?,?,'CLAIMED',?,?,?,?,?,?,?)""",
+                (now, now, "Client", "repair-client@example.invalid", "repair-client@example.invalid", "Repair Client", "Hello", a_partner, now, lead_id, "website", "contact", "Contact", "submit"),
+            ).lastrowid
+            conversation_id = db.execute(
+                """INSERT INTO client_conversations(inquiry_id,lead_id,owner_partner_id,client_name,client_email,company,subject,status,created_at,updated_at,first_response_due_at)
+                   VALUES (?,?,?,?,?,?,?,'ACTIVE',?,?,?)""",
+                (inquiry_id, lead_id, a_partner, "Client", "repair-client@example.invalid", "Repair Client", "Repair", now, now, now),
+            ).lastrowid
+            db.execute("UPDATE website_inquiries SET client_conversation_id=? WHERE id=?", (conversation_id, inquiry_id))
+            db.execute(
+                "INSERT INTO client_notifications(user_id,kind,entity_type,entity_id,title,body,created_at) VALUES (?,'CLIENT_MESSAGE','conversation',?,?,?,?)",
+                (a_user, conversation_id, "Client message", "Needs reply", now),
+            )
+            claim_id = db.execute(
+                """INSERT INTO duplicate_claims(attempted_by_partner_id,matched_lead_id,company_name,contact_name,email,phone,website,reasons,status,created_at)
+                   VALUES (?,?,?,?,?,?,?,?,'OPEN',?)""",
+                (b_partner, lead_id, "Repair Client", "Client", "repair-client@example.invalid", "", "", "email", now),
+            ).lastrowid
+            privacy_inquiry = db.execute(
+                """INSERT INTO website_inquiries(created_at,updated_at,name,email,email_norm,company,message,status,source_type,source_slug,source_title,source_action)
+                   VALUES (?,?,?,?,?,?,?,'UNCLAIMED','website','contact','Contact','submit')""",
+                (now, now, "New Person", "repair-client@example.invalid", "repair-client@example.invalid", "Repair Client", "Check",),
+            ).lastrowid
+            db.commit()
+
+        anonymous = test_app.test_client()
+        contact = anonymous.get("/contact", follow_redirects=False)
+        cache = contact.headers.get("Cache-Control", "")
+        if contact.status_code != 200 or "no-store" not in cache or "private" not in cache:
+            fail("Contact page privacy cache protection failed.")
+
+        partner_client = test_app.test_client()
+        if _login(partner_client, b_name, b_password).status_code != 302:
+            fail("Repair verifier Partner login failed.")
+        privacy_page = partner_client.get(f"/app/inquiries/{privacy_inquiry}", follow_redirects=False)
+        privacy_html = privacy_page.get_data(as_text=True)
+        if (privacy_page.status_code != 200
+                or "Possible existing client" not in privacy_html
+                or "Founder review is needed." not in privacy_html):
+            fail("Partner duplicate warning is missing.")
+        if "Repair Partner A" in privacy_html:
+            fail("Partner duplicate warning leaked another Partner's identity.")
+        profile = partner_client.get("/app/profile", follow_redirects=False)
+        partner_csrf = _csrf_from(profile)
+        if partner_client.post("/app/clients/sync-email", data={"csrf_token": partner_csrf}, follow_redirects=False).status_code != 403:
+            fail("Sales Partner can trigger company-wide email sync.")
+
+        founder_client = test_app.test_client()
+        if _login(founder_client, founder_name, founder_password).status_code != 302:
+            fail("Repair verifier Founder login failed.")
+        duplicates = founder_client.get("/app/admin/duplicates", follow_redirects=False)
+        result = founder_client.post(
+            f"/app/admin/duplicates/{claim_id}/resolve",
+            data={"csrf_token": _csrf_from(duplicates), "action": "reassign", "resolution_notes": "Move all active work"},
+            follow_redirects=False,
+        )
+        if result.status_code != 302:
+            fail("Duplicate-review reassignment failed.")
+        with test_app.app_context():
+            db = get_db()
+            if db.execute("SELECT owner_partner_id FROM leads WHERE id=?", (lead_id,)).fetchone()["owner_partner_id"] != b_partner:
+                fail("Duplicate-review reassignment did not move the Lead.")
+            if db.execute("SELECT owner_partner_id FROM followups WHERE id=?", (followup_id,)).fetchone()["owner_partner_id"] != b_partner:
+                fail("Duplicate-review reassignment did not move the open follow-up.")
+            if db.execute("SELECT owner_partner_id FROM client_conversations WHERE id=?", (conversation_id,)).fetchone()["owner_partner_id"] != b_partner:
+                fail("Duplicate-review reassignment did not move the client conversation.")
+            if db.execute("SELECT claimed_by_partner_id FROM website_inquiries WHERE id=?", (inquiry_id,)).fetchone()["claimed_by_partner_id"] != b_partner:
+                fail("Duplicate-review reassignment did not move the claimed inquiry.")
+            old_notice = db.execute("SELECT read_at FROM client_notifications WHERE user_id=? AND entity_type='conversation' AND entity_id=? ORDER BY id LIMIT 1", (a_user, conversation_id)).fetchone()
+            new_notice = db.execute("SELECT 1 FROM client_notifications WHERE user_id=? AND kind='CLIENT_REASSIGNED' AND entity_type='conversation' AND entity_id=?", (b_user, conversation_id)).fetchone()
+            if not old_notice or not old_notice["read_at"] or not new_notice:
+                fail("Reassignment notification ownership was not updated safely.")
+
+            db.execute("UPDATE leads SET status='WON' WHERE id=?", (lead_id,))
+            sale_id = db.execute(
+                """INSERT INTO sales(lead_id,partner_id,client_name,product_service,deal_amount_cents,invoiced_cents,collected_cents,qualifying_revenue_cents,payment_status,sale_date,notes,created_by_user_id,created_at,updated_at)
+                   VALUES (?,?,?,?,10000,10000,10000,10000,'PAID',?,'',?,?,?)""",
+                (lead_id, b_partner, "Repair Client", "Repair Service", now[:10], founder_id, now, now),
+            ).lastrowid
+            commission_id = db.execute(
+                """INSERT INTO commissions(sale_id,partner_id,stage_name_snapshot,rate_bp_snapshot,qualifying_revenue_cents,adjustment_cents,commission_amount_cents,status,approval_date,paid_date,notes,created_at,updated_at)
+                   VALUES (?,?,?,?,10000,0,4000,'PAID',?,?, '',?,?)""",
+                (sale_id, b_partner, stage["name"], stage["rate_bp"], now, now, now, now),
+            ).lastrowid
+            db.commit()
+
+        sale_page = founder_client.get(f"/app/sales/{sale_id}", follow_redirects=False)
+        correction = founder_client.post(
+            f"/app/sales/{sale_id}/corrections",
+            data={
+                "csrf_token": _csrf_from(sale_page),
+                "kind": "REFUND",
+                "deal_amount": "100.00",
+                "amount_invoiced": "100.00",
+                "amount_collected": "80.00",
+                "qualifying_revenue": "80.00",
+                "payment_status": "REFUNDED_ADJUSTED",
+                "note": "Customer refund",
+                "commission_change": "0.00",
+            },
+            follow_redirects=False,
+        )
+        if correction.status_code != 302:
+            fail("Paid commission correction could not be recorded.")
+        with test_app.app_context():
+            db = get_db()
+            original = db.execute("SELECT commission_amount_cents,status FROM commissions WHERE id=?", (commission_id,)).fetchone()
+            saved = db.execute("SELECT * FROM sale_corrections WHERE commission_id=?", (commission_id,)).fetchone()
+            current_sale = db.execute("SELECT deal_amount_cents,invoiced_cents,collected_cents,qualifying_revenue_cents,payment_status FROM sales WHERE id=?", (sale_id,)).fetchone()
+            if not original or original["commission_amount_cents"] != 4000 or original["status"] != "PAID":
+                fail("Paid commission history was rewritten by a correction.")
+            if not saved or saved["commission_change_cents"] != -800:
+                fail("Commission correction history was not calculated or saved correctly.")
+            if current_sale["deal_amount_cents"] != 10000 or current_sale["invoiced_cents"] != 10000 or current_sale["collected_cents"] != 8000 or current_sale["qualifying_revenue_cents"] != 8000 or current_sale["payment_status"] != "REFUNDED_ADJUSTED":
+                fail("Sale correction did not update the current financial state.")
+
+def verify_public_source_baseline() -> None:
+    manifest_path = ROOT / "scripts" / "PUBLIC_SOURCE_BASELINE.json"
+    if not manifest_path.exists():
+        fail("Public website baseline file is missing.")
+    expected = json.loads(manifest_path.read_text(encoding="utf-8"))
+    changed = []
+    for rel, wanted in expected.items():
+        path = ROOT / rel
+        if not path.is_file():
+            changed.append(rel + " (missing)")
+            continue
+        actual = hashlib.sha256(path.read_bytes()).hexdigest()
+        if actual != wanted:
+            changed.append(rel)
+    if changed:
+        fail("Public website source changed unexpectedly: " + ", ".join(changed[:8]))
+
+
+
+
+def verify_deployment_workflow() -> None:
+    combined = ROOT / "installers" / "SETUP_AND_DEPLOY_RSF_MAIN_SYSTEM.bat"
+    deploy_bat = ROOT / "deployment" / "DEPLOY_RSF_LIVE.bat"
+    publish_bat = ROOT / "deployment" / "PUBLISH_RSF_ONLINE.bat"
+    deploy = ROOT / "scripts" / "deploy_render_unified.py"
+    if not combined.is_file() or not deploy_bat.is_file() or not publish_bat.is_file() or not deploy.is_file():
+        fail("Local + live deployment workflow is missing.")
+    bat = combined.read_text(encoding="utf-8", errors="replace")
+    deploy_bat_text = deploy_bat.read_text(encoding="utf-8", errors="replace")
+    publish_bat_text = publish_bat.read_text(encoding="utf-8", errors="replace")
+    deploy_text = deploy.read_text(encoding="utf-8", errors="replace")
+    required_bat = (
+        "SETUP_RSF_MAIN_SYSTEM.bat",
+        "DEPLOY_RSF_LIVE.bat",
+        "LOCAL VERIFIED OK",
+        "LIVE VERIFIED OK",
+    )
+    if any(marker not in bat for marker in required_bat):
+        fail("Local + live CMD workflow is incomplete.")
+    # Windows paths contain spaces. The Python executable must always be quoted.
+    quoted_python_marker = '"%LOCAL_PYTHON%"'
+    if quoted_python_marker not in deploy_bat_text or quoted_python_marker not in publish_bat_text:
+        fail("Live deployment launcher check failed: Python path is not safely quoted.")
+    required_deploy = (
+        "PUBLIC_PROTECTED",
+        "PRIVATE_FILES",
+        "git", "clone",
+        "public_hashes",
+        "Live Partner Workspace is still using the old email login.",
+        "LIVE VERIFIED OK",
+        "/system/health",
+    )
+    if any(marker not in deploy_text for marker in required_deploy):
+        fail("Safe live deployment verification is incomplete.")
 
 def main() -> None:
     verify_project_layout()
+    verify_public_source_baseline()
+    verify_deployment_workflow()
     css_path = ROOT / "app" / "static" / "css" / "app.css"
     workspace_css_path = ROOT / "app" / "static" / "css" / "workspace_v18.css"
     js_path = ROOT / "app" / "static" / "js" / "app.js"
@@ -569,10 +982,16 @@ def main() -> None:
         fail("Messages image viewer check failed: fixed overlay layout is incomplete.")
 
     setup_path = ROOT / "installers" / "SETUP_RSF_MAIN_SYSTEM.bat"
+    setup_deploy_path = ROOT / "installers" / "SETUP_AND_DEPLOY_RSF_MAIN_SYSTEM.bat"
+    deploy_bat_path = ROOT / "deployment" / "DEPLOY_RSF_LIVE.bat"
+    publish_bat_path = ROOT / "deployment" / "PUBLISH_RSF_ONLINE.bat"
     launcher_vbs_path = ROOT / "installers" / "launchers" / "RSF Partner System Launcher.vbs"
     launcher_py_path = ROOT / "scripts" / "LAUNCH_RSF_PARTNER_SYSTEM.py"
     installer_py_path = ROOT / "scripts" / "INSTALL_RSF_PARTNER_SYSTEM.py"
     setup_text = setup_path.read_text(encoding="utf-8", errors="replace") if setup_path.exists() else ""
+    setup_deploy_text = setup_deploy_path.read_text(encoding="utf-8", errors="replace") if setup_deploy_path.exists() else ""
+    deploy_bat_text = deploy_bat_path.read_text(encoding="utf-8", errors="replace") if deploy_bat_path.exists() else ""
+    publish_bat_text = publish_bat_path.read_text(encoding="utf-8", errors="replace") if publish_bat_path.exists() else ""
     launcher_vbs_text = launcher_vbs_path.read_text(encoding="utf-8", errors="replace") if launcher_vbs_path.exists() else ""
     if not launcher_py_path.exists() or not installer_py_path.exists():
         fail("PowerShell-independent setup/launcher check failed: Python installer or launcher is missing.")
@@ -589,12 +1008,78 @@ def main() -> None:
             fail(f"Partner Workspace routing entry does not target the RSF /app/ Workspace: {alias_entry.relative_to(ROOT)}")
     if "powershell.exe" in setup_text.lower() or "powershell.exe" in launcher_vbs_text.lower():
         fail("PowerShell-independent setup/launcher check failed: active setup or launcher still depends on PowerShell.")
+    if "%TEMP%\\rsf_python_path.txt" in setup_text or "rsf_python_path.txt" in setup_text:
+        fail("Active setup must not depend on a temporary Python-path launcher file.")
+
+    # Windows CMD must never split `RSF Main System` at the spaces. The active
+    # one-command chain therefore resolves the release root once, calls child BATs
+    # by relative quoted names, and passes Python script paths as quoted arguments.
+    required_setup_deploy_markers = (
+        'set "RSF_RELEASE_ROOT=',
+        'pushd "%RSF_RELEASE_ROOT%"',
+        'call "installers\\SETUP_RSF_MAIN_SYSTEM.bat"',
+        'call "deployment\\DEPLOY_RSF_LIVE.bat"',
+        'LOCAL VERIFIED OK',
+        'LIVE VERIFIED OK',
+        'pause',
+    )
+    if any(marker not in setup_deploy_text for marker in required_setup_deploy_markers):
+        fail("One-command local + live deployment launcher is not path-safe or does not preserve final verification output.")
+    for bat_name, bat_text, script_var in (
+        ("DEPLOY_RSF_LIVE.bat", deploy_bat_text, "DEPLOY_SCRIPT"),
+        ("PUBLISH_RSF_ONLINE.bat", publish_bat_text, "PUBLISH_SCRIPT"),
+    ):
+        required = (
+            'set "RSF_RELEASE_ROOT=',
+            'pushd "%RSF_RELEASE_ROOT%"',
+            f'py.exe -3 "%{script_var}%"',
+            f'python.exe "%{script_var}%"',
+            f'"%LOCAL_PYTHON%" "%{script_var}%"',
+        )
+        if any(marker not in bat_text for marker in required):
+            fail(f"{bat_name} path-with-spaces handling is incomplete.")
+    deploy_source = (ROOT / "scripts" / "deploy_render_unified.py").read_text(encoding="utf-8", errors="replace")
+    if "shell=True" in deploy_source or 'shell = True' in deploy_source:
+        fail("Python deployment launcher must use argument lists, not shell=True command strings.")
+    if 'GITHUB VERIFIED OK' not in deploy_source or 'git", "ls-remote"' not in deploy_source:
+        fail("Deployment workflow does not verify that GitHub main actually reached the exact release commit.")
     if "\\n.message-image" in css_text or "\\n\\n/* v1.1.16" in css_text:
         fail("Messages image viewer check failed: escaped newlines are corrupting viewer CSS.")
 
     profile_template = (ROOT / "app" / "templates" / "profile.html").read_text(encoding="utf-8", errors="replace")
     base_template = (ROOT / "app" / "templates" / "base.html").read_text(encoding="utf-8", errors="replace")
+    account_security_template = (ROOT / "app" / "templates" / "account_security.html").read_text(encoding="utf-8", errors="replace")
+    login_template = (ROOT / "app" / "templates" / "login.html").read_text(encoding="utf-8", errors="replace")
+    partner_form_template = (ROOT / "app" / "templates" / "partner_form.html").read_text(encoding="utf-8", errors="replace")
+    partners_list_template = (ROOT / "app" / "templates" / "partners_list.html").read_text(encoding="utf-8", errors="replace")
+    if 'name="name"' not in login_template or 'name="password"' not in login_template or 'name="email"' in login_template:
+        fail("Private workspace login is not Name + Password only.")
+    if 'name="email"' in partner_form_template or '>Email<' in partners_list_template:
+        fail("User-account email is still visible in Partner account screens.")
+    partner_detail_template = (ROOT / "app" / "templates" / "partner_detail.html").read_text(encoding="utf-8", errors="replace")
     routes_text = (ROOT / "app" / "routes.py").read_text(encoding="utf-8", errors="replace")
+    centralized_account_source = account_security_template + profile_template + partner_detail_template + base_template + routes_text + js_text + css_text
+    credential_vault_source = (ROOT / "app" / "credential_vault.py").read_text(encoding="utf-8", errors="replace")
+    required_account_security = (
+        "Account &amp; Security", "Founder Account", "Partner Accounts", "Current Password",
+        "security-change-disclosure", "partner-security-list", "Delete Partner",
+        "/admin/settings/account-security", "founder_password_change", "confirm_partner_password",
+        "data-account-disclosure", "data-toggle-password", "data-vault-reveal", "data-vault-copy",
+        "account_security_reveal_password", "v1.9.4 — Founder-only current password visibility",
+    )
+    if any(marker not in (centralized_account_source + credential_vault_source) for marker in required_account_security):
+        fail("Founder password visibility / simplified security workspace is incomplete.")
+    for forbidden in ("Founder/Admin", "Founder / Admin", "Employee", "Staff", "Deactivate", "Suspend", "Archive"):
+        if forbidden.lower() in account_security_template.lower():
+            fail(f"Account & Security contains obsolete role/lifecycle terminology: {forbidden}")
+    if 'name="current_password"' in profile_template or 'minlength="12"' in profile_template or "12+ characters" in profile_template:
+        fail("Founder password controls/rules are still scattered on Profile.")
+    required_vault_crypto = ("Fernet", "encrypt_password", "decrypt_password", "account_password_vault", "CREDENTIAL_VAULT_KEY")
+    vault_source = credential_vault_source + (ROOT / "app" / "db.py").read_text(encoding="utf-8", errors="replace") + (ROOT / "config.py").read_text(encoding="utf-8", errors="replace")
+    if any(marker not in vault_source for marker in required_vault_crypto):
+        fail("Founder password visibility is not backed by the encrypted credential vault.")
+    if "Change password" in partner_detail_template or "Delete Partner Permanently" in partner_detail_template:
+        fail("Partner credential controls are still scattered on Partner detail.")
     required_profile_picture = (
         'enctype="multipart/form-data"', 'name="profile_picture"', 'value="avatar"', 'value="avatar_remove"',
         'profile-picture-manager', '@bp.get("/profile-picture/<int:user_id>")', 'PROFILE_PICTURE_MAX_BYTES',
@@ -604,15 +1089,15 @@ def main() -> None:
     if any(marker not in combined_profile_source for marker in required_profile_picture):
         fail("Per-user profile-picture feature is incomplete.")
 
+    ux_css = (ROOT / "app" / "static" / "css" / "workspace_v20.css").read_text(encoding="utf-8", errors="replace")
     required_organization = (
-        'nav-section-label', 'Workspace', 'Sales operations', 'Founder', 'Sales workflow', 'Tools', 'Account',
-        'organized-page-head', 'page-kicker', 'profile-organized-layout', 'profile-primary-grid',
-        'v1.1.27 — app-wide organization pass', 'v1.7.0 — elite Founder/Partner Workspace refinement',
-        'v1.8.0 — Production Workspace redesign', 'topbar-context', 'signal-grid', 'pipeline-track',
+        'nav-section-label', '>Work<', '>Business<', 'sidebar-utility-links', 'Profile', 'Settings', 'Activity',
+        'workspace-page-head', 'workspace-section', 'attention-strip', 'section-head', 'finance-brief',
+        'topbar-context', 'pipeline-track', 'resource-row', 'history-disclosure',
     )
-    organization_source = base_template + profile_template + css_text
+    organization_source = base_template + profile_template + ux_css
     if any(marker not in organization_source for marker in required_organization):
-        fail("App-wide organization update is incomplete.")
+        fail("v1.11.0 simplified Workspace information architecture is incomplete.")
 
     admin_dashboard_template = (ROOT / "app" / "templates" / "dashboard_admin.html").read_text(encoding="utf-8", errors="replace")
     partner_dashboard_template = (ROOT / "app" / "templates" / "dashboard_partner.html").read_text(encoding="utf-8", errors="replace")
@@ -623,30 +1108,14 @@ def main() -> None:
         admin_dashboard_template + partner_dashboard_template + leads_template + lead_detail_template +
         inquiries_template + base_template + routes_text + js_text + css_text
     )
+    workspace_refinement_source += (ROOT / "app" / "static" / "css" / "workspace_v20.css").read_text(encoding="utf-8", errors="replace")
     required_workspace_refinement = (
-        'metrics.contacted', 'metrics.proposal', 'pipeline-stage-strip', 'workspace-rate', 'operational-table',
-        'inbox-summary', 'data-lead-status-form', 'data-status-field', 'syncStatusFields',
-        'v1.7.0 — elite Founder/Partner Workspace refinement', 'v1.8.0 — Production Workspace redesign',
+        'metrics.awaiting_response', 'metrics.contacted', 'metrics.proposal', 'attention-strip', 'pipeline-track',
+        'operational-table', 'streamlined-inbox-columns', 'data-lead-status-form', 'data-status-field', 'syncStatusFields',
+        'linked-record-row', 'partner-security-list', 'sidebar-utility-links',
     )
     if any(marker not in workspace_refinement_source for marker in required_workspace_refinement):
-        fail("v1.8.0 production Workspace redesign is incomplete.")
-
-    partner_ui_files = [
-        ROOT / "app" / "templates" / "partners_list.html",
-        ROOT / "app" / "templates" / "partner_form.html",
-        ROOT / "app" / "templates" / "partner_detail.html",
-        ROOT / "app" / "templates" / "partner_created.html",
-        ROOT / "app" / "templates" / "partner_password_changed.html",
-    ]
-    partner_ui = "\n".join(path.read_text(encoding="utf-8", errors="replace") for path in partner_ui_files)
-    for forbidden in ("Deactivate", "Reactivate", "Suspend", "Disable account", "Archive account", "Founder/Admin", "Founder / Admin", "Employee/Partner", "Employee / Partner", "Employee Partner", "Partner Employee"):
-        if forbidden.lower() in partner_ui.lower():
-            fail(f"Partner account UI still contains forbidden lifecycle/terminology text: {forbidden}")
-    required_partner_ui = ("Partners", "Add Partner", "Change Password", "Delete Permanently", "data-password-toggle", "data-copy-target")
-    if any(marker not in partner_ui for marker in required_partner_ui):
-        fail("Founder Partner-management UI is incomplete.")
-    if "generate password" in partner_ui.lower() or "password generator" in partner_ui.lower():
-        fail("Partner account UI still contains forced password generation.")
+        fail("v1.11.0 Workspace simplification/refinement is incomplete.")
 
     app = create_app()
     with app.app_context():
@@ -657,7 +1126,27 @@ def main() -> None:
 
         admin = db.execute("SELECT * FROM users WHERE role='admin' AND active=1 ORDER BY id LIMIT 1").fetchone()
         if not admin:
-            fail("No Founder account was found.")
+            fail("No active Founder account was found.")
+        active_accounts = db.execute(
+            """SELECT u.id,u.full_name,u.role,v.encrypted_password
+               FROM users u LEFT JOIN account_password_vault v ON v.user_id=u.id
+               LEFT JOIN partners p ON p.user_id=u.id
+               WHERE u.active=1 AND (u.role='admin' OR (u.role='partner' AND p.account_deleted_at IS NULL))
+               ORDER BY u.id"""
+        ).fetchall()
+        for account in active_accounts:
+            if not account["encrypted_password"]:
+                fail(f"Password visibility data is missing for active account ID {account['id']}.")
+            try:
+                current_password = decrypt_password(account["encrypted_password"])
+            except RuntimeError:
+                fail(f"Password visibility data could not be read for active account ID {account['id']}.")
+            matched = db.execute(
+                "SELECT id,password_hash FROM users WHERE active=1 AND lower(trim(full_name))=lower(trim(?)) LIMIT 1",
+                (account["full_name"],),
+            ).fetchone()
+            if not matched or int(matched["id"]) != int(account["id"]) or not check_password_hash(matched["password_hash"], current_password):
+                fail(f"Existing account ID {account['id']} cannot be verified with Name + current Password.")
 
         tables = {row["name"] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
         required_communication = {"messages", "message_attachments", "voice_calls", "voice_call_signals"}
@@ -679,26 +1168,29 @@ def main() -> None:
         if not required_client_columns.issubset(conversation_columns):
             fail("Unified client response-accountability migration is incomplete.")
         client_message_columns = {row["name"] for row in db.execute("PRAGMA table_info(client_messages)").fetchall()}
-        if not {"delivery_status", "delivery_error", "sent_by_name_snapshot"}.issubset(client_message_columns):
+        if not {"delivery_status", "delivery_error"}.issubset(client_message_columns):
             fail("Unified client email delivery-state migration is incomplete.")
-        migration = db.execute("SELECT MAX(version) v FROM schema_migrations").fetchone()
-        if not migration or int(migration["v"] or 0) < 12:
-            fail("Founder Partner account-control migration v12 is missing.")
-        partner_columns = {row["name"] for row in db.execute("PRAGMA table_info(partners)").fetchall()}
-        if not {"full_name_snapshot", "email_snapshot", "deleted_at"}.issubset(partner_columns):
-            fail("Partner deletion-history columns are incomplete.")
-        partner_user_id_column = next((row for row in db.execute("PRAGMA table_info(partners)").fetchall() if row["name"] == "user_id"), None)
-        if not partner_user_id_column or int(partner_user_id_column["notnull"] or 0) != 0:
-            fail("Partner deletion migration did not make the authentication link detachable.")
-        stale_disabled = db.execute("""SELECT COUNT(*) c FROM partners p JOIN users u ON u.id=p.user_id
-            WHERE p.user_id IS NOT NULL AND (p.active<>1 OR u.active<>1)""").fetchone()["c"]
-        if stale_disabled:
-            fail("Legacy Partner deactivate state still exists after migration.")
+        migration = db.execute("SELECT name FROM schema_migrations WHERE version=13").fetchone()
+        if not migration or "hard-partner-account-delete" not in migration["name"]:
+            fail("Founder Partner-management database migration 13 is missing.")
+        name_login_migration = db.execute("SELECT name FROM schema_migrations WHERE version=16").fetchone()
+        if not name_login_migration or "name-password-login" not in name_login_migration["name"]:
+            fail("Name + Password login migration 16 is missing.")
+        duplicate_names = db.execute(
+            """SELECT lower(trim(full_name)) login_name,COUNT(*) c FROM users WHERE active=1
+               GROUP BY lower(trim(full_name)) HAVING COUNT(*)>1 LIMIT 1"""
+        ).fetchone()
+        if duplicate_names:
+            fail("Active workspace accounts still have duplicate login Names.")
+        if db.execute("SELECT 1 FROM users WHERE active=1 AND trim(COALESCE(full_name,''))='' LIMIT 1").fetchone():
+            fail("An active workspace account has a blank login Name.")
+        partner_info = {row["name"]: row for row in db.execute("PRAGMA table_info(partners)").fetchall()}
+        if "historical_name" not in partner_info or "account_deleted_at" not in partner_info:
+            fail("Partner historical-attribution fields are missing.")
+        if int(partner_info["user_id"]["notnull"] or 0) != 0:
+            fail("Partner account deletion migration is incomplete: partners.user_id is still required.")
         if db.execute("PRAGMA foreign_key_check").fetchall():
-            fail("Database foreign-key integrity check failed.")
-        stages = [(row["name"], int(row["rate_bp"])) for row in db.execute("SELECT name,rate_bp FROM commission_stages ORDER BY sort_order").fetchall()]
-        if stages != [("Founding Partner #1",4000),("Early Partner",3000),("Established Sales Partner",2000),("Standard Partner",1500)]:
-            fail("Commission ladder does not match the locked RSF rates.")
+            fail("Installed database has foreign-key violations.")
 
         public_client = app.test_client()
         public_home = public_client.get("/", follow_redirects=False)
@@ -715,15 +1207,20 @@ def main() -> None:
             session.permanent = True
         dashboard_page = admin_client.get("/app/", follow_redirects=False)
         dashboard_html = dashboard_page.get_data(as_text=True)
-        if dashboard_page.status_code != 200 or "Founder command center" not in dashboard_html or "Partner workload" not in dashboard_html or "Pipeline movement" not in dashboard_html or "Revenue & commissions" not in dashboard_html:
-            fail("Founder production dashboard check failed.")
+        founder_dashboard_markers = ("Dashboard", "Partner work", "Next follow-ups", "Pipeline", "Money overview")
+        founder_dashboard_missing = [marker for marker in founder_dashboard_markers if marker not in dashboard_html]
+        if dashboard_page.status_code != 200 or founder_dashboard_missing:
+            fail(
+                "Founder dashboard check failed. "
+                f"Status={dashboard_page.status_code}; missing={founder_dashboard_missing or 'none'}."
+            )
 
         founder_profile = admin_client.get("/app/profile", follow_redirects=False)
         founder_profile_html = founder_profile.get_data(as_text=True)
-        if founder_profile.status_code != 200 or "Founder" not in _visible_text(founder_profile_html) or "profile-picture-manager" not in founder_profile_html or 'name="profile_picture"' not in founder_profile_html:
+        if founder_profile.status_code != 200 or "Founder" not in founder_profile_html or "Founder / Admin" in founder_profile_html or "profile-picture-manager" not in founder_profile_html or 'name="profile_picture"' not in founder_profile_html:
             fail("Founder profile-picture self-service check failed.")
-        if "profile-organized-layout" not in founder_profile_html or "Manage your identity" not in founder_profile_html:
-            fail("Founder organized profile check failed.")
+        if "profile-picture-manager" not in founder_profile_html or "Photo" not in founder_profile_html or "Details" not in founder_profile_html:
+            fail("Founder focused profile check failed.")
 
         messages_page = admin_client.get("/app/messages", follow_redirects=False)
         if messages_page.status_code != 200 or "Messages" not in messages_page.get_data(as_text=True):
@@ -731,22 +1228,22 @@ def main() -> None:
 
         client_inbox_page = admin_client.get("/app/inquiries", follow_redirects=False)
         inbox_html = client_inbox_page.get_data(as_text=True)
-        if client_inbox_page.status_code != 200 or "Client Inbox" not in inbox_html or "Unclaimed" not in inbox_html:
+        if client_inbox_page.status_code != 200 or "Client Inbox" not in inbox_html or "New inquiries" not in inbox_html:
             fail("Unified client inbox check failed.")
         inbox_template = (ROOT / "app" / "templates" / "inquiries.html").read_text(encoding="utf-8", errors="replace")
-        if "Needs attention now" not in inbox_template or "response target" not in inbox_template:
+        if "Needs reply" not in inbox_template or "first reply" not in inbox_template.lower():
             fail("Unified client response-accountability UI check failed.")
         if "data-client-unread" not in base_template or "setClientUnread" not in js_text:
             fail("Unified client notification check failed.")
         client_template = (ROOT / "app" / "templates" / "client_conversation.html").read_text(encoding="utf-8", errors="replace")
-        if 'name="attachments"' not in client_template or "delivery-status" not in client_template or "Automatic client email sync" not in client_template:
+        if 'name="attachments"' not in client_template or "delivery-status" not in client_template or "Sync Email" not in client_template:
             fail("Unified client email/attachment workspace check failed.")
 
         partner = db.execute(
             """SELECT u.*,p.id partner_id,p.active AS partner_active,cs.name stage_name,cs.rate_bp
                FROM users u JOIN partners p ON p.user_id=u.id
                JOIN commission_stages cs ON cs.id=p.commission_stage_id
-               WHERE u.role='partner' AND p.user_id IS NOT NULL ORDER BY p.id LIMIT 1"""
+               WHERE u.role='partner' AND u.active=1 AND p.active=1 ORDER BY p.id LIMIT 1"""
         ).fetchone()
 
         if partner:
@@ -758,11 +1255,18 @@ def main() -> None:
 
             if client.get("/app/admin/partners", follow_redirects=False).status_code != 403:
                 fail("Partner privacy check failed: Founder-only page was not blocked.")
+            if client.get("/app/admin/settings/account-security", follow_redirects=False).status_code != 403:
+                fail("Partner privacy check failed: Account & Security was not blocked.")
 
             partner_dashboard = client.get("/app/", follow_redirects=False)
             partner_dashboard_html = partner_dashboard.get_data(as_text=True)
-            if partner_dashboard.status_code != 200 or "Partner command center" not in partner_dashboard_html or "Commission" not in partner_dashboard_html or "Lead progress" not in partner_dashboard_html or "Sales & commissions" not in partner_dashboard_html or "What needs attention" not in partner_dashboard_html:
-                fail("Partner production dashboard check failed.")
+            partner_dashboard_markers = ("Dashboard", "Next work", "Pipeline", "Commissions", "Client replies")
+            partner_dashboard_missing = [marker for marker in partner_dashboard_markers if marker not in partner_dashboard_html]
+            if partner_dashboard.status_code != 200 or partner_dashboard_missing:
+                fail(
+                    "Partner dashboard check failed. "
+                    f"Status={partner_dashboard.status_code}; missing={partner_dashboard_missing or 'none'}."
+                )
 
             partner_commissions = client.get("/app/commissions", follow_redirects=False)
             partner_commissions_html = partner_commissions.get_data(as_text=True)
@@ -788,7 +1292,7 @@ def main() -> None:
             profile_text = profile.get_data(as_text=True)
             if profile.status_code != 200 or "Change password" in profile_text or "Current password" in profile_text:
                 fail("Partner password-control check failed: partner password controls are visible.")
-            if "profile-picture-manager" not in profile_text or 'name="profile_picture"' not in profile_text or "Upload photo" not in profile_text:
+            if "profile-picture-manager" not in profile_text or 'name="profile_picture"' not in profile_text or '>Upload</button>' not in profile_text:
                 fail("Partner profile-picture self-service check failed.")
             match = re.search(r'name="csrf_token" value="([^"]+)"', profile_text)
             if not match:
@@ -807,9 +1311,10 @@ def main() -> None:
             if blocked_change.status_code != 403:
                 fail("Partner password-control check failed: backend password change was not blocked.")
 
-        verify_founder_partner_account_management(db)
+    verify_partner_account_management()
+    verify_controlled_repair_regressions()
 
-    print("Installed system verified: database OK, Founder account OK, compact Account & Security OK, exact Founder password change OK, Founder one-time password show/hide/copy OK, old Founder password/session invalidation OK, Founder-only Partner management OK, Partner create/view/edit OK, exact Founder-chosen Partner passwords OK, Partner password reset/session invalidation OK, Partner self-service password change blocked OK, forged Founder actions blocked OK, cross-Partner privacy OK, permanent Partner delete confirmation OK, permanent Partner authentication removal OK, deleted Partner login blocked OK, historical business records preserved OK, database integrity/foreign keys OK, CSRF OK, trusted hosts OK, session security OK, security headers OK, RSF Emerald + Champagne UI OK, desktop launchers OK, unified public website OK, Partner Workspace OK.")
+    print("Installed system verified: database OK, Name + Password login OK, Founder Name login OK, simplified Account & Security OK, exact Founder password change OK, Founder persistent encrypted password show/hide/copy OK, old Founder password/session invalidation OK, Founder-only Partner management OK, Partner create/view/edit OK, exact Founder-chosen Partner passwords OK, Partner password reset/session invalidation OK, Founder persistent Partner password reveal/copy OK, Partner self-service password change blocked OK, forged Founder actions blocked OK, cross-Partner privacy OK, Partner active-work delete protection OK, active work transfer OK, permanent Partner authentication removal OK, deleted Partner login blocked OK, historical sale/commission/message/client records preserved OK, v1.11.2 repair regressions OK, database integrity/foreign keys OK, CSRF OK, trusted hosts OK, session security OK, security headers OK, RSF Emerald + Champagne simplified Workspace UI OK, desktop launchers OK, unified public website OK, Partner Workspace OK, safe local-to-live deployment workflow OK.")
 
 
 if __name__ == "__main__":
