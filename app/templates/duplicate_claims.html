@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-head workspace-page-head"><div><h1>Duplicate Leads</h1><p>Check possible duplicate leads.</p></div><a class="button secondary" href="{{ url_for('main.leads_list') }}">Back to Leads</a></div>
+<div class="page-head workspace-page-head"><div><h1>Duplicate Clients</h1><p>Check possible duplicate clients.</p></div><a class="button secondary" href="{{ url_for('main.clients_hub') }}">Back to Clients</a></div>
 <section class="panel table-panel operational-table">
   {% if claims %}
   <div class="table-meta"><span>{{ claims|length }} review{{ '' if claims|length == 1 else 's' }}</span><small>Only open items need action.</small></div>
