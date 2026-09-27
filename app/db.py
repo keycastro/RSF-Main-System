@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 17
-SCHEMA_NAME = "rsf-main-system-v1.13.0-prospects"
+SCHEMA_VERSION = 18
+SCHEMA_NAME = "rsf-main-system-v1.15.0-prospect-fields"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects"}
 
 
@@ -751,6 +751,32 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
         db.execute(
             "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
             (17, "rsf-v1.13.0-prospects-work-queue"),
+        )
+
+    # V18 adds the approved Prospect research fields while preserving all existing rows.
+    # The legacy internal name column remains the Company identity and duplicate key.
+    if 18 not in applied:
+        existing = {row["name"] for row in db.execute("PRAGMA table_info(prospects)").fetchall()}
+        prospect_fields = (
+            "business_type",
+            "problem",
+            "platform_wanted",
+            "post_link",
+            "post_date",
+            "system_wanted",
+            "budget",
+            "location",
+            "website",
+            "contact",
+            "email",
+            "phone",
+        )
+        for column in prospect_fields:
+            if column not in existing:
+                db.execute(f'ALTER TABLE prospects ADD COLUMN "{column}" TEXT NOT NULL DEFAULT \'\'')
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (18, "rsf-v1.15.0-approved-prospect-fields"),
         )
 
 
