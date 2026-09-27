@@ -1782,12 +1782,12 @@
       }
 
       companyInput.value = company;
+      const body = new URLSearchParams();
+      for (const [key, value] of new FormData(quickForm).entries()) body.append(key, String(value));
+
       saving = true;
       setDisabled(true);
       hideQuickMessage();
-
-      const body = new URLSearchParams();
-      for (const [key, value] of new FormData(quickForm).entries()) body.append(key, String(value));
 
       try {
         const response = await fetch(quickForm.action, {
