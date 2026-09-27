@@ -1,0 +1,24 @@
+<div class="simple-row simple-row-static prospect-row" id="prospect-{{ prospect['id'] }}" data-prospect-row>
+  <div>
+    <strong>{{ prospect['name'] }}</strong>
+    <span class="prospect-status">{{ prospect_status_labels.get(prospect['status'], prospect['status']|human_status) }}</span>
+  </div>
+  <div class="simple-row-end">
+    <div class="prospect-row-meta">
+      {% if is_today and prospect['recorded_date'] != selected_date %}
+        <small class="prospect-carry">Carried forward · Recorded {{ prospect['recorded_date']|dateonly }}</small>
+      {% else %}
+        <small>Recorded {{ prospect['recorded_date']|dateonly }}</small>
+      {% endif %}
+    </div>
+    <form class="prospect-delete-form" method="post" action="{{ url_for('main.prospect_delete', prospect_id=prospect['id']) }}" data-prospect-delete-form>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="date" value="{{ selected_date }}">
+      <button class="prospect-delete-button" type="submit" aria-label="Permanently delete {{ prospect['name'] }}" title="Delete prospect">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h10l-1 11H8L7 9Zm3 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z" fill="currentColor"/>
+        </svg>
+      </button>
+    </form>
+  </div>
+</div>

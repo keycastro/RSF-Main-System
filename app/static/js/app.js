@@ -1654,3 +1654,227 @@
     input.form.submit();
   });
 })();
+
+
+(() => {
+  const page = document.querySelector('.prospects-page');
+  if (!page) return;
+
+  const trigger = page.querySelector('[data-prospect-add-trigger]');
+  const list = page.querySelector('[data-prospect-list]');
+  const quick = page.querySelector('[data-prospect-quick-add]');
+  const quickForm = page.querySelector('[data-prospect-quick-form]');
+  const quickInput = page.querySelector('[data-prospect-quick-input]');
+  const quickMessage = page.querySelector('[data-prospect-quick-message]');
+  const toast = page.querySelector('[data-prospect-toast]');
+  let toastTimer = null;
+
+  const showToast = (message, isError = false) => {
+    if (!toast) return;
+    window.clearTimeout(toastTimer);
+    toast.textContent = message;
+    toast.classList.toggle('is-error', isError);
+    toast.hidden = false;
+    toastTimer = window.setTimeout(() => {
+      toast.hidden = true;
+      toast.classList.remove('is-error');
+    }, 1800);
+  };
+
+  const hideQuickMessage = () => {
+    if (!quickMessage) return;
+    quickMessage.hidden = true;
+    quickMessage.textContent = '';
+  };
+
+  const showQuickMessage = (message) => {
+    if (!quickMessage) return;
+    quickMessage.textContent = message;
+    quickMessage.hidden = false;
+  };
+
+  const showDuplicate = (data) => {
+    if (!quickMessage) return;
+    const duplicate = data.duplicate || {};
+    quickMessage.textContent = '';
+
+    const strong = document.createElement('strong');
+    strong.textContent = data.message || 'Prospect already exists.';
+    quickMessage.appendChild(strong);
+
+    if (duplicate.recorded_date) {
+      const date = new Date(`${duplicate.recorded_date}T00:00:00`);
+      const readable = Number.isNaN(date.getTime())
+        ? duplicate.recorded_date
+        : new Intl.DateTimeFormat(undefined, { month: 'long', day: 'numeric', year: 'numeric' }).format(date);
+      const detail = document.createElement('span');
+      detail.textContent = `Recorded on ${readable}.`;
+      quickMessage.appendChild(detail);
+    }
+
+    if (duplicate.view_url) {
+      const link = document.createElement('a');
+      link.href = duplicate.view_url;
+      link.textContent = 'View Prospect';
+      quickMessage.appendChild(link);
+    }
+
+    quickMessage.hidden = false;
+  };
+
+  const ensureEmpty = () => {
+    if (!list || list.querySelector('[data-prospect-row]') || list.querySelector('[data-prospect-empty]')) return;
+    const empty = document.createElement('div');
+    empty.className = 'simple-empty';
+    empty.dataset.prospectEmpty = '';
+    empty.textContent = 'No prospects for this date.';
+    list.appendChild(empty);
+  };
+
+  const closeQuick = () => {
+    if (!quick) return;
+    quick.hidden = true;
+    hideQuickMessage();
+  };
+
+  const openQuick = () => {
+    if (!quick || !quickInput) return;
+    quick.hidden = false;
+    hideQuickMessage();
+    window.setTimeout(() => quickInput.focus(), 0);
+  };
+
+  if (trigger) {
+    trigger.addEventListener('click', () => {
+      if (!quick) {
+        window.location.assign(trigger.dataset.prospectTodayUrl || '/app/prospects?add=1');
+        return;
+      }
+      openQuick();
+    });
+  }
+
+  if (quick && quickForm && quickInput && list) {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('add') === '1') {
+      openQuick();
+      params.delete('add');
+      const clean = new URL(window.location.href);
+      clean.search = params.toString();
+      window.history.replaceState({}, '', clean.pathname + (clean.search ? `?${clean.search}` : '') + clean.hash);
+    }
+
+    let saving = false;
+
+    const saveQuick = async () => {
+      if (saving || quick.hidden) return;
+
+      const name = quickInput.value.trim().replace(/\s+/g, ' ');
+      if (!name) {
+        quickInput.value = '';
+        closeQuick();
+        return;
+      }
+
+      saving = true;
+      quickInput.disabled = true;
+      hideQuickMessage();
+
+      const body = new URLSearchParams();
+      for (const [key, value] of new FormData(quickForm).entries()) {
+        body.append(key, String(value));
+      }
+      body.set('name', name);
+
+      try {
+        const response = await fetch(quickForm.action, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+          },
+          body: body.toString(),
+          credentials: 'same-origin',
+          keepalive: true
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (response.ok && data.ok) {
+          list.querySelector('[data-prospect-empty]')?.remove();
+          quick.insertAdjacentHTML('afterend', data.row_html || '');
+          quickInput.value = '';
+          closeQuick();
+          showToast(data.message || 'Prospect saved.');
+          return;
+        }
+
+        if (response.status === 409 && data.error === 'duplicate') {
+          showDuplicate(data);
+          return;
+        }
+
+        showQuickMessage(data.message || 'Prospect could not be saved.');
+      } catch (_error) {
+        showQuickMessage('Prospect could not be saved. Try again.');
+      } finally {
+        saving = false;
+        quickInput.disabled = false;
+        if (!quick.hidden) quickInput.focus();
+      }
+    };
+
+    quickInput.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      saveQuick();
+    });
+
+    quickInput.addEventListener('input', hideQuickMessage);
+
+    quickInput.addEventListener('blur', () => {
+      window.setTimeout(() => {
+        if (!saving && !quick.hidden) saveQuick();
+      }, 0);
+    });
+  }
+
+  page.addEventListener('submit', async (event) => {
+    const form = event.target.closest('[data-prospect-delete-form]');
+    if (!form) return;
+
+    event.preventDefault();
+    const button = form.querySelector('.prospect-delete-button');
+    if (button) button.disabled = true;
+
+    const body = new URLSearchParams();
+    for (const [key, value] of new FormData(form).entries()) {
+      body.append(key, String(value));
+    }
+
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        body: body.toString(),
+        credentials: 'same-origin'
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok || !data.ok) {
+        if (button) button.disabled = false;
+        showToast(data.message || 'Prospect could not be deleted.', true);
+        return;
+      }
+
+      form.closest('[data-prospect-row]')?.remove();
+      ensureEmpty();
+      showToast(data.message || 'Prospect deleted.');
+    } catch (_error) {
+      if (button) button.disabled = false;
+      showToast('Prospect could not be deleted. Try again.', true);
+    }
+  });
+})();

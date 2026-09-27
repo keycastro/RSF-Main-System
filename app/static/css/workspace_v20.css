@@ -355,3 +355,30 @@ a.simple-row:hover{background:#fafcfb}
 .prospect-duplicate p{margin:0 0 12px;font-size:12px;color:#6f5325}
 .prospect-duplicate-actions{display:flex;gap:8px;flex-wrap:wrap}
 @media(max-width:620px){.prospects-head{align-items:stretch;flex-direction:column}.prospects-head .button{width:100%;text-align:center}.prospect-date-nav{display:grid;grid-template-columns:42px minmax(0,1fr) 42px;width:100%}.prospect-date-picker-wrap{min-width:0}.prospect-date-picker{min-width:0;padding:0 10px}.prospect-date-display{overflow:hidden;text-overflow:ellipsis}}
+
+
+/* v1.14.0 — inline Prospect quick-add and permanent delete */
+.prospect-quick-add{padding:12px 16px;border-bottom:1px solid var(--ux-section-border);background:#fbfdfc}
+.prospect-quick-form{margin:0}
+.prospect-quick-input{display:block;width:100%;min-height:42px;padding:9px 12px;border:1px solid #c8aa71;border-radius:9px;background:#fff;color:var(--ux-section-ink);font:inherit;font-size:13px;font-weight:700;outline:none}
+.prospect-quick-input:focus{border-color:var(--workspace-emerald);box-shadow:0 0 0 2px rgba(27,94,74,.10)}
+.prospect-quick-input::placeholder{color:#8b9692;font-weight:600}
+.prospect-quick-message{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;font-size:11.5px;color:#8d4b43}
+.prospect-quick-message strong{color:#8d4b43}
+.prospect-quick-message span{color:#7f6c67}
+.prospect-quick-message a{font-weight:800;color:var(--workspace-emerald);text-decoration:none}
+.prospect-row-meta{display:flex;align-items:center}
+.prospect-delete-form{display:flex;align-items:center;margin:0}
+.prospect-delete-button{display:inline-flex;align-items:center;justify-content:center;width:29px;height:29px;padding:0;border:0;border-radius:7px;background:transparent;color:#b54138;cursor:pointer}
+.prospect-delete-button:hover{background:#fff0ee;color:#9f2f27}
+.prospect-delete-button:focus-visible{outline:2px solid #d38b84;outline-offset:1px}
+.prospect-delete-button:disabled{opacity:.45;cursor:default}
+.prospect-delete-button svg{width:15px;height:15px;display:block}
+.prospect-toast{position:fixed;top:78px;right:22px;z-index:1200;max-width:min(340px,calc(100vw - 32px));padding:10px 13px;border-radius:9px;background:#174f3f;color:#fff;box-shadow:0 8px 26px rgba(20,43,35,.18);font-size:12px;font-weight:800}
+.prospect-toast.is-error{background:#8f3b33}
+@media(max-width:620px){
+  .prospect-row{align-items:center}
+  .prospect-row .simple-row-end{align-items:center;flex-direction:row}
+  .prospect-row-meta{text-align:right}
+  .prospect-toast{top:68px;right:14px}
+}

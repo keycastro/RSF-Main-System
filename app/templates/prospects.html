@@ -6,7 +6,7 @@
       <h1>Prospects</h1>
       <p>Potential clients found through research before any call, email, or message.</p>
     </div>
-    <a class="button primary" href="{{ url_for('main.prospect_new') }}">Add Prospect</a>
+    <button class="button primary" type="button" data-prospect-add-trigger data-prospect-today-url="{{ url_for('main.prospects', add='1') }}">Add Prospect</button>
   </div>
 
   <form class="prospect-date-form" method="get" action="{{ url_for('main.prospects') }}">
@@ -41,25 +41,25 @@
       </div>
     </div>
 
-    <div class="simple-list">
-      {% for prospect in prospects %}
-        <div class="simple-row simple-row-static prospect-row" id="prospect-{{ prospect['id'] }}">
-          <div>
-            <strong>{{ prospect['name'] }}</strong>
-            <span class="prospect-status">{{ prospect_status_labels.get(prospect['status'], prospect['status']|human_status) }}</span>
-          </div>
-          <div class="simple-row-end">
-            {% if is_today and prospect['recorded_date'] != selected_date %}
-              <small class="prospect-carry">Carried forward · Recorded {{ prospect['recorded_date']|dateonly }}</small>
-            {% else %}
-              <small>Recorded {{ prospect['recorded_date']|dateonly }}</small>
-            {% endif %}
-          </div>
+    <div class="simple-list" data-prospect-list>
+      {% if is_today %}
+        <div class="prospect-quick-add" data-prospect-quick-add hidden>
+          <form class="prospect-quick-form" method="post" action="{{ url_for('main.prospect_new') }}" data-prospect-quick-form>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input class="prospect-quick-input" type="text" name="name" maxlength="200" autocomplete="off" placeholder="Prospect name" aria-label="Prospect name" data-prospect-quick-input>
+          </form>
+          <div class="prospect-quick-message" data-prospect-quick-message hidden aria-live="polite"></div>
         </div>
+      {% endif %}
+
+      {% for prospect in prospects %}
+        {% include '_prospect_row.html' %}
       {% else %}
-        <div class="simple-empty">No prospects for this date.</div>
+        <div class="simple-empty" data-prospect-empty>No prospects for this date.</div>
       {% endfor %}
     </div>
   </section>
+
+  <div class="prospect-toast" data-prospect-toast hidden role="status" aria-live="polite"></div>
 </section>
 {% endblock %}

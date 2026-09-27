@@ -787,89 +787,131 @@ def prospects():
 @bp.route("/prospects/new", methods=["GET", "POST"])
 @login_required
 def prospect_new():
+    if request.method == "GET":
+        return redirect(url_for("main.prospects"))
+
+    validate_csrf()
     db = get_db()
-    duplicate = None
-    submitted_name = ""
+    wants_json = "application/json" in request.headers.get("Accept", "")
+    submitted_name = " ".join((request.form.get("name", "") or "").split())
+    errors = []
 
-    if request.method == "POST":
-        validate_csrf()
-        submitted_name = " ".join((request.form.get("name", "") or "").split())
-        errors = []
+    if not submitted_name:
+        errors.append("Prospect name is required.")
+    elif len(submitted_name) > 200:
+        errors.append("Prospect name must be 200 characters or fewer.")
 
-        if not submitted_name:
-            errors.append("Prospect name is required.")
-        elif len(submitted_name) > 200:
-            errors.append("Prospect name must be 200 characters or fewer.")
+    name_norm = _normalize_prospect_name(submitted_name)
 
-        name_norm = _normalize_prospect_name(submitted_name)
+    def duplicate_response(duplicate):
+        view_url = url_for("main.prospects", date=duplicate["recorded_date"]) + f"#prospect-{duplicate['id']}"
+        if wants_json:
+            return jsonify(
+                {
+                    "ok": False,
+                    "error": "duplicate",
+                    "message": "Prospect already exists.",
+                    "duplicate": {
+                        "id": duplicate["id"],
+                        "name": duplicate["name"],
+                        "recorded_date": duplicate["recorded_date"],
+                        "view_url": view_url,
+                    },
+                }
+            ), 409
+        flash("Prospect already exists.", "error")
+        return redirect(view_url)
 
-        if not errors:
-            duplicate = db.execute(
-                "SELECT id,name,status,recorded_date FROM prospects WHERE name_norm=? LIMIT 1",
-                (name_norm,),
-            ).fetchone()
+    if errors:
+        if wants_json:
+            return jsonify({"ok": False, "error": "validation", "message": errors[0]}), 400
+        for error in errors:
+            flash(error, "error")
+        return redirect(url_for("main.prospects"))
 
-        if duplicate:
-            return render_template(
-                "prospect_form.html",
-                title="Add Prospect",
-                submitted_name=submitted_name,
-                duplicate=duplicate,
-                prospect_status_labels=PROSPECT_STATUS_LABELS,
-            )
+    duplicate = db.execute(
+        "SELECT id,name,status,recorded_date FROM prospects WHERE name_norm=? LIMIT 1",
+        (name_norm,),
+    ).fetchone()
+    if duplicate:
+        return duplicate_response(duplicate)
 
-        if errors:
-            for error in errors:
-                flash(error, "error")
-            return render_template(
-                "prospect_form.html",
-                title="Add Prospect",
-                submitted_name=submitted_name,
-                duplicate=None,
-                prospect_status_labels=PROSPECT_STATUS_LABELS,
-            )
-
-        now = utcnow_iso()
-        recorded_date = today_str()
-        try:
-            cur = db.execute(
-                """INSERT INTO prospects(name,name_norm,status,recorded_date,created_by_user_id,created_at,updated_at)
-                   VALUES (?,?,'NOT_CONTACTED',?,?,?,?)""",
-                (submitted_name, name_norm, recorded_date, g.user["id"], now, now),
-            )
-        except (sqlite3.IntegrityError, IntegrityError):
-            db.rollback()
-            duplicate = db.execute(
-                "SELECT id,name,status,recorded_date FROM prospects WHERE name_norm=? LIMIT 1",
-                (name_norm,),
-            ).fetchone()
-            return render_template(
-                "prospect_form.html",
-                title="Add Prospect",
-                submitted_name=submitted_name,
-                duplicate=duplicate,
-                prospect_status_labels=PROSPECT_STATUS_LABELS,
-            )
-
-        prospect_id = cur.lastrowid
-        log_activity(
-            "PROSPECT_CREATED",
-            "prospect",
-            prospect_id,
-            "Prospect added.",
-            {"recorded_date": recorded_date},
+    now = utcnow_iso()
+    recorded_date = today_str()
+    try:
+        cur = db.execute(
+            """INSERT INTO prospects(name,name_norm,status,recorded_date,created_by_user_id,created_at,updated_at)
+               VALUES (?,?,'NOT_CONTACTED',?,?,?,?)""",
+            (submitted_name, name_norm, recorded_date, g.user["id"], now, now),
         )
-        db.commit()
-        flash("Prospect added.", "success")
-        return redirect(url_for("main.prospects") + f"#prospect-{prospect_id}")
+    except (sqlite3.IntegrityError, IntegrityError):
+        db.rollback()
+        duplicate = db.execute(
+            "SELECT id,name,status,recorded_date FROM prospects WHERE name_norm=? LIMIT 1",
+            (name_norm,),
+        ).fetchone()
+        if duplicate:
+            return duplicate_response(duplicate)
+        if wants_json:
+            return jsonify({"ok": False, "error": "save_failed", "message": "Prospect could not be saved."}), 409
+        flash("Prospect could not be saved.", "error")
+        return redirect(url_for("main.prospects"))
 
-    return render_template(
-        "prospect_form.html",
-        title="Add Prospect",
-        submitted_name=submitted_name,
-        duplicate=None,
-        prospect_status_labels=PROSPECT_STATUS_LABELS,
+    prospect_id = cur.lastrowid
+    log_activity(
+        "PROSPECT_CREATED",
+        "prospect",
+        prospect_id,
+        "Prospect added.",
+        {"recorded_date": recorded_date},
     )
+    db.commit()
+
+    prospect = db.execute("SELECT * FROM prospects WHERE id=?", (prospect_id,)).fetchone()
+
+    if wants_json:
+        row_html = render_template(
+            "_prospect_row.html",
+            prospect=prospect,
+            is_today=True,
+            selected_date=recorded_date,
+            prospect_status_labels=PROSPECT_STATUS_LABELS,
+        )
+        return jsonify(
+            {
+                "ok": True,
+                "message": "Prospect saved.",
+                "prospect_id": prospect_id,
+                "row_html": row_html,
+            }
+        )
+
+    flash("Prospect saved.", "success")
+    return redirect(url_for("main.prospects") + f"#prospect-{prospect_id}")
+
+
+@bp.post("/prospects/<int:prospect_id>/delete")
+@login_required
+def prospect_delete(prospect_id: int):
+    validate_csrf()
+    db = get_db()
+    wants_json = "application/json" in request.headers.get("Accept", "")
+    prospect = db.execute("SELECT id FROM prospects WHERE id=?", (prospect_id,)).fetchone()
+
+    if not prospect:
+        if wants_json:
+            return jsonify({"ok": False, "error": "not_found", "message": "Prospect not found."}), 404
+        abort(404)
+
+    db.execute("DELETE FROM prospects WHERE id=?", (prospect_id,))
+    db.commit()
+
+    if wants_json:
+        return jsonify({"ok": True, "message": "Prospect deleted."})
+
+    selected = _selected_prospect_date(request.form.get("date"))
+    flash("Prospect deleted.", "success")
+    return redirect(url_for("main.prospects", date=selected.isoformat()))
 
 
 @bp.get("/clients")
