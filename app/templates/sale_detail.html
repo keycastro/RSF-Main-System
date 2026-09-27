@@ -2,7 +2,7 @@
 {% block content %}
 <div class="page-head workspace-page-head">
   <div><div class="title-line"><span class="badge status-{{ sale.payment_status|lower }}">{{ sale.payment_status|human_status }}</span>{% if g.user.role=='admin' %}<span class="muted">{{ sale.partner_name }}</span>{% endif %}</div><h1>{{ sale.client_name }}</h1><p>{{ sale.product_service }} · {{ sale.sale_date|dateonly }}</p></div>
-  <a class="button secondary" href="{{ url_for('main.sales_list') }}">Back to Sales</a>
+  <a class="button secondary" href="{{ url_for('main.money_hub') }}">Back to Money</a>
 </div>
 
 <div class="sale-record-layout">
@@ -32,7 +32,7 @@
   </section>
 
   <aside class="workspace-section sale-linked-section">
-    <div class="section-head"><div><h2>Commission</h2><p>Commission for this sale.</p></div><a href="{{ url_for('main.commissions_list') }}">View all</a></div>
+    <div class="section-head"><div><h2>Commission</h2><p>Commission for this sale.</p></div><a href="{{ url_for('main.money_hub') }}">View all</a></div>
     {% if commission %}<div class="linked-summary-list"><div><span>Status</span><strong><span class="badge status-{{ commission.status|lower }}">{{ commission.status|human_status }}</span></strong></div><div><span>Rate</span><strong>{{ commission.rate_bp_snapshot|rate }}</strong></div><div><span>Original</span><strong>{{ fmt_money(commission.commission_amount_cents, True, setting('currency_code','USD')) }}</strong></div>{% if correction_total %}<div><span>Corrections</span><strong>{{ fmt_money(correction_total, True, setting('currency_code','USD')) }}</strong></div><div><span>Current total</span><strong>{{ fmt_money(adjusted_commission, True, setting('currency_code','USD')) }}</strong></div>{% endif %}</div>{% else %}<div class="empty compact-empty"><strong>No commission record</strong></div>{% endif %}
   </aside>
 </div>
