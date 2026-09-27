@@ -1190,34 +1190,6 @@ textarea.prospect-inline-editor{resize:vertical}
   text-overflow:ellipsis;
   white-space:nowrap
 }
-.deal-document-viewer-tools{
-  display:flex;
-  align-items:center;
-  gap:5px;
-  flex:0 0 auto
-}
-.deal-document-pan-button{
-  display:grid;
-  place-items:center;
-  width:34px;
-  height:34px;
-  padding:0;
-  border:1px solid #d7e1dd;
-  border-radius:8px;
-  background:#fff;
-  color:#39584d;
-  font:inherit;
-  font-size:16px;
-  line-height:1;
-  cursor:pointer
-}
-.deal-document-pan-button:hover{background:#f0f4f2}
-.deal-document-pan-button[aria-pressed="true"]{
-  border-color:#9fbfae;
-  background:#e4f1eb;
-  color:#14543f
-}
-.deal-document-pan-button:focus-visible{outline:2px solid #8fb7a5;outline-offset:2px}
 .deal-document-viewer-close{
   display:grid;
   place-items:center;
@@ -1251,7 +1223,6 @@ textarea.prospect-inline-editor{resize:vertical}
   touch-action:none;
   user-select:none
 }
-.deal-document-pan-layer[hidden]{display:none!important}
 .deal-document-pan-layer.is-dragging{cursor:grabbing}
 .deal-document-viewer-footer{
   display:flex;

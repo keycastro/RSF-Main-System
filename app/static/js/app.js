@@ -2167,11 +2167,9 @@
   const viewerBody = page.querySelector('[data-deal-document-viewer-body]');
   const viewerDownload = page.querySelector('[data-deal-document-viewer-download]');
   const viewerClose = page.querySelector('[data-deal-document-viewer-close]');
-  const panToggle = page.querySelector('[data-deal-document-pan-toggle]');
   const panLayer = page.querySelector('[data-deal-document-pan-layer]');
 
   let viewerZoom = 1;
-  let panEnabled = false;
   let dragging = false;
   let dragStartX = 0;
   let dragStartY = 0;
@@ -2220,19 +2218,10 @@
     }
   };
 
-  const setPanEnabled = (enabled) => {
-    panEnabled = Boolean(enabled);
-    if (panToggle) panToggle.setAttribute('aria-pressed', panEnabled ? 'true' : 'false');
-    if (panLayer) {
-      panLayer.hidden = !panEnabled;
-      panLayer.classList.remove('is-dragging');
-    }
-    dragging = false;
-  };
-
   const resetViewerTools = () => {
     viewerZoom = 1;
-    setPanEnabled(false);
+    dragging = false;
+    panLayer?.classList.remove('is-dragging');
     try {
       const doc = viewerFrame?.contentDocument;
       if (doc?.body) doc.body.style.zoom = '1';
@@ -2265,12 +2254,8 @@
   viewerFrame?.addEventListener('load', bindFrameWheel);
   viewerBody?.addEventListener('wheel', handleViewerWheel, {passive:false});
 
-  panToggle?.addEventListener('click', () => {
-    setPanEnabled(!panEnabled);
-  });
-
   panLayer?.addEventListener('pointerdown', (event) => {
-    if (!panEnabled || event.button !== 0) return;
+    if (event.button !== 0) return;
     const targetWindow = viewerWindow();
     if (!targetWindow) return;
     dragging = true;
