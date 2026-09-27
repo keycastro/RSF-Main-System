@@ -2161,6 +2161,47 @@
     }
   });
 
+  const notesViewer = page.querySelector('[data-deal-notes-viewer]');
+  const notesViewerInput = page.querySelector('[data-deal-notes-viewer-input]');
+  const notesViewerClose = page.querySelector('[data-deal-notes-viewer-close]');
+  let notesSource = null;
+
+  const closeDealNotesViewer = () => {
+    if (notesViewer?.open) notesViewer.close();
+    notesSource = null;
+  };
+
+  page.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-deal-notes-expand]');
+    if (!trigger) return;
+    const notesWrap = trigger.closest('.deal-notes-compact');
+    const source = notesWrap?.querySelector('[data-deal-notes-compact]');
+    if (!source) return;
+
+    notesSource = source;
+    if (notesViewerInput) notesViewerInput.value = source.value || '';
+
+    if (notesViewer && typeof notesViewer.showModal === 'function') {
+      notesViewer.showModal();
+      window.setTimeout(() => notesViewerInput?.focus(), 0);
+      return;
+    }
+
+    source.focus();
+  });
+
+  notesViewerInput?.addEventListener('input', () => {
+    if (notesSource) notesSource.value = notesViewerInput.value;
+  });
+
+  notesViewerClose?.addEventListener('click', closeDealNotesViewer);
+  notesViewer?.addEventListener('cancel', () => {
+    notesSource = null;
+  });
+  notesViewer?.addEventListener('click', (event) => {
+    if (event.target === notesViewer) closeDealNotesViewer();
+  });
+
   const viewer = page.querySelector('[data-deal-document-viewer]');
   const viewerTitle = page.querySelector('[data-deal-document-viewer-title]');
   const viewerFrame = page.querySelector('[data-deal-document-viewer-frame]');

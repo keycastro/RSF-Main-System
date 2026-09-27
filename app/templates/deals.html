@@ -57,9 +57,22 @@
               <span>Next Step</span>
               <input type="text" name="next_step" maxlength="500" value="{{ deal['next_step'] }}">
             </label>
-            <label class="deal-field-wide">
+            <label class="deal-field-wide deal-notes-field">
               <span>Notes After Conversation</span>
-              <textarea name="notes_after_conversation" maxlength="3000" rows="4">{{ deal['notes_after_conversation'] }}</textarea>
+              <div class="deal-notes-compact">
+                <textarea name="notes_after_conversation" maxlength="3000" rows="1" data-deal-notes-compact>{{ deal['notes_after_conversation'] }}</textarea>
+                <button
+                  class="deal-notes-expand-button"
+                  type="button"
+                  data-deal-notes-expand
+                  aria-label="Open full Notes After Conversation"
+                  title="Open full notes"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M14 4h6v6h-2V7.4l-4.8 4.8-1.4-1.4L16.6 6H14V4ZM10 20H4v-6h2v2.6l4.8-4.8 1.4 1.4L7.4 18H10v2Z" fill="currentColor"/>
+                  </svg>
+                </button>
+              </div>
             </label>
           </div>
         </form>
@@ -163,6 +176,18 @@
       </div>
     {% endfor %}
   </div>
+
+  <dialog class="deal-notes-viewer" data-deal-notes-viewer aria-labelledby="deal-notes-viewer-title">
+    <div class="deal-notes-viewer-card">
+      <header class="deal-notes-viewer-head">
+        <h2 id="deal-notes-viewer-title">Notes After Conversation</h2>
+        <button class="deal-notes-viewer-close" type="button" data-deal-notes-viewer-close aria-label="Close full notes" title="Close">×</button>
+      </header>
+      <div class="deal-notes-viewer-body">
+        <textarea maxlength="3000" data-deal-notes-viewer-input aria-label="Full Notes After Conversation"></textarea>
+      </div>
+    </div>
+  </dialog>
 
   <dialog class="deal-document-viewer" data-deal-document-viewer aria-labelledby="deal-document-viewer-title">
     <div class="deal-document-viewer-card">

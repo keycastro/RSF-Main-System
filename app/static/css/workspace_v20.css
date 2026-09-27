@@ -883,6 +883,106 @@ textarea.prospect-inline-editor{resize:vertical}
   box-shadow:0 0 0 2px rgba(27,94,74,.10)
 }
 .deal-field-wide{grid-column:1/-1}
+.deal-notes-compact{position:relative}
+.deal-notes-compact textarea{
+  display:block;
+  height:39px;
+  min-height:39px;
+  max-height:39px;
+  padding-right:42px;
+  resize:none;
+  overflow:hidden
+}
+.deal-notes-expand-button{
+  position:absolute;
+  right:6px;
+  bottom:5px;
+  display:grid;
+  place-items:center;
+  width:28px;
+  height:28px;
+  padding:0;
+  border:1px solid #d7e1dd;
+  border-radius:7px;
+  background:#f8faf9;
+  color:#53665f;
+  cursor:pointer
+}
+.deal-notes-expand-button:hover{background:#eef4f1;color:var(--workspace-emerald)}
+.deal-notes-expand-button:focus-visible{outline:2px solid rgba(27,94,74,.22);outline-offset:1px}
+.deal-notes-expand-button svg{width:15px;height:15px}
+.deal-notes-viewer{
+  width:min(760px,calc(100vw - 28px));
+  height:min(620px,calc(100vh - 28px));
+  padding:0;
+  border:0;
+  border-radius:14px;
+  background:transparent
+}
+.deal-notes-viewer::backdrop{background:rgba(14,27,23,.58)}
+.deal-notes-viewer-card{
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr);
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  border:1px solid #d8e2de;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 24px 70px rgba(14,27,23,.28)
+}
+.deal-notes-viewer-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:13px 15px;
+  border-bottom:1px solid #e3eae7
+}
+.deal-notes-viewer-head h2{
+  margin:0;
+  color:var(--ux-section-ink);
+  font-size:14px;
+  line-height:1.35
+}
+.deal-notes-viewer-close{
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  flex:0 0 auto;
+  padding:0;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:#4f625b;
+  font:inherit;
+  font-size:25px;
+  line-height:1;
+  cursor:pointer
+}
+.deal-notes-viewer-close:hover{background:#f0f4f2;color:#1b322b}
+.deal-notes-viewer-body{min-height:0;padding:15px;background:#f7faf8}
+.deal-notes-viewer-body textarea{
+  display:block;
+  width:100%;
+  height:100%;
+  min-height:100%;
+  padding:12px 13px;
+  border:1px solid #d7e1dd;
+  border-radius:9px;
+  background:#fff;
+  color:var(--ux-section-ink);
+  font:inherit;
+  font-size:13px;
+  line-height:1.5;
+  resize:none;
+  outline:none
+}
+.deal-notes-viewer-body textarea:focus{
+  border-color:var(--workspace-emerald);
+  box-shadow:0 0 0 2px rgba(27,94,74,.10)
+}
 .deals-empty{grid-column:1/-1}
 @media(max-width:900px){
   .deals-list{grid-template-columns:1fr}
