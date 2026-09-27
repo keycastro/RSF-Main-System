@@ -382,3 +382,12 @@ a.simple-row:hover{background:#fafcfb}
   .prospect-row-meta{text-align:right}
   .prospect-toast{top:68px;right:14px}
 }
+
+
+/* v1.14.1 — date navigation is the Prospects table header */
+.prospect-list-head{padding:10px 16px}
+.prospect-list-head .prospect-date-form{margin:0}
+.prospect-list-head .prospect-date-nav{border-radius:9px}
+@media(max-width:620px){
+  .prospect-list-head{padding:10px}
+}

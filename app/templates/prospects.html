@@ -9,36 +9,27 @@
     <button class="button primary" type="button" data-prospect-add-trigger data-prospect-today-url="{{ url_for('main.prospects', add='1') }}">Add Prospect</button>
   </div>
 
-  <form class="prospect-date-form" method="get" action="{{ url_for('main.prospects') }}">
-    <div class="prospect-date-nav" aria-label="Prospect date navigation">
-      <a class="prospect-date-step" href="{{ url_for('main.prospects', date=previous_date) }}" aria-label="Previous day" title="Previous day">‹</a>
-
-      <div class="prospect-date-picker-wrap">
-        <button class="prospect-date-picker" type="button" data-prospect-date-trigger aria-label="Choose prospect date">
-          <span class="prospect-date-display">{{ 'Today · ' if is_today else '' }}{{ selected_date|dateonly }}</span>
-          <span class="prospect-date-arrow" aria-hidden="true">▾</span>
-        </button>
-        <input class="prospect-date-native" id="prospect-date" type="date" name="date" value="{{ selected_date }}" max="{{ today }}" aria-label="Choose prospect date" data-prospect-date-input>
-      </div>
-
-      {% if next_date %}
-        <a class="prospect-date-step" href="{{ url_for('main.prospects', date=next_date) }}" aria-label="Next day" title="Next day">›</a>
-      {% else %}
-        <span class="prospect-date-step is-disabled" aria-hidden="true">›</span>
-      {% endif %}
-    </div>
-  </form>
-
   <section class="simple-section">
-    <div class="simple-section-head">
-      <div>
-        <h2>{{ 'Today' if is_today else selected_date|dateonly }}</h2>
-        {% if is_today %}
-          <p>New prospects today plus older prospects that are Not Contacted or No Answer.</p>
-        {% else %}
-          <p>Prospects originally recorded on this date.</p>
-        {% endif %}
-      </div>
+    <div class="simple-section-head prospect-list-head">
+      <form class="prospect-date-form" method="get" action="{{ url_for('main.prospects') }}">
+        <div class="prospect-date-nav" aria-label="Prospect date navigation">
+          <a class="prospect-date-step" href="{{ url_for('main.prospects', date=previous_date) }}" aria-label="Previous day" title="Previous day">‹</a>
+
+          <div class="prospect-date-picker-wrap">
+            <button class="prospect-date-picker" type="button" data-prospect-date-trigger aria-label="Choose prospect date">
+              <span class="prospect-date-display">{{ 'Today · ' if is_today else '' }}{{ selected_date|dateonly }}</span>
+              <span class="prospect-date-arrow" aria-hidden="true">▾</span>
+            </button>
+            <input class="prospect-date-native" id="prospect-date" type="date" name="date" value="{{ selected_date }}" max="{{ today }}" aria-label="Choose prospect date" data-prospect-date-input>
+          </div>
+
+          {% if next_date %}
+            <a class="prospect-date-step" href="{{ url_for('main.prospects', date=next_date) }}" aria-label="Next day" title="Next day">›</a>
+          {% else %}
+            <span class="prospect-date-step is-disabled" aria-hidden="true">›</span>
+          {% endif %}
+        </div>
+      </form>
     </div>
 
     <div class="simple-list" data-prospect-list>
