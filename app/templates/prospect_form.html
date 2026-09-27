@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="prospect-form-wrap">
+  <div class="simple-head">
+    <h1>Add Prospect</h1>
+    <p>Add a potential client found through research. New prospects start as Not Contacted.</p>
+  </div>
+
+  {% if duplicate %}
+    <div class="prospect-duplicate" role="alert">
+      <strong>Prospect already exists.</strong>
+      <p>Recorded on {{ duplicate['recorded_date']|dateonly }}. This prospect was not added again.</p>
+      <div class="prospect-duplicate-actions">
+        <a class="button primary" href="{{ url_for('main.prospects', date=duplicate['recorded_date']) }}#prospect-{{ duplicate['id'] }}">View Prospect</a>
+        <a class="button secondary" href="{{ url_for('main.prospect_new') }}">Dismiss</a>
+      </div>
+    </div>
+  {% endif %}
+
+  <form class="prospect-form-card" method="post" action="{{ url_for('main.prospect_new') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="prospect-name">Prospect name
+      <input id="prospect-name" name="name" type="text" maxlength="200" value="{{ submitted_name }}" placeholder="Business or person" required autofocus>
+    </label>
+    <div class="prospect-form-actions">
+      <button class="button primary" type="submit">Save Prospect</button>
+      <a class="button secondary" href="{{ url_for('main.prospects') }}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}
