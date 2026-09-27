@@ -93,8 +93,6 @@ CREATE TABLE IF NOT EXISTS deals (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_deals_status_updated ON deals(status,updated_at DESC,id DESC);
-CREATE INDEX IF NOT EXISTS idx_deals_followup ON deals(followup_date,status,id);
 
 CREATE TABLE IF NOT EXISTS leads (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
