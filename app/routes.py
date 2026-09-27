@@ -1275,6 +1275,11 @@ def prospect_update(prospect_id: int):
     else:
         value = raw_value.strip()[:limits[field_name]]
         db.execute(f'UPDATE prospects SET "{field_name}"=?,updated_at=? WHERE id=?', (value, now, prospect_id))
+        if field_name == "email":
+            db.execute(
+                "UPDATE deals SET email=?,updated_at=? WHERE prospect_id=?",
+                (value, now, prospect_id),
+            )
 
     db.commit()
     prospect = db.execute("SELECT * FROM prospects WHERE id=?", (prospect_id,)).fetchone()
@@ -1364,7 +1369,7 @@ def deals():
     rows = db.execute(
         """SELECT d.*,p.name AS prospect_name,p.recorded_date AS prospect_recorded_date,
                   p.status AS workflow_status,p.contact AS prospect_contact,
-                  p.location AS prospect_location
+                  p.location AS prospect_location,p.email AS prospect_email
            FROM deals d
            JOIN prospects p ON p.id=d.prospect_id
            WHERE p.status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','LOST')
@@ -1714,8 +1719,8 @@ def deal_update(deal_id: int):
             ),
         )
     db.execute(
-        "UPDATE prospects SET status=?,contact=?,location=?,updated_at=? WHERE id=?",
-        (status, contact_person, location, now, deal["prospect_id"]),
+        "UPDATE prospects SET status=?,contact=?,location=?,email=?,updated_at=? WHERE id=?",
+        (status, contact_person, location, email, now, deal["prospect_id"]),
     )
     db.commit()
     if async_request:
