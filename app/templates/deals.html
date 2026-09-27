@@ -93,18 +93,28 @@
 
         <section class="deal-documents" aria-labelledby="deal-documents-{{ deal['id'] }}">
           <div class="deal-documents-head">
-            <div>
-              <h3 id="deal-documents-{{ deal['id'] }}">Documents / Files</h3>
+            <div class="deal-documents-heading-copy">
+              <div class="deal-documents-title-row">
+                <h3 id="deal-documents-{{ deal['id'] }}">Documents / Files</h3>
+                <button
+                  class="deal-document-add-button"
+                  type="button"
+                  aria-label="Add Deal file"
+                  aria-expanded="false"
+                  aria-controls="deal-document-upload-{{ deal['id'] }}"
+                  data-deal-document-upload-toggle
+                >+</button>
+              </div>
               <p>Keep important Deal documents organized here.</p>
             </div>
             <button
-              class="deal-document-add-button"
+              class="deal-documents-collapse-button"
               type="button"
-              aria-label="Add Deal file"
+              aria-label="Show Deal files"
               aria-expanded="false"
-              aria-controls="deal-document-upload-{{ deal['id'] }}"
-              data-deal-document-upload-toggle
-            >+</button>
+              aria-controls="deal-document-list-{{ deal['id'] }}"
+              data-deal-documents-toggle
+            ><span aria-hidden="true">⌄</span></button>
           </div>
 
           <form
@@ -144,7 +154,7 @@
             </div>
           </form>
 
-          <div class="deal-document-list">
+          <div class="deal-document-list" id="deal-document-list-{{ deal['id'] }}" data-deal-document-list hidden>
             {% for document in deal_documents.get(deal['id'], []) %}
               <div class="deal-document-row">
                 <div class="deal-document-main">

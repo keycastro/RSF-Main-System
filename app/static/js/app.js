@@ -2166,6 +2166,18 @@
   if (!page) return;
 
   page.addEventListener('click', (event) => {
+    const documentsToggle = event.target.closest('[data-deal-documents-toggle]');
+    if (documentsToggle) {
+      const targetId = documentsToggle.getAttribute('aria-controls') || '';
+      const fileList = targetId ? document.getElementById(targetId) : null;
+      if (!fileList) return;
+      const opening = fileList.hidden;
+      fileList.hidden = !opening;
+      documentsToggle.setAttribute('aria-expanded', opening ? 'true' : 'false');
+      documentsToggle.setAttribute('aria-label', opening ? 'Hide Deal files' : 'Show Deal files');
+      return;
+    }
+
     const toggle = event.target.closest('[data-deal-document-upload-toggle]');
     if (!toggle) return;
     const targetId = toggle.getAttribute('aria-controls') || '';

@@ -1450,3 +1450,47 @@ textarea.prospect-inline-editor{resize:vertical}
 .prospect-inline-editor.prospect-uppercase-editor{
   text-transform:uppercase
 }
+
+
+/* v1.18.11 — collapsible Deal files + inline add button */
+.deal-documents-heading-copy{min-width:0}
+.deal-documents-title-row{
+  display:flex;
+  align-items:center;
+  gap:8px
+}
+.deal-documents-title-row .deal-document-add-button{
+  width:27px;
+  height:27px;
+  border-radius:8px;
+  font-size:19px
+}
+.deal-documents-collapse-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:28px;
+  height:28px;
+  flex:0 0 auto;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#6f817a;
+  font:inherit;
+  font-size:20px;
+  line-height:1;
+  cursor:pointer
+}
+.deal-documents-collapse-button span{
+  display:block;
+  transition:transform .16s ease
+}
+.deal-documents-collapse-button[aria-expanded="true"] span{
+  transform:rotate(180deg)
+}
+.deal-documents-collapse-button:focus-visible{
+  outline:2px solid #c8aa71;
+  outline-offset:2px;
+  border-radius:6px
+}
+.deal-document-list[hidden]{display:none!important}
