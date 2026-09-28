@@ -2495,3 +2495,214 @@ textarea.prospect-inline-editor{resize:vertical}
 ){
   color:var(--rsf-visual-text-ink);
 }
+
+
+/* v1.18.46 — Prospect cards redesigned from the approved Deals card language */
+.prospects-page .simple-list{
+  padding:0;
+  margin-top:16px;
+  background:transparent;
+}
+.prospects-page .prospect-card{
+  background:#f1f6f3;
+  border-color:#c3d3cc;
+  box-shadow:0 7px 20px rgba(25,55,46,.09);
+}
+.prospects-page .prospect-card:hover{
+  border-color:#b8cbc3;
+  box-shadow:0 9px 24px rgba(25,55,46,.105);
+}
+.prospects-page .prospect-card[open]{
+  border-color:#b8cbc3;
+  box-shadow:0 9px 24px rgba(25,55,46,.105);
+}
+.prospects-page .prospect-card-summary{
+  background:#f1f6f3;
+}
+.prospects-page .prospect-card-top{
+  min-height:76px;
+  padding:16px 70px 15px 18px;
+  gap:14px;
+  background:#eaf2ee;
+  border-bottom:1px solid #d2dfda;
+}
+.prospects-page .prospect-card-title>span,
+.prospects-page .prospect-card-platform>span,
+.prospects-page .prospect-card-meta span,
+.prospects-page .prospect-detail>span{
+  color:#5f706a;
+  font-size:9px;
+  font-weight:650;
+  letter-spacing:.055em;
+}
+.prospects-page .prospect-card-title>.prospect-edit-value,
+.prospects-page .prospect-card-platform>.prospect-edit-value{
+  min-height:24px;
+  padding:1px 0;
+  font-size:12.5px;
+  font-weight:650;
+  line-height:1.4;
+}
+.prospects-page .prospect-card-meta{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  padding:16px 18px;
+  background:#f1f6f3;
+}
+.prospects-page .prospect-card-meta-item{
+  min-height:58px;
+  padding:9px 11px;
+  border:1px solid #cbd8d3;
+  border-radius:10px;
+  background:#fff;
+}
+.prospects-page .prospect-card-meta-item:nth-child(3){
+  grid-column:1/-1;
+}
+.prospects-page .prospect-card-meta-item>.prospect-edit-value{
+  font-size:12px;
+  font-weight:600;
+  line-height:1.4;
+}
+.prospects-page .prospect-card-meta-item>.prospect-edit-value.prospect-status{
+  font-weight:700;
+}
+.prospects-page .prospect-card-details{
+  padding:16px 18px 18px;
+  border-top:1px solid #dbe5e1;
+  background:#f1f6f3;
+}
+.prospects-page .prospect-detail-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.prospects-page .prospect-detail{
+  min-width:0;
+  min-height:58px;
+  padding:9px 11px;
+  border:1px solid #cbd8d3;
+  border-radius:10px;
+  background:#fff;
+}
+.prospects-page .prospect-detail-full{
+  grid-column:1/-1;
+}
+.prospects-page .prospect-detail>span{
+  margin-bottom:4px;
+}
+.prospects-page .prospect-detail>.prospect-edit-value,
+.prospects-page .prospect-detail>a{
+  font-size:12px;
+  font-weight:500;
+  line-height:1.45;
+}
+.prospects-page .prospect-inline-editor{
+  padding:7px 8px;
+  font-size:12px;
+  line-height:1.4;
+}
+.prospects-page .prospect-contact-attempt{
+  align-content:start;
+}
+.prospects-page .prospect-attempt-control{
+  grid-template-columns:30px minmax(36px,auto) 30px;
+  border-color:#cbd8d3;
+  border-radius:9px;
+}
+.prospects-page .prospect-attempt-control strong{
+  min-width:36px;
+  padding:6px 8px;
+  font-size:11.5px;
+}
+.prospects-page .prospect-attempt-step{
+  width:30px;
+  min-height:30px;
+  font-size:18px;
+}
+.prospects-page .prospect-deal-action{
+  margin:14px -18px -18px;
+  padding:12px 14px;
+  border-top:1px solid #dbe5e1;
+  background:#fff;
+}
+.prospects-page .prospect-deal-action .button{
+  min-height:32px;
+  padding:6px 10px;
+  font-size:10.75px;
+}
+.prospects-page .prospect-card-carry{
+  margin:0 0 12px;
+  padding:7px 9px;
+  border:1px solid #e0d7c5;
+  border-radius:8px;
+  background:#fffaf0;
+}
+@media(min-width:1351px){
+  .prospects-page .prospect-card-details{
+    padding:16px 18px 18px;
+  }
+  .prospects-page .prospect-detail-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+  }
+  .prospects-page .prospect-detail{
+    padding:9px 11px;
+    border-radius:10px;
+  }
+  .prospects-page .prospect-detail>span{
+    margin-bottom:4px;
+    font-size:9px;
+    letter-spacing:.055em;
+  }
+  .prospects-page .prospect-detail>.prospect-edit-value,
+  .prospects-page .prospect-detail>a{
+    font-size:12px;
+    line-height:1.45;
+  }
+  .prospects-page .prospect-inline-editor{
+    padding:7px 8px;
+    font-size:12px;
+    line-height:1.4;
+  }
+  .prospects-page .prospect-deal-action{
+    margin:14px -18px -18px;
+    padding:12px 14px;
+  }
+  .prospects-page .prospect-deal-action .button{
+    min-height:32px;
+    padding:6px 10px;
+    font-size:10.75px;
+  }
+}
+@media(max-width:620px){
+  .prospects-page .simple-list{
+    margin-top:12px;
+  }
+  .prospects-page .prospect-card-top{
+    grid-template-columns:1fr;
+    min-height:0;
+    padding:15px 68px 14px 15px;
+    gap:10px;
+  }
+  .prospects-page .prospect-card-meta{
+    grid-template-columns:1fr;
+    gap:9px;
+    padding:14px 15px;
+  }
+  .prospects-page .prospect-card-meta-item:nth-child(3){
+    grid-column:auto;
+  }
+  .prospects-page .prospect-card-details{
+    padding:14px 15px 15px;
+  }
+  .prospects-page .prospect-detail-grid{
+    grid-template-columns:1fr;
+    gap:9px;
+  }
+  .prospects-page .prospect-detail-full{
+    grid-column:auto;
+  }
+  .prospects-page .prospect-deal-action{
+    margin:12px -15px -15px;
+  }
+}
