@@ -3284,3 +3284,54 @@ textarea.prospect-inline-editor{resize:vertical}
   overflow:hidden;
   resize:none;
 }
+
+
+/* v1.18.74 — reserve a dedicated right-side column for Notes After Conversation expand controls */
+.conversation-notes-compact{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 40px;
+  align-items:center;
+  height:39px;
+  min-height:39px;
+  max-height:39px;
+  border:1px solid #d7e1dd;
+  border-radius:8px;
+  background:#fff;
+  overflow:hidden;
+}
+.deal-card .conversation-notes-compact{
+  border-color:#cbd8d3;
+}
+.conversation-notes-compact textarea[data-deal-notes-compact],
+.conversation-notes-compact textarea[data-prospect-notes-compact],
+.conversation-notes-compact textarea[data-website-notes-compact]{
+  display:block;
+  width:100%;
+  min-width:0;
+  height:37px;
+  min-height:37px;
+  max-height:37px;
+  margin:0;
+  padding:9px 4px 9px 10px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  outline:none;
+  white-space:nowrap;
+  overflow:hidden;
+  resize:none;
+}
+.conversation-notes-compact .deal-notes-expand-button{
+  position:static;
+  right:auto;
+  bottom:auto;
+  align-self:center;
+  justify-self:center;
+  margin:0;
+  z-index:1;
+}
+.conversation-notes-compact:focus-within{
+  border-color:var(--workspace-emerald);
+  box-shadow:0 0 0 2px rgba(27,94,74,.10);
+}
