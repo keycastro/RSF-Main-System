@@ -33,10 +33,6 @@
     </summary>
 
     <div class="prospect-card-details">
-      {% if is_today and prospect['recorded_date'] != selected_date %}
-        <div class="prospect-card-carry">Carried forward · Recorded {{ prospect['recorded_date']|dateonly }}</div>
-      {% endif %}
-
       <div class="prospect-detail-grid">
         <div class="prospect-detail prospect-detail-full prospect-editable-field" data-prospect-edit-field data-prospect-field="problem" data-prospect-editor="textarea" data-prospect-value="{{ prospect['problem'] }}"><span>Problem</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Problem">{{ prospect['problem'] or '—' }}</button></div>
         <div class="prospect-detail prospect-detail-full prospect-editable-field" data-prospect-edit-field data-prospect-field="system_wanted" data-prospect-editor="textarea" data-prospect-value="{{ prospect['system_wanted'] }}"><span>System They Want</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit System They Want">{{ prospect['system_wanted'] or '—' }}</button></div>

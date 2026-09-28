@@ -504,7 +504,6 @@ a.simple-row:hover{background:#fafcfb}
 .prospect-card[open]{border-color:#cbd8d3;box-shadow:0 10px 26px rgba(25,55,46,.09)}
 .prospect-card[open] .prospect-card-summary{background:#fbfdfc}
 .prospect-card-details{padding:18px 20px 20px;border-top:1px solid #e3eae7;background:#fff}
-.prospect-card-carry{margin-bottom:12px;font-size:10.5px;font-weight:750;color:#866f4e}
 .prospect-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .prospect-detail{min-width:0;padding:12px 13px;border:1px solid #e6ece9;border-radius:11px;background:#fbfcfb}
 .prospect-detail-wide{grid-column:span 2}
@@ -2599,7 +2598,7 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 .prospects-page .prospect-card-details{
   padding:16px 18px 18px;
-  border-top:1px solid #dbe5e1;
+  border-top:0;
   background:#f1f6f3;
 }
 .prospects-page .prospect-detail-grid{
@@ -2659,13 +2658,6 @@ textarea.prospect-inline-editor{resize:vertical}
   min-height:32px;
   padding:6px 10px;
   font-size:10.75px;
-}
-.prospects-page .prospect-card-carry{
-  margin:0 0 12px;
-  padding:7px 9px;
-  border:1px solid #e0d7c5;
-  border-radius:8px;
-  background:#fffaf0;
 }
 @media(min-width:1351px){
   .prospects-page .prospect-card-details{
