@@ -645,6 +645,7 @@ class PortfolioSiteTests(unittest.TestCase):
                     "source_title": "FAKE TITLE",
                     "name": "System Buyer",
                     "email": "buyer@example.com",
+                    "phone": "+1 555 010 1001",
                     "company": "Example Properties",
                     "message": "We want to get the existing Property Inventory Hub system as shown.",
                     "website": "",
@@ -737,6 +738,7 @@ class PortfolioSiteTests(unittest.TestCase):
                     "source_title": "FAKE SYSTEM",
                     "name": "Pricing Prospect",
                     "email": "pricing@example.com",
+                    "phone": "+1 555 010 1002",
                     "company": "Example Properties",
                     "message": "We want monthly managed maintenance for our operations system.",
                     "website": "",
@@ -841,6 +843,7 @@ class PortfolioSiteTests(unittest.TestCase):
                     "csrf_token": token,
                     "name": "Sample Prospect",
                     "email": "prospect@example.com",
+                    "phone": "+1 555 010 1003",
                     "company": "Example Rentals",
                     "message": "We need a property operations system to organize our rental workflow.",
                     "website": "",
@@ -871,6 +874,7 @@ class PortfolioSiteTests(unittest.TestCase):
                     "csrf_token": token,
                     "name": "Real Prospect",
                     "email": "real@example.com",
+                    "phone": "+1 555 010 1004",
                     "company": "Rental Ops",
                     "message": "We need a simple system to organize property inquiries and follow-ups.",
                     "website": "",
@@ -1102,6 +1106,7 @@ class PortfolioSiteTests(unittest.TestCase):
                     "source_plan": "yearly",
                     "name": "Template User",
                     "email": "template.user@example.com",
+                    "phone": "+1 555 010 1005",
                     "company": "Example Brokerage",
                     "message": "We want the system customized and then managed under the yearly maintenance plan.",
                     "website": "",
@@ -1155,6 +1160,8 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"Systems We Already Built.", systems.data)
         self.assertIn(b"Tell us what you need. We build the system.", how.data)
         self.assertIn(b"Tell us what you need.", contact.data)
+        self.assertIn(b'name="email"', contact.data)
+        self.assertIn(b'name="phone"', contact.data)
         self.assertIn(b"We will reply to the email you provide.", contact.data)
         if self.app.config.get("CONTACT_EMAIL"):
             self.assertIn(b"Or email us directly:", contact.data)
@@ -1194,6 +1201,7 @@ class PortfolioSiteTests(unittest.TestCase):
                     "source_title": "FAKE TITLE FROM VISITOR",
                     "name": "Custom Prospect",
                     "email": "custom@example.com",
+                    "phone": "+1 555 010 1006",
                     "company": "Example Ops",
                     "message": "We need the workflow adapted with our roles and operational approval process.",
                     "website": "",

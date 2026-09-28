@@ -32,7 +32,10 @@
         <label><span>Name</span><input required maxlength="100" name="name" value="{{ form_data.name if form_data else '' }}" placeholder="Your name"></label>
         <label><span>Email</span><input required maxlength="160" type="email" name="email" value="{{ form_data.email if form_data else '' }}" placeholder="you@company.com"></label>
       </div>
-      <label><span>Company <small>optional</small></span><input maxlength="140" name="company" value="{{ form_data.company if form_data else '' }}" placeholder="Company name"></label>
+      <div class="form-row">
+        <label><span>Phone Number</span><input required maxlength="40" type="tel" name="phone" value="{{ form_data.phone if form_data else '' }}" placeholder="Your phone number"></label>
+        <label><span>Company <small>optional</small></span><input maxlength="140" name="company" value="{{ form_data.company if form_data else '' }}" placeholder="Company name"></label>
+      </div>
       <label><span>What do you need help with?</span><textarea required minlength="20" maxlength="3000" name="message" rows="6" placeholder="Tell us what you want the system to help with.">{{ form_data.message if form_data else '' }}</textarea></label>
       <button class="button primary full-button" type="submit">Send Message</button>
       <div class="human-contact-foot">

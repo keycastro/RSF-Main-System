@@ -334,6 +334,7 @@ CREATE TABLE IF NOT EXISTS website_inquiries (
     name TEXT NOT NULL,
     email TEXT NOT NULL,
     email_norm TEXT NOT NULL DEFAULT '',
+    phone TEXT NOT NULL DEFAULT '',
     company TEXT NOT NULL DEFAULT '',
     message TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'UNCLAIMED' CHECK (status IN ('UNCLAIMED','CLAIMED','ARCHIVED','SPAM')),

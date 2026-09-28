@@ -313,6 +313,7 @@ def create_public_inquiry(record: dict[str, str]) -> int:
     now = utcnow_iso()
     name = (record.get("name") or "").strip()[:100]
     email_value = (record.get("email") or "").strip()[:254]
+    phone = (record.get("phone") or "").strip()[:40]
     company = (record.get("company") or "").strip()[:140]
     message = (record.get("message") or "").strip()[:10000]
     existing = _find_exact_email_lead(email_value)
@@ -326,11 +327,11 @@ def create_public_inquiry(record: dict[str, str]) -> int:
 
     cur = db.execute(
         """INSERT INTO website_inquiries
-           (created_at,updated_at,name,email,email_norm,company,message,status,claimed_by_partner_id,claimed_at,lead_id,
+           (created_at,updated_at,name,email,email_norm,phone,company,message,status,claimed_by_partner_id,claimed_at,lead_id,
             source_type,source_slug,source_title,source_action)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (
-            now, now, name, email_value, normalize_email(email_value), company, message, status,
+            now, now, name, email_value, normalize_email(email_value), phone, company, message, status,
             owner_partner_id, now if owner_partner_id else None, lead_id,
             (record.get("source_type") or "")[:40], (record.get("source_slug") or "")[:160],
             (record.get("source_title") or "")[:200], (record.get("source_action") or "")[:80],

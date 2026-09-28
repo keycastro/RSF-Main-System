@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 23
-SCHEMA_NAME = "rsf-main-system-v1.18.5-deal-status"
+SCHEMA_VERSION = 24
+SCHEMA_NAME = "rsf-main-system-v1.18.26-website-inquiry-phone"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents"}
 
 
@@ -951,6 +951,17 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
         db.execute(
             "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
             (23, "rsf-v1.18.5-deal-status"),
+        )
+
+    # V24 stores the public Contact form phone number separately from email.
+    # Existing Website Inquiry rows are preserved and receive an empty phone value.
+    if 24 not in applied:
+        inquiry_columns = {row["name"] for row in db.execute("PRAGMA table_info(website_inquiries)").fetchall()}
+        if "phone" not in inquiry_columns:
+            db.execute("ALTER TABLE website_inquiries ADD COLUMN phone TEXT NOT NULL DEFAULT ''")
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (24, "rsf-v1.18.26-website-inquiry-phone"),
         )
 
 

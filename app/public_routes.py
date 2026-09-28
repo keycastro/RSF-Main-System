@@ -304,6 +304,7 @@ def contact():
 
         name = request.form.get("name", "").strip()
         email = request.form.get("email", "").strip()
+        phone = request.form.get("phone", "").strip()
         company = request.form.get("company", "").strip()
         message = request.form.get("message", "").strip()
         website = request.form.get("website", "").strip()  # honeypot
@@ -315,6 +316,8 @@ def contact():
             errors.append("Please enter your name.")
         if not _valid_email(email) or len(email) > 160:
             errors.append("Please enter a valid email address.")
+        if not 7 <= len(phone) <= 40:
+            errors.append("Please enter your phone number.")
         if len(company) > 140:
             errors.append("Company name is too long.")
         if not 20 <= len(message) <= 3000:
@@ -323,13 +326,14 @@ def contact():
         if errors:
             for item in errors:
                 flash(item, "error")
-            context["form_data"] = {"name": name, "email": email, "company": company, "message": message}
+            context["form_data"] = {"name": name, "email": email, "phone": phone, "company": company, "message": message}
             return render_template("public/contact.html", title="Contact", **context), 400
 
         record = {
             "created_at": datetime.now(timezone.utc).isoformat(),
             "name": name,
             "email": email,
+            "phone": phone,
             "company": company,
             "message": message,
             "source_type": "system_template" if template_interest else ("service" if source_intent else ""),
@@ -345,7 +349,7 @@ def contact():
         except Exception:
             current_app.logger.exception("Contact delivery failed")
             flash("Your message could not be sent right now. Please try again later.", "error")
-            context["form_data"] = {"name": name, "email": email, "company": company, "message": message}
+            context["form_data"] = {"name": name, "email": email, "phone": phone, "company": company, "message": message}
             return render_template("public/contact.html", title="Contact", **context), 503
 
         session["contact_csrf"] = secrets.token_urlsafe(32)
