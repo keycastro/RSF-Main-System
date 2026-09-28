@@ -1657,3 +1657,26 @@ textarea.prospect-inline-editor{resize:vertical}
     font-size:10.5px
   }
 }
+
+
+/* v1.18.23 — compact acquisition sidebar and move navigation closer to the brand. */
+.sidebar .brand{
+  margin-bottom:2px;
+}
+.simple-primary-nav{
+  margin-top:4px;
+  gap:0;
+}
+.simple-primary-nav .nav-section-label{
+  margin:6px 10px 2px;
+  padding:3px 2px 2px;
+}
+.simple-primary-nav .nav-section-label:first-child{
+  margin-top:0;
+}
+.simple-primary-nav>a{
+  min-height:40px;
+  padding:5px 9px;
+  margin-bottom:1px;
+  font-size:12.5px;
+}
