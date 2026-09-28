@@ -1,6 +1,5 @@
 {% extends 'base.html' %}{% block content %}
 <div class="page-head workspace-page-head client-inbox-head">
   <div><h1>Client Inbox</h1><p>New inquiries and active client conversations.</p></div>
-  {% if g.user.role=='admin' and email_receive_ready and not auto_email_sync %}<form method="post" action="{{ url_for('main.client_sync_email') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button secondary" type="submit">Sync Email</button></form>{% endif %}
 </div>
 {% endblock %}
