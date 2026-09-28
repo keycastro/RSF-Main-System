@@ -2308,3 +2308,152 @@ textarea.prospect-inline-editor{resize:vertical}
 .website-inquiry-request-link:visited{
   text-decoration:none;
 }
+
+
+/* v1.18.43 — hidden global page-content visual controls */
+.content-wrap{
+  --rsf-visual-text-ink:#20362f;
+  --rsf-visual-text-muted:#64766f;
+  --rsf-visual-field-border:#c8d6d0;
+  --rsf-visual-card-border:#c1d2ca;
+  --rsf-visual-card-shadow-alpha:.09;
+  --ux-section-ink:var(--rsf-visual-text-ink);
+  --ux-section-muted:var(--rsf-visual-text-muted);
+  --workspace-muted:var(--rsf-visual-text-muted);
+}
+.content-wrap :where(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),select,textarea){
+  border-color:var(--rsf-visual-field-border)!important;
+  color:var(--rsf-visual-text-ink);
+}
+.content-wrap :where(
+  .website-inquiry-field>strong,
+  .website-inquiry-request-link,
+  .prospect-detail,
+  .prospect-card-meta-item,
+  .simple-summary-grid>a,
+  .simple-summary-grid>div,
+  .simple-home-actions a
+){
+  border-color:var(--rsf-visual-field-border)!important;
+}
+.content-wrap :where(
+  .deal-form-grid label>span,
+  .website-inquiry-field>span,
+  .website-inquiry-message-field>span,
+  .deal-card-identifiers label>span,
+  .prospect-field>span,
+  .prospect-detail>span
+){
+  color:var(--rsf-visual-text-muted)!important;
+}
+.content-wrap :where(
+  .deal-card,
+  .website-inquiry-card,
+  .prospect-card,
+  .simple-section,
+  .simple-summary-grid>a,
+  .simple-summary-grid>div,
+  .simple-home-actions a
+){
+  border-color:var(--rsf-visual-card-border)!important;
+  box-shadow:0 7px 20px rgba(25,55,46,var(--rsf-visual-card-shadow-alpha));
+}
+
+.workspace-visual-panel{
+  position:fixed;
+  top:0;
+  right:0;
+  bottom:0;
+  z-index:1180;
+  width:min(360px,calc(100vw - 48px));
+  padding:20px 18px 22px;
+  border-left:1px solid rgba(255,255,255,.12);
+  background:#202724;
+  color:#f2f7f4;
+  box-shadow:-14px 0 36px rgba(12,24,20,.18);
+  transform:translateX(100%);
+  transition:transform .22s ease;
+  overflow-y:auto;
+}
+.workspace-visual-panel.is-open{
+  transform:translateX(0);
+}
+.workspace-visual-panel-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  padding-bottom:16px;
+  border-bottom:1px solid rgba(255,255,255,.11);
+}
+.workspace-visual-panel-head strong{
+  display:block;
+  font-size:16px;
+  line-height:1.25;
+}
+.workspace-visual-panel-head small{
+  display:block;
+  margin-top:4px;
+  color:#aebcb6;
+  font-size:11px;
+}
+.workspace-visual-panel-close{
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  padding:0;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:8px;
+  background:transparent;
+  color:#eaf2ee;
+  font:inherit;
+  font-size:20px;
+  line-height:1;
+  cursor:pointer;
+}
+.workspace-visual-panel-close:hover,
+.workspace-visual-panel-close:focus-visible{
+  background:rgba(255,255,255,.07);
+}
+.workspace-visual-panel-controls{
+  display:grid;
+  gap:23px;
+  padding-top:24px;
+}
+.workspace-visual-control{
+  display:grid;
+  gap:10px;
+}
+.workspace-visual-control>span{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.workspace-visual-control strong{
+  font-size:12.5px;
+  font-weight:700;
+}
+.workspace-visual-control output{
+  min-width:30px;
+  color:#c7d5cf;
+  font-size:11.5px;
+  text-align:right;
+}
+.workspace-visual-control input[type="range"]{
+  width:100%;
+  accent-color:#d1b171;
+  cursor:pointer;
+}
+.workspace-visual-panel-note{
+  margin:26px 0 0;
+  padding-top:16px;
+  border-top:1px solid rgba(255,255,255,.11);
+  color:#9eaea7;
+  font-size:11px;
+  line-height:1.5;
+}
+@media(prefers-reduced-motion:reduce){
+  .workspace-visual-panel{transition:none}
+}

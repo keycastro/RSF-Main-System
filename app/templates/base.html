@@ -84,6 +84,31 @@
       {% endwith %}
       {% block content %}{% endblock %}
     </div>
+
+    <aside class="workspace-visual-panel" data-workspace-visual-panel aria-hidden="true" aria-label="Workspace content display controls">
+      <div class="workspace-visual-panel-head">
+        <div>
+          <strong>Content Display</strong>
+          <small>Ctrl + Alt + Q</small>
+        </div>
+        <button type="button" class="workspace-visual-panel-close" data-workspace-visual-close aria-label="Close content display controls">×</button>
+      </div>
+      <div class="workspace-visual-panel-controls">
+        <label class="workspace-visual-control">
+          <span><strong>Text clarity</strong><output data-workspace-visual-text-output>55</output></span>
+          <input type="range" min="0" max="100" value="55" step="1" data-workspace-visual-text aria-label="Text clarity">
+        </label>
+        <label class="workspace-visual-control">
+          <span><strong>Field / box lines</strong><output data-workspace-visual-field-output>55</output></span>
+          <input type="range" min="0" max="100" value="55" step="1" data-workspace-visual-field aria-label="Field and box line visibility">
+        </label>
+        <label class="workspace-visual-control">
+          <span><strong>Card definition</strong><output data-workspace-visual-card-output>55</output></span>
+          <input type="range" min="0" max="100" value="55" step="1" data-workspace-visual-card aria-label="Card definition">
+        </label>
+      </div>
+      <p class="workspace-visual-panel-note">Page content only. Sidebar and this control panel stay unchanged.</p>
+    </aside>
   </main>
 </div>
 <div class="scrim" data-scrim aria-hidden="true"></div>

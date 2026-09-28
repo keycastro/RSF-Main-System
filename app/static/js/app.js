@@ -2637,3 +2637,94 @@
     if (event.target === viewer) closeViewer();
   });
 })();
+
+
+(() => {
+  const content = document.querySelector('.main-area .content-wrap');
+  const panel = document.querySelector('[data-workspace-visual-panel]');
+  if (!content || !panel) return;
+
+  const closeButton = panel.querySelector('[data-workspace-visual-close]');
+  const textRange = panel.querySelector('[data-workspace-visual-text]');
+  const fieldRange = panel.querySelector('[data-workspace-visual-field]');
+  const cardRange = panel.querySelector('[data-workspace-visual-card]');
+  const textOutput = panel.querySelector('[data-workspace-visual-text-output]');
+  const fieldOutput = panel.querySelector('[data-workspace-visual-field-output]');
+  const cardOutput = panel.querySelector('[data-workspace-visual-card-output]');
+
+  if (!(textRange instanceof HTMLInputElement) ||
+      !(fieldRange instanceof HTMLInputElement) ||
+      !(cardRange instanceof HTMLInputElement)) return;
+
+  const storageKey = 'rsf-workspace-content-display-v1';
+  const clamp = (value) => Math.max(0, Math.min(100, Number(value) || 0));
+  const mix = (from, to, amount) => {
+    const parse = (hex) => [
+      parseInt(hex.slice(1, 3), 16),
+      parseInt(hex.slice(3, 5), 16),
+      parseInt(hex.slice(5, 7), 16)
+    ];
+    const a = parse(from);
+    const b = parse(to);
+    const t = clamp(amount) / 100;
+    const channels = a.map((value, index) => Math.round(value + (b[index] - value) * t));
+    return '#' + channels.map((value) => value.toString(16).padStart(2, '0')).join('');
+  };
+
+  const apply = () => {
+    const textValue = clamp(textRange.value);
+    const fieldValue = clamp(fieldRange.value);
+    const cardValue = clamp(cardRange.value);
+
+    textRange.value = String(textValue);
+    fieldRange.value = String(fieldValue);
+    cardRange.value = String(cardValue);
+    if (textOutput) textOutput.textContent = String(textValue);
+    if (fieldOutput) fieldOutput.textContent = String(fieldValue);
+    if (cardOutput) cardOutput.textContent = String(cardValue);
+
+    content.style.setProperty('--rsf-visual-text-ink', mix('#44564f', '#0e211a', textValue));
+    content.style.setProperty('--rsf-visual-text-muted', mix('#8b9893', '#42584f', textValue));
+    content.style.setProperty('--rsf-visual-field-border', mix('#e7eeeb', '#809b90', fieldValue));
+    content.style.setProperty('--rsf-visual-card-border', mix('#e1eae6', '#759186', cardValue));
+    content.style.setProperty('--rsf-visual-card-shadow-alpha', (0.025 + (cardValue / 100) * 0.155).toFixed(3));
+
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify({
+        text: textValue,
+        field: fieldValue,
+        card: cardValue
+      }));
+    } catch (_error) {}
+  };
+
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(storageKey) || 'null');
+    if (saved && typeof saved === 'object') {
+      textRange.value = String(clamp(saved.text ?? 55));
+      fieldRange.value = String(clamp(saved.field ?? 55));
+      cardRange.value = String(clamp(saved.card ?? 55));
+    }
+  } catch (_error) {}
+
+  const setOpen = (open) => {
+    panel.classList.toggle('is-open', open);
+    panel.setAttribute('aria-hidden', open ? 'false' : 'true');
+    if (open) window.setTimeout(() => textRange.focus(), 0);
+  };
+
+  [textRange, fieldRange, cardRange].forEach((range) => {
+    range.addEventListener('input', apply);
+  });
+
+  closeButton?.addEventListener('click', () => setOpen(false));
+
+  document.addEventListener('keydown', (event) => {
+    if (event.repeat || event.metaKey || event.shiftKey) return;
+    if (!event.ctrlKey || !event.altKey || String(event.key).toLowerCase() !== 'q') return;
+    event.preventDefault();
+    setOpen(!panel.classList.contains('is-open'));
+  });
+
+  apply();
+})();
