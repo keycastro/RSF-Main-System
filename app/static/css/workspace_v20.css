@@ -2730,6 +2730,22 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 
 
+/* v1.18.66 — remove the double-padding gap between Prospect summary and details */
+.prospects-page .prospect-card-meta{
+  padding-bottom:6px;
+}
+.prospects-page .prospect-card-details{
+  padding-top:6px;
+}
+@media(max-width:620px){
+  .prospects-page .prospect-card-meta{
+    padding-bottom:4px;
+  }
+  .prospects-page .prospect-card-details{
+    padding-top:5px;
+  }
+}
+
 /* v1.18.47 — remove the outer Prospect list frame; keep only independent cards */
 .prospects-page > .simple-section{
   border:0;
