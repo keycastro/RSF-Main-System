@@ -2706,3 +2706,12 @@ textarea.prospect-inline-editor{resize:vertical}
     margin:12px -15px -15px;
   }
 }
+
+
+/* v1.18.47 — remove the outer Prospect list frame; keep only independent cards */
+.prospects-page > .simple-section{
+  border:0;
+  border-radius:0;
+  background:transparent;
+  overflow:visible;
+}
