@@ -29,19 +29,17 @@
         <strong>{{ inquiry.company or '—' }}</strong>
       </div>
       <div class="website-inquiry-field">
-        <span>Source</span>
-        <strong>{{ inquiry.source_title or 'RSF Website' }}</strong>
-      </div>
-      {% if inquiry.source_action %}
-      <div class="website-inquiry-field website-inquiry-field-wide">
         <span>Request</span>
-        {% if inquiry.source_type == 'system_template' and inquiry.source_slug %}
-        <a class="website-inquiry-request-link" href="{{ url_for('site.system_template_detail', slug=inquiry.source_slug) }}">{{ inquiry.source_action }}</a>
+        {% if inquiry.source_action %}
+          {% if inquiry.source_type == 'system_template' and inquiry.source_slug %}
+          <a class="website-inquiry-request-link" href="{{ url_for('site.system_template_detail', slug=inquiry.source_slug) }}">{{ inquiry.source_action }}</a>
+          {% else %}
+          <strong>{{ inquiry.source_action }}</strong>
+          {% endif %}
         {% else %}
-        <strong>{{ inquiry.source_action }}</strong>
+        <strong>—</strong>
         {% endif %}
       </div>
-      {% endif %}
     </div>
 
     <div class="website-inquiry-message-field">
