@@ -1602,3 +1602,58 @@ textarea.prospect-inline-editor{resize:vertical}
   right:18px;
   top:23px
 }
+
+
+/* v1.18.20 — compact expanded Prospect details inside the three-card desktop layout */
+@media(min-width:1351px){
+  .prospects-page .prospect-card-details{
+    padding:12px 14px 14px
+  }
+  .prospects-page .prospect-detail-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px
+  }
+  .prospects-page .prospect-detail{
+    min-width:0;
+    padding:8px 9px;
+    border-radius:9px
+  }
+  .prospects-page .prospect-detail>span{
+    margin-bottom:3px;
+    font-size:8px;
+    letter-spacing:.05em
+  }
+  .prospects-page .prospect-detail>.prospect-edit-value,
+  .prospects-page .prospect-detail>a{
+    font-size:10.75px;
+    line-height:1.35
+  }
+  .prospects-page .prospect-inline-editor{
+    padding:6px 7px;
+    font-size:10.75px;
+    line-height:1.35
+  }
+  .prospects-page .prospect-attempt-control{
+    grid-template-columns:28px minmax(34px,auto) 28px;
+    border-radius:8px
+  }
+  .prospects-page .prospect-attempt-control strong{
+    min-width:34px;
+    padding:5px 7px;
+    font-size:11px
+  }
+  .prospects-page .prospect-attempt-step{
+    width:28px;
+    min-height:28px;
+    font-size:18px
+  }
+  .prospects-page .prospect-deal-action{
+    margin-top:10px;
+    padding-top:10px
+  }
+  .prospects-page .prospect-deal-action .button{
+    min-height:30px;
+    padding:6px 9px;
+    font-size:10.5px
+  }
+}
