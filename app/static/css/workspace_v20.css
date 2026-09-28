@@ -2746,3 +2746,41 @@ textarea.prospect-inline-editor{resize:vertical}
     padding:22px 0;
   }
 }
+
+
+/* v1.18.49 — Prospect list uses a neutral wrapper, never a card/table surface */
+.prospects-page > .prospect-list-section{
+  margin-top:18px;
+  padding:0;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  outline:0!important;
+  overflow:visible;
+}
+.prospects-page > .prospect-list-section > .prospect-filter-head{
+  margin:0 0 16px;
+  padding:0;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.prospects-page > .prospect-list-section > .simple-list{
+  margin-top:0;
+  padding:0;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.prospects-page > .prospect-list-section .simple-empty{
+  background:transparent!important;
+  box-shadow:none!important;
+}
+@media(max-width:620px){
+  .prospects-page > .prospect-list-section{
+    margin-top:14px;
+  }
+  .prospects-page > .prospect-list-section > .prospect-filter-head{
+    margin-bottom:12px;
+  }
+}
