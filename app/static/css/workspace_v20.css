@@ -2871,6 +2871,7 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 .website-inquiry-card-identity>div>span,
 .website-inquiry-header-status>span{
+  color:var(--ux-section-ink);
   font-size:8.5px;
   font-weight:700;
   letter-spacing:.075em;
