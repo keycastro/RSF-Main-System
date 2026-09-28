@@ -2276,6 +2276,38 @@
   const page = document.querySelector('.deals-page');
   if (!page) return;
 
+  const list = page.querySelector('.deals-list');
+  const filterButtons = Array.from(page.querySelectorAll('[data-deal-filter]'));
+  const filterEmpty = page.querySelector('[data-deal-filter-empty]');
+  let activeDealFilter = 'ALL';
+
+  const applyDealFilter = () => {
+    if (!list || !filterButtons.length) return;
+    const cards = Array.from(list.querySelectorAll('[data-deal-card]'));
+    cards.forEach((card) => {
+      card.hidden = activeDealFilter !== 'ALL' && card.dataset.dealStatus !== activeDealFilter;
+    });
+    filterButtons.forEach((button) => {
+      const active = button.dataset.dealFilter === activeDealFilter;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    if (filterEmpty) {
+      const hasVisibleCards = cards.some((card) => !card.hidden);
+      filterEmpty.hidden = cards.length === 0 || activeDealFilter === 'ALL' || hasVisibleCards;
+    }
+  };
+
+  if (filterButtons.length && list) {
+    filterButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        activeDealFilter = button.dataset.dealFilter || 'ALL';
+        applyDealFilter();
+      });
+    });
+    applyDealFilter();
+  }
+
   page.addEventListener('click', (event) => {
     const documentsToggle = event.target.closest('[data-deal-documents-toggle]');
     if (documentsToggle) {
@@ -2373,7 +2405,12 @@
         if (!response.ok || !data.ok) {
           throw new Error(data.message || 'Deal changes could not be saved.');
         }
-        if (data.status) form.dataset.dealCurrentStatus = data.status;
+        if (data.status) {
+          form.dataset.dealCurrentStatus = data.status;
+          const card = form.closest('[data-deal-card]');
+          if (card) card.dataset.dealStatus = data.status;
+          applyDealFilter();
+        }
       } while (state.pending);
     } catch (error) {
       state.pending = false;
