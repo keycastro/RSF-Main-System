@@ -1897,6 +1897,117 @@
     return replacement;
   };
 
+  const prospectNotesViewer = page.querySelector('[data-prospect-notes-viewer]');
+  const prospectNotesViewerInput = page.querySelector('[data-prospect-notes-viewer-input]');
+  const prospectNotesViewerClose = page.querySelector('[data-prospect-notes-viewer-close]');
+  let prospectNotesSource = null;
+
+  const saveProspectNotes = async (source) => {
+    if (!(source instanceof HTMLTextAreaElement)) return;
+    const row = source.closest('[data-prospect-row]');
+    if (!row) return;
+
+    if (source.dataset.prospectNotesSaving === '1') {
+      source.dataset.prospectNotesPending = '1';
+      return;
+    }
+
+    const previous = source.dataset.prospectNotesStartValue ?? source.value;
+    if (source.value === previous) return;
+
+    source.dataset.prospectNotesSaving = '1';
+    try {
+      do {
+        delete source.dataset.prospectNotesPending;
+        const valueToSave = source.value;
+        const body = new URLSearchParams({
+          csrf_token: csrfForRow(row),
+          field: 'notes_after_conversation',
+          value: valueToSave,
+          date: selectedDate
+        });
+
+        const response = await fetch(row.dataset.prospectUpdateUrl, {
+          method: 'POST',
+          headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body: body.toString(),
+          credentials: 'same-origin',
+          keepalive: true
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok) {
+          throw new Error(data.message || 'Notes After Conversation could not be updated.');
+        }
+
+        source.dataset.prospectNotesStartValue = valueToSave;
+        if (source.value !== valueToSave) source.dataset.prospectNotesPending = '1';
+      } while (source.dataset.prospectNotesPending === '1');
+    } catch (error) {
+      showToast(error.message || 'Notes After Conversation could not be updated. Try again.', true);
+    } finally {
+      delete source.dataset.prospectNotesSaving;
+      delete source.dataset.prospectNotesPending;
+    }
+  };
+
+  const closeProspectNotesViewer = () => {
+    const source = prospectNotesSource;
+    if (prospectNotesViewer?.open) prospectNotesViewer.close();
+    prospectNotesSource = null;
+    if (source) saveProspectNotes(source);
+  };
+
+  page.addEventListener('focusin', (event) => {
+    const source = event.target.closest?.('[data-prospect-notes-compact]');
+    if (!source) return;
+    source.dataset.prospectNotesStartValue = source.value || '';
+  });
+
+  page.addEventListener('focusout', (event) => {
+    const source = event.target.closest?.('[data-prospect-notes-compact]');
+    if (!source) return;
+    saveProspectNotes(source);
+  });
+
+  page.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-prospect-notes-expand]');
+    if (!trigger) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const notesWrap = trigger.closest('.deal-notes-compact');
+    const source = notesWrap?.querySelector('[data-prospect-notes-compact]');
+    if (!source) return;
+
+    prospectNotesSource = source;
+    source.dataset.prospectNotesStartValue ??= source.value || '';
+    if (prospectNotesViewerInput) prospectNotesViewerInput.value = source.value || '';
+
+    if (prospectNotesViewer && typeof prospectNotesViewer.showModal === 'function') {
+      prospectNotesViewer.showModal();
+      window.setTimeout(() => prospectNotesViewerInput?.focus(), 0);
+      return;
+    }
+
+    source.focus();
+  });
+
+  prospectNotesViewerInput?.addEventListener('input', () => {
+    if (prospectNotesSource) prospectNotesSource.value = prospectNotesViewerInput.value;
+  });
+  prospectNotesViewerInput?.addEventListener('blur', () => {
+    if (prospectNotesSource) saveProspectNotes(prospectNotesSource);
+  });
+  prospectNotesViewerClose?.addEventListener('click', closeProspectNotesViewer);
+  prospectNotesViewer?.addEventListener('cancel', () => {
+    const source = prospectNotesSource;
+    prospectNotesSource = null;
+    if (source) saveProspectNotes(source);
+  });
+  prospectNotesViewer?.addEventListener('click', (event) => {
+    if (event.target === prospectNotesViewer) closeProspectNotesViewer();
+  });
+
   const statusOptions = [
     ['NOT_CONTACTED', 'Not Contacted'],
     ['NO_ANSWER', 'No Answer'],

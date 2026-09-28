@@ -40,7 +40,23 @@
       <div class="prospect-detail-grid">
         <div class="prospect-detail prospect-detail-full prospect-editable-field" data-prospect-edit-field data-prospect-field="problem" data-prospect-editor="textarea" data-prospect-value="{{ prospect['problem'] }}"><span>Problem</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Problem">{{ prospect['problem'] or '—' }}</button></div>
         <div class="prospect-detail prospect-detail-full prospect-editable-field" data-prospect-edit-field data-prospect-field="system_wanted" data-prospect-editor="textarea" data-prospect-value="{{ prospect['system_wanted'] }}"><span>System They Want</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit System They Want">{{ prospect['system_wanted'] or '—' }}</button></div>
-        <div class="prospect-detail prospect-detail-full prospect-editable-field" data-prospect-edit-field data-prospect-field="notes_after_conversation" data-prospect-editor="textarea" data-prospect-value="{{ prospect['notes_after_conversation'] }}"><span>Notes After Conversation</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Notes After Conversation">{{ prospect['notes_after_conversation'] or '—' }}</button></div>
+        <div class="prospect-notes-field prospect-detail-full">
+          <span>Notes After Conversation</span>
+          <div class="deal-notes-compact">
+            <textarea maxlength="3000" rows="1" data-prospect-notes-compact aria-label="Notes After Conversation">{{ prospect['notes_after_conversation'] }}</textarea>
+            <button
+              class="deal-notes-expand-button"
+              type="button"
+              data-prospect-notes-expand
+              aria-label="Open full Notes After Conversation"
+              title="Open full notes"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M14 4h6v6h-2V7.4l-4.8 4.8-1.4-1.4L16.6 6H14V4ZM10 20H4v-6h2v2.6l4.8-4.8 1.4 1.4L7.4 18H10v2Z" fill="currentColor"/>
+              </svg>
+            </button>
+          </div>
+        </div>
         <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="post_link" data-prospect-editor="url" data-prospect-value="{{ prospect['post_link'] }}"><span>Post Link</span><button class="prospect-edit-value prospect-edit-link" type="button" data-prospect-edit-trigger aria-label="Edit Post Link">{{ prospect['post_link'] or '—' }}</button></div>
         <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="company" data-prospect-editor="text" data-prospect-value="{{ prospect['name'] }}"><span>Company</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Company">{{ prospect['name'] }}</button></div>
         <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="location" data-prospect-editor="text" data-prospect-value="{{ prospect['location'] }}"><span>Location</span><button class="prospect-edit-value prospect-uppercase-value" type="button" data-prospect-edit-trigger aria-label="Edit Location">{{ prospect['location']|upper if prospect['location'] else '—' }}</button></div>
