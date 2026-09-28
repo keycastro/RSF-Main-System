@@ -2651,6 +2651,7 @@
   const textOutput = panel.querySelector('[data-workspace-visual-text-output]');
   const fieldOutput = panel.querySelector('[data-workspace-visual-field-output]');
   const cardOutput = panel.querySelector('[data-workspace-visual-card-output]');
+  const textMaxButton = panel.querySelector('[data-workspace-visual-text-max]');
 
   if (!(textRange instanceof HTMLInputElement) ||
       !(fieldRange instanceof HTMLInputElement) ||
@@ -2683,8 +2684,8 @@
     if (fieldOutput) fieldOutput.textContent = String(fieldValue);
     if (cardOutput) cardOutput.textContent = String(cardValue);
 
-    content.style.setProperty('--rsf-visual-text-ink', mix('#44564f', '#0e211a', textValue));
-    content.style.setProperty('--rsf-visual-text-muted', mix('#8b9893', '#42584f', textValue));
+    content.style.setProperty('--rsf-visual-text-ink', mix('#44564f', '#000000', textValue));
+    content.style.setProperty('--rsf-visual-text-muted', mix('#8b9893', '#17251f', textValue));
     content.style.setProperty('--rsf-visual-field-border', mix('#e7eeeb', '#809b90', fieldValue));
     content.style.setProperty('--rsf-visual-card-border', mix('#e1eae6', '#759186', cardValue));
     content.style.setProperty('--rsf-visual-card-shadow-alpha', (0.025 + (cardValue / 100) * 0.155).toFixed(3));
@@ -2715,6 +2716,11 @@
 
   [textRange, fieldRange, cardRange].forEach((range) => {
     range.addEventListener('input', apply);
+  });
+
+  textMaxButton?.addEventListener('click', () => {
+    textRange.value = '100';
+    apply();
   });
 
   closeButton?.addEventListener('click', () => setOpen(false));

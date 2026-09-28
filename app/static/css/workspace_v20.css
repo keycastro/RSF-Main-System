@@ -2457,3 +2457,41 @@ textarea.prospect-inline-editor{resize:vertical}
 @media(prefers-reduced-motion:reduce){
   .workspace-visual-panel{transition:none}
 }
+
+
+/* v1.18.45 — maximum Text Clarity control */
+.workspace-visual-control-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.workspace-visual-max-button{
+  min-width:42px;
+  height:26px;
+  padding:0 9px;
+  border:1px solid rgba(209,177,113,.55);
+  border-radius:7px;
+  background:rgba(209,177,113,.10);
+  color:#e4c681;
+  font:inherit;
+  font-size:10.5px;
+  font-weight:800;
+  letter-spacing:.06em;
+  cursor:pointer;
+}
+.workspace-visual-max-button:hover,
+.workspace-visual-max-button:focus-visible{
+  background:rgba(209,177,113,.20);
+  border-color:rgba(209,177,113,.85);
+}
+.content-wrap :where(
+  h1,h2,h3,h4,h5,h6,
+  p,small,strong,
+  label,
+  .deal-card-identifiers,
+  .deal-form-grid,
+  .website-inquiry-card,
+  .prospect-card
+){
+  color:var(--rsf-visual-text-ink);
+}
