@@ -2271,3 +2271,17 @@ textarea.prospect-inline-editor{resize:vertical}
     max-width:130px;
   }
 }
+
+
+/* v1.18.40 — lightly tint Deals and Website Inbox cards for clearer visual separation */
+.deal-card,
+.website-inquiry-card{
+  background:#f8faf9;
+  border-color:#cfdcd7;
+  box-shadow:0 6px 18px rgba(25,55,46,.075);
+}
+.deal-card-head,
+.website-inquiry-card-head{
+  background:#f4f8f6;
+  border-bottom-color:#dbe5e1;
+}
