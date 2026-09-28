@@ -2092,7 +2092,9 @@ textarea.prospect-inline-editor{resize:vertical}
   align-items:center;
   width:100%;
   min-width:0;
+  height:39px;
   min-height:39px;
+  max-height:39px;
   padding:9px 10px;
   border:1px solid #d7e1dd;
   border-radius:8px;
@@ -2104,7 +2106,8 @@ textarea.prospect-inline-editor{resize:vertical}
   font-weight:400;
   line-height:1.4;
   overflow:hidden;
-  overflow-wrap:anywhere;
+  white-space:nowrap;
+  text-overflow:ellipsis;
 }
 .website-inquiry-request-link{
   font-weight:400;
