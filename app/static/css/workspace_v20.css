@@ -2032,6 +2032,38 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 
 
+/* v1.18.67 — Website Inbox Notes After Conversation matches Prospects/Deals */
+.website-inquiry-notes-field{
+  margin-top:12px
+}
+.website-inquiry-notes-field>span{
+  display:block;
+  margin:0 0 5px;
+  color:#6f7f79;
+  font-size:9px;
+  font-weight:650;
+  letter-spacing:.055em;
+  text-transform:uppercase
+}
+.website-inquiry-notes-field textarea{
+  width:100%;
+  min-width:0;
+  padding:9px 10px;
+  border:1px solid #d7e1dd;
+  border-radius:8px;
+  background:#fff;
+  color:var(--ux-section-ink);
+  font:inherit;
+  font-size:12.5px;
+  line-height:1.4;
+  outline:none;
+  box-sizing:border-box
+}
+.website-inquiry-notes-field textarea:focus{
+  border-color:var(--workspace-emerald);
+  box-shadow:0 0 0 2px rgba(27,94,74,.10)
+}
+
 /* v1.18.35 — Website Inbox adopts the approved Deals card visual system */
 .website-inquiry-list{
   width:100%;

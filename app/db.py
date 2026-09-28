@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 26
-SCHEMA_NAME = "rsf-main-system-v1.18.63-prospect-deal-notes-sync"
+SCHEMA_VERSION = 27
+SCHEMA_NAME = "rsf-main-system-v1.18.67-website-inquiry-deal-notes-sync"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents"}
 
 
@@ -1043,6 +1043,36 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
         db.execute(
             "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
             (26, "rsf-v1.18.63-prospect-deal-notes-sync"),
+        )
+
+    # V27 adds Website Inquiry Notes After Conversation as the same shared
+    # field as the linked Deal notes. Existing Deal notes are copied once into
+    # the Website Inquiry so current conversation notes are preserved.
+    if 27 not in applied:
+        inquiry_columns = {row["name"] for row in db.execute("PRAGMA table_info(website_inquiries)").fetchall()}
+        if "notes_after_conversation" not in inquiry_columns:
+            db.execute(
+                "ALTER TABLE website_inquiries ADD COLUMN notes_after_conversation TEXT NOT NULL DEFAULT ''"
+            )
+        db.execute(
+            """UPDATE website_inquiries
+               SET notes_after_conversation=COALESCE(
+                   (SELECT d.notes_after_conversation
+                    FROM deals d
+                    WHERE d.website_inquiry_id=website_inquiries.id
+                    LIMIT 1),
+                   ''
+               )
+               WHERE trim(COALESCE(notes_after_conversation,''))=''
+                 AND EXISTS (
+                     SELECT 1 FROM deals d
+                     WHERE d.website_inquiry_id=website_inquiries.id
+                       AND trim(COALESCE(d.notes_after_conversation,''))<>''
+                 )"""
+        )
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (27, "rsf-v1.18.67-website-inquiry-deal-notes-sync"),
         )
 
 

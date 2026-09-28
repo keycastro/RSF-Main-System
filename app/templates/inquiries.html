@@ -85,6 +85,31 @@
         </button>
       </div>
     </div>
+
+    <div class="website-inquiry-notes-field">
+      <span>Notes After Conversation</span>
+      <div class="deal-notes-compact">
+        <textarea
+          maxlength="3000"
+          rows="1"
+          data-website-notes-compact
+          data-update-url="{{ url_for('main.inquiry_notes_after_conversation_update', inquiry_id=inquiry.id) }}"
+          data-csrf-token="{{ csrf_token() }}"
+          aria-label="Notes After Conversation"
+        >{{ inquiry.notes_after_conversation }}</textarea>
+        <button
+          class="deal-notes-expand-button"
+          type="button"
+          data-website-notes-expand
+          aria-label="Open full Notes After Conversation"
+          title="Open full notes"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M14 4h6v6h-2V7.4l-4.8 4.8-1.4-1.4L16.6 6H14V4ZM10 20H4v-6h2v2.6l4.8-4.8 1.4 1.4L7.4 18H10v2Z" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+    </div>
     </div>
   </article>
   {% endfor %}
@@ -110,6 +135,18 @@
     </header>
     <div class="deal-notes-viewer-body">
       <textarea readonly data-website-message-viewer-input aria-label="Full customer Message"></textarea>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="deal-notes-viewer" data-website-notes-viewer aria-labelledby="website-notes-viewer-title">
+  <div class="deal-notes-viewer-card">
+    <header class="deal-notes-viewer-head">
+      <h2 id="website-notes-viewer-title">Notes After Conversation</h2>
+      <button class="deal-notes-viewer-close" type="button" data-website-notes-viewer-close aria-label="Close full notes" title="Close">×</button>
+    </header>
+    <div class="deal-notes-viewer-body">
+      <textarea maxlength="3000" data-website-notes-viewer-input aria-label="Full Notes After Conversation"></textarea>
     </div>
   </div>
 </dialog>

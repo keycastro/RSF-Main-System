@@ -338,7 +338,7 @@ def _ensure_deal_for_website_inquiry(db, inquiry_id: int, created_by_user_id: in
         return int(existing["id"]), False
 
     inquiry = db.execute(
-        "SELECT id,name,email,phone FROM website_inquiries WHERE id=?",
+        "SELECT id,name,email,phone,notes_after_conversation FROM website_inquiries WHERE id=?",
         (inquiry_id,),
     ).fetchone()
     if not inquiry:
@@ -361,7 +361,7 @@ def _ensure_deal_for_website_inquiry(db, inquiry_id: int, created_by_user_id: in
             "",
             (inquiry["phone"] or "").strip()[:120],
             (inquiry["email"] or "").strip()[:320],
-            "",
+            (inquiry["notes_after_conversation"] or "").strip()[:3000],
             created_by_user_id,
             now,
             now,
@@ -1796,8 +1796,8 @@ def deal_update(deal_id: int):
             (contact_person, location, email, now, deal_id),
         )
         db.execute(
-            "UPDATE website_inquiries SET workflow_status=?,updated_at=? WHERE id=?",
-            (status, now, deal["website_inquiry_id"]),
+            "UPDATE website_inquiries SET workflow_status=?,notes_after_conversation=?,updated_at=? WHERE id=?",
+            (status, notes_after_conversation, now, deal["website_inquiry_id"]),
         )
     db.commit()
     if async_request:
@@ -3877,6 +3877,26 @@ def inquiry_workflow_status_update(inquiry_id: int):
         "deal_created": deal_created,
         "removed_from_deals": status in DEAL_PRE_STATUS_STATUSES,
     })
+
+
+@bp.post("/inquiries/<int:inquiry_id>/notes-after-conversation")
+@login_required
+def inquiry_notes_after_conversation_update(inquiry_id: int):
+    validate_csrf()
+    _authorized_inquiry(inquiry_id)
+    value = (request.form.get("value", "") or "").strip()[:3000]
+    db = get_db()
+    now = utcnow_iso()
+    db.execute(
+        "UPDATE website_inquiries SET notes_after_conversation=?,updated_at=? WHERE id=?",
+        (value, now, inquiry_id),
+    )
+    db.execute(
+        "UPDATE deals SET notes_after_conversation=?,updated_at=? WHERE website_inquiry_id=?",
+        (value, now, inquiry_id),
+    )
+    db.commit()
+    return jsonify({"ok": True, "value": value})
 
 
 @bp.post("/inquiries/<int:inquiry_id>/delete")

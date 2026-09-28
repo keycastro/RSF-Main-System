@@ -345,6 +345,7 @@ CREATE TABLE IF NOT EXISTS website_inquiries (
     phone TEXT NOT NULL DEFAULT '',
     company TEXT NOT NULL DEFAULT '',
     message TEXT NOT NULL,
+    notes_after_conversation TEXT NOT NULL DEFAULT '',
     status TEXT NOT NULL DEFAULT 'UNCLAIMED' CHECK (status IN ('UNCLAIMED','CLAIMED','ARCHIVED','SPAM')),
     workflow_status TEXT NOT NULL DEFAULT 'NOT_CONTACTED' CHECK (workflow_status IN ('NOT_CONTACTED','NO_ANSWER','REJECTED','DEAL','DEMO','PROPOSAL','DECISION','WON','LOST')),
     claimed_by_partner_id INTEGER REFERENCES partners(id),

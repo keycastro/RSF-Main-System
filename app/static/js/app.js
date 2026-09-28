@@ -2729,9 +2729,66 @@
   const viewer = page.querySelector('[data-website-message-viewer]');
   const viewerInput = page.querySelector('[data-website-message-viewer-input]');
   const viewerClose = page.querySelector('[data-website-message-viewer-close]');
+  const notesViewer = page.querySelector('[data-website-notes-viewer]');
+  const notesViewerInput = page.querySelector('[data-website-notes-viewer-input]');
+  const notesViewerClose = page.querySelector('[data-website-notes-viewer-close]');
+  let notesSource = null;
 
   const closeViewer = () => {
     if (viewer?.open) viewer.close();
+  };
+
+  const saveWebsiteNotes = async (source) => {
+    if (!(source instanceof HTMLTextAreaElement)) return;
+
+    if (source.dataset.websiteNotesSaving === '1') {
+      source.dataset.websiteNotesPending = '1';
+      return;
+    }
+
+    const previous = source.dataset.websiteNotesStartValue ?? source.value;
+    if (source.value === previous) return;
+
+    source.dataset.websiteNotesSaving = '1';
+    try {
+      do {
+        delete source.dataset.websiteNotesPending;
+        const valueToSave = source.value;
+        const response = await fetch(source.dataset.updateUrl || '', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+          },
+          body: new URLSearchParams({
+            csrf_token: source.dataset.csrfToken || '',
+            value: valueToSave
+          }).toString(),
+          credentials: 'same-origin',
+          cache: 'no-store',
+          keepalive: true
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok) {
+          throw new Error(data.message || 'Notes After Conversation could not be updated.');
+        }
+
+        source.dataset.websiteNotesStartValue = valueToSave;
+        if (source.value !== valueToSave) source.dataset.websiteNotesPending = '1';
+      } while (source.dataset.websiteNotesPending === '1');
+    } catch (error) {
+      window.alert(error.message || 'Notes After Conversation could not be updated. Try again.');
+    } finally {
+      delete source.dataset.websiteNotesSaving;
+      delete source.dataset.websiteNotesPending;
+    }
+  };
+
+  const closeWebsiteNotesViewer = () => {
+    const source = notesSource;
+    if (notesViewer?.open) notesViewer.close();
+    notesSource = null;
+    if (source) saveWebsiteNotes(source);
   };
 
   page.addEventListener('click', (event) => {
@@ -2753,9 +2810,44 @@
   });
 
   page.addEventListener('focusin', (event) => {
+    const notes = event.target.closest?.('[data-website-notes-compact]');
+    if (notes) {
+      notes.dataset.websiteNotesStartValue = notes.value || '';
+      return;
+    }
+
     const field = event.target.closest('[data-website-inquiry-status]');
     if (!field) return;
     field.dataset.websiteInquiryStartStatus = field.value || '';
+  });
+
+  page.addEventListener('focusout', (event) => {
+    const notes = event.target.closest?.('[data-website-notes-compact]');
+    if (!notes) return;
+    saveWebsiteNotes(notes);
+  });
+
+  page.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-website-notes-expand]');
+    if (!trigger) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const wrap = trigger.closest('.deal-notes-compact');
+    const source = wrap?.querySelector('[data-website-notes-compact]');
+    if (!source) return;
+
+    notesSource = source;
+    source.dataset.websiteNotesStartValue ??= source.value || '';
+    if (notesViewerInput) notesViewerInput.value = source.value || '';
+
+    if (notesViewer && typeof notesViewer.showModal === 'function') {
+      notesViewer.showModal();
+      window.setTimeout(() => notesViewerInput?.focus(), 0);
+      return;
+    }
+
+    source.focus();
   });
 
   page.addEventListener('change', async (event) => {
@@ -2797,6 +2889,22 @@
   viewer?.addEventListener('cancel', closeViewer);
   viewer?.addEventListener('click', (event) => {
     if (event.target === viewer) closeViewer();
+  });
+
+  notesViewerInput?.addEventListener('input', () => {
+    if (notesSource) notesSource.value = notesViewerInput.value;
+  });
+  notesViewerInput?.addEventListener('blur', () => {
+    if (notesSource) saveWebsiteNotes(notesSource);
+  });
+  notesViewerClose?.addEventListener('click', closeWebsiteNotesViewer);
+  notesViewer?.addEventListener('cancel', () => {
+    const source = notesSource;
+    notesSource = null;
+    if (source) saveWebsiteNotes(source);
+  });
+  notesViewer?.addEventListener('click', (event) => {
+    if (event.target === notesViewer) closeWebsiteNotesViewer();
   });
 })();
 
