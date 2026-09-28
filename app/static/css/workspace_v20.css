@@ -1923,3 +1923,34 @@ textarea.prospect-inline-editor{resize:vertical}
   white-space:pre-wrap;
   overflow-wrap:anywhere;
 }
+
+
+/* v1.18.32 — contain long Website Inbox message previews without breaking card layout */
+.website-inquiry-list{
+  width:min(980px,calc(100% - 32px));
+  grid-template-columns:minmax(0,1fr);
+}
+.website-inquiry-card,
+.website-inquiry-field-grid,
+.website-inquiry-message,
+.website-inquiry-message>summary,
+.website-inquiry-message-copy{
+  min-width:0;
+  max-width:100%;
+  box-sizing:border-box;
+}
+.website-inquiry-card{
+  overflow:hidden;
+}
+.website-inquiry-message>summary{
+  width:100%;
+}
+.website-inquiry-message-copy>strong{
+  width:100%;
+  max-width:100%;
+}
+.website-inquiry-message-full{
+  min-width:0;
+  max-width:100%;
+  box-sizing:border-box;
+}
