@@ -3011,7 +3011,7 @@ textarea.prospect-inline-editor{resize:vertical}
   }
 }
 
-/* v1.18.60 — exact two-row header alignment for Website Inbox and Prospects */
+/* v1.18.61 — compact two-row spacing for Website Inbox and Prospects */
 .website-inquiry-card-head{
   display:flex;
   align-items:flex-start;
@@ -3020,8 +3020,8 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 .website-inquiry-card-identity{
   display:grid;
-  grid-template-rows:29px 20px;
-  row-gap:5px;
+  grid-template-rows:20px 20px;
+  row-gap:2px;
   flex:1 1 auto;
   max-width:470px;
   min-width:0;
@@ -3035,8 +3035,8 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 .website-inquiry-card-tools{
   display:grid;
-  grid-template-rows:29px 20px;
-  row-gap:5px;
+  grid-template-rows:20px 20px;
+  row-gap:2px;
   justify-items:end;
   align-items:center;
   flex:0 0 auto;
@@ -3048,6 +3048,10 @@ textarea.prospect-inline-editor{resize:vertical}
 .website-inquiry-delete-form{
   align-self:center;
   margin:0;
+}
+.website-inquiry-card-head .website-inquiry-delete-button{
+  width:20px;
+  height:20px;
 }
 .website-inquiry-card-head .website-inquiry-received-log{
   align-self:center;
@@ -3066,13 +3070,13 @@ textarea.prospect-inline-editor{resize:vertical}
 
 .prospects-page .prospect-card-top{
   display:block;
-  min-height:78px;
-  padding:16px 70px 16px 18px;
+  min-height:0;
+  padding:14px 70px 14px 18px;
 }
 .prospects-page .prospect-card-identifiers{
   display:grid;
-  grid-template-rows:29px 20px;
-  row-gap:5px;
+  grid-template-rows:20px 20px;
+  row-gap:2px;
   width:auto;
   max-width:470px;
   min-width:0;
@@ -3093,11 +3097,15 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 .prospects-page .prospect-card-shell>.prospect-card-delete{
   right:47px;
-  top:16px;
+  top:14px;
+}
+.prospects-page .prospect-card-shell>.prospect-card-delete .prospect-delete-button{
+  width:20px;
+  height:20px;
 }
 .prospects-page .prospect-card-shell>.prospect-card-log{
   position:absolute;
-  top:55px;
+  top:43px;
   right:47px;
   z-index:2;
   display:block;
@@ -3128,10 +3136,10 @@ textarea.prospect-inline-editor{resize:vertical}
   }
   .prospects-page .prospect-card-shell>.prospect-card-delete{
     right:36px;
-    top:8px;
+    top:10px;
   }
   .prospects-page .prospect-card-shell>.prospect-card-log{
-    top:47px;
+    top:39px;
     right:36px;
   }
 }
