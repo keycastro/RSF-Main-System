@@ -3270,3 +3270,17 @@ textarea.prospect-inline-editor{resize:vertical}
   }
 }
 
+
+
+/* v1.18.73 — keep every compact Notes After Conversation card field to one visible row */
+.deal-notes-compact textarea[data-deal-notes-compact],
+.deal-notes-compact textarea[data-prospect-notes-compact],
+.deal-notes-compact textarea[data-website-notes-compact]{
+  box-sizing:border-box;
+  height:39px;
+  min-height:39px;
+  max-height:39px;
+  white-space:nowrap;
+  overflow:hidden;
+  resize:none;
+}
