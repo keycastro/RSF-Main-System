@@ -33,7 +33,7 @@
         <span>Request</span>
         {% if inquiry.source_action %}
           {% if inquiry.source_type == 'system_template' and inquiry.source_slug %}
-          <a class="website-inquiry-request-link" href="{{ url_for('site.system_template_detail', slug=inquiry.source_slug) }}">{{ inquiry.source_action }}</a>
+          <a class="website-inquiry-request-link" href="{{ url_for('site.system_template_detail', slug=inquiry.source_slug) }}" target="_blank" rel="noopener noreferrer">{{ inquiry.source_action }}</a>
           {% else %}
           <strong>{{ inquiry.source_action }}</strong>
           {% endif %}

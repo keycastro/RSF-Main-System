@@ -2299,3 +2299,12 @@ textarea.prospect-inline-editor{resize:vertical}
   background:#eaf2ee;
   border-bottom-color:#d2dfda;
 }
+
+
+/* v1.18.42 — Website Inbox Request stays clickable without underline */
+.website-inquiry-request-link,
+.website-inquiry-request-link:hover,
+.website-inquiry-request-link:focus,
+.website-inquiry-request-link:visited{
+  text-decoration:none;
+}
