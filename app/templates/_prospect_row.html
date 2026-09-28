@@ -38,7 +38,7 @@
         <div class="prospect-detail prospect-detail-full prospect-editable-field" data-prospect-edit-field data-prospect-field="system_wanted" data-prospect-editor="textarea" data-prospect-value="{{ prospect['system_wanted'] }}"><span>System They Want</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit System They Want">{{ prospect['system_wanted'] or '—' }}</button></div>
         <div class="prospect-notes-field prospect-detail-full">
           <span>Notes After Conversation</span>
-          <div class="deal-notes-compact">
+          <div class="deal-notes-compact conversation-notes-compact">
             <textarea maxlength="3000" rows="1" data-prospect-notes-compact aria-label="Notes After Conversation">{{ prospect['notes_after_conversation'] }}</textarea>
             <button
               class="deal-notes-expand-button"
