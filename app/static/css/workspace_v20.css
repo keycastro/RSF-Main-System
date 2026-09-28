@@ -2285,3 +2285,17 @@ textarea.prospect-inline-editor{resize:vertical}
   background:#f4f8f6;
   border-bottom-color:#dbe5e1;
 }
+
+
+/* v1.18.41 — strengthen card tint so Deal and Website Inbox cards are clearly visible */
+.deal-card,
+.website-inquiry-card{
+  background:#f1f6f3;
+  border-color:#c3d3cc;
+  box-shadow:0 7px 20px rgba(25,55,46,.09);
+}
+.deal-card-head,
+.website-inquiry-card-head{
+  background:#eaf2ee;
+  border-bottom-color:#d2dfda;
+}
