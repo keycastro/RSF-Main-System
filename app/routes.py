@@ -3759,7 +3759,7 @@ def inquiries_list():
     overdue = [row for row in claimed if row["first_response_due_at"] and not row["first_responded_at"] and row["first_response_due_at"] < now]
     from .client_ops import email_receive_configured, email_send_configured
     return render_template(
-        "inquiries.html", title="Client Inbox", unclaimed=unclaimed, claimed=claimed, partners=partners, overdue=overdue, current_time_iso=now,
+        "inquiries.html", title="Website Inbox", unclaimed=unclaimed, claimed=claimed, partners=partners, overdue=overdue, current_time_iso=now,
         email_send_ready=email_send_configured(), email_receive_ready=email_receive_configured(),
         auto_email_sync=bool(current_app.config.get("AUTO_EMAIL_SYNC")),
         response_sla_minutes=int(current_app.config.get("FIRST_RESPONSE_SLA_MINUTES", 60)),
