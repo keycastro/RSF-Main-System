@@ -2715,3 +2715,34 @@ textarea.prospect-inline-editor{resize:vertical}
   background:transparent;
   overflow:visible;
 }
+
+
+/* v1.18.48 — remove table-like Prospect filter and empty-state rows */
+.prospects-page .prospect-filter-head{
+  margin:0 0 16px;
+  padding:0;
+  border:0;
+  background:transparent;
+}
+.prospects-page .simple-list{
+  margin-top:0;
+}
+.prospects-page .simple-empty{
+  grid-column:1/-1;
+  width:100%;
+  padding:28px 0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  text-align:center;
+}
+@media(max-width:620px){
+  .prospects-page .prospect-filter-head{
+    margin-bottom:12px;
+    padding:0;
+  }
+  .prospects-page .simple-empty{
+    padding:22px 0;
+  }
+}
