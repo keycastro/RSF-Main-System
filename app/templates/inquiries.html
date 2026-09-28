@@ -2,7 +2,51 @@
 <div class="page-head workspace-page-head client-inbox-head">
   <div><h1>Website Inbox</h1><p>New inquiries and active client conversations.</p></div>
 </div>
-{% if not unclaimed and not claimed %}
+
+{% if website_inquiries %}
+<div class="website-inquiry-list">
+  {% for inquiry in website_inquiries %}
+  <article class="website-inquiry-card">
+    <div class="website-inquiry-card-head">
+      <div>
+        <strong>{{ inquiry.name }}</strong>
+        <span>Received {{ inquiry.created_at|dt }}</span>
+      </div>
+    </div>
+
+    <div class="website-inquiry-field-grid">
+      <div class="website-inquiry-field">
+        <span>Email</span>
+        <strong>{{ inquiry.email }}</strong>
+      </div>
+      <div class="website-inquiry-field">
+        <span>Phone Number</span>
+        <strong>{{ inquiry.phone or '—' }}</strong>
+      </div>
+      <div class="website-inquiry-field">
+        <span>Company</span>
+        <strong>{{ inquiry.company or '—' }}</strong>
+      </div>
+      <div class="website-inquiry-field">
+        <span>Source</span>
+        <strong>{{ inquiry.source_title or 'RSF Website' }}</strong>
+      </div>
+      {% if inquiry.source_action %}
+      <div class="website-inquiry-field website-inquiry-field-wide">
+        <span>Request</span>
+        <strong>{{ inquiry.source_action }}</strong>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="website-inquiry-message">
+      <span>Message</span>
+      <p>{{ inquiry.message }}</p>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
 <div class="website-inbox-empty" role="status">
   <div class="website-inbox-empty-icon" aria-hidden="true">
     <svg viewBox="0 0 24 24" focusable="false">
