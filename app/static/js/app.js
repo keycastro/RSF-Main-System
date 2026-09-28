@@ -2599,3 +2599,41 @@
     pendingForm = null;
   });
 })();
+
+
+(() => {
+  const page = document.querySelector('[data-website-inbox-page]');
+  if (!page) return;
+
+  const viewer = page.querySelector('[data-website-message-viewer]');
+  const viewerInput = page.querySelector('[data-website-message-viewer-input]');
+  const viewerClose = page.querySelector('[data-website-message-viewer-close]');
+
+  const closeViewer = () => {
+    if (viewer?.open) viewer.close();
+  };
+
+  page.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-website-message-expand]');
+    if (!trigger) return;
+    const wrap = trigger.closest('.website-inquiry-message-field');
+    const source = wrap?.querySelector('[data-website-message-compact]');
+    if (!source) return;
+
+    if (viewerInput) viewerInput.value = source.value || '';
+
+    if (viewer && typeof viewer.showModal === 'function') {
+      viewer.showModal();
+      window.setTimeout(() => viewerClose?.focus(), 0);
+      return;
+    }
+
+    source.focus();
+  });
+
+  viewerClose?.addEventListener('click', closeViewer);
+  viewer?.addEventListener('cancel', closeViewer);
+  viewer?.addEventListener('click', (event) => {
+    if (event.target === viewer) closeViewer();
+  });
+})();

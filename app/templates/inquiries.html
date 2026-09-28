@@ -1,4 +1,5 @@
 {% extends 'base.html' %}{% block content %}
+<div class="website-inbox-page" data-website-inbox-page>
 <div class="page-head workspace-page-head client-inbox-head">
   <div><h1>Website Inbox</h1><p>New inquiries and active client conversations.</p></div>
 </div>
@@ -43,22 +44,23 @@
       {% endif %}
     </div>
 
-    <details class="website-inquiry-message">
-      <summary>
-        <span class="website-inquiry-message-copy">
-          <span class="website-inquiry-message-label">Message</span>
-          <strong>{{ inquiry.message }}</strong>
-        </span>
-        <span class="website-inquiry-message-expand" aria-hidden="true">
-          <svg viewBox="0 0 24 24" focusable="false">
-            <path d="M8.5 15.5 15.5 8.5"></path>
-            <path d="M10.5 8.5h5v5"></path>
-            <path d="M13.5 15.5h-5v-5"></path>
+    <div class="website-inquiry-message-field">
+      <span>Message</span>
+      <div class="deal-notes-compact website-message-compact">
+        <textarea class="website-message-compact-input" rows="1" readonly data-website-message-compact>{{ inquiry.message }}</textarea>
+        <button
+          class="deal-notes-expand-button"
+          type="button"
+          data-website-message-expand
+          aria-label="Open full Message"
+          title="Open full message"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M14 4h6v6h-2V7.4l-4.8 4.8-1.4-1.4L16.6 6H14V4ZM10 20H4v-6h2v2.6l4.8-4.8 1.4 1.4L7.4 18H10v2Z" fill="currentColor"/>
           </svg>
-        </span>
-      </summary>
-      <div class="website-inquiry-message-full">{{ inquiry.message }}</div>
-    </details>
+        </button>
+      </div>
+    </div>
   </article>
   {% endfor %}
 </div>
@@ -74,4 +76,17 @@
   <span>New customer inquiries will appear here.</span>
 </div>
 {% endif %}
+
+<dialog class="deal-notes-viewer" data-website-message-viewer aria-labelledby="website-message-viewer-title">
+  <div class="deal-notes-viewer-card">
+    <header class="deal-notes-viewer-head">
+      <h2 id="website-message-viewer-title">Message</h2>
+      <button class="deal-notes-viewer-close" type="button" data-website-message-viewer-close aria-label="Close full Message" title="Close">×</button>
+    </header>
+    <div class="deal-notes-viewer-body">
+      <textarea readonly data-website-message-viewer-input aria-label="Full customer Message"></textarea>
+    </div>
+  </div>
+</dialog>
+</div>
 {% endblock %}

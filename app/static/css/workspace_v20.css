@@ -1954,3 +1954,50 @@ textarea.prospect-inline-editor{resize:vertical}
   max-width:100%;
   box-sizing:border-box;
 }
+
+
+/* v1.18.33 — Website Inbox Message uses the approved Deals Notes compact field + modal pattern */
+.website-inquiry-message-field{
+  margin-top:10px;
+}
+.website-inquiry-message-field>span{
+  display:block;
+  margin-bottom:5px;
+  color:var(--ux-section-muted);
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+.website-message-compact{
+  width:100%;
+  min-width:0;
+}
+.website-message-compact-input{
+  display:block;
+  width:100%;
+  min-width:0;
+  height:39px;
+  min-height:39px;
+  max-height:39px;
+  padding:9px 42px 9px 10px;
+  border:1px solid #d7e1dd;
+  border-radius:8px;
+  background:#fff;
+  color:var(--ux-section-ink);
+  font:inherit;
+  font-size:12.5px;
+  line-height:1.4;
+  resize:none;
+  overflow:hidden;
+  outline:none;
+  box-sizing:border-box;
+  cursor:default;
+}
+.website-message-compact-input:focus{
+  border-color:var(--workspace-emerald);
+  box-shadow:0 0 0 2px rgba(27,94,74,.10);
+}
+.website-inbox-page .deal-notes-viewer-body textarea[readonly]{
+  cursor:default;
+}
