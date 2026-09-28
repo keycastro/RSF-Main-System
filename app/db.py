@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 25
-SCHEMA_NAME = "rsf-main-system-v1.18.51-website-inquiry-deals"
+SCHEMA_VERSION = 26
+SCHEMA_NAME = "rsf-main-system-v1.18.63-prospect-deal-notes-sync"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents"}
 
 
@@ -1013,6 +1013,36 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
         db.execute(
             "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
             (25, "rsf-v1.18.50-website-inquiry-deals"),
+        )
+
+    # V26 adds Prospect Notes After Conversation and keeps it as the same shared
+    # data as the linked Deal field. Existing Deal notes are copied to the
+    # Prospect once so no current conversation notes are lost.
+    if 26 not in applied:
+        prospect_columns = {row["name"] for row in db.execute("PRAGMA table_info(prospects)").fetchall()}
+        if "notes_after_conversation" not in prospect_columns:
+            db.execute(
+                "ALTER TABLE prospects ADD COLUMN notes_after_conversation TEXT NOT NULL DEFAULT ''"
+            )
+        db.execute(
+            """UPDATE prospects
+               SET notes_after_conversation=COALESCE(
+                   (SELECT d.notes_after_conversation
+                    FROM deals d
+                    WHERE d.prospect_id=prospects.id
+                    LIMIT 1),
+                   ''
+               )
+               WHERE trim(COALESCE(notes_after_conversation,''))=''
+                 AND EXISTS (
+                     SELECT 1 FROM deals d
+                     WHERE d.prospect_id=prospects.id
+                       AND trim(COALESCE(d.notes_after_conversation,''))<>''
+                 )"""
+        )
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (26, "rsf-v1.18.63-prospect-deal-notes-sync"),
         )
 
 

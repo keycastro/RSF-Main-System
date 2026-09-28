@@ -291,7 +291,10 @@ def _ensure_deal_for_prospect(db, prospect_id: int, created_by_user_id: int, now
     if existing:
         return int(existing["id"]), False
 
-    prospect = db.execute("SELECT id,email,phone FROM prospects WHERE id=?", (prospect_id,)).fetchone()
+    prospect = db.execute(
+        "SELECT id,email,phone,notes_after_conversation FROM prospects WHERE id=?",
+        (prospect_id,),
+    ).fetchone()
     if not prospect:
         raise ValueError("Prospect not found.")
 
@@ -310,7 +313,7 @@ def _ensure_deal_for_prospect(db, prospect_id: int, created_by_user_id: int, now
             "",
             (prospect["phone"] or "").strip()[:120],
             (prospect["email"] or "").strip()[:320],
-            "",
+            (prospect["notes_after_conversation"] or "").strip()[:3000],
             created_by_user_id,
             now,
             now,
@@ -1261,6 +1264,7 @@ def prospect_update(prospect_id: int):
         "post_link": 1000,
         "post_date": 10,
         "system_wanted": 2000,
+        "notes_after_conversation": 3000,
         "budget": 200,
         "company": 200,
         "location": 200,
@@ -1329,6 +1333,11 @@ def prospect_update(prospect_id: int):
         if field_name == "email":
             db.execute(
                 "UPDATE deals SET email=?,updated_at=? WHERE prospect_id=?",
+                (value, now, prospect_id),
+            )
+        elif field_name == "notes_after_conversation":
+            db.execute(
+                "UPDATE deals SET notes_after_conversation=?,updated_at=? WHERE prospect_id=?",
                 (value, now, prospect_id),
             )
 
@@ -1778,8 +1787,8 @@ def deal_update(deal_id: int):
         )
     if deal["prospect_id"] is not None:
         db.execute(
-            "UPDATE prospects SET status=?,contact=?,location=?,email=?,updated_at=? WHERE id=?",
-            (status, contact_person, location, email, now, deal["prospect_id"]),
+            "UPDATE prospects SET status=?,contact=?,location=?,email=?,notes_after_conversation=?,updated_at=? WHERE id=?",
+            (status, contact_person, location, email, notes_after_conversation, now, deal["prospect_id"]),
         )
     elif deal["website_inquiry_id"] is not None:
         db.execute(

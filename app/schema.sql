@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS prospects (
     post_link TEXT NOT NULL DEFAULT '',
     post_date TEXT NOT NULL DEFAULT '',
     system_wanted TEXT NOT NULL DEFAULT '',
+    notes_after_conversation TEXT NOT NULL DEFAULT '',
     budget TEXT NOT NULL DEFAULT '',
     location TEXT NOT NULL DEFAULT '',
     website TEXT NOT NULL DEFAULT '',
