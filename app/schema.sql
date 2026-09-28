@@ -358,7 +358,6 @@ CREATE TABLE IF NOT EXISTS website_inquiries (
 CREATE INDEX IF NOT EXISTS idx_website_inquiries_queue ON website_inquiries(status,created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_website_inquiries_owner ON website_inquiries(claimed_by_partner_id,status,updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_website_inquiries_email ON website_inquiries(email_norm,created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_website_inquiries_workflow ON website_inquiries(workflow_status,updated_at DESC,id DESC);
 
 CREATE TABLE IF NOT EXISTS client_conversations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

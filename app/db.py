@@ -26,7 +26,7 @@ IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
 SCHEMA_VERSION = 25
-SCHEMA_NAME = "rsf-main-system-v1.18.50-website-inquiry-deals"
+SCHEMA_NAME = "rsf-main-system-v1.18.51-website-inquiry-deals"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents"}
 
 
