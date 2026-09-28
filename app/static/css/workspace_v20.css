@@ -1846,6 +1846,7 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 .website-inquiry-message{
   margin-top:10px;
+  padding:0;
   border:1px solid #e3e9e6;
   border-radius:9px;
   background:#fbfcfb;
