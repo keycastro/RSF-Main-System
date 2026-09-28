@@ -1828,3 +1828,97 @@ textarea.prospect-inline-editor{resize:vertical}
     grid-column:auto;
   }
 }
+
+
+/* v1.18.31 — link source-system requests and compact expandable messages */
+.website-inquiry-request-link{
+  display:inline-block;
+  color:var(--ux-section-ink);
+  font-size:12.5px;
+  font-weight:700;
+  line-height:1.45;
+  text-decoration:underline;
+  text-decoration-thickness:1px;
+  text-underline-offset:3px;
+}
+.website-inquiry-request-link:hover{
+  color:var(--ux-accent);
+}
+.website-inquiry-message{
+  margin-top:10px;
+  border:1px solid #e3e9e6;
+  border-radius:9px;
+  background:#fbfcfb;
+  overflow:hidden;
+}
+.website-inquiry-message>summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:54px;
+  padding:9px 10px 9px 11px;
+  cursor:pointer;
+  list-style:none;
+}
+.website-inquiry-message>summary::-webkit-details-marker{
+  display:none;
+}
+.website-inquiry-message-copy{
+  min-width:0;
+  flex:1;
+}
+.website-inquiry-message-label{
+  display:block;
+  margin-bottom:4px;
+  color:var(--ux-section-muted);
+  font-size:9.5px;
+  font-weight:850;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.website-inquiry-message-copy>strong{
+  display:block;
+  min-width:0;
+  color:var(--ux-section-ink);
+  font-size:12.5px;
+  font-weight:700;
+  line-height:1.45;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.website-inquiry-message-expand{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  width:31px;
+  height:31px;
+  border:1px solid #d9e2de;
+  border-radius:8px;
+  background:#fff;
+  color:#61736c;
+}
+.website-inquiry-message-expand svg{
+  width:16px;
+  height:16px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.7;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.website-inquiry-message[open] .website-inquiry-message-expand{
+  color:var(--ux-accent);
+  background:#f4f8f6;
+}
+.website-inquiry-message-full{
+  padding:12px;
+  border-top:1px solid #e3e9e6;
+  color:var(--ux-section-ink);
+  font-size:12.5px;
+  line-height:1.55;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
