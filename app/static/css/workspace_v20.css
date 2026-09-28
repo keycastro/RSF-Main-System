@@ -2786,22 +2786,36 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 
 
-/* v1.18.52 — Website Inbox header uses Deal-style Client Name + Status stack */
+/* v1.18.53 — Website Inbox header uses the approved two-line compact identity format */
+.website-inquiry-card-identity{
+  display:grid;
+  gap:10px;
+}
+.website-inquiry-card-identity>div,
 .website-inquiry-header-status{
   display:flex;
   align-items:center;
-  gap:6px;
+  gap:5px;
   min-width:0;
-  margin-top:4px;
+  margin:0;
 }
+.website-inquiry-card-identity>div>span,
 .website-inquiry-header-status>span{
-  color:var(--rsf-visual-text-muted,#6f7f79);
   font-size:8.5px;
   font-weight:700;
   letter-spacing:.075em;
   line-height:1.25;
   text-transform:uppercase;
   white-space:nowrap;
+}
+.website-inquiry-card-identity>div>strong{
+  min-width:0;
+  color:var(--ux-section-ink);
+  font-size:12.5px;
+  font-weight:700;
+  letter-spacing:0;
+  line-height:1.35;
+  overflow-wrap:anywhere;
 }
 .website-inquiry-header-status .website-inquiry-status-select{
   flex:0 0 130px;
