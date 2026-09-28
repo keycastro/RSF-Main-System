@@ -27,7 +27,6 @@
         </label>
       </div>
       <div class="website-inquiry-card-tools">
-        <span class="website-inquiry-received-log">Received: {{ inquiry.created_at|dt }}</span>
         {% if g.user and g.user['role'] == 'admin' %}
         <form class="website-inquiry-delete-form" method="post" action="{{ url_for('main.inquiry_delete', inquiry_id=inquiry.id) }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -36,6 +35,7 @@
           </button>
         </form>
         {% endif %}
+        <span class="website-inquiry-received-log">Received: {{ inquiry.created_at|dt }}</span>
       </div>
     </header>
 

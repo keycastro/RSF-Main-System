@@ -3011,49 +3011,33 @@ textarea.prospect-inline-editor{resize:vertical}
   }
 }
 
-/* v1.18.58 — Website Inbox and Prospect headers follow the proven Deals header layout */
+/* v1.18.59 — trash stays on top; log date sits directly below on Website Inbox and Prospects */
 .website-inquiry-card-head{
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
   gap:14px;
-  position:static;
 }
 .website-inquiry-card-identity{
   display:grid;
   gap:7px;
   flex:1 1 auto;
-  width:auto;
   max-width:470px;
   min-width:0;
 }
-.website-inquiry-card-identity>div,
-.website-inquiry-header-status{
-  display:flex;
-  align-items:center;
-  gap:4px;
-  min-width:0;
-  margin:0;
-}
-.website-inquiry-card-identity>div>strong{
-  flex:0 1 auto;
-  min-width:0;
-  overflow:visible;
-  text-overflow:clip;
-  white-space:nowrap;
-  overflow-wrap:normal;
-}
 .website-inquiry-card-tools{
-  position:static;
-  display:flex;
-  align-items:center;
-  justify-content:flex-end;
-  gap:8px;
+  display:grid;
+  justify-items:end;
+  align-content:start;
+  gap:5px;
   flex:0 0 auto;
   min-width:0;
   margin:0;
   padding-top:1px;
   text-align:right;
+}
+.website-inquiry-delete-form{
+  margin:0;
 }
 .website-inquiry-card-head .website-inquiry-received-log{
   display:block;
@@ -3070,24 +3054,18 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 
 .prospects-page .prospect-card-top{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:14px;
-  position:static;
+  display:block;
   min-height:78px;
   padding:16px 70px 16px 18px;
 }
 .prospects-page .prospect-card-identifiers{
   display:grid;
   gap:7px;
-  flex:1 1 auto;
   width:auto;
   max-width:470px;
   min-width:0;
 }
 .prospects-page .prospect-card-identifiers .prospect-edit-value{
-  flex:0 1 auto;
   width:auto;
   max-width:none;
   min-width:0;
@@ -3095,13 +3073,18 @@ textarea.prospect-inline-editor{resize:vertical}
   text-overflow:clip;
   white-space:nowrap;
 }
-.prospects-page .prospect-card-log{
-  position:static;
+.prospects-page .prospect-card-shell>.prospect-card-delete{
+  right:47px;
+  top:16px;
+}
+.prospects-page .prospect-card-shell>.prospect-card-log{
+  position:absolute;
+  top:39px;
+  right:47px;
+  z-index:2;
   display:block;
-  flex:0 0 auto;
-  max-width:none;
   margin:0;
-  padding:1px 0 0;
+  padding:0;
   color:#6f7f79;
   font-size:7.5px;
   font-weight:650;
@@ -3122,17 +3105,16 @@ textarea.prospect-inline-editor{resize:vertical}
   .website-inquiry-card-identity{
     max-width:none;
   }
-  .website-inquiry-card-tools{
-    padding-top:1px;
-  }
-  .prospects-page .prospect-card-top{
-    display:grid;
-    grid-template-columns:minmax(0,1fr) auto;
-    align-items:start;
-    gap:14px;
-  }
   .prospects-page .prospect-card-identifiers{
     max-width:none;
+  }
+  .prospects-page .prospect-card-shell>.prospect-card-delete{
+    right:36px;
+    top:8px;
+  }
+  .prospects-page .prospect-card-shell>.prospect-card-log{
+    top:31px;
+    right:36px;
   }
 }
 @media(max-width:460px){
@@ -3140,16 +3122,10 @@ textarea.prospect-inline-editor{resize:vertical}
     grid-template-columns:1fr;
   }
   .website-inquiry-card-tools{
-    justify-content:flex-start;
+    justify-items:start;
     text-align:left;
   }
   .website-inquiry-card-head .website-inquiry-received-log{
-    text-align:left;
-  }
-  .prospects-page .prospect-card-top{
-    grid-template-columns:1fr;
-  }
-  .prospects-page .prospect-card-log{
     text-align:left;
   }
 }

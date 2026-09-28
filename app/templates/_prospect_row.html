@@ -12,7 +12,6 @@
             <button class="prospect-edit-value prospect-status" type="button" data-prospect-edit-trigger aria-label="Edit Status">{{ prospect_status_labels.get(prospect['status'], prospect['status']|human_status) }}</button>
           </div>
         </div>
-        <span class="prospect-card-log">Added: {{ prospect['created_at']|dt }}</span>
       </div>
 
       <div class="prospect-card-meta">
@@ -79,4 +78,5 @@
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h10l-1 11H8L7 9Zm3 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z" fill="currentColor"/></svg>
     </button>
   </form>
+  <span class="prospect-card-log">Added: {{ prospect['created_at']|dt }}</span>
 </article>
