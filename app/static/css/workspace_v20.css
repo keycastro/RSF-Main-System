@@ -2151,3 +2151,34 @@ textarea.prospect-inline-editor{resize:vertical}
     grid-template-columns:1fr;
   }
 }
+
+
+/* v1.18.36 — Deal-card font hierarchy: bold only Client Name, Location, and Status */
+.deal-card .deal-card-identifiers label>span,
+.deal-card .deal-card-identifiers .deal-identifier-input,
+.deal-card .deal-form-grid label:first-child>span,
+.deal-card .deal-form-grid label:first-child select{
+  font-weight:700;
+}
+.deal-card .deal-form-grid label:not(:first-child)>span,
+.deal-card .deal-form-grid label:not(:first-child) input,
+.deal-card .deal-form-grid label:not(:first-child) select,
+.deal-card .deal-form-grid label:not(:first-child) textarea,
+.deal-card .deal-card-linked .deal-linked-label,
+.deal-card .deal-documents-head h3,
+.deal-card .deal-documents-head p,
+.deal-card .deal-document-upload label>span,
+.deal-card .deal-document-file-label,
+.deal-card .deal-document-upload input,
+.deal-card .deal-document-upload-button,
+.deal-card .deal-document-formats,
+.deal-card .deal-document-main>span,
+.deal-card .deal-document-main strong,
+.deal-card .deal-document-format>span,
+.deal-card .deal-document-format strong,
+.deal-card .deal-document-date>span,
+.deal-card .deal-document-date strong,
+.deal-card .deal-document-actions>.button,
+.deal-card .deal-document-empty{
+  font-weight:400;
+}
