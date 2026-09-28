@@ -2786,40 +2786,55 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 
 
-/* v1.18.50 — Website Inquiry Status and linked inbound Deals */
-.website-inquiry-status-field{
-  grid-column:1/-1;
-}
-.website-inquiry-status-select{
-  display:block;
-  width:100%;
+/* v1.18.52 — Website Inbox header uses Deal-style Client Name + Status stack */
+.website-inquiry-header-status{
+  display:flex;
+  align-items:center;
+  gap:6px;
   min-width:0;
-  height:39px;
-  min-height:39px;
-  max-height:39px;
-  padding:8px 10px;
-  border:1px solid #d7e1dd;
-  border-radius:8px;
-  background:#fff;
+  margin-top:4px;
+}
+.website-inquiry-header-status>span{
+  color:var(--rsf-visual-text-muted,#6f7f79);
+  font-size:8.5px;
+  font-weight:700;
+  letter-spacing:.075em;
+  line-height:1.25;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.website-inquiry-header-status .website-inquiry-status-select{
+  flex:0 0 130px;
+  width:130px;
+  max-width:130px;
+  min-width:0;
+  min-height:20px;
+  padding:0;
+  border:0!important;
+  border-radius:0;
+  background-color:transparent;
+  background-image:none!important;
   color:var(--ux-section-ink);
-  box-sizing:border-box;
+  box-shadow:none!important;
   font:inherit;
   font-size:12.5px;
-  font-weight:600;
-  line-height:1.4;
+  font-weight:700;
+  letter-spacing:0;
+  line-height:1.35;
+  outline:none;
   cursor:pointer;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  appearance:none;
 }
-.website-inquiry-status-select:focus{
-  border-color:var(--workspace-emerald);
-  box-shadow:0 0 0 2px rgba(27,94,74,.10);
+.website-inquiry-header-status .website-inquiry-status-select:hover,
+.website-inquiry-header-status .website-inquiry-status-select:focus{
+  border:0!important;
+  background-color:transparent;
+  box-shadow:none!important;
   outline:none;
 }
-.website-inquiry-status-select:disabled{
+.website-inquiry-header-status .website-inquiry-status-select:disabled{
   opacity:.65;
   cursor:wait;
-}
-@media(max-width:620px){
-  .website-inquiry-status-field{
-    grid-column:auto;
-  }
 }
