@@ -30,12 +30,21 @@
             </label>
           </div>
           <div class="deal-card-linked">
+            {% if deal['source_kind'] == 'website_inquiry' %}
+            <a
+              class="deal-linked-label"
+              href="{{ url_for('main.inquiries_list') }}#website-inquiry-{{ deal['website_inquiry_id'] }}"
+              aria-label="Open linked Website Inquiry {{ deal['inquiry_name'] }}"
+              title="Open linked Website Inquiry"
+            >LINKED IN WEBSITE INBOX</a>
+            {% else %}
             <a
               class="deal-linked-label"
               href="{{ url_for('main.prospects', date=deal['prospect_recorded_date']) }}#prospect-{{ deal['prospect_id'] }}"
               aria-label="Open linked Prospect {{ deal['prospect_name'] }}"
               title="Open linked Prospect"
             >LINKED IN PROSPECT</a>
+            {% endif %}
           </div>
         </header>
 
@@ -196,7 +205,7 @@
       </article>
     {% else %}
       <div class="simple-empty deals-empty">
-        No deals yet. Move a Prospect to Deal to start.
+        No deals yet. Move a Prospect or Website Inquiry to Deal to start.
       </div>
     {% endfor %}
   </div>

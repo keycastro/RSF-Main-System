@@ -80,7 +80,10 @@ CREATE INDEX IF NOT EXISTS idx_prospects_daily_queue ON prospects(recorded_date,
 
 CREATE TABLE IF NOT EXISTS deals (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    prospect_id INTEGER NOT NULL UNIQUE REFERENCES prospects(id) ON DELETE CASCADE,
+    prospect_id INTEGER UNIQUE REFERENCES prospects(id) ON DELETE CASCADE,
+    website_inquiry_id BIGINT UNIQUE,
+    contact_person TEXT NOT NULL DEFAULT '',
+    location TEXT NOT NULL DEFAULT '',
     status TEXT NOT NULL DEFAULT 'DEAL' CHECK (status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','LOST')),
     demo_date TEXT NOT NULL DEFAULT '',
     followup_date TEXT NOT NULL DEFAULT '',
@@ -91,7 +94,11 @@ CREATE TABLE IF NOT EXISTS deals (
     notes_after_conversation TEXT NOT NULL DEFAULT '',
     created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
+    updated_at TEXT NOT NULL,
+    CHECK (
+        (prospect_id IS NOT NULL AND website_inquiry_id IS NULL)
+        OR (prospect_id IS NULL AND website_inquiry_id IS NOT NULL)
+    )
 );
 
 CREATE TABLE IF NOT EXISTS deal_documents (
@@ -338,6 +345,7 @@ CREATE TABLE IF NOT EXISTS website_inquiries (
     company TEXT NOT NULL DEFAULT '',
     message TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'UNCLAIMED' CHECK (status IN ('UNCLAIMED','CLAIMED','ARCHIVED','SPAM')),
+    workflow_status TEXT NOT NULL DEFAULT 'NOT_CONTACTED' CHECK (workflow_status IN ('NOT_CONTACTED','NO_ANSWER','REJECTED','DEAL','DEMO','PROPOSAL','DECISION','WON','LOST')),
     claimed_by_partner_id INTEGER REFERENCES partners(id),
     claimed_at TEXT,
     lead_id INTEGER REFERENCES leads(id),
@@ -350,6 +358,7 @@ CREATE TABLE IF NOT EXISTS website_inquiries (
 CREATE INDEX IF NOT EXISTS idx_website_inquiries_queue ON website_inquiries(status,created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_website_inquiries_owner ON website_inquiries(claimed_by_partner_id,status,updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_website_inquiries_email ON website_inquiries(email_norm,created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_website_inquiries_workflow ON website_inquiries(workflow_status,updated_at DESC,id DESC);
 
 CREATE TABLE IF NOT EXISTS client_conversations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

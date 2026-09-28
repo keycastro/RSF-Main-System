@@ -329,6 +329,55 @@ def _ensure_deal_for_prospect(db, prospect_id: int, created_by_user_id: int, now
     )
     return deal_id, True
 
+def _ensure_deal_for_website_inquiry(db, inquiry_id: int, created_by_user_id: int, now: str) -> tuple[int, bool]:
+    existing = db.execute("SELECT id FROM deals WHERE website_inquiry_id=? LIMIT 1", (inquiry_id,)).fetchone()
+    if existing:
+        return int(existing["id"]), False
+
+    inquiry = db.execute(
+        "SELECT id,name,email,phone FROM website_inquiries WHERE id=?",
+        (inquiry_id,),
+    ).fetchone()
+    if not inquiry:
+        raise ValueError("Website Inquiry not found.")
+
+    db.execute(
+        """INSERT OR IGNORE INTO deals(
+               website_inquiry_id,contact_person,location,status,demo_date,followup_date,next_step,price,
+               contact_number,email,notes_after_conversation,
+               created_by_user_id,created_at,updated_at
+           ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (
+            inquiry_id,
+            (inquiry["name"] or "").strip()[:200].upper(),
+            "",
+            "DEAL",
+            "",
+            "",
+            "",
+            "",
+            (inquiry["phone"] or "").strip()[:120],
+            (inquiry["email"] or "").strip()[:320],
+            "",
+            created_by_user_id,
+            now,
+            now,
+        ),
+    )
+    deal = db.execute("SELECT id FROM deals WHERE website_inquiry_id=? LIMIT 1", (inquiry_id,)).fetchone()
+    if not deal:
+        raise RuntimeError("Deal could not be created.")
+    deal_id = int(deal["id"])
+    log_activity(
+        "DEAL_CREATED",
+        "deal",
+        deal_id,
+        "Deal created automatically from Website Inquiry Status.",
+        {"website_inquiry_id": inquiry_id},
+    )
+    return deal_id, True
+
+
 
 def _clean_account_name(value: str) -> str:
     return (value or "").strip()[:160]
@@ -1370,11 +1419,18 @@ def deals():
     db = get_db()
     rows = db.execute(
         """SELECT d.*,p.name AS prospect_name,p.recorded_date AS prospect_recorded_date,
-                  p.status AS workflow_status,p.contact AS prospect_contact,
-                  p.location AS prospect_location,p.email AS prospect_email
+                  CASE WHEN d.prospect_id IS NOT NULL THEN p.status ELSE i.workflow_status END AS workflow_status,
+                  CASE WHEN d.prospect_id IS NOT NULL THEN p.contact
+                       ELSE COALESCE(NULLIF(d.contact_person,''),i.name,'') END AS prospect_contact,
+                  CASE WHEN d.prospect_id IS NOT NULL THEN p.location ELSE d.location END AS prospect_location,
+                  CASE WHEN d.prospect_id IS NOT NULL THEN p.email ELSE d.email END AS prospect_email,
+                  CASE WHEN d.website_inquiry_id IS NOT NULL THEN 'website_inquiry' ELSE 'prospect' END AS source_kind,
+                  i.name AS inquiry_name
            FROM deals d
-           JOIN prospects p ON p.id=d.prospect_id
-           WHERE p.status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','LOST')
+           LEFT JOIN prospects p ON p.id=d.prospect_id
+           LEFT JOIN website_inquiries i ON i.id=d.website_inquiry_id
+           WHERE (p.id IS NOT NULL AND p.status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','LOST'))
+              OR (i.id IS NOT NULL AND i.workflow_status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','LOST'))
            ORDER BY d.updated_at DESC,d.id DESC"""
     ).fetchall()
     deal_ids = [int(row["id"]) for row in rows]
@@ -1644,7 +1700,7 @@ def deal_update(deal_id: int):
     validate_csrf()
     async_request = request.headers.get("X-RSF-Async") == "1"
     db = get_db()
-    deal = db.execute("SELECT id,prospect_id FROM deals WHERE id=?", (deal_id,)).fetchone()
+    deal = db.execute("SELECT id,prospect_id,website_inquiry_id FROM deals WHERE id=?", (deal_id,)).fetchone()
     if not deal:
         abort(404)
 
@@ -1720,10 +1776,20 @@ def deal_update(deal_id: int):
                 deal_id,
             ),
         )
-    db.execute(
-        "UPDATE prospects SET status=?,contact=?,location=?,email=?,updated_at=? WHERE id=?",
-        (status, contact_person, location, email, now, deal["prospect_id"]),
-    )
+    if deal["prospect_id"] is not None:
+        db.execute(
+            "UPDATE prospects SET status=?,contact=?,location=?,email=?,updated_at=? WHERE id=?",
+            (status, contact_person, location, email, now, deal["prospect_id"]),
+        )
+    elif deal["website_inquiry_id"] is not None:
+        db.execute(
+            "UPDATE deals SET contact_person=?,location=?,email=?,updated_at=? WHERE id=?",
+            (contact_person, location, email, now, deal_id),
+        )
+        db.execute(
+            "UPDATE website_inquiries SET workflow_status=?,updated_at=? WHERE id=?",
+            (status, now, deal["website_inquiry_id"]),
+        )
     db.commit()
     if async_request:
         return jsonify({
@@ -3769,10 +3835,39 @@ def inquiries_list():
     from .client_ops import email_receive_configured, email_send_configured
     return render_template(
         "inquiries.html", title="Website Inbox", unclaimed=unclaimed, claimed=claimed, website_inquiries=website_inquiries, partners=partners, overdue=overdue, current_time_iso=now,
+        inquiry_workflow_status_labels=PROSPECT_STATUS_LABELS,
         email_send_ready=email_send_configured(), email_receive_ready=email_receive_configured(),
         auto_email_sync=bool(current_app.config.get("AUTO_EMAIL_SYNC")),
         response_sla_minutes=int(current_app.config.get("FIRST_RESPONSE_SLA_MINUTES", 60)),
     )
+
+
+@bp.post("/inquiries/<int:inquiry_id>/workflow-status")
+@login_required
+def inquiry_workflow_status_update(inquiry_id: int):
+    validate_csrf()
+    inquiry = _authorized_inquiry(inquiry_id)
+    status = (request.form.get("status", "") or "").strip().upper()
+    if status not in PROSPECT_STATUS_LABELS:
+        return jsonify({"ok": False, "message": "Invalid Website Inquiry status."}), 400
+
+    db = get_db()
+    now = utcnow_iso()
+    deal_created = False
+    db.execute(
+        "UPDATE website_inquiries SET workflow_status=?,updated_at=? WHERE id=?",
+        (status, now, inquiry_id),
+    )
+    if status in DEAL_ACTIVE_STATUSES:
+        deal_id, deal_created = _ensure_deal_for_website_inquiry(db, inquiry_id, g.user["id"], now)
+        db.execute("UPDATE deals SET status=?,updated_at=? WHERE id=?", (status, now, deal_id))
+    db.commit()
+    return jsonify({
+        "ok": True,
+        "status": status,
+        "deal_created": deal_created,
+        "removed_from_deals": status in DEAL_PRE_STATUS_STATUSES,
+    })
 
 
 @bp.get("/inquiries/<int:inquiry_id>")

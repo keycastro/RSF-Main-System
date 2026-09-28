@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 24
-SCHEMA_NAME = "rsf-main-system-v1.18.26-website-inquiry-phone"
+SCHEMA_VERSION = 25
+SCHEMA_NAME = "rsf-main-system-v1.18.50-website-inquiry-deals"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents"}
 
 
@@ -962,6 +962,57 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
         db.execute(
             "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
             (24, "rsf-v1.18.26-website-inquiry-phone"),
+        )
+
+    # V25 adds the shared Website Inquiry -> Deal workflow without reusing the
+    # existing inquiry routing status (UNCLAIMED/CLAIMED/ARCHIVED/SPAM).
+    if 25 not in applied:
+        inquiry_columns = {row["name"] for row in db.execute("PRAGMA table_info(website_inquiries)").fetchall()}
+        if "workflow_status" not in inquiry_columns:
+            db.execute(
+                "ALTER TABLE website_inquiries ADD COLUMN workflow_status TEXT NOT NULL DEFAULT 'NOT_CONTACTED' "
+                "CHECK (workflow_status IN ('NOT_CONTACTED','NO_ANSWER','REJECTED','DEAL','DEMO','PROPOSAL','DECISION','WON','LOST'))"
+            )
+        db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_website_inquiries_workflow "
+            "ON website_inquiries(workflow_status,updated_at DESC,id DESC)"
+        )
+
+        deal_columns = {row["name"] for row in db.execute("PRAGMA table_info(deals)").fetchall()}
+        if using_postgres():
+            db.execute("ALTER TABLE deals ALTER COLUMN prospect_id DROP NOT NULL")
+            if "website_inquiry_id" not in deal_columns:
+                db.execute("ALTER TABLE deals ADD COLUMN website_inquiry_id BIGINT")
+            if "contact_person" not in deal_columns:
+                db.execute("ALTER TABLE deals ADD COLUMN contact_person TEXT NOT NULL DEFAULT ''")
+            if "location" not in deal_columns:
+                db.execute("ALTER TABLE deals ADD COLUMN location TEXT NOT NULL DEFAULT ''")
+            db.execute(
+                "CREATE UNIQUE INDEX IF NOT EXISTS uq_deals_website_inquiry_id "
+                "ON deals(website_inquiry_id) WHERE website_inquiry_id IS NOT NULL"
+            )
+        else:
+            db.commit()
+            db.execute("PRAGMA foreign_keys=OFF")
+            try:
+                _sqlite_rebuild_table_from_release_schema(db, "deals")
+                db.execute("DROP INDEX IF EXISTS idx_deals_status_updated")
+                db.execute("DROP INDEX IF EXISTS idx_deals_followup")
+                db.execute("CREATE INDEX IF NOT EXISTS idx_deals_status_updated ON deals(status,updated_at DESC,id DESC)")
+                db.execute("CREATE INDEX IF NOT EXISTS idx_deals_followup ON deals(followup_date,status,id)")
+                db.commit()
+            except Exception:
+                db.rollback()
+                raise
+            finally:
+                db.execute("PRAGMA foreign_keys=ON")
+            violations = db.execute("PRAGMA foreign_key_check").fetchall()
+            if violations:
+                raise RuntimeError(f"Website Inquiry Deal migration created foreign-key violations: {violations[:5]}")
+
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (25, "rsf-v1.18.50-website-inquiry-deals"),
         )
 
 

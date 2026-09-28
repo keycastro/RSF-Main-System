@@ -2631,6 +2631,47 @@
     source.focus();
   });
 
+  page.addEventListener('focusin', (event) => {
+    const field = event.target.closest('[data-website-inquiry-status]');
+    if (!field) return;
+    field.dataset.websiteInquiryStartStatus = field.value || '';
+  });
+
+  page.addEventListener('change', async (event) => {
+    const field = event.target.closest('[data-website-inquiry-status]');
+    if (!(field instanceof HTMLSelectElement)) return;
+    const previous = field.dataset.websiteInquiryStartStatus || '';
+    const status = field.value || '';
+    if (!status || status === previous) return;
+
+    field.disabled = true;
+    try {
+      const response = await fetch(field.dataset.updateUrl || '', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        body: new URLSearchParams({
+          csrf_token: field.dataset.csrfToken || '',
+          status
+        }).toString(),
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) {
+        field.value = previous;
+        throw new Error(data.message || 'Website Inquiry status could not be updated.');
+      }
+      field.dataset.websiteInquiryStartStatus = data.status || status;
+    } catch (error) {
+      window.alert(error.message || 'Website Inquiry status could not be updated. Try again.');
+    } finally {
+      field.disabled = false;
+    }
+  });
+
   viewerClose?.addEventListener('click', closeViewer);
   viewer?.addEventListener('cancel', closeViewer);
   viewer?.addEventListener('click', (event) => {

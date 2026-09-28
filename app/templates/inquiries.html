@@ -7,7 +7,7 @@
 {% if website_inquiries %}
 <div class="website-inquiry-list">
   {% for inquiry in website_inquiries %}
-  <article class="website-inquiry-card">
+  <article class="website-inquiry-card" id="website-inquiry-{{ inquiry.id }}">
     <header class="website-inquiry-card-head">
       <div class="website-inquiry-card-identity">
         <div><span>Client Name:</span> <strong>{{ inquiry.name }}</strong></div>
@@ -41,6 +41,20 @@
         <strong>—</strong>
         {% endif %}
       </div>
+      <label class="website-inquiry-field website-inquiry-status-field">
+        <span>Status</span>
+        <select
+          class="website-inquiry-status-select"
+          data-website-inquiry-status
+          data-update-url="{{ url_for('main.inquiry_workflow_status_update', inquiry_id=inquiry.id) }}"
+          data-csrf-token="{{ csrf_token() }}"
+          aria-label="Website Inquiry Status"
+        >
+          {% for code, label in inquiry_workflow_status_labels.items() %}
+            <option value="{{ code }}" {% if inquiry.workflow_status == code %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
     </div>
 
     <div class="website-inquiry-message-field">
