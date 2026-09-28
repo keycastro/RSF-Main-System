@@ -12,6 +12,7 @@
             <button class="prospect-edit-value prospect-status" type="button" data-prospect-edit-trigger aria-label="Edit Status">{{ prospect_status_labels.get(prospect['status'], prospect['status']|human_status) }}</button>
           </div>
         </div>
+        <span class="prospect-card-log">Added: {{ prospect['created_at']|dt }}</span>
       </div>
 
       <div class="prospect-card-meta">

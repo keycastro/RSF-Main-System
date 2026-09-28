@@ -3870,6 +3870,30 @@ def inquiry_workflow_status_update(inquiry_id: int):
     })
 
 
+@bp.post("/inquiries/<int:inquiry_id>/delete")
+@admin_required
+def inquiry_delete(inquiry_id: int):
+    validate_csrf()
+    inquiry = _authorized_inquiry(inquiry_id)
+    db = get_db()
+    linked_deal = db.execute(
+        "SELECT id FROM deals WHERE website_inquiry_id=? LIMIT 1",
+        (inquiry_id,),
+    ).fetchone()
+    if inquiry["status"] == "CLAIMED" or inquiry["client_conversation_id"] or linked_deal:
+        flash("This Website Inquiry has linked Deal or client history and cannot be permanently deleted.", "warning")
+        return redirect(url_for("main.inquiries_list"))
+
+    db.execute(
+        "DELETE FROM client_notifications WHERE entity_type='inquiry' AND entity_id=?",
+        (inquiry_id,),
+    )
+    db.execute("DELETE FROM website_inquiries WHERE id=?", (inquiry_id,))
+    db.commit()
+    flash("Website Inquiry deleted.", "success")
+    return redirect(url_for("main.inquiries_list"))
+
+
 @bp.get("/inquiries/<int:inquiry_id>")
 @login_required
 def inquiry_detail(inquiry_id: int):

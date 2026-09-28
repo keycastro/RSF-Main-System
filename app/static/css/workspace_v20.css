@@ -2936,3 +2936,78 @@ textarea.prospect-inline-editor{resize:vertical}
   }
 }
 
+/* v1.18.56 — card log timestamps + Website Inquiry permanent delete control */
+.website-inquiry-card-tools{
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-end;
+  gap:8px;
+  flex:0 0 auto;
+  min-width:0;
+  margin-left:auto;
+}
+.website-inquiry-received-log,
+.prospects-page .prospect-card-log,
+.deal-card .deal-became-log{
+  color:#6f7f79;
+  font-size:7.5px;
+  font-weight:650;
+  letter-spacing:.06em;
+  line-height:1.3;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.website-inquiry-received-log{
+  padding-top:6px;
+  text-align:right;
+}
+.website-inquiry-delete-form{
+  margin:0;
+}
+.website-inquiry-delete-button{
+  flex:0 0 auto;
+}
+.prospects-page .prospect-card-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+}
+.prospects-page .prospect-card-identifiers{
+  flex:1 1 auto;
+}
+.prospects-page .prospect-card-log{
+  flex:0 0 auto;
+  padding-top:2px;
+  text-align:right;
+}
+.deal-card .deal-became-log{
+  display:block;
+  margin-top:5px;
+  text-align:right;
+}
+@media(max-width:620px){
+  .website-inquiry-card-head{
+    gap:10px;
+  }
+  .website-inquiry-card-tools{
+    gap:5px;
+  }
+  .website-inquiry-received-log{
+    white-space:normal;
+    max-width:120px;
+  }
+  .prospects-page .prospect-card-top{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:10px;
+  }
+  .prospects-page .prospect-card-log{
+    max-width:120px;
+    white-space:normal;
+  }
+  .deal-card .deal-became-log{
+    text-align:inherit;
+  }
+}
+
