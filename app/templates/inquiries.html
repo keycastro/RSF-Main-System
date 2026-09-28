@@ -2,4 +2,10 @@
 <div class="page-head workspace-page-head client-inbox-head">
   <div><h1>Website Inbox</h1><p>New inquiries and active client conversations.</p></div>
 </div>
+{% if not unclaimed and not claimed %}
+<div class="simple-empty website-inbox-empty">
+  <strong>No website inquiries yet.</strong><br>
+  <span>New customer inquiries will appear here.</span>
+</div>
+{% endif %}
 {% endblock %}
