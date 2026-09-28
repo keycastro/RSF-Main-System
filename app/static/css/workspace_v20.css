@@ -3011,7 +3011,7 @@ textarea.prospect-inline-editor{resize:vertical}
   }
 }
 
-/* v1.18.59 — trash stays on top; log date sits directly below on Website Inbox and Prospects */
+/* v1.18.60 — exact two-row header alignment for Website Inbox and Prospects */
 .website-inquiry-card-head{
   display:flex;
   align-items:flex-start;
@@ -3020,26 +3020,37 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 .website-inquiry-card-identity{
   display:grid;
-  gap:7px;
+  grid-template-rows:29px 20px;
+  row-gap:5px;
   flex:1 1 auto;
   max-width:470px;
   min-width:0;
 }
+.website-inquiry-card-identity>div,
+.website-inquiry-header-status{
+  display:flex;
+  align-items:center;
+  min-height:0;
+  margin:0;
+}
 .website-inquiry-card-tools{
   display:grid;
+  grid-template-rows:29px 20px;
+  row-gap:5px;
   justify-items:end;
-  align-content:start;
-  gap:5px;
+  align-items:center;
   flex:0 0 auto;
   min-width:0;
   margin:0;
-  padding-top:1px;
+  padding:0;
   text-align:right;
 }
 .website-inquiry-delete-form{
+  align-self:center;
   margin:0;
 }
 .website-inquiry-card-head .website-inquiry-received-log{
+  align-self:center;
   display:block;
   margin:0;
   padding:0;
@@ -3060,10 +3071,17 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 .prospects-page .prospect-card-identifiers{
   display:grid;
-  gap:7px;
+  grid-template-rows:29px 20px;
+  row-gap:5px;
   width:auto;
   max-width:470px;
   min-width:0;
+}
+.prospects-page .prospect-card-identifiers .prospect-card-title,
+.prospects-page .prospect-card-identifiers .prospect-card-header-status{
+  display:flex;
+  align-items:center;
+  min-height:0;
 }
 .prospects-page .prospect-card-identifiers .prospect-edit-value{
   width:auto;
@@ -3079,7 +3097,7 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 .prospects-page .prospect-card-shell>.prospect-card-log{
   position:absolute;
-  top:39px;
+  top:55px;
   right:47px;
   z-index:2;
   display:block;
@@ -3113,7 +3131,7 @@ textarea.prospect-inline-editor{resize:vertical}
     top:8px;
   }
   .prospects-page .prospect-card-shell>.prospect-card-log{
-    top:31px;
+    top:47px;
     right:36px;
   }
 }
