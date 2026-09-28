@@ -3156,3 +3156,46 @@ textarea.prospect-inline-editor{resize:vertical}
   }
 }
 
+/* v1.18.62 — compact aligned two-row Deals header */
+.deal-card .deal-card-head{
+  align-items:flex-start;
+  padding:14px 18px;
+}
+.deal-card .deal-card-identifiers{
+  display:grid;
+  grid-template-rows:20px 20px;
+  row-gap:2px;
+}
+.deal-card .deal-card-identifiers label{
+  min-height:0;
+  margin:0;
+  align-items:center;
+}
+.deal-card .deal-card-linked{
+  display:grid;
+  grid-template-rows:20px 20px;
+  row-gap:2px;
+  align-items:center;
+  justify-items:end;
+  padding-top:0;
+}
+.deal-card .deal-card-linked .deal-linked-label{
+  align-self:center;
+  margin:0;
+}
+.deal-card .deal-became-log{
+  align-self:center;
+  display:block;
+  margin:0;
+  text-align:right;
+}
+@media(max-width:460px){
+  .deal-card .deal-card-linked{
+    justify-items:start;
+    text-align:left;
+  }
+  .deal-card .deal-became-log{
+    text-align:left;
+  }
+}
+
