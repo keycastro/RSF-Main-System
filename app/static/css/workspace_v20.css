@@ -2182,3 +2182,41 @@ textarea.prospect-inline-editor{resize:vertical}
 .deal-card .deal-document-empty{
   font-weight:400;
 }
+
+
+/* v1.18.37 — swap Deal Status and Location positions/formats */
+.deal-card-identifiers .deal-header-status-select{
+  flex:0 1 280px;
+  width:280px;
+  min-width:0;
+  min-height:20px;
+  padding:0 20px 0 0;
+  border:0;
+  border-bottom:1px solid transparent;
+  border-radius:0;
+  background-color:transparent;
+  color:var(--ux-section-ink);
+  box-shadow:none;
+  font:inherit;
+  font-size:12.5px;
+  font-weight:700;
+  line-height:1.35;
+  outline:none;
+  cursor:pointer;
+}
+.deal-card-identifiers .deal-header-status-select:hover,
+.deal-card-identifiers .deal-header-status-select:focus{
+  border-bottom-color:transparent;
+  box-shadow:none;
+  background-color:transparent;
+}
+.deal-card .deal-form-grid>label:first-child>span,
+.deal-card .deal-form-grid>label:first-child input[name="location"]{
+  font-weight:400;
+}
+@media(max-width:620px){
+  .deal-card-identifiers .deal-header-status-select{
+    flex:1 1 auto;
+    width:auto;
+  }
+}

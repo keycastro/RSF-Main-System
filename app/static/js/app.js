@@ -2520,7 +2520,7 @@
 
   page.addEventListener('change', (event) => {
     const field = event.target;
-    const form = field?.closest?.('[data-deal-form]');
+    const form = dealFormForField(field);
     if (!form || field?.name !== 'status') return;
     const status = field.value || '';
     if (status === (form.dataset.dealCurrentStatus || '')) return;
@@ -2543,8 +2543,8 @@
 
   const resetPendingStatus = () => {
     if (!pendingForm) return;
-    const select = pendingForm.querySelector('select[name="status"]');
-    if (select) select.value = pendingForm.dataset.dealCurrentStatus || select.value;
+    const select = pendingForm.elements?.namedItem('status');
+    if (select instanceof HTMLSelectElement) select.value = pendingForm.dataset.dealCurrentStatus || select.value;
   };
 
   const submitConfirmed = () => {
@@ -2567,8 +2567,8 @@
       return;
     }
 
-    const select = form.querySelector('select[name="status"]');
-    const status = select?.value || '';
+    const select = form.elements?.namedItem('status');
+    const status = select instanceof HTMLSelectElement ? (select.value || '') : '';
     if (!preDealStatuses.has(status)) return;
 
     event.preventDefault();

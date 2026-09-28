@@ -21,8 +21,12 @@
               <input class="deal-identifier-input" form="deal-form-{{ deal['id'] }}" type="text" name="contact_person" maxlength="200" value="{{ deal['prospect_contact'] }}">
             </label>
             <label>
-              <span>Location:</span>
-              <input class="deal-identifier-input" form="deal-form-{{ deal['id'] }}" type="text" name="location" maxlength="200" value="{{ deal['prospect_location'] }}">
+              <span>Status:</span>
+              <select class="deal-header-status-select" form="deal-form-{{ deal['id'] }}" name="status" aria-label="Deal Status">
+                {% for code, label in deal_status_labels.items() %}
+                  <option value="{{ code }}" {% if deal['workflow_status'] == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
             </label>
           </div>
           <div class="deal-card-linked">
@@ -40,12 +44,8 @@
           <input type="hidden" name="confirm_leave_deals" value="" data-deal-confirm-field>
           <div class="deal-form-grid">
             <label>
-              <span>Status</span>
-              <select name="status">
-                {% for code, label in deal_status_labels.items() %}
-                  <option value="{{ code }}" {% if deal['workflow_status'] == code %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-              </select>
+              <span>Location</span>
+              <input type="text" name="location" maxlength="200" value="{{ deal['prospect_location'] }}">
             </label>
             <label>
               <span>Demo Date</span>
