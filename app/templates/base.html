@@ -44,8 +44,13 @@
 
     <nav class="nav-list simple-primary-nav" aria-label="Workspace navigation">
       {% set prospects_active = request.endpoint in ['main.prospects','main.prospect_new','main.prospect_update','main.prospect_contact_attempt','main.prospect_delete'] %}
+      {% set inquiries_active = request.endpoint in ['main.inquiries_list','main.inquiry_detail'] %}
       {% set deals_active = request.endpoint in ['main.deals','main.deal_create_from_prospect','main.deal_update'] %}
+      <div class="nav-section-label">OUTBOUND</div>
       <a class="{{ 'active' if prospects_active else '' }}" {% if prospects_active %}aria-current="page"{% endif %} href="{{ url_for('main.prospects') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("leads") }}</span><span class="nav-text">Prospects</span></a>
+
+      <div class="nav-section-label">INBOUND</div>
+      <a class="{{ 'active' if inquiries_active else '' }}" {% if inquiries_active %}aria-current="page"{% endif %} href="{{ url_for('main.inquiries_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("inbox") }}</span><span class="nav-text">Website Inquiries</span></a>
       <a class="{{ 'active' if deals_active else '' }}" {% if deals_active %}aria-current="page"{% endif %} href="{{ url_for('main.deals') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("sales") }}</span><span class="nav-text">Deals</span></a>
     </nav>
 
