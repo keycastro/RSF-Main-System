@@ -2489,6 +2489,16 @@
     REJECTED: 'Rejected'
   };
   let pendingForm = null;
+  const requestDealSubmitWithoutValidation = (form) => {
+    if (!(form instanceof HTMLFormElement)) return;
+    const previousNoValidate = form.noValidate;
+    form.noValidate = true;
+    try {
+      form.requestSubmit();
+    } finally {
+      form.noValidate = previousNoValidate;
+    }
+  };
   const dealAutosaveFields = new Set([
     'demo_date',
     'followup_date',
@@ -2525,7 +2535,7 @@
     const status = field.value || '';
     if (status === (form.dataset.dealCurrentStatus || '')) return;
     if (preDealStatuses.has(status)) {
-      form.requestSubmit();
+      requestDealSubmitWithoutValidation(form);
       return;
     }
     saveDealFormInBackground(form);
@@ -2555,7 +2565,7 @@
     if (confirmField) confirmField.value = 'yes';
     form.dataset.dealBackwardConfirmed = '1';
     if (dialog?.open) dialog.close();
-    form.requestSubmit();
+    requestDealSubmitWithoutValidation(form);
   };
 
   page.addEventListener('submit', (event) => {
