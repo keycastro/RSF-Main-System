@@ -2720,8 +2720,8 @@
   closeButton?.addEventListener('click', () => setOpen(false));
 
   document.addEventListener('keydown', (event) => {
-    if (event.repeat || event.metaKey || event.shiftKey) return;
-    if (!event.ctrlKey || !event.altKey || String(event.key).toLowerCase() !== 'q') return;
+    if (event.repeat || event.metaKey || event.shiftKey || event.ctrlKey) return;
+    if (!event.altKey || String(event.key).toLowerCase() !== 'z') return;
     event.preventDefault();
     setOpen(!panel.classList.contains('is-open'));
   });
