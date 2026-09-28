@@ -2852,3 +2852,87 @@ textarea.prospect-inline-editor{resize:vertical}
   opacity:.65;
   cursor:wait;
 }
+
+/* v1.18.55 — Prospect header uses Deal-style Business Type + Status; Platform moves into body */
+.prospects-page .prospect-card-top{
+  display:block;
+}
+.prospects-page .prospect-card-identifiers{
+  display:grid;
+  gap:7px;
+  min-width:0;
+}
+.prospects-page .prospect-card-identifiers .prospect-card-title,
+.prospects-page .prospect-card-identifiers .prospect-card-header-status{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  min-width:0;
+}
+.prospects-page .prospect-card-identifiers .prospect-card-title>span,
+.prospects-page .prospect-card-identifiers .prospect-card-header-status>span{
+  display:inline-block;
+  flex:0 0 auto;
+  margin:0;
+  color:#5f706a;
+  font-size:8.5px;
+  font-weight:700;
+  letter-spacing:.075em;
+  line-height:1.25;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.prospects-page .prospect-card-identifiers .prospect-edit-value{
+  min-width:0;
+  min-height:20px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:var(--ux-section-ink);
+  font:inherit;
+  font-size:12.5px;
+  font-weight:700;
+  letter-spacing:0;
+  line-height:1.35;
+  text-align:left;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.prospects-page .prospect-card-identifiers .prospect-edit-value:hover,
+.prospects-page .prospect-card-identifiers .prospect-edit-value:focus{
+  background:transparent;
+  box-shadow:none;
+}
+.prospects-page .prospect-card-identifiers .prospect-status{
+  color:var(--ux-section-ink)!important;
+}
+.prospects-page .prospect-card-identifiers .prospect-inline-editor{
+  width:130px;
+  max-width:130px;
+  min-height:20px;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  font-size:12.5px;
+  font-weight:700;
+  line-height:1.35;
+}
+.prospects-page .prospect-card-meta>.prospect-card-platform{
+  grid-column:1/-1;
+}
+.prospects-page .prospect-card-meta>.prospect-card-platform>.prospect-edit-value{
+  min-height:0;
+  padding:0;
+  font-size:12px;
+  font-weight:600;
+  line-height:1.4;
+}
+@media(max-width:620px){
+  .prospects-page .prospect-card-meta>.prospect-card-platform{
+    grid-column:auto;
+  }
+}
+

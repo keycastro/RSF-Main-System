@@ -2,13 +2,15 @@
   <details class="prospect-card">
     <summary class="prospect-card-summary">
       <div class="prospect-card-top">
-        <div class="prospect-card-title prospect-editable-field" data-prospect-edit-field data-prospect-field="business_type" data-prospect-editor="text" data-prospect-value="{{ prospect['business_type'] }}">
-          <span>Business Type</span>
-          <button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Business Type">{{ prospect['business_type'] or '—' }}</button>
-        </div>
-        <div class="prospect-card-platform prospect-editable-field" data-prospect-edit-field data-prospect-field="platform_wanted" data-prospect-editor="text" data-prospect-value="{{ prospect['platform_wanted'] }}">
-          <span>Platform They Want</span>
-          <button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Platform They Want">{{ prospect['platform_wanted'] or '—' }}</button>
+        <div class="prospect-card-identifiers">
+          <div class="prospect-card-title prospect-editable-field" data-prospect-edit-field data-prospect-field="business_type" data-prospect-editor="text" data-prospect-value="{{ prospect['business_type'] }}">
+            <span>Business Type:</span>
+            <button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Business Type">{{ prospect['business_type'] or '—' }}</button>
+          </div>
+          <div class="prospect-card-header-status prospect-editable-field" data-prospect-edit-field data-prospect-field="status" data-prospect-editor="status" data-prospect-value="{{ prospect['status'] }}">
+            <span>Status:</span>
+            <button class="prospect-edit-value prospect-status" type="button" data-prospect-edit-trigger aria-label="Edit Status">{{ prospect_status_labels.get(prospect['status'], prospect['status']|human_status) }}</button>
+          </div>
         </div>
       </div>
 
@@ -21,9 +23,9 @@
           <span>Post Date</span>
           <button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Post Date">{{ prospect['post_date']|dateonly if prospect['post_date'] else '—' }}</button>
         </div>
-        <div class="prospect-card-meta-item prospect-editable-field" data-prospect-edit-field data-prospect-field="status" data-prospect-editor="status" data-prospect-value="{{ prospect['status'] }}">
-          <span>Status</span>
-          <button class="prospect-edit-value prospect-status" type="button" data-prospect-edit-trigger aria-label="Edit Status">{{ prospect_status_labels.get(prospect['status'], prospect['status']|human_status) }}</button>
+        <div class="prospect-card-meta-item prospect-card-platform prospect-editable-field" data-prospect-edit-field data-prospect-field="platform_wanted" data-prospect-editor="text" data-prospect-value="{{ prospect['platform_wanted'] }}">
+          <span>Platform They Want</span>
+          <button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Platform They Want">{{ prospect['platform_wanted'] or '—' }}</button>
         </div>
       </div>
 
