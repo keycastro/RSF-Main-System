@@ -2245,3 +2245,29 @@ textarea.prospect-inline-editor{resize:vertical}
   background-image:none !important;
   background-color:transparent;
 }
+
+
+/* v1.18.39 — compact Status dropdown width and slightly clearer Deal fields */
+.deal-card .deal-card-identifiers .deal-header-status-select{
+  flex:0 0 130px;
+  width:130px;
+  max-width:130px;
+}
+.deal-card .deal-form-grid label>span{
+  color:#5f706a;
+}
+.deal-card .deal-form-grid input,
+.deal-card .deal-form-grid select,
+.deal-card .deal-form-grid textarea{
+  border-color:#cbd8d3;
+}
+.deal-card .deal-notes-expand-button{
+  border-color:#cbd8d3;
+}
+@media(max-width:620px){
+  .deal-card .deal-card-identifiers .deal-header-status-select{
+    flex:0 0 130px;
+    width:130px;
+    max-width:130px;
+  }
+}
