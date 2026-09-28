@@ -2762,20 +2762,6 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 
 
-/* v1.18.70 — align Prospect Business Type and Status values in one shared column */
-.prospects-page .prospect-card-identifiers{
-  grid-template-columns:max-content minmax(0,1fr);
-  column-gap:5px;
-}
-.prospects-page .prospect-card-identifiers .prospect-card-title,
-.prospects-page .prospect-card-identifiers .prospect-card-header-status{
-  display:contents;
-}
-.prospects-page .prospect-card-identifiers .prospect-card-title>span,
-.prospects-page .prospect-card-identifiers .prospect-card-header-status>span{
-  align-self:center;
-}
-
 /* v1.18.66 — remove the double-padding gap between Prospect summary and details */
 .prospects-page .prospect-card-meta{
   padding-bottom:6px;
