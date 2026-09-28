@@ -11,9 +11,19 @@
     </div>
   </div>
 
+  <div class="prospect-status-filters" role="group" aria-label="Filter Deals by pipeline stage" data-deal-filters>
+    <button class="prospect-filter-button is-active" type="button" data-deal-filter="ALL" aria-pressed="true">All</button>
+    <button class="prospect-filter-button" type="button" data-deal-filter="DEAL" aria-pressed="false">Deal</button>
+    <button class="prospect-filter-button" type="button" data-deal-filter="DEMO" aria-pressed="false">Demo</button>
+    <button class="prospect-filter-button" type="button" data-deal-filter="PROPOSAL" aria-pressed="false">Proposal</button>
+    <button class="prospect-filter-button" type="button" data-deal-filter="DECISION" aria-pressed="false">Decision</button>
+    <button class="prospect-filter-button" type="button" data-deal-filter="WON" aria-pressed="false">Won</button>
+    <button class="prospect-filter-button" type="button" data-deal-filter="LOST" aria-pressed="false">Lost</button>
+  </div>
+
   <div class="deals-list">
     {% for deal in deals %}
-      <article class="deal-card" id="deal-{{ deal['id'] }}">
+      <article class="deal-card" id="deal-{{ deal['id'] }}" data-deal-card data-deal-status="{{ deal['workflow_status'] }}">
         <header class="deal-card-head">
           <div class="deal-card-identifiers">
             <label>
@@ -209,6 +219,7 @@
         No deals yet. Move a Prospect or Website Inquiry to Deal to start.
       </div>
     {% endfor %}
+    <div class="simple-empty deals-empty" data-deal-filter-empty hidden>No deals in this stage.</div>
   </div>
 
   <dialog class="deal-notes-viewer" data-deal-notes-viewer aria-labelledby="deal-notes-viewer-title">
