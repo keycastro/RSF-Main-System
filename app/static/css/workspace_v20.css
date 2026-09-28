@@ -2001,3 +2001,150 @@ textarea.prospect-inline-editor{resize:vertical}
 .website-inbox-page .deal-notes-viewer-body textarea[readonly]{
   cursor:default;
 }
+
+
+/* v1.18.35 — Website Inbox adopts the approved Deals card visual system */
+.website-inquiry-list{
+  width:100%;
+  max-width:none;
+  margin:16px 0 0;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+.website-inquiry-card{
+  min-width:0;
+  overflow:hidden;
+  padding:0;
+  border:1px solid #dbe4e0;
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 4px 14px rgba(25,55,46,.055);
+}
+.website-inquiry-card-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  padding:16px 18px;
+  border-bottom:1px solid #e7edea;
+  background:#fbfdfc;
+}
+.website-inquiry-card-identity{
+  min-width:0;
+}
+.website-inquiry-card-identity>div{
+  min-width:0;
+  color:var(--ux-section-ink);
+  font-size:12.5px;
+  line-height:1.35;
+  overflow-wrap:anywhere;
+}
+.website-inquiry-card-identity>div>span{
+  color:#6f7f79;
+  font-size:8.5px;
+  font-weight:650;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.website-inquiry-card-identity>div>strong{
+  font-weight:400;
+}
+.website-inquiry-card-identity>small{
+  display:block;
+  margin-top:7px;
+  color:#6f7f79;
+  font-size:9px;
+  line-height:1.35;
+}
+.website-inquiry-card-body{
+  padding:16px 18px 18px;
+}
+.website-inquiry-field-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin:0;
+}
+.website-inquiry-field{
+  display:grid;
+  gap:5px;
+  min-width:0;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+}
+.website-inquiry-field>span,
+.website-inquiry-message-field>span{
+  display:block;
+  margin:0;
+  color:#6f7f79;
+  font-size:9px;
+  font-weight:650;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+}
+.website-inquiry-field>strong,
+.website-inquiry-request-link{
+  display:flex;
+  align-items:center;
+  width:100%;
+  min-width:0;
+  min-height:39px;
+  padding:9px 10px;
+  border:1px solid #d7e1dd;
+  border-radius:8px;
+  background:#fff;
+  color:var(--ux-section-ink);
+  box-sizing:border-box;
+  font:inherit;
+  font-size:12.5px;
+  font-weight:400;
+  line-height:1.4;
+  overflow:hidden;
+  overflow-wrap:anywhere;
+}
+.website-inquiry-request-link{
+  font-weight:400;
+  text-decoration:underline;
+  text-decoration-thickness:1px;
+  text-underline-offset:3px;
+}
+.website-inquiry-request-link:hover{
+  border-color:var(--workspace-emerald);
+  color:var(--workspace-emerald);
+}
+.website-inquiry-message-field{
+  margin-top:12px;
+}
+.website-message-compact-input{
+  background:#fff;
+}
+@media(min-width:1351px){
+  .website-inquiry-list{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
+@media(min-width:901px) and (max-width:1350px){
+  .website-inquiry-list{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:900px){
+  .website-inquiry-list{
+    grid-template-columns:1fr;
+  }
+}
+@media(max-width:620px){
+  .website-inquiry-card-head{
+    padding:14px;
+  }
+  .website-inquiry-card-body{
+    padding:14px;
+  }
+  .website-inquiry-field-grid{
+    grid-template-columns:1fr;
+  }
+}

@@ -8,13 +8,14 @@
 <div class="website-inquiry-list">
   {% for inquiry in website_inquiries %}
   <article class="website-inquiry-card">
-    <div class="website-inquiry-card-head">
-      <div>
-        <strong>{{ inquiry.name }}</strong>
-        <span>Received {{ inquiry.created_at|dt }}</span>
+    <header class="website-inquiry-card-head">
+      <div class="website-inquiry-card-identity">
+        <div><span>Client Name:</span> <strong>{{ inquiry.name }}</strong></div>
+        <small>Received {{ inquiry.created_at|dt }}</small>
       </div>
-    </div>
+    </header>
 
+    <div class="website-inquiry-card-body">
     <div class="website-inquiry-field-grid">
       <div class="website-inquiry-field">
         <span>Email</span>
@@ -58,6 +59,7 @@
           </svg>
         </button>
       </div>
+    </div>
     </div>
   </article>
   {% endfor %}
