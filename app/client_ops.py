@@ -432,6 +432,30 @@ def create_public_inquiry(record: dict[str, str]) -> int:
                WHERE id=?""",
             (now, name, email_value, company, now, conversation_id),
         )
+        linked_deal = db.execute(
+            "SELECT id,prospect_id FROM deals WHERE website_inquiry_id=? LIMIT 1",
+            (inquiry_id,),
+        ).fetchone()
+        if linked_deal:
+            db.execute(
+                """UPDATE deals
+                   SET contact_person=?,email=?,contact_number=?,updated_at=?
+                   WHERE id=?""",
+                (name.upper()[:200], email_value, phone, now, linked_deal["id"]),
+            )
+            if linked_deal["prospect_id"] is not None:
+                db.execute(
+                    """UPDATE prospects
+                       SET contact=?,email=?,phone=?,updated_at=?
+                       WHERE id=?""",
+                    (name.upper()[:200], email_value, phone, now, linked_deal["prospect_id"]),
+                )
+                db.execute(
+                    """UPDATE client_conversations
+                       SET client_name=?,client_email=?,updated_at=?
+                       WHERE prospect_id=?""",
+                    (name.upper()[:200], email_value, now, linked_deal["prospect_id"]),
+                )
         db.execute(
             """INSERT INTO client_messages
                (conversation_id,direction,channel,journey_source,sender_email,recipient_email,subject,body,created_at,delivery_status)
