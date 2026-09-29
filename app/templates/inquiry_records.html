@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="inbound-records-page" data-inbound-records-page data-inbound-initial-filter="{{ initial_filter }}">
+  <div class="page-head workspace-page-head inbound-records-head">
+    <div>
+      <a class="inbound-records-back" href="{{ url_for('main.inquiries_list') }}">← Website Inbox</a>
+      <h1>Inbound Records</h1>
+      <p>Complete Website Inquiry history and inbound performance records.</p>
+    </div>
+  </div>
+
+  <div class="inbound-records-filters" role="group" aria-label="Filter inbound records by Workflow Status">
+    <button class="prospect-filter-button {% if initial_filter == 'ALL' %}is-active{% endif %}" type="button" data-inbound-filter="ALL" aria-pressed="{{ 'true' if initial_filter == 'ALL' else 'false' }}">
+      All <span>{{ inquiry_records|length }}</span>
+    </button>
+    {% for code, label in inquiry_workflow_status_labels.items() %}
+      <button class="prospect-filter-button {% if initial_filter == code %}is-active{% endif %}" type="button" data-inbound-filter="{{ code }}" aria-pressed="{{ 'true' if initial_filter == code else 'false' }}">
+        {{ label }} <span>{{ workflow_counts.get(code, 0) }}</span>
+      </button>
+    {% endfor %}
+  </div>
+
+  {% if g.user and g.user['role'] == 'admin' %}
+  <form class="inbound-records-bulk-form" method="post" action="{{ url_for('main.inquiry_records_bulk_delete') }}" data-inbound-bulk-form>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="filter" value="{{ initial_filter }}" data-inbound-filter-input>
+
+    <div class="inbound-records-actions">
+      <label class="inbound-records-select-all">
+        <input type="checkbox" data-inbound-select-all>
+        <span>Select All Filtered</span>
+      </label>
+      <span class="inbound-records-selected-count" data-inbound-selected-count>0 selected</span>
+      <button class="button danger inbound-records-delete-selected" type="button" data-inbound-delete-trigger disabled>Delete Selected</button>
+    </div>
+  {% endif %}
+
+    <div class="inbound-records-table-wrap">
+      <table class="inbound-records-table">
+        <thead>
+          <tr>
+            {% if g.user and g.user['role'] == 'admin' %}<th class="inbound-records-check-col">Select</th>{% endif %}
+            <th>Received</th>
+            <th>Client</th>
+            <th>Company</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Request / Source</th>
+            <th>Message</th>
+            <th>Notes</th>
+            <th>Workflow Status</th>
+            <th>Routing Status</th>
+            <th>Claimed By</th>
+            <th>Deal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inquiry in inquiry_records %}
+          <tr
+            data-inbound-record-row
+            data-inbound-workflow-status="{{ inquiry.workflow_status }}"
+            {% if g.user and g.user['role'] == 'admin' %}data-inbound-can-delete="{{ '1' if inquiry.can_delete else '0' }}"{% endif %}
+          >
+            {% if g.user and g.user['role'] == 'admin' %}
+            <td class="inbound-records-check-col">
+              <input
+                type="checkbox"
+                name="inquiry_ids"
+                value="{{ inquiry.id }}"
+                data-inbound-row-check
+                {% if not inquiry.can_delete %}disabled title="Protected: linked Deal or client history"{% endif %}
+                aria-label="Select Website Inquiry from {{ inquiry.name }}"
+              >
+            </td>
+            {% endif %}
+            <td class="inbound-records-nowrap">{{ inquiry.created_at|dt }}</td>
+            <td><a class="inbound-records-client-link" href="{{ url_for('main.inquiry_detail', inquiry_id=inquiry.id) }}">{{ inquiry.name }}</a></td>
+            <td>{{ inquiry.company or '—' }}</td>
+            <td>{{ inquiry.email }}</td>
+            <td>{{ inquiry.phone or '—' }}</td>
+            <td>
+              <div class="inbound-records-source-main">{{ inquiry.source_action or inquiry.source_title or '—' }}</div>
+              {% if inquiry.source_type or inquiry.source_slug %}
+                <div class="inbound-records-source-meta">{{ inquiry.source_type or 'source' }}{% if inquiry.source_slug %} · {{ inquiry.source_slug }}{% endif %}</div>
+              {% endif %}
+            </td>
+            <td><div class="inbound-records-long-text" title="{{ inquiry.message }}">{{ inquiry.message or '—' }}</div></td>
+            <td><div class="inbound-records-long-text" title="{{ inquiry.notes_after_conversation }}">{{ inquiry.notes_after_conversation or '—' }}</div></td>
+            <td><span class="inbound-records-status">{{ inquiry_workflow_status_labels.get(inquiry.workflow_status, inquiry.workflow_status) }}</span></td>
+            <td>{{ inquiry.status|replace('_',' ')|title }}</td>
+            <td>{{ inquiry.claimed_by_name or '—' }}</td>
+            <td>
+              {% if inquiry.linked_deal_id %}
+                <a class="inbound-records-deal-link" href="{{ url_for('main.deals') }}#deal-{{ inquiry.linked_deal_id }}">View Deal</a>
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="website-inbox-empty inbound-records-empty" data-inbound-records-empty {% if inquiry_records %}hidden{% endif %}>
+        <strong>No inbound records found.</strong>
+        <span>Website Inquiry records will appear here once customers submit the website form.</span>
+      </div>
+
+      <div class="simple-empty inbound-records-filter-empty" data-inbound-filter-empty hidden>No records in this Workflow Status.</div>
+    </div>
+
+  {% if g.user and g.user['role'] == 'admin' %}
+  </form>
+
+  <dialog class="deal-status-confirm" data-inbound-delete-confirm aria-labelledby="inbound-delete-confirm-title">
+    <div class="deal-status-confirm-card">
+      <h2 id="inbound-delete-confirm-title">Delete selected records?</h2>
+      <p data-inbound-delete-confirm-message>This permanently deletes the selected unprotected Website Inquiry records.</p>
+      <div class="deal-status-confirm-actions">
+        <button class="button secondary" type="button" data-inbound-delete-no>No</button>
+        <button class="button primary" type="button" data-inbound-delete-yes>Yes</button>
+      </div>
+    </div>
+  </dialog>
+  {% endif %}
+</section>
+{% endblock %}
