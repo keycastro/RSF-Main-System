@@ -83,6 +83,18 @@ def _date(value: str | None) -> str:
         return value
 
 
+def _timeonly(value: str | None) -> str:
+    if not value:
+        return "—"
+    try:
+        parsed = datetime.fromisoformat(value)
+        if parsed.tzinfo:
+            parsed = parsed.astimezone()
+        return parsed.strftime("%I:%M %p").lstrip("0")
+    except Exception:
+        return value
+
+
 def _chat_dt(value: str | None) -> str:
     if not value:
         return ""
@@ -160,7 +172,7 @@ def create_app(test_config=None):
 
     app.before_request(load_logged_in_user)
 
-    app.jinja_env.filters.update(human_status=_human_status, money=_money, rate=_rate, dt=_dt, dateonly=_date, chatdt=_chat_dt)
+    app.jinja_env.filters.update(human_status=_human_status, money=_money, rate=_rate, dt=_dt, dateonly=_date, timeonly=_timeonly, chatdt=_chat_dt)
     app.jinja_env.globals.update(
         csrf_token=csrf_token,
         app_version=app.config["VERSION"],
