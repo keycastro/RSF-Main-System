@@ -240,9 +240,17 @@
           data-csrf-token="{{ csrf_token() }}"
         >
           <div class="deal-source-details-head">
-            <h3 id="deal-research-details-{{ deal['id'] }}">Outbound / Research Details</h3>
+            <h3 id="deal-research-details-{{ deal['id'] }}">Outbound Details</h3>
+            <button
+              class="deal-source-collapse-button"
+              type="button"
+              aria-label="Hide Outbound Details"
+              aria-expanded="true"
+              aria-controls="deal-research-details-body-{{ deal['id'] }}"
+              data-deal-source-toggle
+            ><span aria-hidden="true">⌄</span></button>
           </div>
-          <div class="deal-source-grid">
+          <div class="deal-source-grid" id="deal-research-details-body-{{ deal['id'] }}">
             <label>
               <span>Business Type</span>
               <input type="text" maxlength="160" value="{{ deal['research_business_type'] }}" data-deal-research-field="business_type">
@@ -298,9 +306,17 @@
         {% if deal['website_inquiry_id'] %}
         <section class="deal-source-details deal-source-website" aria-labelledby="deal-website-details-{{ deal['id'] }}">
           <div class="deal-source-details-head">
-            <h3 id="deal-website-details-{{ deal['id'] }}">Inbound / Website Details</h3>
+            <h3 id="deal-website-details-{{ deal['id'] }}">Inbound Details</h3>
+            <button
+              class="deal-source-collapse-button"
+              type="button"
+              aria-label="Hide Inbound Details"
+              aria-expanded="true"
+              aria-controls="deal-website-details-body-{{ deal['id'] }}"
+              data-deal-source-toggle
+            ><span aria-hidden="true">⌄</span></button>
           </div>
-          <div class="deal-source-grid">
+          <div class="deal-source-grid" id="deal-website-details-body-{{ deal['id'] }}">
             <div class="deal-source-readonly">
               <span>Company</span>
               <strong>{{ deal['inquiry_company'] or '—' }}</strong>
