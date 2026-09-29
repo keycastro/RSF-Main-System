@@ -28,11 +28,8 @@ from .seo import (
 )
 from .system_templates import (
     EXISTING_SYSTEM_PRICING,
-    MANAGED_MAINTENANCE_PRICING,
     get_system_template,
-    managed_service_action_for_plan,
     published_templates,
-    split_managed_service_action,
     template_library_enabled,
 )
 
@@ -127,7 +124,6 @@ def _common_context(
         "published_system_templates": published_templates(),
         "template_library_enabled": template_library_enabled(),
         "existing_system_pricing": EXISTING_SYSTEM_PRICING,
-        "maintenance_pricing": MANAGED_MAINTENANCE_PRICING,
         "contact_email": current_app.config.get("CONTACT_EMAIL"),
         "socials": socials,
         "environment_label": current_app.config.get("ENVIRONMENT_LABEL", ""),
@@ -275,26 +271,17 @@ def _requested_intent(template_interest) -> tuple[str, str, str]:
     return canonical_intent, label, label
 
 
-def _requested_maintenance_plan(source_intent: str):
-    if source_intent != "managed":
-        return None
-    raw = (request.form.get("source_plan") if request.method == "POST" else request.args.get("plan")) or ""
-    return MANAGED_MAINTENANCE_PRICING.get_plan(raw)
-
-
 @site.route("/contact", methods=["GET", "POST"])
 def contact():
     context = _common_context("contact")
     context["csrf_token"] = _csrf_token()
     template_interest = _requested_system_template()
     source_intent, source_action, source_action_label = _requested_intent(template_interest)
-    selected_maintenance_plan = _requested_maintenance_plan(source_intent)
-    if source_intent == "managed":
-        source_action = managed_service_action_for_plan(selected_maintenance_plan)
+    # Managed technical care is priced by agreement. Legacy plan/price query
+    # parameters are intentionally ignored and are never stored as active pricing.
     context["template_interest"] = template_interest
     context["source_intent"] = source_intent
     context["source_action_label"] = source_action_label
-    context["selected_maintenance_plan"] = selected_maintenance_plan
 
     if request.method == "POST":
         sent = request.form.get("csrf_token", "")
