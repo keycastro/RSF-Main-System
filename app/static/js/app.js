@@ -2516,6 +2516,105 @@ document.addEventListener('click', (event) => {
     nextStepFields.forEach(resizeNextStep);
   });
 
+  const saveResearchField = async (field) => {
+    if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) return;
+    const section = field.closest('[data-deal-research-section]');
+    if (!section) return;
+
+    const previous = field.dataset.dealResearchStartValue ?? field.value;
+    if (field.value === previous || field.dataset.dealResearchSaving === '1') return;
+
+    field.dataset.dealResearchSaving = '1';
+    const valueToSave = field.value;
+    try {
+      const response = await fetch(section.dataset.updateUrl || '', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        body: new URLSearchParams({
+          csrf_token: section.dataset.csrfToken || '',
+          field: field.dataset.dealResearchField || '',
+          value: valueToSave
+        }).toString(),
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) {
+        throw new Error(data.message || 'Research detail could not be saved.');
+      }
+      field.dataset.dealResearchStartValue = valueToSave;
+    } catch (error) {
+      field.value = previous;
+      window.alert(error.message || 'Research detail could not be saved. Try again.');
+    } finally {
+      delete field.dataset.dealResearchSaving;
+    }
+  };
+
+  page.addEventListener('focusin', (event) => {
+    const field = event.target.closest?.('[data-deal-research-field]');
+    if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) return;
+    field.dataset.dealResearchStartValue = field.value || '';
+  });
+
+  page.addEventListener('focusout', (event) => {
+    const field = event.target.closest?.('[data-deal-research-field]');
+    if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) return;
+    saveResearchField(field);
+  });
+
+  page.addEventListener('keydown', (event) => {
+    const field = event.target.closest?.('[data-deal-research-field]');
+    if (!(field instanceof HTMLInputElement) || event.key !== 'Enter') return;
+    event.preventDefault();
+    field.blur();
+  });
+
+  page.addEventListener('click', async (event) => {
+    const button = event.target.closest?.('[data-deal-research-attempt-delta]');
+    if (!(button instanceof HTMLButtonElement)) return;
+    const section = button.closest('[data-deal-research-section]');
+    const control = button.closest('[data-deal-research-attempt-control]');
+    const number = control?.querySelector('[data-deal-research-attempt-number]');
+    if (!section || !control || !number) return;
+
+    const delta = Number(button.dataset.dealResearchAttemptDelta || 0);
+    if (delta !== -1 && delta !== 1) return;
+    button.disabled = true;
+    try {
+      const response = await fetch(section.dataset.attemptUrl || '', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        body: new URLSearchParams({
+          csrf_token: section.dataset.csrfToken || '',
+          delta: String(delta)
+        }).toString(),
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) {
+        throw new Error(data.message || 'Contact Attempt could not be updated.');
+      }
+      const value = Math.max(0, Number(data.value || 0));
+      control.dataset.attemptValue = String(value);
+      number.textContent = String(value);
+      const decrease = control.querySelector('[data-deal-research-attempt-delta="-1"]');
+      if (decrease instanceof HTMLButtonElement) decrease.disabled = value <= 0;
+    } catch (error) {
+      window.alert(error.message || 'Contact Attempt could not be updated. Try again.');
+    } finally {
+      const current = Math.max(0, Number(control.dataset.attemptValue || 0));
+      button.disabled = delta < 0 ? current <= 0 : false;
+    }
+  });
+
   page.querySelectorAll('input[name="contact_person"], input[name="location"]').forEach((field) => {
     field.value = (field.value || '').toUpperCase();
     field.addEventListener('input', () => {
