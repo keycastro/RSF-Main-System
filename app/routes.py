@@ -1474,6 +1474,24 @@ def prospect_update(prospect_id: int):
             "UPDATE prospects SET name=?,name_norm=?,updated_at=? WHERE id=?",
             (company, name_norm, now, prospect_id),
         )
+        linked_source = db.execute(
+            "SELECT id,website_inquiry_id FROM deals WHERE prospect_id=? LIMIT 1",
+            (prospect_id,),
+        ).fetchone()
+        if linked_source and linked_source["website_inquiry_id"] is not None:
+            db.execute(
+                "UPDATE website_inquiries SET company=?,updated_at=? WHERE id=?",
+                (company, now, linked_source["website_inquiry_id"]),
+            )
+        db.execute(
+            "UPDATE client_conversations SET company=?,updated_at=? WHERE prospect_id=?",
+            (company, now, prospect_id),
+        )
+        if linked_source and linked_source["website_inquiry_id"] is not None:
+            db.execute(
+                "UPDATE client_conversations SET company=?,updated_at=? WHERE inquiry_id=?",
+                (company, now, linked_source["website_inquiry_id"]),
+            )
     elif field_name == "status":
         status = raw_value.strip().upper()
         if status not in PROSPECT_STATUS_LABELS:
@@ -1519,11 +1537,63 @@ def prospect_update(prospect_id: int):
         if field_name in ("contact", "location"):
             value = value.upper()
         db.execute(f'UPDATE prospects SET "{field_name}"=?,updated_at=? WHERE id=?', (value, now, prospect_id))
-        if field_name == "email":
+        linked_source = db.execute(
+            "SELECT id,website_inquiry_id FROM deals WHERE prospect_id=? LIMIT 1",
+            (prospect_id,),
+        ).fetchone()
+        if field_name == "contact":
+            db.execute(
+                "UPDATE deals SET contact_person=?,updated_at=? WHERE prospect_id=?",
+                (value, now, prospect_id),
+            )
+            if linked_source and linked_source["website_inquiry_id"] is not None:
+                db.execute(
+                    "UPDATE website_inquiries SET name=?,updated_at=? WHERE id=?",
+                    (value, now, linked_source["website_inquiry_id"]),
+                )
+            db.execute(
+                "UPDATE client_conversations SET client_name=?,updated_at=? WHERE prospect_id=?",
+                (value, now, prospect_id),
+            )
+            if linked_source and linked_source["website_inquiry_id"] is not None:
+                db.execute(
+                    "UPDATE client_conversations SET client_name=?,updated_at=? WHERE inquiry_id=?",
+                    (value, now, linked_source["website_inquiry_id"]),
+                )
+        elif field_name == "location":
+            db.execute(
+                "UPDATE deals SET location=?,updated_at=? WHERE prospect_id=?",
+                (value, now, prospect_id),
+            )
+        elif field_name == "email":
             db.execute(
                 "UPDATE deals SET email=?,updated_at=? WHERE prospect_id=?",
                 (value, now, prospect_id),
             )
+            if linked_source and linked_source["website_inquiry_id"] is not None:
+                db.execute(
+                    "UPDATE website_inquiries SET email=?,email_norm=?,updated_at=? WHERE id=?",
+                    (value, normalize_email(value), now, linked_source["website_inquiry_id"]),
+                )
+            db.execute(
+                "UPDATE client_conversations SET client_email=?,updated_at=? WHERE prospect_id=?",
+                (value, now, prospect_id),
+            )
+            if linked_source and linked_source["website_inquiry_id"] is not None:
+                db.execute(
+                    "UPDATE client_conversations SET client_email=?,updated_at=? WHERE inquiry_id=?",
+                    (value, now, linked_source["website_inquiry_id"]),
+                )
+        elif field_name == "phone":
+            db.execute(
+                "UPDATE deals SET contact_number=?,updated_at=? WHERE prospect_id=?",
+                (value, now, prospect_id),
+            )
+            if linked_source and linked_source["website_inquiry_id"] is not None:
+                db.execute(
+                    "UPDATE website_inquiries SET phone=?,updated_at=? WHERE id=?",
+                    (value, now, linked_source["website_inquiry_id"]),
+                )
         elif field_name == "notes_after_conversation":
             db.execute(
                 "UPDATE deals SET notes_after_conversation=?,updated_at=? WHERE prospect_id=?",
