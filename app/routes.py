@@ -2171,13 +2171,50 @@ def deal_update(deal_id: int):
     )
     if deal["prospect_id"] is not None:
         db.execute(
-            "UPDATE prospects SET status=?,contact=?,location=?,email=?,notes_after_conversation=?,updated_at=? WHERE id=?",
-            (status, contact_person, location, email, notes_after_conversation, now, deal["prospect_id"]),
+            """UPDATE prospects
+               SET status=?,contact=?,location=?,email=?,phone=?,notes_after_conversation=?,updated_at=?
+               WHERE id=?""",
+            (
+                status,
+                contact_person,
+                location,
+                email,
+                contact_number,
+                notes_after_conversation,
+                now,
+                deal["prospect_id"],
+            ),
         )
     if deal["website_inquiry_id"] is not None:
         db.execute(
-            "UPDATE website_inquiries SET workflow_status=?,notes_after_conversation=?,updated_at=? WHERE id=?",
-            (status, notes_after_conversation, now, deal["website_inquiry_id"]),
+            """UPDATE website_inquiries
+               SET workflow_status=?,name=?,email=?,email_norm=?,phone=?,
+                   notes_after_conversation=?,updated_at=?
+               WHERE id=?""",
+            (
+                status,
+                contact_person,
+                email,
+                normalize_email(email),
+                contact_number,
+                notes_after_conversation,
+                now,
+                deal["website_inquiry_id"],
+            ),
+        )
+
+    # The Deal card is another view of the same linked client identity, not a
+    # separate copy. Keep official client conversations pointed at the same name
+    # and email whenever those shared Deal fields change.
+    if deal["prospect_id"] is not None:
+        db.execute(
+            "UPDATE client_conversations SET client_name=?,client_email=?,updated_at=? WHERE prospect_id=?",
+            (contact_person, email, now, deal["prospect_id"]),
+        )
+    if deal["website_inquiry_id"] is not None:
+        db.execute(
+            "UPDATE client_conversations SET client_name=?,client_email=?,updated_at=? WHERE inquiry_id=?",
+            (contact_person, email, now, deal["website_inquiry_id"]),
         )
     if status != previous_workflow_status:
         log_activity(
