@@ -69,7 +69,7 @@
             {% endif %}
             <td class="inbound-records-received">
               <span class="inbound-records-received-main">{{ inquiry.created_at|dateonly }}</span>
-              <span class="inbound-records-received-time">{{ inquiry.created_at|dt }}</span>
+              <span class="inbound-records-received-time">{{ inquiry.created_at|timeonly }}</span>
             </td>
             <td class="inbound-records-client-cell">
               <a class="inbound-records-client-link" href="{{ url_for('main.inquiry_record_detail', inquiry_id=inquiry.id) }}">{{ inquiry.name }}</a>
