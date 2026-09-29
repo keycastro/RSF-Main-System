@@ -2154,6 +2154,113 @@ document.addEventListener('click', (event) => {
     if (event.target === prospectNotesViewer) closeProspectNotesViewer();
   });
 
+  const prospectLongTextViewer = page.querySelector('[data-prospect-longtext-viewer]');
+  const prospectLongTextViewerTitle = page.querySelector('[data-prospect-longtext-viewer-title]');
+  const prospectLongTextViewerInput = page.querySelector('[data-prospect-longtext-viewer-input]');
+  const prospectLongTextViewerClose = page.querySelector('[data-prospect-longtext-viewer-close]');
+  let prospectLongTextField = null;
+  let prospectLongTextStartValue = '';
+  let prospectLongTextSavePromise = null;
+
+  const saveProspectLongText = async () => {
+    if (!prospectLongTextField || !prospectLongTextViewerInput) return true;
+    if (prospectLongTextSavePromise) return prospectLongTextSavePromise;
+
+    const row = prospectLongTextField.closest('[data-prospect-row]');
+    if (!row) return false;
+
+    const fieldName = prospectLongTextField.dataset.prospectField || '';
+    if (fieldName !== 'problem' && fieldName !== 'system_wanted') return false;
+
+    const value = prospectLongTextViewerInput.value.trim().slice(0, 2000);
+    if (value === prospectLongTextStartValue) return true;
+
+    prospectLongTextSavePromise = (async () => {
+      const body = new URLSearchParams({
+        csrf_token: csrfForRow(row),
+        field: fieldName,
+        value,
+        date: selectedDate
+      });
+
+      try {
+        const response = await fetch(row.dataset.prospectUpdateUrl, {
+          method: 'POST',
+          headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body: body.toString(),
+          credentials: 'same-origin'
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok) {
+          showToast(data.message || 'Prospect field could not be updated.', true);
+          return false;
+        }
+
+        prospectLongTextField.dataset.prospectValue = value;
+        const preview = prospectLongTextField.querySelector('.prospect-longtext-preview');
+        if (preview) preview.textContent = value || '—';
+        prospectLongTextStartValue = value;
+        showToast(data.message || 'Prospect updated.');
+        return true;
+      } catch (_error) {
+        showToast('Prospect field could not be updated. Try again.', true);
+        return false;
+      } finally {
+        prospectLongTextSavePromise = null;
+      }
+    })();
+
+    return prospectLongTextSavePromise;
+  };
+
+  const closeProspectLongTextViewer = async () => {
+    const saved = await saveProspectLongText();
+    if (!saved) return;
+    if (prospectLongTextViewer?.open) prospectLongTextViewer.close();
+    prospectLongTextField = null;
+    prospectLongTextStartValue = '';
+  };
+
+  page.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-prospect-longtext-expand]');
+    if (!trigger) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const field = trigger.closest('[data-prospect-edit-field]');
+    if (!field || !prospectLongTextViewerInput) return;
+
+    prospectLongTextField = field;
+    prospectLongTextStartValue = field.dataset.prospectValue || '';
+    prospectLongTextViewerInput.value = prospectLongTextStartValue;
+    if (prospectLongTextViewerTitle) {
+      prospectLongTextViewerTitle.textContent = trigger.dataset.prospectLongtextLabel
+        || (field.dataset.prospectField === 'problem' ? 'Problem' : 'System They Want');
+    }
+
+    if (prospectLongTextViewer && typeof prospectLongTextViewer.showModal === 'function') {
+      prospectLongTextViewer.showModal();
+      window.setTimeout(() => prospectLongTextViewerInput.focus(), 0);
+      return;
+    }
+
+    prospectLongTextViewerInput.focus();
+  });
+
+  prospectLongTextViewerInput?.addEventListener('blur', () => {
+    saveProspectLongText();
+  });
+  prospectLongTextViewerClose?.addEventListener('click', () => {
+    closeProspectLongTextViewer();
+  });
+  prospectLongTextViewer?.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    closeProspectLongTextViewer();
+  });
+  prospectLongTextViewer?.addEventListener('click', (event) => {
+    if (event.target === prospectLongTextViewer) closeProspectLongTextViewer();
+  });
+
   const statusOptions = [
     ['NOT_CONTACTED', 'Not Contacted'],
     ['NO_ANSWER', 'No Answer'],
