@@ -30,6 +30,7 @@ from .auth import (
 )
 from .db import get_db, IntegrityError, using_postgres
 from .credential_vault import current_password as vault_current_password, store_password as vault_store_password
+from .record_ops import RECORD_DELETE_PROTECTED_STATUSES, build_master_records, find_master_record
 from .services import (
     PARTNER_ALLOWED_STATUSES,
     PAYMENT_STATUSES,
@@ -86,7 +87,6 @@ PROSPECT_STATUS_LABELS = {
 }
 DEAL_ACTIVE_STATUSES = ("DEAL", "DEMO", "PROPOSAL", "DECISION", "WON", "LOST")
 DEAL_PRE_STATUS_STATUSES = ("NOT_CONTACTED", "NO_ANSWER", "REJECTED")
-INBOUND_DELETE_PROTECTED_STATUSES = ("DEAL", "DEMO", "PROPOSAL", "DECISION")
 
 DEAL_DOCUMENT_MAX_FILE_BYTES = 30 * 1024 * 1024
 DEAL_DOCUMENT_FILE_TYPES = {
@@ -1334,6 +1334,14 @@ def prospect_update(prospect_id: int):
                 "message": "Confirm the backward Status change before removing the linked Deal from Deals.",
             }), 409
         db.execute("UPDATE prospects SET status=?,updated_at=? WHERE id=?", (status, now, prospect_id))
+        if status != current_status:
+            log_activity(
+                "WORKFLOW_STATUS_CHANGED",
+                "prospect",
+                prospect_id,
+                f"Prospect status changed from {PROSPECT_STATUS_LABELS.get(current_status, current_status)} to {PROSPECT_STATUS_LABELS.get(status, status)}.",
+                {"from": current_status, "to": status},
+            )
         if status in DEAL_ACTIVE_STATUSES:
             deal_id, deal_created = _ensure_deal_for_prospect(db, prospect_id, g.user["id"], now)
             db.execute("UPDATE deals SET status=?,updated_at=? WHERE id=?", (status, now, deal_id))
@@ -1766,6 +1774,17 @@ def deal_update(deal_id: int):
     if not deal:
         abort(404)
 
+    if deal["prospect_id"] is not None:
+        source_status_row = db.execute("SELECT status FROM prospects WHERE id=?", (deal["prospect_id"],)).fetchone()
+        previous_workflow_status = (source_status_row["status"] if source_status_row else "") or ""
+    else:
+        source_status_row = db.execute(
+            "SELECT workflow_status FROM website_inquiries WHERE id=?",
+            (deal["website_inquiry_id"],),
+        ).fetchone()
+        previous_workflow_status = (source_status_row["workflow_status"] if source_status_row else "") or ""
+    previous_workflow_status = previous_workflow_status.strip().upper()
+
     status = (request.form.get("status", "") or "").strip().upper()
     if status not in PROSPECT_STATUS_LABELS:
         if async_request:
@@ -1851,6 +1870,14 @@ def deal_update(deal_id: int):
         db.execute(
             "UPDATE website_inquiries SET workflow_status=?,notes_after_conversation=?,updated_at=? WHERE id=?",
             (status, notes_after_conversation, now, deal["website_inquiry_id"]),
+        )
+    if status != previous_workflow_status:
+        log_activity(
+            "WORKFLOW_STATUS_CHANGED",
+            "deal",
+            deal_id,
+            f"Deal status changed from {PROSPECT_STATUS_LABELS.get(previous_workflow_status, previous_workflow_status)} to {PROSPECT_STATUS_LABELS.get(status, status)}.",
+            {"from": previous_workflow_status, "to": status},
         )
     db.commit()
     if async_request:
@@ -3970,7 +3997,7 @@ def _delete_inbound_record_tree(db, inquiry_id: int) -> dict:
         return {"deleted": False, "missing": True, "protected": False, "shared_history_kept": 0}
 
     workflow_status = (inquiry["workflow_status"] or "").strip().upper()
-    if workflow_status in INBOUND_DELETE_PROTECTED_STATUSES:
+    if workflow_status in RECORD_DELETE_PROTECTED_STATUSES:
         return {"deleted": False, "missing": False, "protected": True, "shared_history_kept": 0}
 
     deal_rows = db.execute(
@@ -4016,7 +4043,6 @@ def _delete_inbound_record_tree(db, inquiry_id: int) -> dict:
             "DELETE FROM activity_log WHERE entity_type='deal' AND entity_id=?",
             (deal_id,),
         )
-        # deal_documents cascades from deals through its FK.
         db.execute("DELETE FROM deals WHERE id=?", (deal_id,))
 
     db.execute(
@@ -4037,137 +4063,267 @@ def _delete_inbound_record_tree(db, inquiry_id: int) -> dict:
     }
 
 
-@bp.get("/inquiries/records")
+def _delete_prospect_record_tree(db, prospect_id: int) -> dict:
+    prospect = db.execute(
+        "SELECT id,status FROM prospects WHERE id=?",
+        (prospect_id,),
+    ).fetchone()
+    if not prospect:
+        return {"deleted": False, "missing": True, "protected": False}
+
+    status = (prospect["status"] or "").strip().upper()
+    if status in RECORD_DELETE_PROTECTED_STATUSES:
+        return {"deleted": False, "missing": False, "protected": True}
+
+    deal_rows = db.execute(
+        "SELECT id FROM deals WHERE prospect_id=?",
+        (prospect_id,),
+    ).fetchall()
+    for row in deal_rows:
+        deal_id = int(row["id"])
+        db.execute(
+            "DELETE FROM activity_log WHERE entity_type='deal' AND entity_id=?",
+            (deal_id,),
+        )
+
+    db.execute(
+        "DELETE FROM activity_log WHERE entity_type='prospect' AND entity_id=?",
+        (prospect_id,),
+    )
+    # deals + deal_documents cascade from the Prospect FK.
+    db.execute("DELETE FROM prospects WHERE id=?", (prospect_id,))
+    return {"deleted": True, "missing": False, "protected": False}
+
+
+def _records_for_current_user(db):
+    partner_id = partner_scope_id() if g.user["role"] == "partner" else None
+    return build_master_records(db, partner_id=partner_id)
+
+
+@bp.get("/records")
 @login_required
-def inquiry_records():
+def records():
     db = get_db()
-    base_sql = """SELECT i.*,
-                         d.id AS linked_deal_id,
-                         COALESCE(u.full_name,NULLIF(p.historical_name,''),'') AS claimed_by_name,
-                         CASE
-                           WHEN i.workflow_status IN ('DEAL','DEMO','PROPOSAL','DECISION')
-                           THEN 0 ELSE 1
-                         END AS can_delete
-                  FROM website_inquiries i
-                  LEFT JOIN deals d ON d.website_inquiry_id=i.id
-                  LEFT JOIN partners p ON p.id=i.claimed_by_partner_id
-                  LEFT JOIN users u ON u.id=p.user_id"""
-    params = []
-    if g.user["role"] == "admin":
-        rows = db.execute(base_sql + " ORDER BY i.created_at DESC,i.id DESC").fetchall()
-    else:
-        pid = g.partner["id"]
-        rows = db.execute(
-            base_sql + """
-             WHERE i.status='UNCLAIMED'
-                OR (i.status='CLAIMED' AND i.claimed_by_partner_id=?)
-             ORDER BY i.created_at DESC,i.id DESC""",
-            (pid,),
-        ).fetchall()
+    master_records = _records_for_current_user(db)
 
     workflow_counts = {code: 0 for code in PROSPECT_STATUS_LABELS}
-    for row in rows:
-        status = (row["workflow_status"] or "").strip().upper()
+    source_counts = {"ALL": len(master_records), "RESEARCH": 0, "WEBSITE": 0, "MULTI": 0}
+    for record in master_records:
+        status = (record["current_status"] or "").strip().upper()
         if status in workflow_counts:
             workflow_counts[status] += 1
+        source_counts[record["source_filter"]] = source_counts.get(record["source_filter"], 0) + 1
 
     requested_filter = (request.args.get("filter", "") or "").strip().upper()
     initial_filter = requested_filter if requested_filter in PROSPECT_STATUS_LABELS else "ALL"
+    requested_source = (request.args.get("source", "") or "").strip().upper()
+    initial_source = requested_source if requested_source in ("RESEARCH", "WEBSITE", "MULTI") else "ALL"
+
     return render_template(
-        "inquiry_records.html",
-        title="Inbound Records",
-        inquiry_records=rows,
-        inquiry_workflow_status_labels=PROSPECT_STATUS_LABELS,
+        "records.html",
+        title="Records",
+        records=master_records,
+        workflow_status_labels=PROSPECT_STATUS_LABELS,
         workflow_counts=workflow_counts,
+        source_counts=source_counts,
         initial_filter=initial_filter,
+        initial_source=initial_source,
+    )
+
+
+@bp.get("/inquiries/records")
+@login_required
+def inquiry_records():
+    return redirect(url_for("main.records"))
+
+
+@bp.get("/records/<record_key>")
+@login_required
+def record_detail(record_key: str):
+    db = get_db()
+    master_records = _records_for_current_user(db)
+    record = find_master_record(master_records, record_key)
+    if not record:
+        abort(404)
+
+    deal_documents: dict[int, list] = {}
+    if record["deal_ids"]:
+        placeholders = ",".join("?" for _ in record["deal_ids"])
+        rows = db.execute(
+            f"""SELECT id,deal_id,document_type,display_name,original_name,mime_type,size_bytes,created_at
+                FROM deal_documents
+                WHERE deal_id IN ({placeholders})
+                ORDER BY deal_id,created_at DESC,id DESC""",
+            record["deal_ids"],
+        ).fetchall()
+        for row in rows:
+            deal_documents.setdefault(int(row["deal_id"]), []).append(row)
+
+    timeline = []
+    for prospect in record["prospects"]:
+        timeline.append({
+            "at": prospect.get("created_at") or prospect.get("recorded_date") or "",
+            "title": "Researched Prospect added",
+            "description": prospect.get("name") or "",
+            "kind": "research",
+        })
+    for inquiry in record["inquiries"]:
+        timeline.append({
+            "at": inquiry.get("created_at") or "",
+            "title": "Website Inquiry received",
+            "description": inquiry.get("source_action") or inquiry.get("source_title") or "",
+            "kind": "website",
+        })
+    for deal in record["deals"]:
+        timeline.append({
+            "at": deal.get("created_at") or "",
+            "title": "Deal created",
+            "description": "This client entered the Deal pipeline.",
+            "kind": "deal",
+        })
+
+    activity_parts = []
+    activity_params = []
+    for entity_type, ids in (
+        ("prospect", record["prospect_ids"]),
+        ("inquiry", record["inquiry_ids"]),
+        ("deal", record["deal_ids"]),
+    ):
+        if not ids:
+            continue
+        placeholders = ",".join("?" for _ in ids)
+        activity_parts.append(f"(a.entity_type=? AND a.entity_id IN ({placeholders}))")
+        activity_params.append(entity_type)
+        activity_params.extend(ids)
+
+    if activity_parts:
+        activity_rows = db.execute(
+            """SELECT a.*,COALESCE(u.full_name,'System') AS actor_name
+               FROM activity_log a
+               LEFT JOIN users u ON u.id=a.actor_user_id
+               WHERE """ + " OR ".join(activity_parts) + """
+               ORDER BY a.created_at DESC,a.id DESC""",
+            activity_params,
+        ).fetchall()
+        for row in activity_rows:
+            if row["action_type"] in ("PROSPECT_CREATED", "DEAL_CREATED"):
+                continue
+            timeline.append({
+                "at": row["created_at"] or "",
+                "title": row["description"] or row["action_type"].replace("_", " ").title(),
+                "description": row["actor_name"] or "System",
+                "kind": "activity",
+            })
+
+    timeline.sort(key=lambda item: item["at"] or "", reverse=True)
+
+    return render_template(
+        "record_detail.html",
+        title="Record",
+        record=record,
+        timeline=timeline,
+        workflow_status_labels=PROSPECT_STATUS_LABELS,
+        deal_documents=deal_documents,
     )
 
 
 @bp.get("/inquiries/records/<int:inquiry_id>")
 @login_required
 def inquiry_record_detail(inquiry_id: int):
-    inquiry = _authorized_inquiry(inquiry_id)
-    db = get_db()
-    linked_deal = db.execute(
-        "SELECT id,status,created_at FROM deals WHERE website_inquiry_id=? LIMIT 1",
-        (inquiry_id,),
-    ).fetchone()
-    claimed_by_name = ""
-    if inquiry["claimed_by_partner_id"]:
-        owner = db.execute(
-            """SELECT COALESCE(u.full_name,NULLIF(p.historical_name,''),'') AS name
-               FROM partners p
-               LEFT JOIN users u ON u.id=p.user_id
-               WHERE p.id=?""",
-            (inquiry["claimed_by_partner_id"],),
-        ).fetchone()
-        if owner:
-            claimed_by_name = owner["name"] or ""
-
-    return render_template(
-        "inquiry_record_detail.html",
-        title="Inbound Record",
-        inquiry=inquiry,
-        linked_deal=linked_deal,
-        claimed_by_name=claimed_by_name,
-        inquiry_workflow_status_labels=PROSPECT_STATUS_LABELS,
-    )
+    records_now = _records_for_current_user(get_db())
+    for record in records_now:
+        if inquiry_id in record["inquiry_ids"]:
+            return redirect(url_for("main.record_detail", record_key=record["record_key"]))
+    abort(404)
 
 
+@bp.post("/records/delete")
 @bp.post("/inquiries/records/delete")
 @admin_required
-def inquiry_records_bulk_delete():
+def records_bulk_delete():
     validate_csrf()
-    raw_ids = request.form.getlist("inquiry_ids")
-    ids = []
-    for raw in raw_ids:
-        try:
-            inquiry_id = int(raw)
-        except (TypeError, ValueError):
-            continue
-        if inquiry_id > 0 and inquiry_id not in ids:
-            ids.append(inquiry_id)
+    requested_keys = []
+    for raw in request.form.getlist("record_keys"):
+        key = (raw or "").strip()
+        if key and key not in requested_keys:
+            requested_keys.append(key)
 
     current_filter = (request.form.get("filter", "") or "").strip().upper()
     redirect_filter = current_filter if current_filter in PROSPECT_STATUS_LABELS else "ALL"
-    if not ids:
-        flash("Select at least one Website Inquiry record.", "warning")
-        return redirect(url_for("main.inquiry_records", filter=redirect_filter))
+    current_source = (request.form.get("source", "") or "").strip().upper()
+    redirect_source = current_source if current_source in ("RESEARCH", "WEBSITE", "MULTI") else "ALL"
+
+    if not requested_keys:
+        flash("Select at least one Record.", "warning")
+        return redirect(url_for("main.records", filter=redirect_filter, source=redirect_source))
 
     db = get_db()
+    record_map = {record["record_key"]: record for record in build_master_records(db)}
     deleted_count = 0
     protected_count = 0
     missing_count = 0
     shared_history_kept = 0
 
-    for inquiry_id in ids:
-        result = _delete_inbound_record_tree(db, inquiry_id)
-        if result["deleted"]:
-            deleted_count += 1
-            shared_history_kept += int(result["shared_history_kept"] or 0)
-        elif result["protected"]:
+    for key in requested_keys:
+        record = record_map.get(key)
+        if not record:
+            missing_count += 1
+            continue
+        if not record["can_delete"]:
             protected_count += 1
-        elif result["missing"]:
+            continue
+
+        record_deleted = False
+        record_became_protected = False
+
+        for inquiry_id in record["inquiry_ids"]:
+            result = _delete_inbound_record_tree(db, inquiry_id)
+            if result["protected"]:
+                record_became_protected = True
+                break
+            if result["deleted"]:
+                record_deleted = True
+                shared_history_kept += int(result.get("shared_history_kept") or 0)
+
+        if record_became_protected:
+            protected_count += 1
+            continue
+
+        for prospect_id in record["prospect_ids"]:
+            result = _delete_prospect_record_tree(db, prospect_id)
+            if result["protected"]:
+                record_became_protected = True
+                break
+            if result["deleted"]:
+                record_deleted = True
+
+        if record_became_protected:
+            protected_count += 1
+            continue
+
+        if record_deleted:
+            deleted_count += 1
+        else:
             missing_count += 1
 
     if deleted_count:
         db.commit()
-        message = f"Permanently deleted {deleted_count} inactive Website Inquiry record{'s' if deleted_count != 1 else ''} and their dedicated linked Deal/history data."
+        message = f"Permanently deleted {deleted_count} inactive master Record{'s' if deleted_count != 1 else ''} and their linked source/Deal history."
         if protected_count:
-            message += f" {protected_count} active pipeline record{'s were' if protected_count != 1 else ' was'} protected."
+            message += f" {protected_count} active pipeline Record{'s were' if protected_count != 1 else ' was'} protected."
         if shared_history_kept:
             message += f" {shared_history_kept} shared client conversation{'s were' if shared_history_kept != 1 else ' was'} preserved because other records still use them."
         if missing_count:
-            message += f" {missing_count} selected record{'s were' if missing_count != 1 else ' was'} no longer available."
+            message += f" {missing_count} selected Record{'s were' if missing_count != 1 else ' was'} no longer available."
         flash(message, "success" if not protected_count else "warning")
     else:
         db.rollback()
         if protected_count:
-            flash("No records were deleted. Active Deal / Demo / Proposal / Decision records are protected.", "warning")
+            flash("No Records were deleted. Active Deal / Demo / Proposal / Decision records are protected.", "warning")
         else:
-            flash("No selected records were available to delete.", "warning")
+            flash("No selected Records were available to delete.", "warning")
 
-    return redirect(url_for("main.inquiry_records", filter=redirect_filter))
+    return redirect(url_for("main.records", filter=redirect_filter, source=redirect_source))
 
 
 @bp.post("/inquiries/<int:inquiry_id>/workflow-status")
@@ -4196,6 +4352,14 @@ def inquiry_workflow_status_update(inquiry_id: int):
         "UPDATE website_inquiries SET workflow_status=?,updated_at=? WHERE id=?",
         (status, now, inquiry_id),
     )
+    if status != current_status:
+        log_activity(
+            "WORKFLOW_STATUS_CHANGED",
+            "inquiry",
+            inquiry_id,
+            f"Website Inquiry status changed from {PROSPECT_STATUS_LABELS.get(current_status, current_status)} to {PROSPECT_STATUS_LABELS.get(status, status)}.",
+            {"from": current_status, "to": status},
+        )
     if status in DEAL_ACTIVE_STATUSES:
         deal_id, deal_created = _ensure_deal_for_website_inquiry(db, inquiry_id, g.user["id"], now)
         db.execute("UPDATE deals SET status=?,updated_at=? WHERE id=?", (status, now, deal_id))
