@@ -1853,12 +1853,6 @@ document.addEventListener('click', (event) => {
     empty.dataset.prospectEmpty = '';
     empty.setAttribute('role', 'status');
     empty.innerHTML = `
-      <div class="workspace-empty-state-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" focusable="false">
-          <path d="M4 5.2h16v13.6H4z"></path>
-          <path d="M4 13h4l1.6 2.2h4.8L16 13h4M8 8.5h8"></path>
-        </svg>
-      </div>
       <strong>No prospects for this date.</strong>
       <span>Researched Prospects added for this date will appear here.</span>
     `;
