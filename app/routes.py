@@ -1610,12 +1610,17 @@ def deals():
     rows = db.execute(
         """SELECT d.*,p.name AS prospect_name,p.recorded_date AS prospect_recorded_date,
                   CASE WHEN d.prospect_id IS NOT NULL THEN p.status ELSE i.workflow_status END AS workflow_status,
-                  CASE WHEN d.prospect_id IS NOT NULL THEN p.contact
+                  CASE WHEN d.prospect_id IS NOT NULL THEN COALESCE(NULLIF(p.contact,''),i.name,d.contact_person,'')
                        ELSE COALESCE(NULLIF(d.contact_person,''),i.name,'') END AS prospect_contact,
                   CASE WHEN d.prospect_id IS NOT NULL THEN p.location ELSE d.location END AS prospect_location,
-                  CASE WHEN d.prospect_id IS NOT NULL THEN p.email ELSE d.email END AS prospect_email,
-                  CASE WHEN d.website_inquiry_id IS NOT NULL THEN 'website_inquiry' ELSE 'prospect' END AS source_kind,
-                  i.name AS inquiry_name
+                  CASE WHEN d.prospect_id IS NOT NULL THEN COALESCE(NULLIF(p.email,''),i.email,d.email)
+                       ELSE d.email END AS prospect_email,
+                  CASE
+                    WHEN d.prospect_id IS NOT NULL AND d.website_inquiry_id IS NOT NULL THEN 'merged'
+                    WHEN d.website_inquiry_id IS NOT NULL THEN 'website_inquiry'
+                    ELSE 'prospect'
+                  END AS source_kind,
+                  i.name AS inquiry_name,i.created_at AS inquiry_created_at
            FROM deals d
            LEFT JOIN prospects p ON p.id=d.prospect_id
            LEFT JOIN website_inquiries i ON i.id=d.website_inquiry_id
