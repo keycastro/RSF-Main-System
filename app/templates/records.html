@@ -26,10 +26,10 @@
 
   <div class="records-tools-row">
     <div class="records-source-filters" role="group" aria-label="Filter Records by source">
-      <button class="records-source-button {% if initial_source == 'ALL' %}is-active{% endif %}" type="button" data-records-source-filter="ALL">All Sources <span>{{ source_counts.get('ALL', 0) }}</span></button>
+      <button class="records-source-button {% if initial_source == 'ALL' %}is-active{% endif %}" type="button" data-records-source-filter="ALL">All <span>{{ source_counts.get('ALL', 0) }}</span></button>
       <button class="records-source-button {% if initial_source == 'RESEARCH' %}is-active{% endif %}" type="button" data-records-source-filter="RESEARCH">Research <span>{{ source_counts.get('RESEARCH', 0) }}</span></button>
       <button class="records-source-button {% if initial_source == 'WEBSITE' %}is-active{% endif %}" type="button" data-records-source-filter="WEBSITE">Website <span>{{ source_counts.get('WEBSITE', 0) }}</span></button>
-      <button class="records-source-button {% if initial_source == 'MULTI' %}is-active{% endif %}" type="button" data-records-source-filter="MULTI">Combined <span>{{ source_counts.get('MULTI', 0) }}</span></button>
+      <button class="records-source-button {% if initial_source == 'MULTI' %}is-active{% endif %}" type="button" data-records-source-filter="MULTI">Merged Records <span>{{ source_counts.get('MULTI', 0) }}</span></button>
     </div>
 
     <label class="records-search">
