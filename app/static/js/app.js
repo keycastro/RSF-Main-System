@@ -3273,3 +3273,116 @@
 
   apply();
 })();
+
+
+(() => {
+  const page = document.querySelector('[data-inbound-records-page]');
+  if (!page) return;
+
+  const rows = Array.from(page.querySelectorAll('[data-inbound-record-row]'));
+  const filterButtons = Array.from(page.querySelectorAll('[data-inbound-filter]'));
+  const filterInput = page.querySelector('[data-inbound-filter-input]');
+  const empty = page.querySelector('[data-inbound-records-empty]');
+  const filterEmpty = page.querySelector('[data-inbound-filter-empty]');
+  const selectAll = page.querySelector('[data-inbound-select-all]');
+  const rowChecks = Array.from(page.querySelectorAll('[data-inbound-row-check]'));
+  const selectedCount = page.querySelector('[data-inbound-selected-count]');
+  const deleteTrigger = page.querySelector('[data-inbound-delete-trigger]');
+  const bulkForm = page.querySelector('[data-inbound-bulk-form]');
+  const confirmDialog = page.querySelector('[data-inbound-delete-confirm]');
+  const confirmMessage = page.querySelector('[data-inbound-delete-confirm-message]');
+  const confirmYes = page.querySelector('[data-inbound-delete-yes]');
+  const confirmNo = page.querySelector('[data-inbound-delete-no]');
+  let activeFilter = page.dataset.inboundInitialFilter || 'ALL';
+
+  const visibleDeletableChecks = () => rowChecks.filter((check) => {
+    const row = check.closest('[data-inbound-record-row]');
+    return row && !row.hidden && !check.disabled;
+  });
+
+  const clearSelection = () => {
+    rowChecks.forEach((check) => { check.checked = false; });
+    if (selectAll) {
+      selectAll.checked = false;
+      selectAll.indeterminate = false;
+    }
+  };
+
+  const updateSelection = () => {
+    const selected = rowChecks.filter((check) => check.checked && !check.disabled);
+    const visibleChecks = visibleDeletableChecks();
+    const visibleSelected = visibleChecks.filter((check) => check.checked);
+
+    if (selectedCount) selectedCount.textContent = `${selected.length} selected`;
+    if (deleteTrigger) deleteTrigger.disabled = selected.length === 0;
+
+    if (selectAll) {
+      selectAll.checked = visibleChecks.length > 0 && visibleSelected.length === visibleChecks.length;
+      selectAll.indeterminate = visibleSelected.length > 0 && visibleSelected.length < visibleChecks.length;
+      selectAll.disabled = visibleChecks.length === 0;
+    }
+  };
+
+  const applyFilter = () => {
+    rows.forEach((row) => {
+      row.hidden = activeFilter !== 'ALL' && row.dataset.inboundWorkflowStatus !== activeFilter;
+    });
+    filterButtons.forEach((button) => {
+      const active = button.dataset.inboundFilter === activeFilter;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    if (filterInput) filterInput.value = activeFilter;
+
+    const visibleRows = rows.filter((row) => !row.hidden);
+    if (empty) empty.hidden = rows.length !== 0;
+    if (filterEmpty) filterEmpty.hidden = rows.length === 0 || visibleRows.length !== 0 || activeFilter === 'ALL';
+    updateSelection();
+  };
+
+  filterButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      activeFilter = button.dataset.inboundFilter || 'ALL';
+      clearSelection();
+      applyFilter();
+    });
+  });
+
+  selectAll?.addEventListener('change', () => {
+    const shouldSelect = selectAll.checked;
+    visibleDeletableChecks().forEach((check) => { check.checked = shouldSelect; });
+    updateSelection();
+  });
+
+  rowChecks.forEach((check) => check.addEventListener('change', updateSelection));
+
+  const closeConfirm = () => {
+    if (confirmDialog?.open) confirmDialog.close();
+  };
+
+  deleteTrigger?.addEventListener('click', () => {
+    const count = rowChecks.filter((check) => check.checked && !check.disabled).length;
+    if (!count || !bulkForm) return;
+    const text = `Permanently delete ${count} selected Website Inquiry record${count === 1 ? '' : 's'}? Linked Deal/client-history records are protected and cannot be selected.`;
+    if (confirmMessage) confirmMessage.textContent = text;
+
+    if (confirmDialog && typeof confirmDialog.showModal === 'function') {
+      confirmDialog.showModal();
+      return;
+    }
+
+    if (window.confirm(text)) bulkForm.requestSubmit();
+  });
+
+  confirmYes?.addEventListener('click', () => {
+    closeConfirm();
+    bulkForm?.requestSubmit();
+  });
+  confirmNo?.addEventListener('click', closeConfirm);
+  confirmDialog?.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    closeConfirm();
+  });
+
+  applyFilter();
+})();
