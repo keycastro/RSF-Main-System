@@ -1919,6 +1919,19 @@ document.addEventListener('click', (event) => {
     }
 
     const editableFields = Array.from(quickForm.querySelectorAll('input:not([type="hidden"]), textarea, select'));
+    const autoGrowFields = Array.from(quickForm.querySelectorAll('[data-prospect-autogrow]'));
+    const resizeQuickTextarea = (field) => {
+      if (!field) return;
+      field.style.height = '48px';
+      field.style.height = `${Math.max(48, field.scrollHeight)}px`;
+    };
+    autoGrowFields.forEach((field) => {
+      resizeQuickTextarea(field);
+      field.addEventListener('input', () => resizeQuickTextarea(field));
+    });
+    window.addEventListener('resize', () => {
+      if (!quick.hidden) autoGrowFields.forEach(resizeQuickTextarea);
+    });
     let saving = false;
     const hasEnteredData = () => editableFields.some((field) => field.name !== 'status' && field.value.trim() !== '');
     const setDisabled = (disabled) => editableFields.forEach((field) => { field.disabled = disabled; });
@@ -1930,6 +1943,7 @@ document.addEventListener('click', (event) => {
       if (!company) {
         if (!hasEnteredData()) {
           quickForm.reset();
+          autoGrowFields.forEach(resizeQuickTextarea);
           closeQuick();
           return;
         }
@@ -1960,6 +1974,7 @@ document.addEventListener('click', (event) => {
           list.querySelector('[data-prospect-empty]')?.remove();
           quick.insertAdjacentHTML('afterend', data.row_html || '');
           quickForm.reset();
+          autoGrowFields.forEach(resizeQuickTextarea);
           closeQuick();
           applyProspectFilter();
           showToast(data.message || 'Prospect saved.');
