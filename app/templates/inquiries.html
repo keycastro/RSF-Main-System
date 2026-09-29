@@ -16,6 +16,7 @@
           <select
             class="website-inquiry-status-select"
             data-website-inquiry-status
+            data-website-inquiry-current-status="{{ inquiry.workflow_status }}"
             data-update-url="{{ url_for('main.inquiry_workflow_status_update', inquiry_id=inquiry.id) }}"
             data-csrf-token="{{ csrf_token() }}"
             aria-label="Website Inquiry Status"
@@ -144,6 +145,17 @@
   <span>New customer inquiries will appear here.</span>
 </div>
 {% endif %}
+
+<dialog class="deal-status-confirm" data-website-status-confirm aria-labelledby="website-status-confirm-title">
+  <div class="deal-status-confirm-card">
+    <h2 id="website-status-confirm-title">Confirm status change</h2>
+    <p data-website-status-confirm-message>Are you sure you want to move this Website Inquiry out of the Deal pipeline?</p>
+    <div class="deal-status-confirm-actions">
+      <button class="button secondary" type="button" data-website-status-confirm-no>No</button>
+      <button class="button primary" type="button" data-website-status-confirm-yes>Yes</button>
+    </div>
+  </div>
+</dialog>
 
 <dialog class="deal-notes-viewer" data-website-message-viewer aria-labelledby="website-message-viewer-title">
   <div class="deal-notes-viewer-card">
