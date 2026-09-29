@@ -4006,6 +4006,37 @@ def inquiry_records():
     )
 
 
+@bp.get("/inquiries/records/<int:inquiry_id>")
+@login_required
+def inquiry_record_detail(inquiry_id: int):
+    inquiry = _authorized_inquiry(inquiry_id)
+    db = get_db()
+    linked_deal = db.execute(
+        "SELECT id,status,created_at FROM deals WHERE website_inquiry_id=? LIMIT 1",
+        (inquiry_id,),
+    ).fetchone()
+    claimed_by_name = ""
+    if inquiry["claimed_by_partner_id"]:
+        owner = db.execute(
+            """SELECT COALESCE(u.full_name,NULLIF(p.historical_name,''),'') AS name
+               FROM partners p
+               LEFT JOIN users u ON u.id=p.user_id
+               WHERE p.id=?""",
+            (inquiry["claimed_by_partner_id"],),
+        ).fetchone()
+        if owner:
+            claimed_by_name = owner["name"] or ""
+
+    return render_template(
+        "inquiry_record_detail.html",
+        title="Inbound Record",
+        inquiry=inquiry,
+        linked_deal=linked_deal,
+        claimed_by_name=claimed_by_name,
+        inquiry_workflow_status_labels=PROSPECT_STATUS_LABELS,
+    )
+
+
 @bp.post("/inquiries/records/delete")
 @admin_required
 def inquiry_records_bulk_delete():
