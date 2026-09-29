@@ -1688,7 +1688,23 @@ def deals():
                     WHEN d.website_inquiry_id IS NOT NULL THEN 'website_inquiry'
                     ELSE 'prospect'
                   END AS source_kind,
-                  i.name AS inquiry_name,i.created_at AS inquiry_created_at
+                  i.name AS inquiry_name,i.created_at AS inquiry_created_at,
+                  p.business_type AS research_business_type,
+                  p.problem AS research_problem,
+                  p.platform_wanted AS research_platform_wanted,
+                  p.post_link AS research_post_link,
+                  p.post_date AS research_post_date,
+                  p.system_wanted AS research_system_wanted,
+                  p.budget AS research_budget,
+                  p.website AS research_website,
+                  p.contact_attempt AS research_contact_attempt,
+                  p.created_at AS research_created_at,
+                  i.company AS inquiry_company,
+                  i.message AS inquiry_message,
+                  i.source_type AS inquiry_source_type,
+                  i.source_slug AS inquiry_source_slug,
+                  i.source_title AS inquiry_source_title,
+                  i.source_action AS inquiry_source_action
            FROM deals d
            LEFT JOIN prospects p ON p.id=d.prospect_id
            LEFT JOIN website_inquiries i ON i.id=d.website_inquiry_id
