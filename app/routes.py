@@ -86,6 +86,7 @@ PROSPECT_STATUS_LABELS = {
 }
 DEAL_ACTIVE_STATUSES = ("DEAL", "DEMO", "PROPOSAL", "DECISION", "WON", "LOST")
 DEAL_PRE_STATUS_STATUSES = ("NOT_CONTACTED", "NO_ANSWER", "REJECTED")
+INBOUND_DELETE_PROTECTED_STATUSES = ("DEAL", "DEMO", "PROPOSAL", "DECISION")
 
 DEAL_DOCUMENT_MAX_FILE_BYTES = 30 * 1024 * 1024
 DEAL_DOCUMENT_FILE_TYPES = {
@@ -3960,6 +3961,82 @@ def inquiries_list():
     )
 
 
+def _delete_inbound_record_tree(db, inquiry_id: int) -> dict:
+    inquiry = db.execute(
+        "SELECT id,workflow_status,client_conversation_id FROM website_inquiries WHERE id=?",
+        (inquiry_id,),
+    ).fetchone()
+    if not inquiry:
+        return {"deleted": False, "missing": True, "protected": False, "shared_history_kept": 0}
+
+    workflow_status = (inquiry["workflow_status"] or "").strip().upper()
+    if workflow_status in INBOUND_DELETE_PROTECTED_STATUSES:
+        return {"deleted": False, "missing": False, "protected": True, "shared_history_kept": 0}
+
+    deal_rows = db.execute(
+        "SELECT id FROM deals WHERE website_inquiry_id=?",
+        (inquiry_id,),
+    ).fetchall()
+    deal_ids = [int(row["id"]) for row in deal_rows]
+
+    conversation_ids = set()
+    if inquiry["client_conversation_id"]:
+        conversation_ids.add(int(inquiry["client_conversation_id"]))
+    conversation_rows = db.execute(
+        "SELECT id FROM client_conversations WHERE inquiry_id=?",
+        (inquiry_id,),
+    ).fetchall()
+    conversation_ids.update(int(row["id"]) for row in conversation_rows)
+
+    shared_history_kept = 0
+    for conversation_id in sorted(conversation_ids):
+        other_refs = db.execute(
+            """SELECT COUNT(*) AS total
+               FROM website_inquiries
+               WHERE id<>? AND client_conversation_id=?""",
+            (inquiry_id, conversation_id),
+        ).fetchone()
+        is_shared = bool(other_refs and int(other_refs["total"] or 0) > 0)
+        if is_shared:
+            db.execute(
+                "UPDATE client_conversations SET inquiry_id=NULL WHERE id=? AND inquiry_id=?",
+                (conversation_id, inquiry_id),
+            )
+            shared_history_kept += 1
+            continue
+
+        db.execute(
+            "DELETE FROM client_notifications WHERE entity_type='conversation' AND entity_id=?",
+            (conversation_id,),
+        )
+        db.execute("DELETE FROM client_conversations WHERE id=?", (conversation_id,))
+
+    for deal_id in deal_ids:
+        db.execute(
+            "DELETE FROM activity_log WHERE entity_type='deal' AND entity_id=?",
+            (deal_id,),
+        )
+        # deal_documents cascades from deals through its FK.
+        db.execute("DELETE FROM deals WHERE id=?", (deal_id,))
+
+    db.execute(
+        "DELETE FROM client_notifications WHERE entity_type='inquiry' AND entity_id=?",
+        (inquiry_id,),
+    )
+    db.execute(
+        "DELETE FROM activity_log WHERE entity_type='inquiry' AND entity_id=?",
+        (inquiry_id,),
+    )
+    db.execute("DELETE FROM website_inquiries WHERE id=?", (inquiry_id,))
+
+    return {
+        "deleted": True,
+        "missing": False,
+        "protected": False,
+        "shared_history_kept": shared_history_kept,
+    }
+
+
 @bp.get("/inquiries/records")
 @login_required
 def inquiry_records():
@@ -3968,7 +4045,7 @@ def inquiry_records():
                          d.id AS linked_deal_id,
                          COALESCE(u.full_name,NULLIF(p.historical_name,''),'') AS claimed_by_name,
                          CASE
-                           WHEN i.status='CLAIMED' OR i.client_conversation_id IS NOT NULL OR d.id IS NOT NULL
+                           WHEN i.workflow_status IN ('DEAL','DEMO','PROPOSAL','DECISION')
                            THEN 0 ELSE 1
                          END AS can_delete
                   FROM website_inquiries i
@@ -4058,44 +4135,37 @@ def inquiry_records_bulk_delete():
         return redirect(url_for("main.inquiry_records", filter=redirect_filter))
 
     db = get_db()
-    placeholders = ",".join("?" for _ in ids)
-    rows = db.execute(
-        f"""SELECT i.id,i.status,i.client_conversation_id,d.id AS linked_deal_id
-            FROM website_inquiries i
-            LEFT JOIN deals d ON d.website_inquiry_id=i.id
-            WHERE i.id IN ({placeholders})""",
-        ids,
-    ).fetchall()
+    deleted_count = 0
+    protected_count = 0
+    missing_count = 0
+    shared_history_kept = 0
 
-    deletable_ids = [
-        int(row["id"])
-        for row in rows
-        if row["status"] != "CLAIMED" and not row["client_conversation_id"] and not row["linked_deal_id"]
-    ]
-    protected_count = len(rows) - len(deletable_ids)
-    missing_count = max(0, len(ids) - len(rows))
+    for inquiry_id in ids:
+        result = _delete_inbound_record_tree(db, inquiry_id)
+        if result["deleted"]:
+            deleted_count += 1
+            shared_history_kept += int(result["shared_history_kept"] or 0)
+        elif result["protected"]:
+            protected_count += 1
+        elif result["missing"]:
+            missing_count += 1
 
-    if deletable_ids:
-        delete_placeholders = ",".join("?" for _ in deletable_ids)
-        db.execute(
-            f"DELETE FROM client_notifications WHERE entity_type='inquiry' AND entity_id IN ({delete_placeholders})",
-            deletable_ids,
-        )
-        db.execute(
-            f"DELETE FROM website_inquiries WHERE id IN ({delete_placeholders})",
-            deletable_ids,
-        )
+    if deleted_count:
         db.commit()
-
-    if deletable_ids:
-        message = f"Deleted {len(deletable_ids)} Website Inquiry record{'s' if len(deletable_ids) != 1 else ''}."
+        message = f"Permanently deleted {deleted_count} inactive Website Inquiry record{'s' if deleted_count != 1 else ''} and their dedicated linked Deal/history data."
         if protected_count:
-            message += f" {protected_count} protected record{'s were' if protected_count != 1 else ' was'} kept."
+            message += f" {protected_count} active pipeline record{'s were' if protected_count != 1 else ' was'} protected."
+        if shared_history_kept:
+            message += f" {shared_history_kept} shared client conversation{'s were' if shared_history_kept != 1 else ' was'} preserved because other records still use them."
         if missing_count:
             message += f" {missing_count} selected record{'s were' if missing_count != 1 else ' was'} no longer available."
         flash(message, "success" if not protected_count else "warning")
     else:
-        flash("No selected records were deleted. Linked Deal/client-history records are protected.", "warning")
+        db.rollback()
+        if protected_count:
+            flash("No records were deleted. Active Deal / Demo / Proposal / Decision records are protected.", "warning")
+        else:
+            flash("No selected records were available to delete.", "warning")
 
     return redirect(url_for("main.inquiry_records", filter=redirect_filter))
 
