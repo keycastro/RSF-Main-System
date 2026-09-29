@@ -4670,7 +4670,7 @@ def records():
 
     return render_template(
         "records.html",
-        title="Records",
+        title="Records & History Control",
         records=master_records,
         workflow_status_labels=PROSPECT_STATUS_LABELS,
         workflow_counts=workflow_counts,
