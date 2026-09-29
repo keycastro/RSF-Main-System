@@ -48,11 +48,11 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="prospect-quick-grid">
               <label class="prospect-quick-business-type"><span>Business Type</span><input type="text" name="business_type" maxlength="160" autocomplete="off" data-prospect-primary-input></label>
-              <label class="prospect-quick-wide prospect-quick-problem"><span>Problem</span><textarea name="problem" maxlength="2000" rows="3"></textarea></label>
               <label class="prospect-quick-platform"><span>Platform They Want</span><input type="text" name="platform_wanted" maxlength="200" autocomplete="off"></label>
               <label class="prospect-quick-post-link"><span>Post Link</span><input type="url" name="post_link" maxlength="1000" autocomplete="off" placeholder="https://"></label>
               <label class="prospect-quick-post-date"><span>Post Date</span><input type="date" name="post_date"></label>
-              <label class="prospect-quick-wide prospect-quick-system"><span>System They Want</span><textarea name="system_wanted" maxlength="2000" rows="3"></textarea></label>
+              <label class="prospect-quick-wide prospect-quick-problem"><span>Problem</span><textarea name="problem" maxlength="2000" rows="3" data-prospect-autogrow></textarea></label>
+              <label class="prospect-quick-wide prospect-quick-system"><span>System They Want</span><textarea name="system_wanted" maxlength="2000" rows="3" data-prospect-autogrow></textarea></label>
               <label class="prospect-quick-budget"><span>Budget</span><input type="text" name="budget" maxlength="200" autocomplete="off"></label>
               <label class="prospect-quick-company"><span>Company</span><input type="text" name="company" maxlength="200" autocomplete="off" data-prospect-company-input></label>
               <label class="prospect-quick-location"><span>Location</span><input class="prospect-uppercase-input" type="text" name="location" maxlength="200" autocomplete="off"></label>
