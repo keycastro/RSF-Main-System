@@ -1878,7 +1878,11 @@ document.addEventListener('click', (event) => {
         window.location.assign(trigger.dataset.prospectTodayUrl || '/app/prospects?add=1');
         return;
       }
-      openQuick();
+      if (quick.hidden) {
+        openQuick();
+      } else {
+        closeQuick();
+      }
     });
   }
 
