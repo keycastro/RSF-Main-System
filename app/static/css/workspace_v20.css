@@ -5102,7 +5102,7 @@ textarea.prospect-inline-editor{resize:vertical}
     grid-column:1/-1;
   }
   .prospects-page .prospect-quick-business-type input{
-    width:calc(25% - 6px);
+    width:100%;
     min-width:0;
   }
   .prospects-page .prospect-quick-platform{
