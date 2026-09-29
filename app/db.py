@@ -1090,7 +1090,8 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
             for row in check_rows:
                 definition = (row["definition"] or "").lower()
                 if "prospect_id" in definition and "website_inquiry_id" in definition:
-                    db.execute(f'ALTER TABLE deals DROP CONSTRAINT "{row["conname"]}"')
+                    constraint_name = row["conname"]
+                    db.execute(f'ALTER TABLE deals DROP CONSTRAINT "{constraint_name}"')
             db.execute(
                 "ALTER TABLE deals ADD CONSTRAINT deals_source_check "
                 "CHECK (prospect_id IS NOT NULL OR website_inquiry_id IS NOT NULL)"
