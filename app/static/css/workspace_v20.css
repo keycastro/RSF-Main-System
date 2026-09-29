@@ -5128,3 +5128,19 @@ textarea.prospect-inline-editor{resize:vertical}
   }
 }
 
+
+
+/* v1.18.109 — compact Prospect identity/link rows and approved Website/Company swap */
+.prospects-page .prospect-detail.prospect-detail-compact{
+  min-height:58px;
+  overflow:hidden;
+}
+.prospects-page .prospect-detail.prospect-detail-compact>.prospect-edit-value{
+  display:block;
+  width:100%;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  overflow-wrap:normal;
+}
