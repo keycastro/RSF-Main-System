@@ -1872,17 +1872,29 @@ document.addEventListener('click', (event) => {
     window.setTimeout(() => primaryInput.focus(), 0);
   };
 
+  let quickTogglePointerActive = false;
+
   if (trigger) {
+    trigger.addEventListener('pointerdown', () => {
+      quickTogglePointerActive = Boolean(quick && !quick.hidden);
+    });
+    trigger.addEventListener('pointercancel', () => {
+      quickTogglePointerActive = false;
+    });
     trigger.addEventListener('click', () => {
       if (!quick) {
+        quickTogglePointerActive = false;
         window.location.assign(trigger.dataset.prospectTodayUrl || '/app/prospects?add=1');
         return;
       }
-      if (quick.hidden) {
+      if (quickTogglePointerActive) {
+        closeQuick();
+      } else if (quick.hidden) {
         openQuick();
       } else {
         closeQuick();
       }
+      quickTogglePointerActive = false;
     });
   }
 
@@ -1974,7 +1986,12 @@ document.addEventListener('click', (event) => {
     });
     quickForm.addEventListener('input', hideQuickMessage);
     quickForm.addEventListener('change', hideQuickMessage);
-    quick.addEventListener('focusout', () => {
+    quick.addEventListener('focusout', (event) => {
+      const movingToToggle = Boolean(
+        trigger
+        && (event.relatedTarget === trigger || trigger.contains(event.relatedTarget))
+      );
+      if (movingToToggle || quickTogglePointerActive) return;
       window.setTimeout(() => {
         if (!saving && !quick.hidden && !quick.contains(document.activeElement)) saveQuick();
       }, 0);
