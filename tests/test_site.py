@@ -140,8 +140,6 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"View Systems", response.data)
         self.assertIn(b"Create a New System", response.data)
         self.assertNotIn(b"Tell Me What You Need", response.data)
-        self.assertNotIn(b"$39", response.data)
-        self.assertNotIn(b"$390", response.data)
         self.assertEqual(response.data.count(b"Property Operations Command Center</h3>"), 1)
         self.assertEqual(response.data.count(b"Property Inventory Hub</h3>"), 1)
         self.assertEqual(response.data.count(b"Student Housing Matching and Placement System</h3>"), 1)
@@ -482,17 +480,13 @@ class PortfolioSiteTests(unittest.TestCase):
         purchase_contact = self.client.get("/contact?template=property-operations-command-center&intent=existing-system")
 
         self.assertIn(b"$199", systems.data)
-        self.assertNotIn(b"$39", systems.data)
-        self.assertNotIn(b"$390", systems.data)
         self.assertNotIn(b"Full Handover", detail.data)
         self.assertNotIn(b"Managed by Realty Systems Foundry", detail.data)
         self.assertIn(b"$199", detail.data)
-        self.assertNotIn(b"$39", detail.data)
         self.assertIn(b"We build it. You manage it.", services.data)
         self.assertIn(b"We build it. We manage it.", services.data)
         self.assertIn(b"$199", services.data)
-        self.assertIn(b"$39/month", services.data)
-        self.assertIn(b"$390/year", services.data)
+        self.assertIn(b"Price by Agreement", services.data)
         self.assertNotIn(b"$49/month", services.data)
         self.assertNotIn(b"$490/year", services.data)
         self.assertIn(b"The price is for the existing system.", services.data)
@@ -524,8 +518,6 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"You can buy an upgrade later whether you manage the system yourself or we manage it.", services.data)
         self.assertIn(b"You are asking about:", managed_contact.data)
         self.assertIn(b"Property Operations Command Center", managed_contact.data)
-        self.assertNotIn(b"$39/month", managed_contact.data)
-        self.assertNotIn(b"$390/year", managed_contact.data)
         self.assertIn(b"Property Operations Command Center", purchase_contact.data)
         self.assertIn(b"Send Message", purchase_contact.data)
         self.assertIn(b'name="source_intent" value="managed"', managed_contact.data)
@@ -564,8 +556,6 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"We build it. You manage it.", services.data)
         self.assertIn(b"We build it. We manage it.", services.data)
         self.assertIn(b"$199", services.data)
-        self.assertIn(b"$39/month", services.data)
-        self.assertIn(b"$390/year", services.data)
         self.assertIn(b"$79", services.data)
         self.assertIn(b"$149", services.data)
         self.assertIn(b"New System / Large Expansion", services.data)
@@ -578,8 +568,6 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertIn(b"Get This System", detail.data)
         self.assertNotIn(b"Full Handover", detail.data)
         self.assertNotIn(b"Managed by Realty Systems Foundry", detail.data)
-        self.assertNotIn(b"$39/month", detail.data)
-        self.assertNotIn(b"$390/year", detail.data)
 
     def test_existing_system_price_has_one_trusted_source_and_is_separate_from_upgrades(self):
         from app.system_templates import EXISTING_SYSTEM_PRICING, published_templates
@@ -658,66 +646,39 @@ class PortfolioSiteTests(unittest.TestCase):
             self.assertEqual(item["source_title"], "Property Inventory Hub")
             self.assertEqual(item["source_action"], "Existing System Purchase")
 
-    def test_managed_maintenance_pricing_has_one_trusted_source_and_correct_math(self):
-        from app.system_templates import MANAGED_MAINTENANCE_PRICING, published_templates
 
-        pricing = MANAGED_MAINTENANCE_PRICING
-        self.assertEqual(pricing.currency_code, "USD")
-        self.assertEqual(pricing.monthly_price, 39)
-        self.assertEqual(pricing.yearly_price, 390)
-        self.assertEqual(pricing.annual_monthly_total, 468)
-        self.assertEqual(pricing.annual_savings, 78)
-        self.assertEqual(pricing.monthly.price_label, "$39/month")
-        self.assertEqual(pricing.yearly.price_label, "$390/year")
-        self.assertEqual(len(published_templates()), 3)
-
-        systems = self.client.get("/system-templates")
-        detail = self.client.get("/system-templates/property-operations-command-center")
+    def test_managed_technical_care_uses_price_by_agreement(self):
         services = self.client.get("/services")
-        self.assertNotIn(b"$39", systems.data)
-        self.assertNotIn(b"$390", systems.data)
-        self.assertNotIn(b"$39", detail.data)
-        self.assertNotIn(b"$390", detail.data)
-        self.assertIn(b"$39/month", services.data)
-        self.assertIn(b"$390/year", services.data)
-        self.assertNotIn(b"Save $78/year", services.data)
-        for forbidden in (b"Starter", b"Basic plan", b"Professional plan", b"Enterprise"):
-            self.assertNotIn(forbidden, services.data)
+        self.assertEqual(services.status_code, 200)
+        self.assertIn(b"Price by Agreement", services.data)
+        self.assertIn(b"Based on the system and technical work required", services.data)
 
-    def test_monthly_and_yearly_maintenance_plan_selection_is_server_resolved(self):
+    def test_legacy_managed_plan_query_is_ignored(self):
         monthly = self.client.get(
             "/contact?template=property-operations-command-center&intent=managed&plan=monthly"
         )
         self.assertEqual(monthly.status_code, 200)
         self.assertIn(b"Property Operations Command Center", monthly.data)
-        self.assertIn(b'name="source_plan" value="monthly"', monthly.data)
-        self.assertIn(b"Send Message", monthly.data)
-        self.assertNotIn(b"$39/month", monthly.data)
+        self.assertIn(b'name="source_intent" value="managed"', monthly.data)
+        self.assertNotIn(b'name="source_plan"', monthly.data)
 
         yearly = self.client.get(
             "/contact?template=property-inventory-hub&intent=managed&plan=yearly"
         )
         self.assertEqual(yearly.status_code, 200)
         self.assertIn(b"Property Inventory Hub", yearly.data)
-        self.assertIn(b'name="source_plan" value="yearly"', yearly.data)
-        self.assertIn(b"Send Message", yearly.data)
-        self.assertNotIn(b"$390/year", yearly.data)
+        self.assertIn(b'name="source_intent" value="managed"', yearly.data)
+        self.assertNotIn(b'name="source_plan"', yearly.data)
 
-        invalid = self.client.get(
-            "/contact?template=property-inventory-hub&intent=managed&plan=free"
-        )
-        self.assertEqual(invalid.status_code, 200)
-        self.assertNotIn(b'name="source_plan"', invalid.data)
-
-    def test_maintenance_plan_and_price_cannot_be_spoofed_in_inquiry(self):
+    def test_managed_plan_and_price_parameters_are_ignored_in_inquiry(self):
         from app.inquiries import get_inquiry
 
         with tempfile.TemporaryDirectory() as tmp:
-            db_path = Path(tmp) / "trusted-plan.sqlite3"
+            db_path = Path(tmp) / "managed-price-by-agreement.sqlite3"
             self.app.config.update(
                 CONTACT_DELIVERY_MODE="database",
                 DATABASE_URL=f"sqlite:///{db_path}",
-                OWNER_INBOX_TOKEN="owner-plan-token",
+                OWNER_INBOX_TOKEN="owner-managed-token",
                 SMTP_HOST="",
                 SMTP_FROM_EMAIL="",
             )
@@ -727,7 +688,7 @@ class PortfolioSiteTests(unittest.TestCase):
             with self.client.session_transaction() as sess:
                 token = sess["contact_csrf"]
 
-            response = self.client.post(
+            sent = self.client.post(
                 "/contact",
                 data={
                     "csrf_token": token,
@@ -736,35 +697,23 @@ class PortfolioSiteTests(unittest.TestCase):
                     "source_plan": "monthly",
                     "source_price": "$1",
                     "source_title": "FAKE SYSTEM",
-                    "name": "Pricing Prospect",
-                    "email": "pricing@example.com",
-                    "phone": "+1 555 010 1002",
-                    "company": "Example Properties",
-                    "message": "We want monthly managed maintenance for our operations system.",
+                    "name": "Managed Prospect",
+                    "email": "managed@example.com",
+                    "phone": "+1 555 010 1010",
+                    "company": "Example Property Group",
+                    "message": "We want RSF to manage the technical side after the system is built.",
                     "website": "",
                 },
                 follow_redirects=False,
             )
-            self.assertEqual(response.status_code, 302)
+            self.assertEqual(sent.status_code, 302)
+
             with self.app.app_context():
                 item = get_inquiry(1)
 
             self.assertEqual(item["source_title"], "Property Operations Command Center")
-            self.assertEqual(item["source_action"], "Managed by Realty Systems Foundry — Monthly · $39/month")
+            self.assertEqual(item["source_action"], "Managed by Realty Systems Foundry")
             self.assertNotIn("$1", item["source_action"])
-
-            headers = {"Authorization": "Bearer owner-plan-token"}
-            ticket_response = self.client.post("/__owner_api/session-ticket", headers=headers)
-            access_path = urlparse(ticket_response.get_json()["url"]).path
-            self.client.get(access_path, follow_redirects=False)
-            detail = self.client.get("/owner/inbox/1")
-            self.assertIn(b"Request type", detail.data)
-            self.assertIn(b"Managed by Realty Systems Foundry", detail.data)
-            self.assertIn(b"Plan", detail.data)
-            self.assertIn(b"Monthly", detail.data)
-            self.assertIn(b"$39/month", detail.data)
-            self.assertNotIn(b"$1", detail.data)
-
     def test_system_detail_is_truthful_and_does_not_repeat_management_choices(self):
         for slug in (
             "property-operations-command-center",
@@ -785,8 +734,6 @@ class PortfolioSiteTests(unittest.TestCase):
                 self.assertIn(b"Want this system for your business?", response.data)
                 self.assertNotIn(b"Discuss Full Handover", response.data)
                 self.assertNotIn(b"Discuss Managed Service", response.data)
-                self.assertNotIn(b"$39/month", response.data)
-                self.assertNotIn(b"$390/year", response.data)
                 self.assertIn(b"sample data", response.data)
                 if slug == "student-housing-matching-and-placement-system":
                     self.assertIn(b"synthetic sample data", response.data)
@@ -1077,6 +1024,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertNotIn(b'name="source_slug"', generic.data)
         self.assertNotIn(b'name="source_intent"', generic.data)
 
+
     def test_template_contact_submission_records_managed_request_in_private_inbox(self):
         from app.inquiries import get_inquiry
 
@@ -1108,7 +1056,7 @@ class PortfolioSiteTests(unittest.TestCase):
                     "email": "template.user@example.com",
                     "phone": "+1 555 010 1005",
                     "company": "Example Brokerage",
-                    "message": "We want the system customized and then managed under the yearly maintenance plan.",
+                    "message": "We want the system customized and then managed by RSF.",
                     "website": "",
                 },
                 follow_redirects=False,
@@ -1120,7 +1068,7 @@ class PortfolioSiteTests(unittest.TestCase):
             self.assertEqual(item["source_type"], "system_template")
             self.assertEqual(item["source_slug"], "property-inventory-hub")
             self.assertEqual(item["source_title"], "Property Inventory Hub")
-            self.assertEqual(item["source_action"], "Managed by Realty Systems Foundry — Yearly · $390/year")
+            self.assertEqual(item["source_action"], "Managed by Realty Systems Foundry")
 
             headers = {"Authorization": "Bearer owner-template-token"}
             ticket_response = self.client.post("/__owner_api/session-ticket", headers=headers)
@@ -1129,12 +1077,9 @@ class PortfolioSiteTests(unittest.TestCase):
             inbox = self.client.get("/owner/inbox")
             self.assertIn(b"Interested in: Property Inventory Hub", inbox.data)
             self.assertIn(b"Request: Managed by Realty Systems Foundry", inbox.data)
-            self.assertIn(b"Plan: Yearly", inbox.data)
             detail = self.client.get("/owner/inbox/1")
             self.assertIn(b"Request type", detail.data)
             self.assertIn(b"Managed by Realty Systems Foundry", detail.data)
-            self.assertIn(b"$390/year", detail.data)
-
     def test_legacy_free_access_intent_normalizes_to_managed_service_without_free_wording(self):
         response = self.client.get(
             "/contact?template=property-inventory-hub&intent=free-access"
