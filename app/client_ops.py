@@ -16,6 +16,7 @@ from typing import Any
 from flask import current_app
 
 from .db import get_db, using_postgres
+from .record_ops import find_matching_prospect
 from .services import file_signature_matches, log_activity, normalize_email, normalize_text, utcnow_iso
 
 
@@ -290,32 +291,184 @@ def _conversation_for_lead(lead_id: int):
     ).fetchone()
 
 
-def _create_conversation(*, inquiry_id: int, lead_id: int | None, owner_partner_id: int | None,
-                         name: str, email_value: str, company: str, subject: str = "") -> int:
+def _conversation_for_prospect(prospect_id: int):
+    return get_db().execute(
+        "SELECT * FROM client_conversations WHERE prospect_id=? AND status='ACTIVE' ORDER BY id DESC LIMIT 1",
+        (prospect_id,),
+    ).fetchone()
+
+
+def _create_conversation(*, inquiry_id: int | None, lead_id: int | None, owner_partner_id: int | None,
+                         name: str, email_value: str, company: str, subject: str = "",
+                         prospect_id: int | None = None) -> int:
     db = get_db()
     now = utcnow_iso()
     cur = db.execute(
         """INSERT INTO client_conversations
-           (inquiry_id,lead_id,owner_partner_id,client_name,client_email,company,subject,status,created_at,updated_at,last_client_message_at)
-           VALUES (?,?,?,?,?,?,?,'ACTIVE',?,?,?)""",
-        (inquiry_id, lead_id, owner_partner_id, name[:100], email_value[:254], company[:140], subject[:240], now, now, now),
+           (inquiry_id,prospect_id,lead_id,owner_partner_id,client_name,client_email,company,subject,status,created_at,updated_at,last_client_message_at)
+           VALUES (?,?,?,?,?,?,?,?,'ACTIVE',?,?,?)""",
+        (
+            inquiry_id,
+            prospect_id,
+            lead_id,
+            owner_partner_id,
+            name[:100],
+            email_value[:254],
+            company[:140],
+            subject[:240],
+            now,
+            now,
+            now,
+        ),
     )
     return int(cur.lastrowid)
 
 
-def create_public_inquiry(record: dict[str, str]) -> int:
-    """Store a public-site submission directly in the unified RSF database.
+def ensure_prospect_conversation(prospect_id: int, owner_partner_id: int | None = None) -> int:
+    """Create/reuse the official-email conversation for one outbound Prospect."""
+    db = get_db()
+    prospect = db.execute(
+        "SELECT id,name,contact,email FROM prospects WHERE id=?",
+        (prospect_id,),
+    ).fetchone()
+    if not prospect:
+        raise ValueError("Prospect not found.")
+    email_value = (prospect["email"] or "").strip()
+    if not email_value:
+        raise ValueError("Add the Prospect email before opening Email.")
 
-    Returning contacts with an exact existing lead email are routed back to that
-    lead's current owner instead of being exposed as a new shared opportunity.
+    existing = _conversation_for_prospect(prospect_id)
+    if existing:
+        conversation_id = int(existing["id"])
+        db.execute(
+            """UPDATE client_conversations
+               SET client_name=?,client_email=?,company=?,
+                   owner_partner_id=COALESCE(owner_partner_id,?),updated_at=?
+               WHERE id=?""",
+            (
+                (prospect["contact"] or prospect["name"] or "")[:100],
+                email_value[:254],
+                (prospect["name"] or "")[:140],
+                owner_partner_id,
+                utcnow_iso(),
+                conversation_id,
+            ),
+        )
+        db.commit()
+        return conversation_id
+
+    conversation_id = _create_conversation(
+        inquiry_id=None,
+        prospect_id=prospect_id,
+        lead_id=None,
+        owner_partner_id=owner_partner_id,
+        name=(prospect["contact"] or prospect["name"] or ""),
+        email_value=email_value,
+        company=(prospect["name"] or ""),
+        subject="RSF outreach",
+    )
+    db.commit()
+    return conversation_id
+
+
+def create_public_inquiry(record: dict[str, str]) -> int:
+    """Store public contact inside the unified client journey.
+
+    Repeated submissions from the same email stay inside the same active Website
+    Inquiry. A closed engagement creates a new Inquiry. If an active Researched
+    Prospect already represents the client, the Website source joins that journey.
     """
     db = get_db()
     now = utcnow_iso()
     name = (record.get("name") or "").strip()[:100]
     email_value = (record.get("email") or "").strip()[:254]
+    email_norm = normalize_email(email_value)
     phone = (record.get("phone") or "").strip()[:40]
     company = (record.get("company") or "").strip()[:140]
     message = (record.get("message") or "").strip()[:10000]
+    source_type = (record.get("source_type") or "")[:40]
+    source_slug = (record.get("source_slug") or "")[:160]
+    source_title = (record.get("source_title") or "")[:200]
+    source_action = (record.get("source_action") or "")[:80]
+
+    active_inquiry = None
+    if email_norm:
+        active_inquiry = db.execute(
+            """SELECT * FROM website_inquiries
+               WHERE email_norm=?
+                 AND status NOT IN ('ARCHIVED','SPAM')
+                 AND workflow_status NOT IN ('REJECTED','WON','LOST')
+               ORDER BY updated_at DESC,id DESC
+               LIMIT 1""",
+            (email_norm,),
+        ).fetchone()
+
+    if active_inquiry:
+        inquiry_id = int(active_inquiry["id"])
+        conversation_id = int(active_inquiry["client_conversation_id"] or 0)
+        if not conversation_id:
+            conversation_id = _create_conversation(
+                inquiry_id=inquiry_id,
+                lead_id=active_inquiry["lead_id"],
+                owner_partner_id=active_inquiry["claimed_by_partner_id"],
+                name=name,
+                email_value=email_value,
+                company=company,
+                subject="Website inquiry to Realty Systems Foundry",
+            )
+        db.execute(
+            """UPDATE website_inquiries
+               SET updated_at=?,name=?,email=?,email_norm=?,phone=?,company=?,message=?,
+                   source_type=?,source_slug=?,source_title=?,source_action=?,client_conversation_id=?
+               WHERE id=?""",
+            (
+                now, name, email_value, email_norm, phone, company, message,
+                source_type, source_slug, source_title, source_action, conversation_id, inquiry_id,
+            ),
+        )
+        db.execute(
+            """UPDATE client_conversations
+               SET updated_at=?,client_name=?,client_email=?,company=?,last_client_message_at=?
+               WHERE id=?""",
+            (now, name, email_value, company, now, conversation_id),
+        )
+        db.execute(
+            """INSERT INTO client_messages
+               (conversation_id,direction,channel,journey_source,sender_email,recipient_email,subject,body,created_at,delivery_status)
+               VALUES (?,'INBOUND','WEBSITE','INBOUND',?,?,?, ?,?,'RECEIVED')""",
+            (
+                conversation_id,
+                email_value,
+                current_app.config.get("RSF_EMAIL_ADDRESS", ""),
+                "Website inquiry",
+                message,
+                now,
+            ),
+        )
+
+        owner_partner_id = active_inquiry["claimed_by_partner_id"]
+        title = f"{company or name} sent another website message"
+        if owner_partner_id:
+            owner_user_id = _partner_user_id(int(owner_partner_id))
+            _notify(owner_user_id, "CLIENT_REPLY", title, "A new Website message was added to the active client conversation.", entity_type="conversation", entity_id=conversation_id)
+            _notify_founders("CLIENT_REPLY", title, "A new Website message was added to the active client conversation.", entity_type="conversation", entity_id=conversation_id)
+        else:
+            _notify_all_active_partners("NEW_INQUIRY", title, "A new message was added to an active unclaimed Website Inquiry.", entity_type="inquiry", entity_id=inquiry_id)
+            _notify_founders("NEW_INQUIRY", title, "A new message was added to an active Website Inquiry.", entity_type="inquiry", entity_id=inquiry_id)
+        if active_inquiry["lead_id"]:
+            db.execute("UPDATE leads SET last_activity_at=? WHERE id=?", (now, active_inquiry["lead_id"]))
+        db.commit()
+        return inquiry_id
+
+    identity = {
+        "company": company,
+        "contact_name": name,
+        "email": email_value,
+        "phone": phone,
+    }
+    matched_prospect = find_matching_prospect(db, identity)
+    active_prospect = matched_prospect if matched_prospect and (matched_prospect["status"] or "").upper() not in ("REJECTED", "WON", "LOST") else None
+
     existing = _find_exact_email_lead(email_value)
     owner_partner_id = None
     lead_id = None
@@ -331,38 +484,82 @@ def create_public_inquiry(record: dict[str, str]) -> int:
             source_type,source_slug,source_title,source_action)
            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (
-            now, now, name, email_value, normalize_email(email_value), phone, company, message, status,
+            now, now, name, email_value, email_norm, phone, company, message, status,
             owner_partner_id, now if owner_partner_id else None, lead_id,
-            (record.get("source_type") or "")[:40], (record.get("source_slug") or "")[:160],
-            (record.get("source_title") or "")[:200], (record.get("source_action") or "")[:80],
+            source_type, source_slug, source_title, source_action,
         ),
     )
     inquiry_id = int(cur.lastrowid)
 
-    conversation = _conversation_for_lead(lead_id) if lead_id else None
+    conversation = _conversation_for_prospect(int(active_prospect["id"])) if active_prospect else None
+    if not conversation and lead_id:
+        conversation = _conversation_for_lead(lead_id)
     if conversation:
         conversation_id = int(conversation["id"])
         db.execute(
-            "UPDATE client_conversations SET updated_at=?,client_name=?,client_email=?,company=? WHERE id=?",
-            (now, name, email_value, company, conversation_id),
+            """UPDATE client_conversations
+               SET inquiry_id=?,updated_at=?,client_name=?,client_email=?,company=?,last_client_message_at=?
+               WHERE id=?""",
+            (inquiry_id, now, name, email_value, company, now, conversation_id),
         )
     else:
         conversation_id = _create_conversation(
-            inquiry_id=inquiry_id, lead_id=lead_id, owner_partner_id=owner_partner_id,
-            name=name, email_value=email_value, company=company,
+            inquiry_id=inquiry_id,
+            prospect_id=int(active_prospect["id"]) if active_prospect else None,
+            lead_id=lead_id,
+            owner_partner_id=owner_partner_id,
+            name=name,
+            email_value=email_value,
+            company=company,
             subject="Website inquiry to Realty Systems Foundry",
         )
     db.execute("UPDATE website_inquiries SET client_conversation_id=? WHERE id=?", (conversation_id, inquiry_id))
     db.execute(
         """INSERT INTO client_messages
-           (conversation_id,direction,channel,sender_email,recipient_email,subject,body,created_at)
-           VALUES (?,'INBOUND','WEBSITE',?,?,?, ?,?)""",
-        (conversation_id, email_value, current_app.config.get("RSF_EMAIL_ADDRESS", ""),
-         "Website inquiry", message, now),
+           (conversation_id,direction,channel,journey_source,sender_email,recipient_email,subject,body,created_at,delivery_status)
+           VALUES (?,'INBOUND','WEBSITE','INBOUND',?,?,?, ?,?,'RECEIVED')""",
+        (
+            conversation_id,
+            email_value,
+            current_app.config.get("RSF_EMAIL_ADDRESS", ""),
+            "Website inquiry",
+            message,
+            now,
+        ),
     )
+
+    # If Research already has an active Deal for this same opportunity, attach
+    # the new Website source to that Deal instead of creating a second pipeline.
+    if active_prospect and (active_prospect["status"] or "").upper() in ("DEAL", "DEMO", "PROPOSAL", "DECISION"):
+        existing_deal = db.execute(
+            "SELECT id,website_inquiry_id FROM deals WHERE prospect_id=? LIMIT 1",
+            (active_prospect["id"],),
+        ).fetchone()
+        if existing_deal and existing_deal["website_inquiry_id"] is None:
+            shared_status = (active_prospect["status"] or "DEAL").upper()
+            db.execute(
+                """UPDATE deals
+                   SET website_inquiry_id=?,
+                       contact_number=CASE WHEN trim(contact_number)='' THEN ? ELSE contact_number END,
+                       email=CASE WHEN trim(email)='' THEN ? ELSE email END,
+                       updated_at=?
+                   WHERE id=?""",
+                (inquiry_id, phone[:120], email_value[:320], now, existing_deal["id"]),
+            )
+            db.execute(
+                "UPDATE website_inquiries SET workflow_status=?,updated_at=? WHERE id=?",
+                (shared_status, now, inquiry_id),
+            )
+            log_activity(
+                "DEAL_SOURCE_MERGED",
+                "deal",
+                int(existing_deal["id"]),
+                "Website Inquiry linked to the existing Research Deal.",
+                {"prospect_id": int(active_prospect["id"]), "website_inquiry_id": inquiry_id},
+            )
+
     if lead_id:
         db.execute("UPDATE leads SET last_activity_at=? WHERE id=?", (now, lead_id))
-        # Public requests have no logged-in actor. Store a system activity row.
         db.execute(
             """INSERT INTO activity_log(actor_user_id,action_type,entity_type,entity_id,description,metadata_json,created_at)
                VALUES (NULL,'CLIENT_RETURNED','lead',?,'Existing lead sent a new website inquiry.','{}',?)""",
@@ -512,9 +709,20 @@ def send_client_email(conversation_id: int, actor_user_id: int, body: str, attac
     # a later database step fails, RSF still has a durable message record to review.
     cur = db.execute(
         """INSERT INTO client_messages
-           (conversation_id,direction,channel,sender_email,recipient_email,subject,body,sent_by_user_id,external_message_id,in_reply_to,created_at,delivery_status,delivery_error)
-           VALUES (?,'OUTBOUND','EMAIL',?,?,?,?,?,?,?,?,'PENDING','')""",
-        (conversation_id, sender, conv["client_email"], subject, body, actor_user_id, message_id, reply_to_id, now),
+           (conversation_id,direction,channel,journey_source,sender_email,recipient_email,subject,body,sent_by_user_id,external_message_id,in_reply_to,created_at,delivery_status,delivery_error)
+           VALUES (?,'OUTBOUND','EMAIL',?,?,?,?,?,?,?,?,?,'PENDING','')""",
+        (
+            conversation_id,
+            "INBOUND" if conv["inquiry_id"] else ("OUTBOUND" if conv["prospect_id"] else ""),
+            sender,
+            conv["client_email"],
+            subject,
+            body,
+            actor_user_id,
+            message_id,
+            reply_to_id,
+            now,
+        ),
     )
     message_row_id = int(cur.lastrowid)
     for name, mime_type, data in prepared:
@@ -658,7 +866,7 @@ def _create_direct_email_inquiry(sender_name: str, sender_email: str, subject: s
     db = get_db()
     inquiry = db.execute("SELECT client_conversation_id FROM website_inquiries WHERE id=?", (inquiry_id,)).fetchone()
     conv_id = int(inquiry["client_conversation_id"])
-    first = db.execute("SELECT id FROM client_messages WHERE conversation_id=? ORDER BY id LIMIT 1", (conv_id,)).fetchone()
+    first = db.execute("SELECT id FROM client_messages WHERE conversation_id=? ORDER BY id DESC LIMIT 1", (conv_id,)).fetchone()
     db.execute(
         "UPDATE client_messages SET channel='EMAIL',subject=?,external_message_id=?,delivery_status='RECEIVED' WHERE id=?",
         (subject, external_id, first["id"]),
@@ -759,10 +967,19 @@ def sync_inbound_email(limit: int = 40) -> dict[str, int]:
                 now = utcnow_iso()
                 cur = db.execute(
                     """INSERT INTO client_messages
-                       (conversation_id,direction,channel,sender_email,recipient_email,subject,body,external_message_id,in_reply_to,created_at,delivery_status,delivery_error)
-                       VALUES (?,'INBOUND','EMAIL',?,?,?,?,?,?,?,'RECEIVED','')""",
-                    (conv["id"], sender_email, rsf_email, subject, body, ext_id,
-                     (msg.get("In-Reply-To") or "")[:500], now),
+                       (conversation_id,direction,channel,journey_source,sender_email,recipient_email,subject,body,external_message_id,in_reply_to,created_at,delivery_status,delivery_error)
+                       VALUES (?,'INBOUND','EMAIL',?,?,?,?,?,?,?,?,'RECEIVED','')""",
+                    (
+                        conv["id"],
+                        "INBOUND" if conv["inquiry_id"] else ("OUTBOUND" if conv["prospect_id"] else ""),
+                        sender_email,
+                        rsf_email,
+                        subject,
+                        body,
+                        ext_id,
+                        (msg.get("In-Reply-To") or "")[:500],
+                        now,
+                    ),
                 )
                 message_id = int(cur.lastrowid)
                 for name, mime_type, data_bytes in attachments:
