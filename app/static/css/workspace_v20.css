@@ -573,7 +573,7 @@ a.simple-row:hover{background:#fafcfb}
 /* v1.15.4 — Prospect header controls and Today status filters */
 .prospects-head{display:block}
 .prospects-head-main{width:100%}
-.prospects-title-row{display:flex;align-items:center;gap:10px}
+.prospects-title-row{display:flex;align-items:center;gap:10px;margin-bottom:2px}
 .prospects-title-row h1{margin:0}
 .prospect-add-plus{
   display:inline-flex;
@@ -807,7 +807,7 @@ textarea.prospect-inline-editor{resize:vertical}
 .deals-head{display:block}
 .deals-title-row{display:flex;align-items:flex-start;gap:10px}
 .deals-title-row h1{margin:0}
-.deals-title-row p{margin:5px 0 0;color:var(--ux-section-muted);font-size:12.5px;line-height:1.45}
+.deals-title-row p{margin:2px 0 0;color:var(--ux-section-muted);font-size:12.5px;line-height:1.45}
 .deal-mobile-menu{display:none!important}
 .deals-list{
   display:grid;
