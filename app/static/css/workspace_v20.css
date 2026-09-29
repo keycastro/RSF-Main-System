@@ -3385,3 +3385,27 @@ textarea.prospect-inline-editor{resize:vertical}
 .conversation-notes-compact .deal-notes-expand-button{
   border-color:#cbd8d3;
 }
+
+
+/* v1.18.76 — Website Inbox gets the same Create Deal / View Deal footer action as Prospects */
+.website-inquiry-deal-action{
+  display:flex;
+  justify-content:flex-end;
+  margin:0;
+  padding:12px 14px;
+  border-top:1px solid #dbe5e1;
+  background:#fff;
+}
+.website-inquiry-deal-action form{
+  margin:0;
+}
+.website-inquiry-deal-action .button{
+  min-height:32px;
+  padding:6px 10px;
+  font-size:10.75px;
+}
+@media(max-width:620px){
+  .website-inquiry-deal-action{
+    padding:12px 14px;
+  }
+}
