@@ -3816,3 +3816,20 @@ textarea.prospect-inline-editor{resize:vertical}
 .inbound-records-selected-count{
   white-space:nowrap;
 }
+
+
+/* v1.18.83 — compact Inbound Records selection toolbar */
+.inbound-records-actions{
+  min-height:38px;
+  padding:4px 10px;
+  gap:8px;
+}
+.inbound-records-select-all{
+  gap:6px;
+}
+.inbound-records-delete-selected{
+  min-height:30px;
+  padding:5px 11px;
+  border-radius:8px;
+  font-size:12px;
+}
