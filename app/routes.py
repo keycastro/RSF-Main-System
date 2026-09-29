@@ -1628,6 +1628,38 @@ def prospect_delete(prospect_id: int):
             return jsonify({"ok": False, "error": "not_found", "message": "Prospect not found."}), 404
         abort(404)
 
+    merged_deals = db.execute(
+        "SELECT id,website_inquiry_id FROM deals WHERE prospect_id=?",
+        (prospect_id,),
+    ).fetchall()
+    for merged_deal in merged_deals:
+        if merged_deal["website_inquiry_id"] is not None:
+            db.execute(
+                "UPDATE deals SET prospect_id=NULL,updated_at=? WHERE id=?",
+                (utcnow_iso(), merged_deal["id"]),
+            )
+
+    prospect_conversations = db.execute(
+        "SELECT id,inquiry_id FROM client_conversations WHERE prospect_id=?",
+        (prospect_id,),
+    ).fetchall()
+    for conversation in prospect_conversations:
+        shared = conversation["inquiry_id"] is not None or db.execute(
+            "SELECT 1 FROM website_inquiries WHERE client_conversation_id=? LIMIT 1",
+            (conversation["id"],),
+        ).fetchone()
+        if shared:
+            db.execute(
+                "UPDATE client_conversations SET prospect_id=NULL WHERE id=?",
+                (conversation["id"],),
+            )
+        else:
+            db.execute(
+                "DELETE FROM client_notifications WHERE entity_type='conversation' AND entity_id=?",
+                (conversation["id"],),
+            )
+            db.execute("DELETE FROM client_conversations WHERE id=?", (conversation["id"],))
+
     db.execute("DELETE FROM prospects WHERE id=?", (prospect_id,))
     db.commit()
 
