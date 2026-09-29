@@ -2824,6 +2824,66 @@
   const page = document.querySelector('[data-website-inbox-page]');
   if (!page) return;
 
+  const websiteDateInput = page.querySelector('[data-website-date-input]');
+  const websiteDateTrigger = page.querySelector('[data-website-date-trigger]');
+  const websiteList = page.querySelector('[data-website-inquiry-list]');
+  const websiteFilterButtons = Array.from(page.querySelectorAll('[data-website-filter]'));
+  const websiteFilterEmpty = page.querySelector('[data-website-filter-empty]');
+  const websiteListEmpty = page.querySelector('[data-website-list-empty]');
+  const websiteSelectedDate = page.dataset.websiteSelectedDate || '';
+  const websiteIsToday = page.dataset.websiteIsToday === '1';
+  const websiteUnfinishedStatuses = new Set(['NOT_CONTACTED', 'NO_ANSWER']);
+  let activeWebsiteFilter = 'ALL';
+
+  const openWebsiteDatePicker = () => {
+    if (!(websiteDateInput instanceof HTMLInputElement)) return;
+    try {
+      if (typeof websiteDateInput.showPicker === 'function') {
+        websiteDateInput.showPicker();
+        return;
+      }
+    } catch (_error) {
+      // Fall through to the native click fallback.
+    }
+    websiteDateInput.focus({preventScroll: true});
+    websiteDateInput.click();
+  };
+
+  websiteDateTrigger?.addEventListener('click', openWebsiteDatePicker);
+  websiteDateInput?.addEventListener('change', () => {
+    if (!websiteDateInput.value || !websiteDateInput.form) return;
+    websiteDateInput.form.submit();
+  });
+
+  const applyWebsiteInquiryFilter = () => {
+    if (!websiteList) return;
+    const cards = Array.from(websiteList.querySelectorAll('[data-website-inquiry-card]'));
+    cards.forEach((card) => {
+      card.hidden = activeWebsiteFilter !== 'ALL'
+        && card.dataset.websiteInquiryWorkflowStatus !== activeWebsiteFilter;
+    });
+
+    websiteFilterButtons.forEach((button) => {
+      const active = button.dataset.websiteFilter === activeWebsiteFilter;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+
+    if (websiteListEmpty) websiteListEmpty.hidden = cards.length !== 0;
+    if (websiteFilterEmpty) {
+      const hasVisibleCards = cards.some((card) => !card.hidden);
+      websiteFilterEmpty.hidden = cards.length === 0 || activeWebsiteFilter === 'ALL' || hasVisibleCards;
+    }
+  };
+
+  websiteFilterButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      activeWebsiteFilter = button.dataset.websiteFilter || 'ALL';
+      applyWebsiteInquiryFilter();
+    });
+  });
+  applyWebsiteInquiryFilter();
+
   const websiteDealStatuses = new Set(['DEAL', 'DEMO', 'PROPOSAL', 'DECISION', 'WON', 'LOST']);
   const websitePreDealStatuses = new Set(['NOT_CONTACTED', 'NO_ANSWER', 'REJECTED']);
   const websiteStatusLabels = {
@@ -3021,8 +3081,21 @@
       const savedStatus = data.status || status;
       field.dataset.websiteInquiryStartStatus = savedStatus;
       field.dataset.websiteInquiryCurrentStatus = savedStatus;
-      const action = field.closest('.website-inquiry-card')?.querySelector('[data-website-deal-action]');
+      const card = field.closest('[data-website-inquiry-card]');
+      if (card) card.dataset.websiteInquiryWorkflowStatus = savedStatus;
+      const action = card?.querySelector('[data-website-deal-action]');
       if (action) renderWebsiteDealAction(action, savedStatus, data.deal_id || null);
+
+      const receivedDate = card?.dataset.websiteInquiryReceivedDate || '';
+      const removeCarriedForward = Boolean(
+        card
+        && websiteIsToday
+        && receivedDate
+        && receivedDate !== websiteSelectedDate
+        && !websiteUnfinishedStatuses.has(savedStatus)
+      );
+      if (removeCarriedForward) card.remove();
+      applyWebsiteInquiryFilter();
     } catch (error) {
       field.value = previous;
       window.alert(error.message || 'Website Inquiry status could not be updated. Try again.');
