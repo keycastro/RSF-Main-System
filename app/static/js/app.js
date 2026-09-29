@@ -2476,6 +2476,21 @@ document.addEventListener('click', (event) => {
   }
 
   page.addEventListener('click', (event) => {
+    const sourceToggle = event.target.closest('[data-deal-source-toggle]');
+    if (sourceToggle) {
+      const targetId = sourceToggle.getAttribute('aria-controls') || '';
+      const sourceBody = targetId ? document.getElementById(targetId) : null;
+      if (!sourceBody) return;
+      const opening = sourceBody.hidden;
+      sourceBody.hidden = !opening;
+      sourceToggle.setAttribute('aria-expanded', opening ? 'true' : 'false');
+      const sectionName = sourceToggle.closest('.deal-source-research')
+        ? 'Outbound Details'
+        : 'Inbound Details';
+      sourceToggle.setAttribute('aria-label', opening ? `Hide ${sectionName}` : `Show ${sectionName}`);
+      return;
+    }
+
     const documentsToggle = event.target.closest('[data-deal-documents-toggle]');
     if (documentsToggle) {
       const targetId = documentsToggle.getAttribute('aria-controls') || '';
