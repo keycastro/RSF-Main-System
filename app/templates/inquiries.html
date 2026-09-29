@@ -111,6 +111,24 @@
       </div>
     </div>
     </div>
+
+    {% set linked_deal_id = inquiry_deal_ids.get(inquiry.id) if inquiry_deal_ids is defined else none %}
+    <div
+      class="website-inquiry-deal-action"
+      data-website-deal-action
+      data-create-url="{{ url_for('main.deal_create_from_inquiry', inquiry_id=inquiry.id) }}"
+      data-deals-url="{{ url_for('main.deals') }}"
+      data-csrf-token="{{ csrf_token() }}"
+    >
+      {% if linked_deal_id %}
+        <a class="button secondary" href="{{ url_for('main.deals') }}#deal-{{ linked_deal_id }}">View Deal</a>
+      {% else %}
+        <form method="post" action="{{ url_for('main.deal_create_from_inquiry', inquiry_id=inquiry.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="button primary" type="submit">Create Deal</button>
+        </form>
+      {% endif %}
+    </div>
   </article>
   {% endfor %}
 </div>
