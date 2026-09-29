@@ -5,21 +5,7 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 TemplateStatus = Literal["draft", "published"]
-MaintenancePlanKey = Literal["monthly", "yearly"]
 _SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-
-
-@dataclass(frozen=True)
-class MaintenancePlan:
-    key: MaintenancePlanKey
-    label: str
-    amount: int
-    interval: str
-    currency_symbol: str
-
-    @property
-    def price_label(self) -> str:
-        return f"{self.currency_symbol}{self.amount}/{self.interval}"
 
 
 @dataclass(frozen=True)
@@ -42,50 +28,9 @@ class ExistingSystemPricing:
 EXISTING_SYSTEM_PRICING = ExistingSystemPricing()
 
 
-@dataclass(frozen=True)
-class ManagedMaintenancePricing:
-    """Single trusted pricing source for optional managed maintenance."""
-
-    currency_code: str = "USD"
-    currency_symbol: str = "$"
-    monthly_price: int = 39
-    yearly_price: int = 390
-
-    @property
-    def annual_monthly_total(self) -> int:
-        return self.monthly_price * 12
-
-    @property
-    def annual_savings(self) -> int:
-        return self.annual_monthly_total - self.yearly_price
-
-    @property
-    def monthly(self) -> MaintenancePlan:
-        return MaintenancePlan("monthly", "Monthly", self.monthly_price, "month", self.currency_symbol)
-
-    @property
-    def yearly(self) -> MaintenancePlan:
-        return MaintenancePlan("yearly", "Yearly", self.yearly_price, "year", self.currency_symbol)
-
-    def get_plan(self, key: str) -> MaintenancePlan | None:
-        normalized = (key or "").strip().lower()
-        if normalized == "monthly":
-            return self.monthly
-        if normalized == "yearly":
-            return self.yearly
-        return None
-
-
-MANAGED_MAINTENANCE_PRICING = ManagedMaintenancePricing()
 _MANAGED_SERVICE_ACTION_PREFIX = "Managed by Realty Systems Foundry — "
 _LEGACY_KEY_CASTRO_MANAGED_PREFIX = "Managed by KEY CASTRO — "
 _LEGACY_SUBSCRIPTION_ACTION_PREFIX = "System Subscription — "
-
-
-def managed_service_action_for_plan(plan: MaintenancePlan | None) -> str:
-    if plan is None:
-        return "Managed by Realty Systems Foundry"
-    return f"{_MANAGED_SERVICE_ACTION_PREFIX}{plan.label} · {plan.price_label}"
 
 
 def split_managed_service_action(value: str) -> tuple[str, str]:
@@ -108,13 +53,7 @@ def split_managed_service_action(value: str) -> tuple[str, str]:
     return action, ""
 
 
-# Backward-compatible names for old internal imports or local tools. Public code
-# uses the managed-maintenance terminology above.
-SubscriptionPlanKey = MaintenancePlanKey
-SubscriptionPlan = MaintenancePlan
-ManagedSubscriptionPricing = ManagedMaintenancePricing
-MANAGED_SUBSCRIPTION_PRICING = MANAGED_MAINTENANCE_PRICING
-subscription_action_for_plan = managed_service_action_for_plan
+# Backward-compatible parser alias for historical stored inquiry labels.
 split_subscription_action = split_managed_service_action
 
 
