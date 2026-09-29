@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="inbound-record-detail-page">
+  <div class="page-head workspace-page-head inbound-record-detail-head">
+    <div>
+      <a class="inbound-records-back" href="{{ url_for('main.inquiry_records') }}">← Inbound Records</a>
+      <h1>{{ inquiry.name }}</h1>
+      <p>Complete Website Inquiry record.</p>
+    </div>
+  </div>
+
+  <div class="inbound-record-detail-summary">
+    <div>
+      <span>Received</span>
+      <strong>{{ inquiry.created_at|dt }}</strong>
+    </div>
+    <div>
+      <span>Workflow Status</span>
+      <strong>{{ inquiry_workflow_status_labels.get(inquiry.workflow_status, inquiry.workflow_status) }}</strong>
+    </div>
+    <div>
+      <span>Routing Status</span>
+      <strong>{{ inquiry.status|replace('_',' ')|title }}</strong>
+    </div>
+    <div>
+      <span>Linked Deal</span>
+      {% if linked_deal %}
+        <a href="{{ url_for('main.deals') }}#deal-{{ linked_deal.id }}">View Deal</a>
+      {% else %}
+        <strong>—</strong>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="inbound-record-detail-grid">
+    <section class="workspace-section inbound-record-detail-section">
+      <div class="section-head"><div><h2>Client</h2></div></div>
+      <dl class="inbound-record-detail-list">
+        <div><dt>Client Name</dt><dd>{{ inquiry.name }}</dd></div>
+        <div><dt>Company</dt><dd>{{ inquiry.company or '—' }}</dd></div>
+        <div><dt>Email</dt><dd>{{ inquiry.email }}</dd></div>
+        <div><dt>Phone</dt><dd>{{ inquiry.phone or '—' }}</dd></div>
+        <div><dt>Claimed By</dt><dd>{{ claimed_by_name or '—' }}</dd></div>
+      </dl>
+    </section>
+
+    <section class="workspace-section inbound-record-detail-section">
+      <div class="section-head"><div><h2>Request / Source</h2></div></div>
+      <dl class="inbound-record-detail-list">
+        <div><dt>Request</dt><dd>{{ inquiry.source_action or inquiry.source_title or '—' }}</dd></div>
+        <div><dt>Source Type</dt><dd>{{ inquiry.source_type or '—' }}</dd></div>
+        <div><dt>Source Slug</dt><dd>{{ inquiry.source_slug or '—' }}</dd></div>
+        <div><dt>Routing Status</dt><dd>{{ inquiry.status|replace('_',' ')|title }}</dd></div>
+      </dl>
+    </section>
+  </div>
+
+  <section class="workspace-section inbound-record-detail-section inbound-record-detail-wide">
+    <div class="section-head"><div><h2>Message</h2></div></div>
+    <div class="inbound-record-detail-text">{{ inquiry.message or '—' }}</div>
+  </section>
+
+  <section class="workspace-section inbound-record-detail-section inbound-record-detail-wide">
+    <div class="section-head"><div><h2>Notes After Conversation</h2></div></div>
+    <div class="inbound-record-detail-text">{{ inquiry.notes_after_conversation or '—' }}</div>
+  </section>
+</section>
+{% endblock %}
