@@ -2028,16 +2028,16 @@ def deal_update(deal_id: int):
                 deal_id,
             ),
         )
+    db.execute(
+        "UPDATE deals SET contact_person=?,location=?,email=?,updated_at=? WHERE id=?",
+        (contact_person, location, email, now, deal_id),
+    )
     if deal["prospect_id"] is not None:
         db.execute(
             "UPDATE prospects SET status=?,contact=?,location=?,email=?,notes_after_conversation=?,updated_at=? WHERE id=?",
             (status, contact_person, location, email, notes_after_conversation, now, deal["prospect_id"]),
         )
-    elif deal["website_inquiry_id"] is not None:
-        db.execute(
-            "UPDATE deals SET contact_person=?,location=?,email=?,updated_at=? WHERE id=?",
-            (contact_person, location, email, now, deal_id),
-        )
+    if deal["website_inquiry_id"] is not None:
         db.execute(
             "UPDATE website_inquiries SET workflow_status=?,notes_after_conversation=?,updated_at=? WHERE id=?",
             (status, notes_after_conversation, now, deal["website_inquiry_id"]),
