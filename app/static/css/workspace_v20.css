@@ -3878,3 +3878,364 @@ textarea.prospect-inline-editor{resize:vertical}
   width:16px;
   height:16px;
 }
+
+
+/* v1.18.87 — unified RSF Records / master client lifecycle workspace */
+.records-head{
+  margin-bottom:12px;
+}
+.records-tools-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:-2px 0 10px;
+}
+.records-source-filters{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.records-source-button{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:32px;
+  padding:6px 10px;
+  border:1px solid #d7e1dd;
+  border-radius:9px;
+  background:#fff;
+  color:var(--ux-section-ink);
+  font:inherit;
+  font-size:10.5px;
+  font-weight:800;
+  cursor:pointer;
+}
+.records-source-button span{
+  color:var(--ux-section-muted);
+  font-size:9.5px;
+}
+.records-source-button.is-active{
+  border-color:#0b5b4c;
+  background:#0b5b4c;
+  color:#fff;
+}
+.records-source-button.is-active span{
+  color:rgba(255,255,255,.78);
+}
+.records-search{
+  display:flex;
+  align-items:center;
+  width:min(280px,100%);
+  min-height:34px;
+  padding:0 10px;
+  border:1px solid #d7e1dd;
+  border-radius:9px;
+  background:#fff;
+}
+.records-search svg{
+  flex:0 0 auto;
+  width:14px;
+  height:14px;
+  margin-right:7px;
+  fill:none;
+  stroke:#6f7f79;
+  stroke-width:1.8;
+  stroke-linecap:round;
+}
+.records-search input{
+  width:100%;
+  min-width:0;
+  padding:0;
+  border:0;
+  outline:0;
+  background:transparent;
+  color:var(--ux-section-ink);
+  font:inherit;
+  font-size:11.5px;
+}
+.records-search input::placeholder{
+  color:#8a9792;
+}
+.records-table{
+  min-width:960px;
+  table-layout:fixed;
+}
+.records-table th,
+.records-table td{
+  padding:11px 12px;
+  vertical-align:middle;
+}
+.records-first-seen-col{width:145px}
+.records-client-col{width:300px}
+.records-origin-col{width:155px}
+.records-status-col{width:150px}
+.records-journey-col{width:220px}
+.records-record-col{width:110px}
+.records-origin-badges{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  flex-wrap:wrap;
+}
+.records-origin-badge,
+.record-source-type{
+  display:inline-flex;
+  align-items:center;
+  min-height:22px;
+  padding:3px 7px;
+  border:1px solid #dbe4e0;
+  border-radius:999px;
+  background:#f7faf8;
+  color:#496058;
+  font-size:8.5px;
+  font-weight:850;
+  letter-spacing:.045em;
+  text-transform:uppercase;
+}
+.records-journey{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  flex-wrap:wrap;
+  color:var(--ux-section-ink);
+  font-size:10.5px;
+  font-weight:800;
+}
+.records-journey-arrow{
+  color:#9aa6a1;
+}
+.records-deal-link{
+  display:inline-block;
+  margin-top:4px;
+  color:var(--workspace-emerald);
+  font-size:9.5px;
+  font-weight:800;
+  text-decoration:none;
+}
+.records-deal-link:hover{text-decoration:underline}
+
+.record-detail-page{
+  max-width:1120px;
+}
+.record-detail-head{
+  margin-bottom:14px;
+}
+.record-detail-summary{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  margin-bottom:16px;
+}
+.record-detail-summary>div{
+  min-width:0;
+  padding:12px 14px;
+  border:1px solid #dbe4e0;
+  border-radius:10px;
+  background:#fbfdfc;
+}
+.record-detail-summary span{
+  display:block;
+  margin-bottom:5px;
+  color:var(--ux-section-muted);
+  font-size:8.5px;
+  font-weight:850;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.record-detail-summary strong{
+  color:var(--ux-section-ink);
+  font-size:12px;
+  font-weight:800;
+}
+.record-detail-section{
+  min-width:0;
+}
+.record-detail-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:0 24px;
+  margin:0;
+}
+.record-detail-list>div{
+  display:grid;
+  grid-template-columns:120px minmax(0,1fr);
+  gap:12px;
+  padding:9px 0;
+  border-bottom:1px solid #edf2ef;
+}
+.record-detail-list dt{
+  color:var(--ux-section-muted);
+  font-size:8.5px;
+  font-weight:850;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+}
+.record-detail-list dd{
+  min-width:0;
+  margin:0;
+  color:var(--ux-section-ink);
+  overflow-wrap:anywhere;
+  white-space:pre-wrap;
+}
+.record-detail-list .record-detail-long{
+  grid-column:1/-1;
+}
+.record-detail-list-compact{
+  grid-template-columns:1fr;
+}
+.record-source-grid,
+.record-deal-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.record-source-card,
+.record-deal-card{
+  min-width:0;
+  padding:14px;
+  border:1px solid #dbe4e0;
+  border-radius:12px;
+  background:#fff;
+  box-shadow:0 4px 14px rgba(25,55,46,.035);
+}
+.record-source-card>header,
+.record-deal-card>header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:8px;
+}
+.record-source-card h3,
+.record-deal-card h3{
+  margin:6px 0 0;
+  color:var(--ux-section-ink);
+  font-size:13px;
+}
+.record-source-card>header>a,
+.record-deal-card>header>a{
+  flex:0 0 auto;
+  color:var(--workspace-emerald);
+  font-size:10px;
+  font-weight:800;
+  text-decoration:none;
+}
+.record-source-card>header>a:hover,
+.record-deal-card>header>a:hover{text-decoration:underline}
+.record-timeline{
+  position:relative;
+  display:grid;
+  gap:0;
+}
+.record-timeline-item{
+  position:relative;
+  display:grid;
+  grid-template-columns:16px minmax(0,1fr);
+  gap:10px;
+  min-width:0;
+}
+.record-timeline-item:not(:last-child)::before{
+  content:"";
+  position:absolute;
+  left:5px;
+  top:13px;
+  bottom:-3px;
+  width:1px;
+  background:#dbe4e0;
+}
+.record-timeline-marker{
+  position:relative;
+  z-index:1;
+  width:11px;
+  height:11px;
+  margin-top:4px;
+  border:2px solid #0b5b4c;
+  border-radius:50%;
+  background:#fff;
+}
+.record-timeline-body{
+  min-width:0;
+  padding:0 0 14px;
+}
+.record-timeline-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+.record-timeline-top strong{
+  color:var(--ux-section-ink);
+  font-size:11.5px;
+}
+.record-timeline-top time{
+  flex:0 0 auto;
+  color:var(--ux-section-muted);
+  font-size:9.5px;
+}
+.record-timeline-body>span{
+  display:block;
+  margin-top:3px;
+  color:var(--ux-section-muted);
+  font-size:10.5px;
+  line-height:1.45;
+}
+.record-documents{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid #edf2ef;
+}
+.record-documents>strong{
+  color:var(--ux-section-muted);
+  font-size:9px;
+  text-transform:uppercase;
+}
+.record-documents>a{
+  color:var(--workspace-emerald);
+  font-size:10px;
+  font-weight:800;
+  text-decoration:none;
+}
+.record-documents>a:hover{text-decoration:underline}
+.record-documents>span{
+  color:var(--ux-section-muted);
+  font-size:10px;
+}
+@media(max-width:900px){
+  .records-tools-row{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .records-search{
+    width:100%;
+  }
+  .record-detail-summary{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .record-source-grid,
+  .record-deal-list{
+    grid-template-columns:1fr;
+  }
+}
+@media(max-width:650px){
+  .record-detail-summary,
+  .record-detail-list{
+    grid-template-columns:1fr;
+  }
+  .record-detail-list>div{
+    grid-template-columns:1fr;
+    gap:4px;
+  }
+  .record-timeline-top{
+    display:block;
+  }
+  .record-timeline-top time{
+    display:block;
+    margin-top:2px;
+  }
+}
