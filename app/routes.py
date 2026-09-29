@@ -420,7 +420,6 @@ def _ensure_deal_for_prospect(db, prospect_id: int, created_by_user_id: int, now
     )
     return deal_id, True
 
-
 def _ensure_deal_for_website_inquiry(db, inquiry_id: int, created_by_user_id: int, now: str) -> tuple[int, bool]:
     existing = db.execute("SELECT id FROM deals WHERE website_inquiry_id=? LIMIT 1", (inquiry_id,)).fetchone()
     if existing:
@@ -516,6 +515,658 @@ def _ensure_deal_for_website_inquiry(db, inquiry_id: int, created_by_user_id: in
     )
     return deal_id, True
 
+
+
+def _clean_account_name(value: str) -> str:
+    return (value or "").strip()[:160]
+
+
+def _account_name_in_use(db, name: str, exclude_user_id: int | None = None) -> bool:
+    sql = "SELECT id FROM users WHERE active=1 AND lower(trim(full_name))=lower(trim(?))"
+    params: list[object] = [name]
+    if exclude_user_id is not None:
+        sql += " AND id<>?"
+        params.append(exclude_user_id)
+    return db.execute(sql + " LIMIT 1", params).fetchone() is not None
+
+
+def _new_internal_account_email(db) -> str:
+    # Legacy database compatibility only. Workspace users never see or use this value.
+    for _ in range(5):
+        value = f"workspace-{uuid4().hex}@internal.invalid"
+        if not db.execute("SELECT 1 FROM users WHERE lower(email)=lower(?) LIMIT 1", (value,)).fetchone():
+            return value
+    raise RuntimeError("Could not create an internal account key.")
+
+
+
+
+def authorized_conversation_partner(partner_id: int):
+    db = get_db()
+    partner = db.execute(
+        """SELECT p.*, COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') full_name,
+                  u.role AS user_role,u.avatar_stored_name,u.active AS user_active
+           FROM partners p LEFT JOIN users u ON u.id=p.user_id WHERE p.id=?""",
+        (partner_id,),
+    ).fetchone()
+    if not partner:
+        abort(404)
+    if g.user["role"] == "partner":
+        if not g.partner or g.partner["id"] != partner_id or partner["account_deleted_at"] or not partner["user_id"]:
+            # Hide other or deleted Partner threads from Partners.
+            abort(404)
+    return partner
+
+
+def message_unread_count() -> int:
+    if not g.user:
+        return 0
+    db = get_db()
+    if g.user["role"] == "admin":
+        return db.execute(
+            """SELECT COUNT(*) c FROM messages m
+               JOIN partners p ON p.id=m.partner_id
+               WHERE m.sender_user_id=p.user_id AND m.founder_read_at IS NULL"""
+        ).fetchone()["c"]
+    return db.execute(
+        """SELECT COUNT(*) c FROM messages
+           WHERE partner_id=? AND sender_user_id<>? AND partner_read_at IS NULL""",
+        (g.partner["id"], g.user["id"]),
+    ).fetchone()["c"]
+
+
+def client_unread_count() -> int:
+    if not g.user:
+        return 0
+    return get_db().execute(
+        "SELECT COUNT(*) c FROM client_notifications WHERE user_id=? AND read_at IS NULL",
+        (g.user["id"],),
+    ).fetchone()["c"]
+
+
+def mark_client_notifications_read(*, entity_type: str | None = None, entity_id: int | None = None) -> None:
+    if not g.user:
+        return
+    db = get_db()
+    now = utcnow_iso()
+    if entity_type and entity_id is not None:
+        db.execute(
+            """UPDATE client_notifications SET read_at=COALESCE(read_at,?)
+               WHERE user_id=? AND entity_type=? AND entity_id=?""",
+            (now, g.user["id"], entity_type, entity_id),
+        )
+    else:
+        db.execute(
+            "UPDATE client_notifications SET read_at=COALESCE(read_at,?) WHERE user_id=?",
+            (now, g.user["id"]),
+        )
+    db.commit()
+
+
+def client_overdue_count() -> int:
+    if not g.user:
+        return 0
+    db = get_db()
+    params: list = [utcnow_iso()]
+    sql = """SELECT COUNT(*) c FROM client_conversations c
+             WHERE c.status='ACTIVE' AND c.owner_partner_id IS NOT NULL
+               AND c.first_responded_at IS NULL AND c.first_response_due_at IS NOT NULL
+               AND c.first_response_due_at < ?"""
+    if g.user["role"] == "partner":
+        sql += " AND c.owner_partner_id=?"
+        params.append(g.partner["id"])
+    return db.execute(sql, params).fetchone()["c"]
+
+
+def mark_conversation_read(partner) -> None:
+    db = get_db()
+    now = utcnow_iso()
+    if g.user["role"] == "admin":
+        if partner["user_id"]:
+            db.execute(
+                """UPDATE messages SET founder_read_at=COALESCE(founder_read_at, ?)
+                   WHERE partner_id=? AND sender_user_id=? AND founder_read_at IS NULL""",
+                (now, partner["id"], partner["user_id"]),
+            )
+    else:
+        db.execute(
+            """UPDATE messages SET partner_read_at=COALESCE(partner_read_at, ?)
+               WHERE partner_id=? AND sender_user_id<>? AND partner_read_at IS NULL""",
+            (now, partner["id"], g.user["id"]),
+        )
+
+
+MESSAGE_MAX_ATTACHMENTS = 5
+MESSAGE_MAX_FILE_BYTES = 15 * 1024 * 1024
+MESSAGE_MAX_TOTAL_BYTES = 25 * 1024 * 1024
+MESSAGE_FILE_TYPES = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".webp": "image/webp",
+    ".pdf": "application/pdf",
+    ".doc": "application/msword",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".xls": "application/vnd.ms-excel",
+    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".ppt": "application/vnd.ms-powerpoint",
+    ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    ".csv": "text/csv",
+    ".txt": "text/plain",
+    ".rtf": "application/rtf",
+}
+
+
+def _message_upload_dir() -> Path:
+    path = Path(current_app.config["MESSAGE_UPLOAD_DIR"])
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+PROFILE_PICTURE_MAX_BYTES = 8 * 1024 * 1024
+PROFILE_PICTURE_TYPES = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+}
+
+
+def _profile_picture_dir() -> Path:
+    path = Path(current_app.config["PROFILE_PICTURE_DIR"])
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _detect_profile_picture_type(header: bytes) -> tuple[str, str] | None:
+    if header.startswith(b"\x89PNG\r\n\x1a\n"):
+        return ".png", "image/png"
+    if header.startswith(b"\xff\xd8\xff"):
+        return ".jpg", "image/jpeg"
+    if len(header) >= 12 and header[:4] == b"RIFF" and header[8:12] == b"WEBP":
+        return ".webp", "image/webp"
+    return None
+
+
+def _profile_picture_info(storage) -> dict:
+    if storage is None:
+        raise ValueError("Choose an image first.")
+    original = secure_filename(storage.filename or "")
+    if not original:
+        raise ValueError("Choose an image first.")
+    suffix = Path(original).suffix.lower()
+    if suffix not in PROFILE_PICTURE_TYPES:
+        raise ValueError("Use a JPG, PNG, or WEBP image.")
+    try:
+        storage.stream.seek(0, 2)
+        size = int(storage.stream.tell())
+        storage.stream.seek(0)
+        header = storage.stream.read(32)
+        storage.stream.seek(0)
+    except (AttributeError, OSError, ValueError):
+        size = int(storage.content_length or 0)
+        header = b""
+    if size <= 0:
+        raise ValueError("That image is empty.")
+    if size > PROFILE_PICTURE_MAX_BYTES:
+        raise ValueError("Profile pictures must be 8 MB or smaller.")
+    detected = _detect_profile_picture_type(header)
+    if not detected:
+        raise ValueError("That file is not a valid JPG, PNG, or WEBP image.")
+    actual_suffix, mime_type = detected
+    expected_mime = PROFILE_PICTURE_TYPES[suffix]
+    if expected_mime != mime_type and not (suffix == ".jpeg" and mime_type == "image/jpeg"):
+        raise ValueError("The image file type does not match its extension.")
+    return {
+        "storage": storage,
+        "mime_type": mime_type,
+        "stored_name": f"{uuid4().hex}{actual_suffix}",
+        "size_bytes": size,
+    }
+
+
+def _can_view_profile_picture(target_user) -> bool:
+    if not g.user:
+        return False
+    if int(target_user["id"]) == int(g.user["id"]):
+        return True
+    if g.user["role"] == "admin":
+        return True
+    return target_user["role"] == "admin"
+
+
+def _message_file_info(storage) -> dict:
+    original = secure_filename(storage.filename or "")
+    if not original:
+        raise ValueError("Choose a file first.")
+    suffix = Path(original).suffix.lower()
+    mime = MESSAGE_FILE_TYPES.get(suffix)
+    if not mime:
+        raise ValueError("That file type is not supported.")
+    try:
+        storage.stream.seek(0, 2)
+        size = int(storage.stream.tell())
+        storage.stream.seek(0)
+        header = storage.stream.read(4096)
+        storage.stream.seek(0)
+    except (AttributeError, OSError, ValueError):
+        size = int(storage.content_length or 0)
+        header = b""
+    if size <= 0:
+        raise ValueError("That file is empty.")
+    if size > MESSAGE_MAX_FILE_BYTES:
+        raise ValueError("Each file must be 15 MB or smaller.")
+    if not file_signature_matches(suffix, header):
+        raise ValueError("The file content does not match its file type.")
+    return {
+        "storage": storage,
+        "original_name": original[:180],
+        "suffix": suffix,
+        "mime_type": mime,
+        "size_bytes": size,
+        "stored_name": f"{uuid4().hex}{suffix}",
+    }
+
+
+def _attachment_payload(row, partner_id: int) -> dict:
+    base = url_for("main.message_attachment", partner_id=partner_id, attachment_id=row["id"])
+    return {
+        "id": row["id"],
+        "name": row["original_name"],
+        "mime_type": row["mime_type"],
+        "size_bytes": row["size_bytes"],
+        "is_image": str(row["mime_type"]).startswith("image/"),
+        "url": base,
+        "download_url": f"{base}?download=1",
+    }
+
+
+def _attachments_for_messages(db, partner_id: int, message_ids) -> dict[int, list[dict]]:
+    ids = [int(value) for value in message_ids if value]
+    if not ids:
+        return {}
+    placeholders = ",".join("?" for _ in ids)
+    rows = db.execute(
+        f"""SELECT * FROM message_attachments
+             WHERE partner_id=? AND message_id IN ({placeholders})
+             ORDER BY message_id,id""",
+        [partner_id, *ids],
+    ).fetchall()
+    result: dict[int, list[dict]] = {}
+    for row in rows:
+        result.setdefault(row["message_id"], []).append(_attachment_payload(row, partner_id))
+    return result
+
+
+def _founder_conversations(db, query: str = "") -> list[dict]:
+    params = []
+    where = ""
+    name_expr = "COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner')"
+    if query:
+        escaped = query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        pattern = f"%{escaped}%"
+        where = f" WHERE {name_expr} LIKE ? ESCAPE '\\'"
+        params.append(pattern)
+    rows = db.execute(
+        "SELECT * FROM (" +
+        f"""SELECT p.id,p.user_id,p.active,p.account_deleted_at,{name_expr} full_name,
+                  u.role,u.avatar_stored_name,u.active AS user_active,
+                  (SELECT m.id FROM messages m WHERE m.partner_id=p.id ORDER BY m.id DESC LIMIT 1) AS last_message_id,
+                  (SELECT m.body FROM messages m WHERE m.partner_id=p.id ORDER BY m.id DESC LIMIT 1) AS last_message,
+                  (SELECT m.created_at FROM messages m WHERE m.partner_id=p.id ORDER BY m.id DESC LIMIT 1) AS last_message_at,
+                  (SELECT COUNT(*) FROM messages m
+                     WHERE m.partner_id=p.id AND p.user_id IS NOT NULL AND m.sender_user_id=p.user_id AND m.founder_read_at IS NULL) AS unread_count
+           FROM partners p LEFT JOIN users u ON u.id=p.user_id""" + where +
+        ") conversation_rows ORDER BY CASE WHEN unread_count>0 THEN 0 ELSE 1 END, CASE WHEN last_message_at IS NULL THEN 1 ELSE 0 END, last_message_at DESC, full_name",
+        params,
+    ).fetchall()
+    conversations = []
+    for row in rows:
+        item = dict(row)
+        preview = (item.get("last_message") or "").strip()
+        if not preview and item.get("last_message_id"):
+            attachment = db.execute(
+                "SELECT original_name,mime_type FROM message_attachments WHERE message_id=? ORDER BY id LIMIT 1",
+                (item["last_message_id"],),
+            ).fetchone()
+            if attachment:
+                preview = "Photo" if str(attachment["mime_type"]).startswith("image/") else attachment["original_name"]
+        item["preview"] = preview or "No messages yet"
+        conversations.append(item)
+    return conversations
+
+
+def _latest_outgoing_status(db, partner_id: int) -> dict | None:
+    row = db.execute(
+        """SELECT id,partner_read_at FROM messages
+           WHERE partner_id=? AND sender_user_id=?
+           ORDER BY id DESC LIMIT 1""",
+        (partner_id, g.user["id"]),
+    ).fetchone()
+    if not row:
+        return None
+    if g.user["role"] == "admin":
+        return {"message_id": row["id"], "status": "Seen" if row["partner_read_at"] else "Sent"}
+    # Partners never receive or infer Founder's read state. Their own status is only Sent.
+    return {"message_id": row["id"], "status": "Sent"}
+
+
+def _call_duration_label(call) -> str:
+    if not call["answered_at"] or not call["ended_at"]:
+        return ""
+    try:
+        started = datetime.fromisoformat(call["answered_at"])
+        ended = datetime.fromisoformat(call["ended_at"])
+        seconds = max(0, int((ended - started).total_seconds()))
+    except (TypeError, ValueError):
+        return ""
+    if seconds < 60:
+        return "<1 min"
+    minutes = max(1, seconds // 60)
+    if minutes < 60:
+        return f"{minutes} min"
+    hours, remaining = divmod(minutes, 60)
+    return f"{hours} hr" if remaining == 0 else f"{hours} hr {remaining} min"
+
+
+def call_event_text(call) -> str:
+    if call["status"] == "DECLINED":
+        return "Call declined"
+    if call["status"] == "MISSED":
+        return "Missed call"
+    reason = call["end_reason"] if "end_reason" in call.keys() else None
+    if reason == "cancelled":
+        return "Call cancelled"
+    if reason == "failed":
+        return "Call could not connect"
+    if call["answered_at"]:
+        duration = _call_duration_label(call)
+        return f"Voice call · {duration}" if duration else "Voice call"
+    return "Call ended"
+
+
+def _call_event_payload(call) -> dict:
+    return {
+        "id": call["id"],
+        "text": call_event_text(call),
+        "created_at": call["ended_at"] or call["started_at"],
+    }
+
+
+def _peer_profile_picture_url(partner) -> str:
+    db = get_db()
+    if g.user["role"] == "admin":
+        if partner["avatar_stored_name"]:
+            return url_for("main.profile_picture", user_id=partner["user_id"])
+        return ""
+    founder = db.execute(
+        "SELECT id,avatar_stored_name FROM users WHERE role='admin' ORDER BY id LIMIT 1"
+    ).fetchone()
+    if founder and founder["avatar_stored_name"]:
+        return url_for("main.profile_picture", user_id=founder["id"])
+    return url_for("static", filename="images/about/key-castro.png")
+
+
+def _call_payload(call, partner) -> dict:
+    partner_id = int(call["partner_id"])
+    base = url_for("main.messages_thread", partner_id=partner_id).rstrip("/") + "/calls/" + str(call["id"])
+    peer_name = partner["full_name"] if g.user["role"] == "admin" else "Founder"
+    return {
+        "id": call["id"],
+        "partner_id": partner_id,
+        "name": peer_name,
+        "avatar_url": _peer_profile_picture_url(partner),
+        "status": call["status"],
+        "started_by_me": call["started_by_user_id"] == g.user["id"],
+        "started_at": call["started_at"],
+        "answered_at": call["answered_at"],
+        "ended_at": call["ended_at"],
+        "end_reason": call["end_reason"] if "end_reason" in call.keys() else None,
+        "updates_url": f"{base}/updates",
+        "accept_url": f"{base}/accept",
+        "decline_url": f"{base}/decline",
+        "end_url": f"{base}/end",
+        "signal_url": f"{base}/signal",
+    }
+
+
+def expire_stale_voice_calls() -> None:
+    db = get_db()
+    now = datetime.now(timezone.utc).replace(microsecond=0)
+    ringing_before = (now - timedelta(seconds=60)).isoformat()
+    active_before = (now - timedelta(minutes=5)).isoformat()
+    active_grace = (now - timedelta(seconds=20)).isoformat()
+    stale = db.execute(
+        """SELECT * FROM voice_calls
+           WHERE (status='RINGING' AND started_at<?)
+              OR (status='ACTIVE' AND COALESCE(answered_at,started_at)<?
+                  AND (COALESCE(caller_seen_at,started_at)<?
+                       OR COALESCE(receiver_seen_at,answered_at,started_at)<?))""",
+        (ringing_before, active_grace, active_before, active_before),
+    ).fetchall()
+    if not stale:
+        return
+    now_iso = now.isoformat()
+    ids = []
+    for call in stale:
+        ids.append(call["id"])
+        if call["status"] == "RINGING":
+            db.execute(
+                "UPDATE voice_calls SET status='MISSED',end_reason='missed',ended_at=? WHERE id=?",
+                (now_iso, call["id"]),
+            )
+        else:
+            db.execute(
+                "UPDATE voice_calls SET status='ENDED',end_reason='connection_lost',ended_at=? WHERE id=?",
+                (now_iso, call["id"]),
+            )
+    placeholders = ",".join("?" for _ in ids)
+    db.execute(f"DELETE FROM voice_call_signals WHERE call_id IN ({placeholders})", ids)
+    db.commit()
+
+
+def authorized_call(partner_id: int, call_id: int):
+    authorized_conversation_partner(partner_id)
+    call = get_db().execute(
+        "SELECT * FROM voice_calls WHERE id=? AND partner_id=?",
+        (call_id, partner_id),
+    ).fetchone()
+    if not call:
+        abort(404)
+    return call
+
+
+def authorized_lead(lead_id: int):
+    db = get_db()
+    if g.user["role"] == "admin":
+        row = db.execute(
+            """SELECT l.*,COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') AS owner_name FROM leads l
+               JOIN partners p ON p.id=l.owner_partner_id LEFT JOIN users u ON u.id=p.user_id
+               WHERE l.id=?""", (lead_id,)
+        ).fetchone()
+    else:
+        row = db.execute(
+            """SELECT l.*,COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') AS owner_name FROM leads l
+               JOIN partners p ON p.id=l.owner_partner_id LEFT JOIN users u ON u.id=p.user_id
+               WHERE l.id=? AND l.owner_partner_id=?""", (lead_id, g.partner["id"])
+        ).fetchone()
+    if not row:
+        abort(404)
+    return row
+
+
+def authorized_followup(item_id: int):
+    db = get_db()
+    if g.user["role"] == "admin":
+        row = db.execute("SELECT * FROM followups WHERE id=?", (item_id,)).fetchone()
+    else:
+        row = db.execute(
+            """SELECT f.* FROM followups f JOIN leads l ON l.id=f.lead_id
+               WHERE f.id=? AND l.owner_partner_id=? AND f.owner_partner_id=?""",
+            (item_id, g.partner["id"], g.partner["id"]),
+        ).fetchone()
+    if not row:
+        abort(404)
+    return row
+
+
+def authorized_sale(sale_id: int):
+    db = get_db()
+    sql = """SELECT s.*, l.company_name, l.contact_name,
+                    COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') AS partner_name
+             FROM sales s JOIN leads l ON l.id=s.lead_id
+             JOIN partners p ON p.id=s.partner_id LEFT JOIN users u ON u.id=p.user_id WHERE s.id=?"""
+    params = [sale_id]
+    if g.user["role"] == "partner":
+        sql += " AND s.partner_id=?"
+        params.append(g.partner["id"])
+    row = db.execute(sql, params).fetchone()
+    if not row:
+        abort(404)
+    return row
+
+
+def authorized_commission(commission_id: int):
+    db = get_db()
+    sql = """SELECT c.*, s.product_service, s.client_name, s.sale_date
+             FROM commissions c JOIN sales s ON s.id=c.sale_id WHERE c.id=?"""
+    params = [commission_id]
+    if g.user["role"] == "partner":
+        sql += " AND c.partner_id=?"
+        params.append(g.partner["id"])
+    row = db.execute(sql, params).fetchone()
+    if not row:
+        abort(404)
+    return row
+
+
+@bp.route("/login", methods=["GET", "POST"])
+def login():
+    if g.user:
+        return redirect(url_for("main.dashboard"))
+    if request.method == "POST":
+        validate_csrf()
+        user, error = authenticate(request.form.get("name", ""), request.form.get("password", ""))
+        if error:
+            flash(error, "error")
+        else:
+            # Authentication has already verified the exact submitted password.
+            # Keep the Founder-visible credential vault synchronized without
+            # weakening normal Werkzeug password-hash authentication.
+            db = get_db()
+            vault_store_password(db, int(user["id"]), request.form.get("password", "") or "")
+            db.commit()
+            login_user(user)
+            return redirect(safe_next(request.args.get("next")) or url_for("main.dashboard"))
+    return render_template("login.html", title="Log In")
+
+
+@bp.post("/logout")
+@login_required
+def logout():
+    validate_csrf()
+    session.clear()
+    return redirect(url_for("main.login"))
+
+
+@bp.route("/")
+@login_required
+def dashboard():
+    db = get_db()
+    today = today_str()
+    if g.user["role"] == "admin":
+        sales_count = db.execute("SELECT COUNT(*) c FROM sales").fetchone()["c"]
+        commissions_count = db.execute("SELECT COUNT(*) c FROM commissions").fetchone()["c"]
+        leads_count = db.execute("SELECT COUNT(*) c FROM leads").fetchone()["c"]
+        followups_count = db.execute("SELECT COUNT(*) c FROM followups").fetchone()["c"]
+        metrics = {
+            "unclaimed": db.execute("SELECT COUNT(*) c FROM website_inquiries WHERE status='UNCLAIMED'").fetchone()["c"],
+            "leads": leads_count,
+            "new": db.execute("SELECT COUNT(*) c FROM leads WHERE status='NEW'").fetchone()["c"],
+            "contacted": db.execute("SELECT COUNT(*) c FROM leads WHERE status='CONTACTED'").fetchone()["c"],
+            "qualified": db.execute("SELECT COUNT(*) c FROM leads WHERE status='QUALIFIED'").fetchone()["c"],
+            "demos": db.execute("SELECT COUNT(*) c FROM leads WHERE status='DEMO_BOOKED'").fetchone()["c"],
+            "proposal": db.execute("SELECT COUNT(*) c FROM leads WHERE status='PROPOSAL'").fetchone()["c"],
+            "won": db.execute("SELECT COUNT(*) c FROM leads WHERE status='WON'").fetchone()["c"],
+            "lost": db.execute("SELECT COUNT(*) c FROM leads WHERE status='LOST'").fetchone()["c"],
+            "collected": db.execute("SELECT COALESCE(SUM(collected_cents),0) c FROM sales").fetchone()["c"],
+            "pending_commission": db.execute("""SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c FROM commissions c WHERE c.status='PENDING'""").fetchone()["c"],
+            "approved_commission": db.execute("""SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c FROM commissions c WHERE c.status='APPROVED'""").fetchone()["c"],
+            "paid_commission": db.execute("""SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c FROM commissions c WHERE c.status='PAID'""").fetchone()["c"],
+            "overdue": db.execute("""SELECT COUNT(*) c FROM followups f JOIN leads l ON l.id=f.lead_id
+                                      WHERE f.status='OPEN' AND f.owner_partner_id=l.owner_partner_id AND substr(f.due_at,1,10) < ?""", (today,)).fetchone()["c"],
+            "due_today": db.execute("""SELECT COUNT(*) c FROM followups f JOIN leads l ON l.id=f.lead_id
+                                        WHERE f.status='OPEN' AND f.owner_partner_id=l.owner_partner_id AND substr(f.due_at,1,10)=?""", (today,)).fetchone()["c"],
+            "awaiting_response": db.execute("""SELECT COUNT(*) c FROM client_conversations
+                                                WHERE status='ACTIVE' AND last_client_message_at IS NOT NULL
+                                                  AND (last_outbound_message_at IS NULL OR last_client_message_at > last_outbound_message_at)""").fetchone()["c"],
+            "duplicate_claims": db.execute("SELECT COUNT(*) c FROM duplicate_claims WHERE status='OPEN'").fetchone()["c"],
+            "has_lead_data": leads_count > 0,
+            "has_sales_data": sales_count > 0,
+            "has_commission_data": commissions_count > 0,
+            "has_followup_data": followups_count > 0,
+        }
+        attention = db.execute(
+            """SELECT f.*, l.company_name,
+                      COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') AS partner_name FROM followups f
+               JOIN leads l ON l.id=f.lead_id JOIN partners p ON p.id=f.owner_partner_id LEFT JOIN users u ON u.id=p.user_id
+               WHERE f.status='OPEN' AND f.owner_partner_id=l.owner_partner_id
+               ORDER BY CASE WHEN substr(f.due_at,1,10) < ? THEN 0 ELSE 1 END, f.due_at LIMIT 8""", (today,)
+        ).fetchall()
+        partner_workloads = db.execute(
+            """SELECT p.id,u.full_name,
+                      (SELECT COUNT(*) FROM leads l WHERE l.owner_partner_id=p.id AND l.status NOT IN ('WON','LOST')) active_leads,
+                      (SELECT COUNT(*) FROM followups f JOIN leads l ON l.id=f.lead_id
+                       WHERE f.owner_partner_id=p.id AND l.owner_partner_id=p.id AND f.status='OPEN') open_followups,
+                      (SELECT COUNT(*) FROM followups f JOIN leads l ON l.id=f.lead_id
+                       WHERE f.owner_partner_id=p.id AND l.owner_partner_id=p.id AND f.status='OPEN' AND substr(f.due_at,1,10) < ?) overdue_followups,
+                      (SELECT COUNT(*) FROM client_conversations c WHERE c.owner_partner_id=p.id AND c.status='ACTIVE') active_clients
+               FROM partners p JOIN users u ON u.id=p.user_id
+               WHERE p.active=1 AND u.active=1 AND p.account_deleted_at IS NULL
+               ORDER BY overdue_followups DESC, open_followups DESC, active_leads DESC, u.full_name
+               LIMIT 8""", (today,)
+        ).fetchall()
+        return render_template("dashboard_admin.html", title="Home", metrics=metrics, attention=attention, partner_workloads=partner_workloads, today=today)
+
+    pid = g.partner["id"]
+    leads_count = db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=?", (pid,)).fetchone()["c"]
+    sales_count = db.execute("SELECT COUNT(*) c FROM sales WHERE partner_id=?", (pid,)).fetchone()["c"]
+    commissions_count = db.execute("SELECT COUNT(*) c FROM commissions WHERE partner_id=?", (pid,)).fetchone()["c"]
+    followups_count = db.execute("SELECT COUNT(*) c FROM followups WHERE owner_partner_id=?", (pid,)).fetchone()["c"]
+    metrics = {
+        "unclaimed": db.execute("SELECT COUNT(*) c FROM website_inquiries WHERE status='UNCLAIMED'").fetchone()["c"],
+        "awaiting_response": db.execute("""SELECT COUNT(*) c FROM client_conversations
+                                           WHERE owner_partner_id=? AND status='ACTIVE' AND last_client_message_at IS NOT NULL
+                                             AND (last_outbound_message_at IS NULL OR last_client_message_at > last_outbound_message_at)""", (pid,)).fetchone()["c"],
+        "new": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status='NEW'", (pid,)).fetchone()["c"],
+        "contacted": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status='CONTACTED'", (pid,)).fetchone()["c"],
+        "qualified": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status='QUALIFIED'", (pid,)).fetchone()["c"],
+        "proposal": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status='PROPOSAL'", (pid,)).fetchone()["c"],
+        "lost": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status='LOST'", (pid,)).fetchone()["c"],
+        "today": db.execute("""SELECT COUNT(*) c FROM followups f JOIN leads l ON l.id=f.lead_id
+                              WHERE f.owner_partner_id=? AND l.owner_partner_id=? AND f.status='OPEN' AND substr(f.due_at,1,10)=?""", (pid, pid, today)).fetchone()["c"],
+        "overdue": db.execute("""SELECT COUNT(*) c FROM followups f JOIN leads l ON l.id=f.lead_id
+                                WHERE f.owner_partner_id=? AND l.owner_partner_id=? AND f.status='OPEN' AND substr(f.due_at,1,10)<?""", (pid, pid, today)).fetchone()["c"],
+        "demos": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status='DEMO_BOOKED'", (pid,)).fetchone()["c"],
+        "won": sales_count,
+        "pending": db.execute("""SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c FROM commissions c WHERE c.partner_id=? AND c.status='PENDING'""", (pid,)).fetchone()["c"],
+        "approved": db.execute("""SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c FROM commissions c WHERE c.partner_id=? AND c.status='APPROVED'""", (pid,)).fetchone()["c"],
+        "paid": db.execute("""SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c FROM commissions c WHERE c.partner_id=? AND c.status='PAID'""", (pid,)).fetchone()["c"],
+        "has_lead_data": leads_count > 0,
+        "has_sales_data": sales_count > 0,
+        "has_commission_data": commissions_count > 0,
+        "has_followup_data": followups_count > 0,
+    }
+    followups = db.execute(
+        """SELECT f.*, l.company_name FROM followups f JOIN leads l ON l.id=f.lead_id
+           WHERE f.owner_partner_id=? AND l.owner_partner_id=? AND f.status='OPEN' ORDER BY f.due_at LIMIT 8""", (pid, pid)
+    ).fetchall()
+    leads = db.execute(
+        """SELECT l.*, (SELECT MIN(due_at) FROM followups f WHERE f.lead_id=l.id AND f.status='OPEN' AND f.owner_partner_id=l.owner_partner_id) next_followup
+           FROM leads l WHERE l.owner_partner_id=? AND l.status NOT IN ('WON','LOST') ORDER BY l.last_activity_at DESC LIMIT 8""", (pid,)
+    ).fetchall()
+    return render_template("dashboard_partner.html", title="Home", metrics=metrics, followups=followups, leads=leads, today=today)
 
 
 @bp.get("/prospects")
