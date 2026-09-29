@@ -35,6 +35,62 @@ def _identity_values(source: dict) -> dict[str, str]:
     }
 
 
+def identity_match_reasons(left: dict, right: dict) -> list[str]:
+    """Return normalized client identity signals that agree across two source records."""
+    left_values = _identity_values(left)
+    right_values = _identity_values(right)
+    return [
+        name
+        for name in ("email", "phone", "company", "contact")
+        if left_values[name] and left_values[name] == right_values[name]
+    ]
+
+
+def identities_match(left: dict, right: dict, *, minimum_signals: int = 2) -> bool:
+    return len(identity_match_reasons(left, right)) >= minimum_signals
+
+
+def find_matching_website_inquiry(db, identity: dict, *, exclude_inquiry_id: int | None = None):
+    sql = """SELECT id,name,email,phone,company,created_at,updated_at,status,workflow_status,client_conversation_id
+             FROM website_inquiries
+             WHERE status<>'SPAM'"""
+    params: list = []
+    if exclude_inquiry_id is not None:
+        sql += " AND id<>?"
+        params.append(exclude_inquiry_id)
+    sql += " ORDER BY created_at DESC,id DESC"
+    for row in db.execute(sql, params).fetchall():
+        candidate = {
+            "company": row["company"],
+            "contact_name": row["name"],
+            "email": row["email"],
+            "phone": row["phone"],
+        }
+        if identities_match(identity, candidate):
+            return row
+    return None
+
+
+def find_matching_prospect(db, identity: dict, *, exclude_prospect_id: int | None = None):
+    sql = """SELECT id,name,contact,email,phone,status,recorded_date,created_at,updated_at
+             FROM prospects"""
+    params: list = []
+    if exclude_prospect_id is not None:
+        sql += " WHERE id<>?"
+        params.append(exclude_prospect_id)
+    sql += " ORDER BY created_at DESC,id DESC"
+    for row in db.execute(sql, params).fetchall():
+        candidate = {
+            "company": row["name"],
+            "contact_name": row["contact"],
+            "email": row["email"],
+            "phone": row["phone"],
+        }
+        if identities_match(identity, candidate):
+            return row
+    return None
+
+
 def _latest_nonempty(sources: list[dict], field: str) -> str:
     ordered = sorted(sources, key=_source_effective_updated, reverse=True)
     for source in ordered:
