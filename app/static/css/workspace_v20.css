@@ -3409,3 +3409,38 @@ textarea.prospect-inline-editor{resize:vertical}
     padding:12px 14px;
   }
 }
+
+
+/* v1.18.78 — Website Inbox adopts the Prospects daily date queue + Today status filters */
+.client-inbox-head .website-inbox-head-date{
+  margin:14px 0 0;
+}
+.website-inbox-filter-head{
+  padding:0;
+  margin:14px 0 0;
+  border:0;
+  background:transparent;
+}
+.website-inquiry-list>.website-inbox-empty,
+.website-inquiry-list>.website-inquiry-filter-empty{
+  grid-column:1/-1;
+}
+.website-inquiry-filter-empty{
+  padding:22px 12px;
+  text-align:center;
+}
+@media(max-width:620px){
+  .client-inbox-head .website-inbox-head-date{
+    margin-top:12px;
+  }
+  .website-inbox-filter-head .prospect-status-filters{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:6px;
+  }
+  .website-inbox-filter-head .prospect-filter-button{
+    width:100%;
+    padding:7px 6px;
+    font-size:10.5px;
+  }
+}
