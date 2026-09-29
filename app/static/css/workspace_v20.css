@@ -3608,3 +3608,199 @@ textarea.prospect-inline-editor{resize:vertical}
     margin-left:0;
   }
 }
+
+
+/* v1.18.80 — reorganize Inbound Records into a clean scan-first workspace */
+.inbound-records-filters{
+  flex-wrap:nowrap;
+  overflow-x:auto;
+  scrollbar-width:thin;
+  padding-bottom:2px;
+}
+.inbound-records-filters .prospect-filter-button{
+  flex:0 0 auto;
+}
+.inbound-records-actions{
+  flex-wrap:nowrap;
+  min-height:44px;
+  padding:8px 12px;
+}
+.inbound-records-select-all{
+  flex:0 0 auto;
+  white-space:nowrap;
+}
+.inbound-records-select-all input[type="checkbox"],
+.inbound-records-table input[type="checkbox"]{
+  appearance:auto;
+  -webkit-appearance:checkbox;
+  width:16px;
+  height:16px;
+  min-width:16px;
+  min-height:16px;
+  margin:0;
+  padding:0;
+  border:0;
+  box-shadow:none;
+  accent-color:var(--workspace-emerald);
+}
+.inbound-records-delete-selected{
+  flex:0 0 auto;
+}
+.inbound-records-table-wrap{
+  overflow-x:auto;
+}
+.inbound-records-table-compact{
+  min-width:820px;
+  table-layout:fixed;
+}
+.inbound-records-table-compact th,
+.inbound-records-table-compact td{
+  padding:11px 12px;
+  vertical-align:middle;
+}
+.inbound-records-check-col{width:58px}
+.inbound-records-received-col{width:145px}
+.inbound-records-client-col{width:280px}
+.inbound-records-company-col{width:190px}
+.inbound-records-status-col{width:150px}
+.inbound-records-action-col{width:110px}
+.inbound-records-client-cell{
+  min-width:0;
+}
+.inbound-records-client-link{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:12.5px;
+}
+.inbound-records-contact-line{
+  display:block;
+  margin-top:3px;
+  overflow:hidden;
+  color:var(--ux-section-muted);
+  font-size:10.5px;
+  line-height:1.35;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.inbound-records-received-main,
+.inbound-records-received-time{
+  display:block;
+  white-space:nowrap;
+}
+.inbound-records-received-main{
+  color:var(--ux-section-ink);
+  font-weight:700;
+}
+.inbound-records-received-time{
+  margin-top:3px;
+  color:var(--ux-section-muted);
+  font-size:10px;
+}
+.inbound-records-record-link{
+  color:var(--workspace-emerald);
+  font-weight:800;
+  text-decoration:none;
+  white-space:nowrap;
+}
+.inbound-records-record-link:hover{text-decoration:underline}
+.inbound-record-detail-page{
+  max-width:1120px;
+}
+.inbound-record-detail-head{
+  margin-bottom:14px;
+}
+.inbound-record-detail-summary{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  margin-bottom:14px;
+}
+.inbound-record-detail-summary>div{
+  min-width:0;
+  padding:12px 14px;
+  border:1px solid #dbe4e0;
+  border-radius:10px;
+  background:#fbfdfc;
+}
+.inbound-record-detail-summary span{
+  display:block;
+  margin-bottom:5px;
+  color:var(--ux-section-muted);
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+}
+.inbound-record-detail-summary strong,
+.inbound-record-detail-summary a{
+  color:var(--ux-section-ink);
+  font-size:12px;
+  font-weight:800;
+  text-decoration:none;
+}
+.inbound-record-detail-summary a{
+  color:var(--workspace-emerald);
+}
+.inbound-record-detail-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.inbound-record-detail-section{
+  min-width:0;
+}
+.inbound-record-detail-wide{
+  margin-top:12px;
+}
+.inbound-record-detail-list{
+  display:grid;
+  gap:0;
+  margin:0;
+}
+.inbound-record-detail-list>div{
+  display:grid;
+  grid-template-columns:130px minmax(0,1fr);
+  gap:14px;
+  padding:10px 0;
+  border-bottom:1px solid #edf2ef;
+}
+.inbound-record-detail-list>div:last-child{border-bottom:0}
+.inbound-record-detail-list dt{
+  color:var(--ux-section-muted);
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+}
+.inbound-record-detail-list dd{
+  min-width:0;
+  margin:0;
+  color:var(--ux-section-ink);
+  overflow-wrap:anywhere;
+}
+.inbound-record-detail-text{
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  line-height:1.6;
+}
+@media(max-width:900px){
+  .inbound-record-detail-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:650px){
+  .inbound-records-actions{
+    flex-wrap:wrap;
+  }
+  .inbound-records-delete-selected{
+    margin-left:0;
+  }
+  .inbound-record-detail-summary,
+  .inbound-record-detail-grid{
+    grid-template-columns:1fr;
+  }
+  .inbound-record-detail-list>div{
+    grid-template-columns:1fr;
+    gap:4px;
+  }
+}
