@@ -2019,6 +2019,44 @@
     ['WON', 'Won'],
     ['LOST', 'Lost']
   ];
+  const prospectDealStatuses = new Set(['DEAL', 'DEMO', 'PROPOSAL', 'DECISION', 'WON', 'LOST']);
+  const prospectPreDealStatuses = new Set(['NOT_CONTACTED', 'NO_ANSWER', 'REJECTED']);
+  const prospectStatusLabels = new Map(statusOptions);
+  const prospectStatusConfirm = page.querySelector('[data-prospect-status-confirm]');
+  const prospectStatusConfirmMessage = page.querySelector('[data-prospect-status-confirm-message]');
+  const prospectStatusConfirmYes = page.querySelector('[data-prospect-status-confirm-yes]');
+  const prospectStatusConfirmNo = page.querySelector('[data-prospect-status-confirm-no]');
+  let pendingProspectStatusDecision = null;
+
+  const settleProspectStatusDecision = (confirmed) => {
+    const pending = pendingProspectStatusDecision;
+    pendingProspectStatusDecision = null;
+    if (prospectStatusConfirm?.open) prospectStatusConfirm.close();
+    if (!pending) return;
+    if (confirmed) pending.onYes();
+    else pending.onNo();
+  };
+
+  const requestProspectStatusDecision = (targetStatus, onYes, onNo) => {
+    const label = prospectStatusLabels.get(targetStatus) || targetStatus;
+    const text = `Are you sure you want to change this Prospect to ${label}? This will remove its linked Deal from the Deals page. Your linked Deal details will stay preserved.`;
+    if (prospectStatusConfirmMessage) prospectStatusConfirmMessage.textContent = text;
+    pendingProspectStatusDecision = {onYes, onNo};
+
+    if (prospectStatusConfirm && typeof prospectStatusConfirm.showModal === 'function') {
+      prospectStatusConfirm.showModal();
+      return;
+    }
+
+    settleProspectStatusDecision(window.confirm(text));
+  };
+
+  prospectStatusConfirmYes?.addEventListener('click', () => settleProspectStatusDecision(true));
+  prospectStatusConfirmNo?.addEventListener('click', () => settleProspectStatusDecision(false));
+  prospectStatusConfirm?.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    settleProspectStatusDecision(false);
+  });
 
   const beginProspectEdit = (field) => {
     if (!field || field.dataset.prospectEditing === '1') return;
@@ -2072,14 +2110,36 @@
     };
 
     const save = async () => {
-      if (finished) return;
-      finished = true;
+      if (finished || field.dataset.prospectStatusConfirming === '1') return;
       const newValue = editor.value;
       if (newValue === originalValue) {
+        finished = true;
         restore();
         return;
       }
 
+      const leavingDealPipeline = editorType === 'status'
+        && prospectDealStatuses.has(originalValue)
+        && prospectPreDealStatuses.has(newValue);
+
+      if (leavingDealPipeline && field.dataset.prospectStatusConfirmed !== '1') {
+        field.dataset.prospectStatusConfirming = '1';
+        requestProspectStatusDecision(
+          newValue,
+          () => {
+            delete field.dataset.prospectStatusConfirming;
+            field.dataset.prospectStatusConfirmed = '1';
+            save();
+          },
+          () => {
+            delete field.dataset.prospectStatusConfirming;
+            cancel();
+          }
+        );
+        return;
+      }
+
+      finished = true;
       editor.disabled = true;
       field.classList.add('is-saving');
       const body = new URLSearchParams({
@@ -2088,6 +2148,7 @@
         value: newValue,
         date: selectedDate
       });
+      if (field.dataset.prospectStatusConfirmed === '1') body.set('confirm_leave_deals', 'yes');
 
       try {
         const response = await fetch(row.dataset.prospectUpdateUrl, {
@@ -2764,6 +2825,17 @@
   if (!page) return;
 
   const websiteDealStatuses = new Set(['DEAL', 'DEMO', 'PROPOSAL', 'DECISION', 'WON', 'LOST']);
+  const websitePreDealStatuses = new Set(['NOT_CONTACTED', 'NO_ANSWER', 'REJECTED']);
+  const websiteStatusLabels = {
+    NOT_CONTACTED: 'Not Contacted',
+    NO_ANSWER: 'No Answer',
+    REJECTED: 'Rejected'
+  };
+  const websiteStatusConfirm = page.querySelector('[data-website-status-confirm]');
+  const websiteStatusConfirmMessage = page.querySelector('[data-website-status-confirm-message]');
+  const websiteStatusConfirmYes = page.querySelector('[data-website-status-confirm-yes]');
+  const websiteStatusConfirmNo = page.querySelector('[data-website-status-confirm-no]');
+  let pendingWebsiteStatusDecision = null;
 
   const renderWebsiteDealAction = (action, status, dealId) => {
     if (!(action instanceof HTMLElement)) return;
@@ -2888,7 +2960,9 @@
 
     const field = event.target.closest('[data-website-inquiry-status]');
     if (!field) return;
-    field.dataset.websiteInquiryStartStatus = field.value || '';
+    const currentStatus = field.dataset.websiteInquiryCurrentStatus || field.value || '';
+    field.dataset.websiteInquiryCurrentStatus = currentStatus;
+    field.dataset.websiteInquiryStartStatus = currentStatus;
   });
 
   page.addEventListener('focusout', (event) => {
@@ -2920,25 +2994,22 @@
     source.focus();
   });
 
-  page.addEventListener('change', async (event) => {
-    const field = event.target.closest('[data-website-inquiry-status]');
-    if (!(field instanceof HTMLSelectElement)) return;
-    const previous = field.dataset.websiteInquiryStartStatus || '';
-    const status = field.value || '';
-    if (!status || status === previous) return;
-
+  const saveWebsiteInquiryStatus = async (field, previous, status, confirmed = false) => {
     field.disabled = true;
     try {
+      const body = new URLSearchParams({
+        csrf_token: field.dataset.csrfToken || '',
+        status
+      });
+      if (confirmed) body.set('confirm_leave_deals', 'yes');
+
       const response = await fetch(field.dataset.updateUrl || '', {
         method: 'POST',
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
         },
-        body: new URLSearchParams({
-          csrf_token: field.dataset.csrfToken || '',
-          status
-        }).toString(),
+        body: body.toString(),
         credentials: 'same-origin',
         cache: 'no-store'
       });
@@ -2949,13 +3020,65 @@
       }
       const savedStatus = data.status || status;
       field.dataset.websiteInquiryStartStatus = savedStatus;
+      field.dataset.websiteInquiryCurrentStatus = savedStatus;
       const action = field.closest('.website-inquiry-card')?.querySelector('[data-website-deal-action]');
       if (action) renderWebsiteDealAction(action, savedStatus, data.deal_id || null);
     } catch (error) {
+      field.value = previous;
       window.alert(error.message || 'Website Inquiry status could not be updated. Try again.');
     } finally {
       field.disabled = false;
     }
+  };
+
+  const settleWebsiteStatusDecision = (confirmed) => {
+    const pending = pendingWebsiteStatusDecision;
+    pendingWebsiteStatusDecision = null;
+    if (websiteStatusConfirm?.open) websiteStatusConfirm.close();
+    if (!pending) return;
+
+    const {field, previous, status} = pending;
+    field.disabled = false;
+    if (confirmed) {
+      saveWebsiteInquiryStatus(field, previous, status, true);
+    } else {
+      field.value = previous;
+      field.dataset.websiteInquiryStartStatus = previous;
+    }
+  };
+
+  websiteStatusConfirmYes?.addEventListener('click', () => settleWebsiteStatusDecision(true));
+  websiteStatusConfirmNo?.addEventListener('click', () => settleWebsiteStatusDecision(false));
+  websiteStatusConfirm?.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    settleWebsiteStatusDecision(false);
+  });
+
+  page.addEventListener('change', (event) => {
+    const field = event.target.closest('[data-website-inquiry-status]');
+    if (!(field instanceof HTMLSelectElement)) return;
+    const previous = field.dataset.websiteInquiryCurrentStatus || field.dataset.websiteInquiryStartStatus || '';
+    const status = field.value || '';
+    if (!status || status === previous) return;
+
+    const leavingDealPipeline = websiteDealStatuses.has(previous) && websitePreDealStatuses.has(status);
+    if (!leavingDealPipeline) {
+      saveWebsiteInquiryStatus(field, previous, status, false);
+      return;
+    }
+
+    const label = websiteStatusLabels[status] || status;
+    const text = `Are you sure you want to change this Website Inquiry to ${label}? This will remove its linked Deal from the Deals page. Your linked Deal details will stay preserved.`;
+    if (websiteStatusConfirmMessage) websiteStatusConfirmMessage.textContent = text;
+    pendingWebsiteStatusDecision = {field, previous, status};
+    field.disabled = true;
+
+    if (websiteStatusConfirm && typeof websiteStatusConfirm.showModal === 'function') {
+      websiteStatusConfirm.showModal();
+      return;
+    }
+
+    settleWebsiteStatusDecision(window.confirm(text));
   });
 
   viewerClose?.addEventListener('click', closeViewer);
