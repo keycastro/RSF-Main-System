@@ -5256,6 +5256,9 @@ textarea.prospect-inline-editor{resize:vertical}
   background:transparent;
   box-shadow:none;
   color:var(--ux-section-ink);
+  font-size:12px;
+  font-weight:500;
+  line-height:1.45;
   text-align:left;
   overflow:hidden;
   text-overflow:ellipsis;
@@ -5263,6 +5266,10 @@ textarea.prospect-inline-editor{resize:vertical}
   overflow-wrap:normal;
   cursor:pointer;
 }
+.prospects-page .prospect-longtext-preview:hover{
+  background:transparent;
+}
+
 .prospects-page .prospect-longtext-compact .deal-notes-expand-button{
   position:static;
   right:auto;
