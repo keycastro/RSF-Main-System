@@ -4385,3 +4385,124 @@ textarea.prospect-inline-editor{resize:vertical}
     margin-top:2px;
   }
 }
+
+
+/* v1.18.93 — source-owned details inside one complete Deal card.
+   The existing Deal header and Deal Details layout are intentionally untouched. */
+.deal-source-details{
+  padding:14px 18px 16px;
+  border-top:1px solid #dfe8e4
+}
+.deal-source-research{
+  background:#f4fbf7
+}
+.deal-source-website{
+  background:#f3f8fd
+}
+.deal-source-details-head{
+  display:flex;
+  align-items:center;
+  min-height:24px;
+  margin-bottom:10px
+}
+.deal-source-details-head h3{
+  margin:0;
+  color:var(--ux-section-ink);
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.045em;
+  line-height:1.3;
+  text-transform:uppercase
+}
+.deal-source-research .deal-source-details-head h3{color:#14543f}
+.deal-source-website .deal-source-details-head h3{color:#245d91}
+.deal-source-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px 12px
+}
+.deal-source-grid>label,
+.deal-source-readonly,
+.deal-source-contact-attempt{
+  display:grid;
+  gap:5px;
+  min-width:0
+}
+.deal-source-grid>label>span,
+.deal-source-readonly>span,
+.deal-source-contact-attempt>span{
+  color:#6f7f79;
+  font-size:8.5px;
+  font-weight:650;
+  letter-spacing:.055em;
+  line-height:1.3;
+  text-transform:uppercase
+}
+.deal-source-grid input,
+.deal-source-grid textarea,
+.deal-source-readonly>strong,
+.deal-source-readonly>a,
+.deal-source-message{
+  width:100%;
+  min-width:0;
+  border:1px solid #d7e1dd;
+  border-radius:8px;
+  background:#fff;
+  color:var(--ux-section-ink);
+  font:inherit;
+  font-size:12px;
+  line-height:1.4
+}
+.deal-source-grid input{
+  min-height:39px;
+  padding:8px 10px;
+  outline:none
+}
+.deal-source-grid textarea{
+  display:block;
+  min-height:60px;
+  padding:9px 10px;
+  resize:vertical;
+  outline:none
+}
+.deal-source-grid input:focus,
+.deal-source-grid textarea:focus{
+  border-color:var(--workspace-emerald);
+  box-shadow:0 0 0 2px rgba(27,94,74,.10)
+}
+.deal-source-readonly>strong,
+.deal-source-readonly>a,
+.deal-source-message{
+  display:flex;
+  align-items:center;
+  min-height:39px;
+  padding:8px 10px;
+  text-decoration:none;
+  overflow-wrap:anywhere
+}
+.deal-source-readonly>a:hover{
+  color:var(--workspace-emerald);
+  text-decoration:underline
+}
+.deal-source-message{
+  align-items:flex-start;
+  min-height:60px;
+  white-space:pre-wrap
+}
+.deal-source-field-wide{
+  grid-column:1/-1
+}
+.deal-source-contact-attempt{
+  align-content:start
+}
+.deal-source-contact-attempt .prospect-attempt-control{
+  min-height:39px
+}
+.deal-source-details [data-deal-research-saving="1"]{
+  opacity:.72
+}
+@media(max-width:620px){
+  .deal-source-details{padding:13px 14px 15px}
+  .deal-source-grid{grid-template-columns:1fr}
+  .deal-source-field-wide{grid-column:auto}
+}
