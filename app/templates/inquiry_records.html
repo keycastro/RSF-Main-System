@@ -36,22 +36,16 @@
   {% endif %}
 
     <div class="inbound-records-table-wrap">
-      <table class="inbound-records-table">
+      <table class="inbound-records-table inbound-records-table-compact">
         <thead>
           <tr>
             {% if g.user and g.user['role'] == 'admin' %}<th class="inbound-records-check-col">Select</th>{% endif %}
-            <th>Received</th>
-            <th>Client</th>
-            <th>Company</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Request / Source</th>
-            <th>Message</th>
-            <th>Notes</th>
-            <th>Workflow Status</th>
-            <th>Routing Status</th>
-            <th>Claimed By</th>
-            <th>Deal</th>
+            <th class="inbound-records-received-col">Received</th>
+            <th class="inbound-records-client-col">Client</th>
+            <th class="inbound-records-company-col">Company</th>
+            <th class="inbound-records-status-col">Workflow Status</th>
+            <th class="inbound-records-action-col">Deal</th>
+            <th class="inbound-records-action-col">Record</th>
           </tr>
         </thead>
         <tbody>
@@ -73,28 +67,26 @@
               >
             </td>
             {% endif %}
-            <td class="inbound-records-nowrap">{{ inquiry.created_at|dt }}</td>
-            <td><a class="inbound-records-client-link" href="{{ url_for('main.inquiry_detail', inquiry_id=inquiry.id) }}">{{ inquiry.name }}</a></td>
-            <td>{{ inquiry.company or '—' }}</td>
-            <td>{{ inquiry.email }}</td>
-            <td>{{ inquiry.phone or '—' }}</td>
-            <td>
-              <div class="inbound-records-source-main">{{ inquiry.source_action or inquiry.source_title or '—' }}</div>
-              {% if inquiry.source_type or inquiry.source_slug %}
-                <div class="inbound-records-source-meta">{{ inquiry.source_type or 'source' }}{% if inquiry.source_slug %} · {{ inquiry.source_slug }}{% endif %}</div>
-              {% endif %}
+            <td class="inbound-records-received">
+              <span class="inbound-records-received-main">{{ inquiry.created_at|dateonly }}</span>
+              <span class="inbound-records-received-time">{{ inquiry.created_at|dt }}</span>
             </td>
-            <td><div class="inbound-records-long-text" title="{{ inquiry.message }}">{{ inquiry.message or '—' }}</div></td>
-            <td><div class="inbound-records-long-text" title="{{ inquiry.notes_after_conversation }}">{{ inquiry.notes_after_conversation or '—' }}</div></td>
+            <td class="inbound-records-client-cell">
+              <a class="inbound-records-client-link" href="{{ url_for('main.inquiry_record_detail', inquiry_id=inquiry.id) }}">{{ inquiry.name }}</a>
+              <span class="inbound-records-contact-line">{{ inquiry.email }}</span>
+              <span class="inbound-records-contact-line">{{ inquiry.phone or '—' }}</span>
+            </td>
+            <td>{{ inquiry.company or '—' }}</td>
             <td><span class="inbound-records-status">{{ inquiry_workflow_status_labels.get(inquiry.workflow_status, inquiry.workflow_status) }}</span></td>
-            <td>{{ inquiry.status|replace('_',' ')|title }}</td>
-            <td>{{ inquiry.claimed_by_name or '—' }}</td>
             <td>
               {% if inquiry.linked_deal_id %}
                 <a class="inbound-records-deal-link" href="{{ url_for('main.deals') }}#deal-{{ inquiry.linked_deal_id }}">View Deal</a>
               {% else %}
                 —
               {% endif %}
+            </td>
+            <td>
+              <a class="inbound-records-record-link" href="{{ url_for('main.inquiry_record_detail', inquiry_id=inquiry.id) }}">View Record</a>
             </td>
           </tr>
           {% endfor %}
