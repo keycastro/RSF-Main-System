@@ -98,6 +98,17 @@
     </div>
   </dialog>
 
+  <dialog class="deal-status-confirm" data-prospect-status-confirm aria-labelledby="prospect-status-confirm-title">
+    <div class="deal-status-confirm-card">
+      <h2 id="prospect-status-confirm-title">Confirm status change</h2>
+      <p data-prospect-status-confirm-message>Are you sure you want to move this Prospect out of the Deal pipeline?</p>
+      <div class="deal-status-confirm-actions">
+        <button class="button secondary" type="button" data-prospect-status-confirm-no>No</button>
+        <button class="button primary" type="button" data-prospect-status-confirm-yes>Yes</button>
+      </div>
+    </div>
+  </dialog>
+
   <div class="prospect-toast" data-prospect-toast hidden role="status" aria-live="polite"></div>
 </section>
 {% endblock %}
