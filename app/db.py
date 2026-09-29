@@ -25,7 +25,7 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 27
+SCHEMA_VERSION = 28
 SCHEMA_NAME = "rsf-main-system-v1.18.67-website-inquiry-deal-notes-sync"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents"}
 
@@ -1073,6 +1073,84 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
         db.execute(
             "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
             (27, "rsf-v1.18.67-website-inquiry-deal-notes-sync"),
+        )
+
+
+    # V28 allows one Deal to link both a Researched Prospect and Website Inquiry
+    # for the same active opportunity. Official RSF client conversations can also
+    # originate from a Prospect, and each email/message keeps its journey source.
+    if 28 not in applied:
+        if using_postgres():
+            check_rows = db.execute(
+                """SELECT c.conname,pg_get_constraintdef(c.oid) AS definition
+                   FROM pg_constraint c
+                   JOIN pg_class t ON t.oid=c.conrelid
+                   WHERE t.relname='deals' AND c.contype='c'"""
+            ).fetchall()
+            for row in check_rows:
+                definition = (row["definition"] or "").lower()
+                if "prospect_id" in definition and "website_inquiry_id" in definition:
+                    db.execute(f'ALTER TABLE deals DROP CONSTRAINT "{row["conname"]}"')
+            db.execute(
+                "ALTER TABLE deals ADD CONSTRAINT deals_source_check "
+                "CHECK (prospect_id IS NOT NULL OR website_inquiry_id IS NOT NULL)"
+            )
+        else:
+            db.commit()
+            db.execute("PRAGMA foreign_keys=OFF")
+            try:
+                _sqlite_rebuild_table_from_release_schema(db, "deals")
+                db.execute("DROP INDEX IF EXISTS idx_deals_status_updated")
+                db.execute("DROP INDEX IF EXISTS idx_deals_followup")
+                db.execute("CREATE INDEX IF NOT EXISTS idx_deals_status_updated ON deals(status,updated_at DESC,id DESC)")
+                db.execute("CREATE INDEX IF NOT EXISTS idx_deals_followup ON deals(followup_date,status,id)")
+                db.commit()
+            except Exception:
+                db.rollback()
+                raise
+            finally:
+                db.execute("PRAGMA foreign_keys=ON")
+            violations = db.execute("PRAGMA foreign_key_check").fetchall()
+            if violations:
+                raise RuntimeError(f"Merged Deal migration created foreign-key violations: {violations[:5]}")
+
+        conversation_columns = {row["name"] for row in db.execute("PRAGMA table_info(client_conversations)").fetchall()}
+        if "prospect_id" not in conversation_columns:
+            db.execute("ALTER TABLE client_conversations ADD COLUMN prospect_id INTEGER REFERENCES prospects(id)")
+        db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_client_conversations_prospect "
+            "ON client_conversations(prospect_id,updated_at DESC)"
+        )
+
+        message_columns = {row["name"] for row in db.execute("PRAGMA table_info(client_messages)").fetchall()}
+        if "journey_source" not in message_columns:
+            db.execute("ALTER TABLE client_messages ADD COLUMN journey_source TEXT NOT NULL DEFAULT ''")
+        db.execute(
+            """UPDATE client_messages
+               SET journey_source='INBOUND'
+               WHERE journey_source=''
+                 AND conversation_id IN (
+                   SELECT c.id
+                   FROM client_conversations c
+                   WHERE c.inquiry_id IS NOT NULL
+                      OR EXISTS (
+                        SELECT 1 FROM website_inquiries i
+                        WHERE i.client_conversation_id=c.id
+                      )
+                 )"""
+        )
+        db.execute(
+            """UPDATE client_messages
+               SET journey_source='OUTBOUND'
+               WHERE journey_source=''
+                 AND conversation_id IN (
+                   SELECT id FROM client_conversations WHERE prospect_id IS NOT NULL
+                 )"""
+        )
+
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (28, "rsf-v1.18.92-merged-opportunity-conversations"),
         )
 
 
