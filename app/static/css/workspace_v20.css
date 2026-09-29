@@ -1018,6 +1018,117 @@ textarea.prospect-inline-editor{resize:vertical}
   border-color:var(--workspace-emerald);
   box-shadow:0 0 0 2px rgba(27,94,74,.10)
 }
+.conversation-header-actions{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-left:auto
+}
+.conversation-action-icon{
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  flex:0 0 auto;
+  border:1px solid #d6e1dc;
+  border-radius:9px;
+  background:#f5f9f7;
+  color:var(--workspace-emerald);
+  text-decoration:none
+}
+.conversation-action-icon:hover{
+  background:#eaf3ef;
+  color:#123f31
+}
+.conversation-action-icon:focus-visible{
+  outline:2px solid rgba(27,94,74,.24);
+  outline-offset:2px
+}
+.conversation-action-icon.is-disabled,
+.conversation-action-icon[aria-disabled="true"]{
+  opacity:.38;
+  cursor:not-allowed
+}
+.conversation-action-icon svg{width:17px;height:17px}
+.conversation-history-body{
+  display:grid;
+  grid-template-rows:minmax(0,1fr) auto;
+  gap:12px;
+  overflow:hidden
+}
+.conversation-timeline{
+  min-height:0;
+  overflow:auto;
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  padding:2px
+}
+.conversation-timeline-item{
+  padding:10px 11px;
+  border:1px solid #dce6e1;
+  border-radius:10px;
+  background:#fff
+}
+.conversation-timeline-item-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:5px
+}
+.conversation-timeline-item-head strong{
+  color:#244d40;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.04em
+}
+.conversation-timeline-item-head time{
+  color:#74837e;
+  font-size:9.5px;
+  white-space:nowrap
+}
+.conversation-timeline-item-body{
+  color:var(--ux-section-ink);
+  font-size:12.5px;
+  line-height:1.5;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere
+}
+.conversation-timeline-empty{
+  display:grid;
+  place-items:center;
+  min-height:120px;
+  color:#71817b;
+  font-size:12px;
+  text-align:center
+}
+.conversation-timeline-empty.is-error{color:#a64d4d}
+.conversation-manual-note{
+  display:grid;
+  gap:6px;
+  min-height:0
+}
+.conversation-manual-note>span{
+  color:#667771;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.05em;
+  text-transform:uppercase
+}
+.deal-notes-viewer-body.conversation-history-body .conversation-manual-note textarea{
+  height:100px;
+  min-height:100px;
+  resize:vertical
+}
+.deal-linked-merged a{
+  color:inherit;
+  text-decoration:none
+}
+.deal-linked-merged a:hover{
+  color:var(--workspace-emerald);
+  text-decoration:underline
+}
 .deals-empty{grid-column:1/-1}
 @media(max-width:900px){
   .deals-list{grid-template-columns:1fr}
