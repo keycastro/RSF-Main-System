@@ -3276,27 +3276,33 @@
 
 
 (() => {
-  const page = document.querySelector('[data-inbound-records-page]');
+  const page = document.querySelector('[data-master-records-page]');
   if (!page) return;
 
-  const rows = Array.from(page.querySelectorAll('[data-inbound-record-row]'));
-  const filterButtons = Array.from(page.querySelectorAll('[data-inbound-filter]'));
-  const filterInput = page.querySelector('[data-inbound-filter-input]');
-  const empty = page.querySelector('[data-inbound-records-empty]');
-  const filterEmpty = page.querySelector('[data-inbound-filter-empty]');
-  const selectAll = page.querySelector('[data-inbound-select-all]');
-  const rowChecks = Array.from(page.querySelectorAll('[data-inbound-row-check]'));
-  const selectedCount = page.querySelector('[data-inbound-selected-count]');
-  const deleteTrigger = page.querySelector('[data-inbound-delete-trigger]');
-  const bulkForm = page.querySelector('[data-inbound-bulk-form]');
-  const confirmDialog = page.querySelector('[data-inbound-delete-confirm]');
-  const confirmMessage = page.querySelector('[data-inbound-delete-confirm-message]');
-  const confirmYes = page.querySelector('[data-inbound-delete-yes]');
-  const confirmNo = page.querySelector('[data-inbound-delete-no]');
-  let activeFilter = page.dataset.inboundInitialFilter || 'ALL';
+  const rows = Array.from(page.querySelectorAll('[data-master-record-row]'));
+  const statusButtons = Array.from(page.querySelectorAll('[data-records-status-filter]'));
+  const sourceButtons = Array.from(page.querySelectorAll('[data-records-source-filter]'));
+  const searchInput = page.querySelector('[data-records-search]');
+  const filterInput = page.querySelector('[data-records-filter-input]');
+  const sourceInput = page.querySelector('[data-records-source-input]');
+  const empty = page.querySelector('[data-records-empty]');
+  const filterEmpty = page.querySelector('[data-records-filter-empty]');
+  const selectAll = page.querySelector('[data-records-select-all]');
+  const rowChecks = Array.from(page.querySelectorAll('[data-record-row-check]'));
+  const selectedCount = page.querySelector('[data-records-selected-count]');
+  const deleteTrigger = page.querySelector('[data-records-delete-trigger]');
+  const bulkForm = page.querySelector('[data-records-bulk-form]');
+  const confirmDialog = page.querySelector('[data-records-delete-confirm]');
+  const confirmMessage = page.querySelector('[data-records-delete-confirm-message]');
+  const confirmYes = page.querySelector('[data-records-delete-yes]');
+  const confirmNo = page.querySelector('[data-records-delete-no]');
+
+  let activeStatus = page.dataset.recordsInitialFilter || 'ALL';
+  let activeSource = page.dataset.recordsInitialSource || 'ALL';
+  let searchTerm = '';
 
   const visibleDeletableChecks = () => rowChecks.filter((check) => {
-    const row = check.closest('[data-inbound-record-row]');
+    const row = check.closest('[data-master-record-row]');
     return row && !row.hidden && !check.disabled;
   });
 
@@ -3323,29 +3329,54 @@
     }
   };
 
-  const applyFilter = () => {
+  const applyFilters = () => {
     rows.forEach((row) => {
-      row.hidden = activeFilter !== 'ALL' && row.dataset.inboundWorkflowStatus !== activeFilter;
+      const statusMatch = activeStatus === 'ALL' || row.dataset.recordStatus === activeStatus;
+      const sourceMatch = activeSource === 'ALL' || row.dataset.recordSource === activeSource;
+      const searchMatch = !searchTerm || (row.dataset.recordSearch || '').includes(searchTerm);
+      row.hidden = !(statusMatch && sourceMatch && searchMatch);
     });
-    filterButtons.forEach((button) => {
-      const active = button.dataset.inboundFilter === activeFilter;
+
+    statusButtons.forEach((button) => {
+      const active = button.dataset.recordsStatusFilter === activeStatus;
       button.classList.toggle('is-active', active);
       button.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
-    if (filterInput) filterInput.value = activeFilter;
+    sourceButtons.forEach((button) => {
+      const active = button.dataset.recordsSourceFilter === activeSource;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+
+    if (filterInput) filterInput.value = activeStatus;
+    if (sourceInput) sourceInput.value = activeSource;
 
     const visibleRows = rows.filter((row) => !row.hidden);
     if (empty) empty.hidden = rows.length !== 0;
-    if (filterEmpty) filterEmpty.hidden = rows.length === 0 || visibleRows.length !== 0 || activeFilter === 'ALL';
+    if (filterEmpty) filterEmpty.hidden = rows.length === 0 || visibleRows.length !== 0;
     updateSelection();
   };
 
-  filterButtons.forEach((button) => {
+  statusButtons.forEach((button) => {
     button.addEventListener('click', () => {
-      activeFilter = button.dataset.inboundFilter || 'ALL';
+      activeStatus = button.dataset.recordsStatusFilter || 'ALL';
       clearSelection();
-      applyFilter();
+      applyFilters();
     });
+  });
+
+  sourceButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      activeSource = button.dataset.recordsSourceFilter || 'ALL';
+      clearSelection();
+      applyFilters();
+    });
+  });
+
+  searchInput?.addEventListener('input', () => {
+    searchTerm = String(searchInput.value || '').trim().toLowerCase();
+    clearSelection();
+    applyFilters();
   });
 
   selectAll?.addEventListener('change', () => {
@@ -3363,7 +3394,8 @@
   deleteTrigger?.addEventListener('click', () => {
     const count = rowChecks.filter((check) => check.checked && !check.disabled).length;
     if (!count || !bulkForm) return;
-    const text = `Permanently delete ${count} selected inactive Website Inquiry record${count === 1 ? '' : 's'}? This also deletes linked Deals, Deal documents, and dedicated client conversation/messages/attachments. Shared client history used by other records is preserved. This cannot be undone. Active Deal / Demo / Proposal / Decision records are protected.`;
+
+    const text = `Permanently delete ${count} selected inactive master Record${count === 1 ? '' : 's'}? This removes the linked Prospect/Website source data, Deals, Deal documents, and dedicated history for those Records. Shared client conversations still used by other records are preserved. This cannot be undone. Active Deal / Demo / Proposal / Decision Records are protected.`;
     if (confirmMessage) confirmMessage.textContent = text;
 
     if (confirmDialog && typeof confirmDialog.showModal === 'function') {
@@ -3384,5 +3416,5 @@
     closeConfirm();
   });
 
-  applyFilter();
+  applyFilters();
 })();
