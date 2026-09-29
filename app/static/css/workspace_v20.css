@@ -3631,17 +3631,52 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 .inbound-records-select-all input[type="checkbox"],
 .inbound-records-table input[type="checkbox"]{
-  appearance:auto;
-  -webkit-appearance:checkbox;
+  appearance:none;
+  -webkit-appearance:none;
+  display:grid;
+  place-content:center;
   width:16px;
   height:16px;
   min-width:16px;
   min-height:16px;
   margin:0;
   padding:0;
-  border:0;
+  border:1.5px solid #879790;
+  border-radius:2px;
+  background:#fff;
   box-shadow:none;
-  accent-color:var(--workspace-emerald);
+  cursor:pointer;
+}
+.inbound-records-select-all input[type="checkbox"]::before,
+.inbound-records-table input[type="checkbox"]::before{
+  content:"";
+  width:4px;
+  height:8px;
+  border:solid #fff;
+  border-width:0 2px 2px 0;
+  transform:rotate(45deg) scale(0);
+  transform-origin:center;
+}
+.inbound-records-select-all input[type="checkbox"]:checked,
+.inbound-records-table input[type="checkbox"]:checked{
+  border-color:var(--workspace-emerald);
+  background:var(--workspace-emerald);
+}
+.inbound-records-select-all input[type="checkbox"]:checked::before,
+.inbound-records-table input[type="checkbox"]:checked::before{
+  transform:rotate(45deg) scale(1);
+}
+.inbound-records-select-all input[type="checkbox"]:focus-visible,
+.inbound-records-table input[type="checkbox"]:focus-visible{
+  outline:2px solid rgba(11,92,73,.25);
+  outline-offset:2px;
+}
+.inbound-records-select-all input[type="checkbox"]:disabled,
+.inbound-records-table input[type="checkbox"]:disabled{
+  border-color:#c5cfca;
+  background:#fff;
+  cursor:not-allowed;
+  opacity:.72;
 }
 .inbound-records-delete-selected{
   flex:0 0 auto;
