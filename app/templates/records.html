@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block content %}
+<section
+  class="inbound-records-page records-page"
+  data-master-records-page
+  data-records-initial-filter="{{ initial_filter }}"
+  data-records-initial-source="{{ initial_source }}"
+>
+  <div class="page-head workspace-page-head inbound-records-head records-head">
+    <div>
+      <h1>Records</h1>
+      <p>One organized history for every Prospect, Website Inquiry, and Deal journey.</p>
+    </div>
+  </div>
+
+  <div class="inbound-records-filters records-status-filters" role="group" aria-label="Filter Records by current status">
+    <button class="prospect-filter-button {% if initial_filter == 'ALL' %}is-active{% endif %}" type="button" data-records-status-filter="ALL" aria-pressed="{{ 'true' if initial_filter == 'ALL' else 'false' }}">
+      All <span>{{ records|length }}</span>
+    </button>
+    {% for code, label in workflow_status_labels.items() %}
+      <button class="prospect-filter-button {% if initial_filter == code %}is-active{% endif %}" type="button" data-records-status-filter="{{ code }}" aria-pressed="{{ 'true' if initial_filter == code else 'false' }}">
+        {{ label }} <span>{{ workflow_counts.get(code, 0) }}</span>
+      </button>
+    {% endfor %}
+  </div>
+
+  <div class="records-tools-row">
+    <div class="records-source-filters" role="group" aria-label="Filter Records by source">
+      <button class="records-source-button {% if initial_source == 'ALL' %}is-active{% endif %}" type="button" data-records-source-filter="ALL">All Sources <span>{{ source_counts.get('ALL', 0) }}</span></button>
+      <button class="records-source-button {% if initial_source == 'RESEARCH' %}is-active{% endif %}" type="button" data-records-source-filter="RESEARCH">Research <span>{{ source_counts.get('RESEARCH', 0) }}</span></button>
+      <button class="records-source-button {% if initial_source == 'WEBSITE' %}is-active{% endif %}" type="button" data-records-source-filter="WEBSITE">Website <span>{{ source_counts.get('WEBSITE', 0) }}</span></button>
+      <button class="records-source-button {% if initial_source == 'MULTI' %}is-active{% endif %}" type="button" data-records-source-filter="MULTI">Combined <span>{{ source_counts.get('MULTI', 0) }}</span></button>
+    </div>
+
+    <label class="records-search">
+      <span class="sr-only">Search Records</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m20 20-4.4-4.4m2.4-5.1a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z"/></svg>
+      <input type="search" placeholder="Search records..." autocomplete="off" data-records-search>
+    </label>
+  </div>
+
+  {% if g.user and g.user['role'] == 'admin' %}
+  <form class="inbound-records-bulk-form records-bulk-form" method="post" action="{{ url_for('main.records_bulk_delete') }}" data-records-bulk-form>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="filter" value="{{ initial_filter }}" data-records-filter-input>
+    <input type="hidden" name="source" value="{{ initial_source }}" data-records-source-input>
+
+    <div class="inbound-records-actions records-actions">
+      <label class="inbound-records-select-all">
+        <input type="checkbox" data-records-select-all>
+        <span>Select All</span>
+      </label>
+      <span class="inbound-records-selection-divider" aria-hidden="true">|</span>
+      <span class="inbound-records-selected-count" data-records-selected-count>Selected 0</span>
+      <span class="inbound-records-selection-divider" aria-hidden="true">|</span>
+      <button class="prospect-delete-button inbound-records-delete-selected" type="button" data-records-delete-trigger disabled aria-label="Delete selected Records" title="Delete selected">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h10l-1 11H8L7 9Zm3 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  {% endif %}
+
+    <div class="inbound-records-table-wrap records-table-wrap">
+      <table class="inbound-records-table records-table">
+        <thead>
+          <tr>
+            {% if g.user and g.user['role'] == 'admin' %}<th class="inbound-records-check-col">Select</th>{% endif %}
+            <th class="records-first-seen-col">First Seen</th>
+            <th class="records-client-col">Client</th>
+            <th class="records-origin-col">Origin</th>
+            <th class="records-status-col">Current Status</th>
+            <th class="records-journey-col">Journey</th>
+            <th class="records-record-col">Record</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for record in records %}
+          <tr
+            data-master-record-row
+            data-record-status="{{ record.current_status }}"
+            data-record-source="{{ record.source_filter }}"
+            data-record-search="{{ record.search_text }}"
+            {% if g.user and g.user['role'] == 'admin' %}data-record-can-delete="{{ '1' if record.can_delete else '0' }}"{% endif %}
+          >
+            {% if g.user and g.user['role'] == 'admin' %}
+            <td class="inbound-records-check-col">
+              <input
+                type="checkbox"
+                name="record_keys"
+                value="{{ record.record_key }}"
+                data-record-row-check
+                {% if not record.can_delete %}disabled title="Protected while active: Deal / Demo / Proposal / Decision"{% endif %}
+                aria-label="Select Record for {{ record.client_title }}"
+              >
+            </td>
+            {% endif %}
+            <td class="inbound-records-received records-first-seen">
+              <span class="inbound-records-received-main">{{ record.first_seen_at|dateonly }}</span>
+              <span class="inbound-records-received-time">{{ record.first_seen_at|timeonly }}</span>
+            </td>
+            <td class="inbound-records-client-cell records-client-cell">
+              <a class="inbound-records-client-link" href="{{ url_for('main.record_detail', record_key=record.record_key) }}">{{ record.client_title }}</a>
+              {% if record.contact_name and record.contact_name|lower != record.client_title|lower %}
+                <span class="inbound-records-contact-line">{{ record.contact_name }}</span>
+              {% endif %}
+              {% if record.email %}<span class="inbound-records-contact-line">{{ record.email }}</span>{% endif %}
+              {% if record.phone %}<span class="inbound-records-contact-line">{{ record.phone }}</span>{% endif %}
+            </td>
+            <td>
+              <div class="records-origin-badges">
+                {% if record.prospect_ids %}<span class="records-origin-badge">Research</span>{% endif %}
+                {% if record.inquiry_ids %}<span class="records-origin-badge">Website</span>{% endif %}
+              </div>
+            </td>
+            <td><span class="inbound-records-status">{{ workflow_status_labels.get(record.current_status, record.current_status) }}</span></td>
+            <td>
+              <div class="records-journey">
+                {% for step in record.journey_steps %}
+                  {% if not loop.first %}<span class="records-journey-arrow" aria-hidden="true">→</span>{% endif %}
+                  <span>{{ step }}</span>
+                {% endfor %}
+              </div>
+              {% if record.deal_ids %}
+                {% if record.deal_ids|length == 1 %}
+                  <a class="records-deal-link" href="{{ url_for('main.deals') }}#deal-{{ record.deal_ids[0] }}">View Deal</a>
+                {% else %}
+                  <a class="records-deal-link" href="{{ url_for('main.deals') }}">{{ record.deal_ids|length }} linked Deals</a>
+                {% endif %}
+              {% endif %}
+            </td>
+            <td>
+              <a class="inbound-records-record-link" href="{{ url_for('main.record_detail', record_key=record.record_key) }}">View Record</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="website-inbox-empty inbound-records-empty records-empty" data-records-empty {% if records %}hidden{% endif %}>
+        <strong>No Records yet.</strong>
+        <span>Prospects and Website Inquiries will appear here automatically, with linked Deals kept in the same client journey.</span>
+      </div>
+
+      <div class="simple-empty inbound-records-filter-empty records-filter-empty" data-records-filter-empty hidden>No Records match these filters.</div>
+    </div>
+
+  {% if g.user and g.user['role'] == 'admin' %}
+  </form>
+
+  <dialog class="deal-status-confirm" data-records-delete-confirm aria-labelledby="records-delete-confirm-title">
+    <div class="deal-status-confirm-card">
+      <h2 id="records-delete-confirm-title">Delete selected Records?</h2>
+      <p data-records-delete-confirm-message>This permanently deletes the selected inactive master Records and their linked source/Deal history. This cannot be undone.</p>
+      <div class="deal-status-confirm-actions">
+        <button class="button secondary" type="button" data-records-delete-no>No</button>
+        <button class="button primary" type="button" data-records-delete-yes>Yes</button>
+      </div>
+    </div>
+  </dialog>
+  {% endif %}
+</section>
+{% endblock %}
