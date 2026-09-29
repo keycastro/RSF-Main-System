@@ -3833,3 +3833,9 @@ textarea.prospect-inline-editor{resize:vertical}
   border-radius:8px;
   font-size:12px;
 }
+
+
+/* v1.18.84 — keep Delete Selected beside the selected count */
+.inbound-records-delete-selected{
+  margin-left:0;
+}
