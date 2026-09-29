@@ -5090,3 +5090,9 @@ textarea.prospect-inline-editor{resize:vertical}
   }
 }
 
+/* v1.18.101 — hide Prospect empty reminder while quick-add is open */
+.prospects-page .prospect-quick-add:not([hidden]) ~ [data-prospect-empty],
+.prospects-page .prospect-quick-add:not([hidden]) ~ [data-prospect-filter-empty]{
+  display:none!important;
+}
+
