@@ -286,6 +286,17 @@ def _selected_prospect_date(raw: str | None) -> date:
     return min(selected, today)
 
 
+def _selected_inquiry_date(raw: str | None) -> date:
+    today = date.today()
+    if not raw:
+        return today
+    try:
+        selected = date.fromisoformat(raw)
+    except ValueError:
+        return today
+    return min(selected, today)
+
+
 def _ensure_deal_for_prospect(db, prospect_id: int, created_by_user_id: int, now: str) -> tuple[int, bool]:
     existing = db.execute("SELECT id FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
     if existing:
@@ -3844,6 +3855,11 @@ def _authorized_client_conversation(conversation_id: int):
 @login_required
 def inquiries_list():
     db = get_db()
+    selected = _selected_inquiry_date(request.args.get("date"))
+    selected_str = selected.isoformat()
+    today = date.today()
+    is_today = selected == today
+
     claimed_select = """SELECT c.id AS client_conversation_id,c.lead_id,c.owner_partner_id,c.client_name AS name,
                c.client_email AS email,c.company,c.subject,c.status,c.created_at,c.updated_at,
                c.first_response_due_at,c.first_responded_at,c.last_client_message_at,c.last_outbound_message_at,
@@ -3858,9 +3874,26 @@ def inquiries_list():
             "SELECT * FROM website_inquiries WHERE status='UNCLAIMED' ORDER BY created_at ASC"
         ).fetchall()
         claimed = db.execute(claimed_select + " ORDER BY c.updated_at DESC LIMIT 200").fetchall()
-        website_inquiries = db.execute(
-            "SELECT * FROM website_inquiries WHERE status NOT IN ('ARCHIVED','SPAM') ORDER BY created_at DESC LIMIT 200"
-        ).fetchall()
+        if is_today:
+            website_inquiries = db.execute(
+                """SELECT * FROM website_inquiries
+                   WHERE status NOT IN ('ARCHIVED','SPAM')
+                     AND (
+                       substr(created_at,1,10)=?
+                       OR (substr(created_at,1,10)<? AND workflow_status IN ('NOT_CONTACTED','NO_ANSWER'))
+                     )
+                   ORDER BY CASE WHEN substr(created_at,1,10)=? THEN 0 ELSE 1 END,
+                            created_at ASC,id ASC""",
+                (selected_str, selected_str, selected_str),
+            ).fetchall()
+        else:
+            website_inquiries = db.execute(
+                """SELECT * FROM website_inquiries
+                   WHERE status NOT IN ('ARCHIVED','SPAM')
+                     AND substr(created_at,1,10)=?
+                   ORDER BY created_at ASC,id ASC""",
+                (selected_str,),
+            ).fetchall()
     else:
         pid = g.partner["id"]
         unclaimed = db.execute(
@@ -3869,12 +3902,26 @@ def inquiries_list():
         claimed = db.execute(
             claimed_select + " AND c.owner_partner_id=? ORDER BY c.updated_at DESC LIMIT 200", (pid,)
         ).fetchall()
-        website_inquiries = db.execute(
-            """SELECT * FROM website_inquiries
-               WHERE status='UNCLAIMED' OR (status='CLAIMED' AND claimed_by_partner_id=?)
-               ORDER BY created_at DESC LIMIT 200""",
-            (pid,),
-        ).fetchall()
+        if is_today:
+            website_inquiries = db.execute(
+                """SELECT * FROM website_inquiries
+                   WHERE (status='UNCLAIMED' OR (status='CLAIMED' AND claimed_by_partner_id=?))
+                     AND (
+                       substr(created_at,1,10)=?
+                       OR (substr(created_at,1,10)<? AND workflow_status IN ('NOT_CONTACTED','NO_ANSWER'))
+                     )
+                   ORDER BY CASE WHEN substr(created_at,1,10)=? THEN 0 ELSE 1 END,
+                            created_at ASC,id ASC""",
+                (pid, selected_str, selected_str, selected_str),
+            ).fetchall()
+        else:
+            website_inquiries = db.execute(
+                """SELECT * FROM website_inquiries
+                   WHERE (status='UNCLAIMED' OR (status='CLAIMED' AND claimed_by_partner_id=?))
+                     AND substr(created_at,1,10)=?
+                   ORDER BY created_at ASC,id ASC""",
+                (pid, selected_str),
+            ).fetchall()
     partners = []
     if g.user["role"] == "admin":
         partners = db.execute(
@@ -3892,6 +3939,9 @@ def inquiries_list():
         if row["website_inquiry_id"] is not None
     }
 
+    previous_date = (selected - timedelta(days=1)).isoformat()
+    next_date = (selected + timedelta(days=1)).isoformat() if selected < today else None
+
     now = utcnow_iso()
     overdue = [row for row in claimed if row["first_response_due_at"] and not row["first_responded_at"] and row["first_response_due_at"] < now]
     from .client_ops import email_receive_configured, email_send_configured
@@ -3899,6 +3949,11 @@ def inquiries_list():
         "inquiries.html", title="Website Inbox", unclaimed=unclaimed, claimed=claimed, website_inquiries=website_inquiries, partners=partners, overdue=overdue, current_time_iso=now,
         inquiry_workflow_status_labels=PROSPECT_STATUS_LABELS,
         inquiry_deal_ids=inquiry_deal_ids,
+        selected_date=selected_str,
+        previous_date=previous_date,
+        next_date=next_date,
+        today=today.isoformat(),
+        is_today=is_today,
         email_send_ready=email_send_configured(), email_receive_ready=email_receive_configured(),
         auto_email_sync=bool(current_app.config.get("AUTO_EMAIL_SYNC")),
         response_sla_minutes=int(current_app.config.get("FIRST_RESPONSE_SLA_MINUTES", 60)),
