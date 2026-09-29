@@ -44,6 +44,7 @@
               class="deal-notes-expand-button"
               type="button"
               data-prospect-notes-expand
+              data-timeline-url="{{ url_for('main.communication_timeline', prospect_id=prospect['id']) }}"
               aria-label="Open full Notes After Conversation"
               title="Open full notes"
             >
