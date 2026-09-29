@@ -13,7 +13,6 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       {% if template_interest %}<input type="hidden" name="source_slug" value="{{ template_interest.slug }}">{% endif %}
       {% if source_intent %}<input type="hidden" name="source_intent" value="{{ source_intent }}">{% endif %}
-      {% if selected_maintenance_plan %}<input type="hidden" name="source_plan" value="{{ selected_maintenance_plan.key }}">{% endif %}
 
       {% if template_interest %}
       <div class="human-request-note" role="note">
