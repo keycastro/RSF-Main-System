@@ -127,6 +127,105 @@
           </div>
         </form>
 
+        {% if deal['prospect_id'] %}
+        <section
+          class="deal-source-details deal-source-research"
+          aria-labelledby="deal-research-details-{{ deal['id'] }}"
+          data-deal-research-section
+          data-update-url="{{ url_for('main.prospect_update', prospect_id=deal['prospect_id']) }}"
+          data-attempt-url="{{ url_for('main.prospect_contact_attempt', prospect_id=deal['prospect_id']) }}"
+          data-csrf-token="{{ csrf_token() }}"
+        >
+          <div class="deal-source-details-head">
+            <h3 id="deal-research-details-{{ deal['id'] }}">Outbound / Research Details</h3>
+          </div>
+          <div class="deal-source-grid">
+            <label>
+              <span>Business Type</span>
+              <input type="text" maxlength="160" value="{{ deal['research_business_type'] }}" data-deal-research-field="business_type">
+            </label>
+            <label>
+              <span>Budget</span>
+              <input type="text" maxlength="200" value="{{ deal['research_budget'] }}" data-deal-research-field="budget">
+            </label>
+            <label>
+              <span>Post Date</span>
+              <input type="date" value="{{ deal['research_post_date'] }}" data-deal-research-field="post_date">
+            </label>
+            <label>
+              <span>Platform They Want</span>
+              <input type="text" maxlength="200" value="{{ deal['research_platform_wanted'] }}" data-deal-research-field="platform_wanted">
+            </label>
+            <label class="deal-source-field-wide">
+              <span>Problem</span>
+              <textarea maxlength="2000" rows="2" data-deal-research-field="problem">{{ deal['research_problem'] }}</textarea>
+            </label>
+            <label class="deal-source-field-wide">
+              <span>System They Want</span>
+              <textarea maxlength="2000" rows="2" data-deal-research-field="system_wanted">{{ deal['research_system_wanted'] }}</textarea>
+            </label>
+            <label>
+              <span>Company</span>
+              <input type="text" maxlength="200" value="{{ deal['prospect_name'] }}" data-deal-research-field="company">
+            </label>
+            <label>
+              <span>Website</span>
+              <input type="url" maxlength="1000" value="{{ deal['research_website'] }}" data-deal-research-field="website">
+            </label>
+            <label>
+              <span>Post Link</span>
+              <input type="url" maxlength="1000" value="{{ deal['research_post_link'] }}" data-deal-research-field="post_link">
+            </label>
+            <div class="deal-source-contact-attempt">
+              <span>Contact Attempt</span>
+              <div class="prospect-attempt-control" data-deal-research-attempt-control data-attempt-value="{{ deal['research_contact_attempt']|int }}">
+                <button type="button" class="prospect-attempt-step" data-deal-research-attempt-delta="-1" aria-label="Decrease Contact Attempt" {% if deal['research_contact_attempt']|int <= 0 %}disabled{% endif %}>‹</button>
+                <strong data-deal-research-attempt-number>{{ deal['research_contact_attempt']|int }}</strong>
+                <button type="button" class="prospect-attempt-step" data-deal-research-attempt-delta="1" aria-label="Increase Contact Attempt">›</button>
+              </div>
+            </div>
+            <div class="deal-source-readonly">
+              <span>Added Date</span>
+              <strong>{{ deal['research_created_at']|dt }}</strong>
+            </div>
+          </div>
+        </section>
+        {% endif %}
+
+        {% if deal['website_inquiry_id'] %}
+        <section class="deal-source-details deal-source-website" aria-labelledby="deal-website-details-{{ deal['id'] }}">
+          <div class="deal-source-details-head">
+            <h3 id="deal-website-details-{{ deal['id'] }}">Inbound / Website Details</h3>
+          </div>
+          <div class="deal-source-grid">
+            <div class="deal-source-readonly">
+              <span>Company</span>
+              <strong>{{ deal['inquiry_company'] or '—' }}</strong>
+            </div>
+            <div class="deal-source-readonly">
+              <span>Request</span>
+              {% if deal['inquiry_source_action'] %}
+                {% if deal['inquiry_source_type'] == 'system_template' and deal['inquiry_source_slug'] %}
+                <a href="{{ url_for('site.system_template_detail', slug=deal['inquiry_source_slug']) }}" target="_blank" rel="noopener noreferrer">{{ deal['inquiry_source_action'] }}</a>
+                {% else %}
+                <strong>{{ deal['inquiry_source_action'] }}</strong>
+                {% endif %}
+              {% else %}
+              <strong>—</strong>
+              {% endif %}
+            </div>
+            <div class="deal-source-readonly deal-source-field-wide">
+              <span>Original Website Message</span>
+              <div class="deal-source-message">{{ deal['inquiry_message'] or '—' }}</div>
+            </div>
+            <div class="deal-source-readonly deal-source-field-wide">
+              <span>Received Date</span>
+              <strong>{{ deal['inquiry_created_at']|dt }}</strong>
+            </div>
+          </div>
+        </section>
+        {% endif %}
+
         <section class="deal-documents" aria-labelledby="deal-documents-{{ deal['id'] }}">
           <div class="deal-documents-head">
             <div class="deal-documents-heading-copy">
