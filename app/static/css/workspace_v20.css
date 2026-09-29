@@ -4412,9 +4412,9 @@ textarea.prospect-inline-editor{resize:vertical}
   color:var(--ux-section-ink);
   font-size:11px;
   font-weight:800;
-  letter-spacing:.045em;
+  letter-spacing:.02em;
   line-height:1.3;
-  text-transform:uppercase
+  text-transform:none
 }
 .deal-source-research .deal-source-details-head h3{color:#14543f}
 .deal-source-website .deal-source-details-head h3{color:#245d91}
