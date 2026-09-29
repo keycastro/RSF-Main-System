@@ -4386,7 +4386,7 @@ def _delete_inbound_record_tree(db, inquiry_id: int) -> dict:
         return {"deleted": False, "missing": False, "protected": True, "shared_history_kept": 0}
 
     deal_rows = db.execute(
-        "SELECT id FROM deals WHERE website_inquiry_id=?",
+        "SELECT id,prospect_id FROM deals WHERE website_inquiry_id=?",
         (inquiry_id,),
     ).fetchall()
     deal_ids = [int(row["id"]) for row in deal_rows]
@@ -4408,7 +4408,14 @@ def _delete_inbound_record_tree(db, inquiry_id: int) -> dict:
                WHERE id<>? AND client_conversation_id=?""",
             (inquiry_id, conversation_id),
         ).fetchone()
-        is_shared = bool(other_refs and int(other_refs["total"] or 0) > 0)
+        conversation = db.execute(
+            "SELECT prospect_id FROM client_conversations WHERE id=?",
+            (conversation_id,),
+        ).fetchone()
+        is_shared = bool(
+            (other_refs and int(other_refs["total"] or 0) > 0)
+            or (conversation and conversation["prospect_id"] is not None)
+        )
         if is_shared:
             db.execute(
                 "UPDATE client_conversations SET inquiry_id=NULL WHERE id=? AND inquiry_id=?",
@@ -4423,7 +4430,14 @@ def _delete_inbound_record_tree(db, inquiry_id: int) -> dict:
         )
         db.execute("DELETE FROM client_conversations WHERE id=?", (conversation_id,))
 
-    for deal_id in deal_ids:
+    for deal_row in deal_rows:
+        deal_id = int(deal_row["id"])
+        if deal_row["prospect_id"] is not None:
+            db.execute(
+                "UPDATE deals SET website_inquiry_id=NULL,updated_at=? WHERE id=?",
+                (utcnow_iso(), deal_id),
+            )
+            continue
         db.execute(
             "DELETE FROM activity_log WHERE entity_type='deal' AND entity_id=?",
             (deal_id,),
@@ -4461,21 +4475,48 @@ def _delete_prospect_record_tree(db, prospect_id: int) -> dict:
         return {"deleted": False, "missing": False, "protected": True}
 
     deal_rows = db.execute(
-        "SELECT id FROM deals WHERE prospect_id=?",
+        "SELECT id,website_inquiry_id FROM deals WHERE prospect_id=?",
         (prospect_id,),
     ).fetchall()
     for row in deal_rows:
         deal_id = int(row["id"])
+        if row["website_inquiry_id"] is not None:
+            db.execute(
+                "UPDATE deals SET prospect_id=NULL,updated_at=? WHERE id=?",
+                (utcnow_iso(), deal_id),
+            )
+            continue
         db.execute(
             "DELETE FROM activity_log WHERE entity_type='deal' AND entity_id=?",
             (deal_id,),
         )
 
+    conversation_rows = db.execute(
+        "SELECT id,inquiry_id FROM client_conversations WHERE prospect_id=?",
+        (prospect_id,),
+    ).fetchall()
+    for conversation in conversation_rows:
+        is_shared = conversation["inquiry_id"] is not None or db.execute(
+            "SELECT 1 FROM website_inquiries WHERE client_conversation_id=? LIMIT 1",
+            (conversation["id"],),
+        ).fetchone()
+        if is_shared:
+            db.execute(
+                "UPDATE client_conversations SET prospect_id=NULL WHERE id=?",
+                (conversation["id"],),
+            )
+        else:
+            db.execute(
+                "DELETE FROM client_notifications WHERE entity_type='conversation' AND entity_id=?",
+                (conversation["id"],),
+            )
+            db.execute("DELETE FROM client_conversations WHERE id=?", (conversation["id"],))
+
     db.execute(
         "DELETE FROM activity_log WHERE entity_type='prospect' AND entity_id=?",
         (prospect_id,),
     )
-    # deals + deal_documents cascade from the Prospect FK.
+    # Prospect-only Deals still cascade; merged Deals were detached above.
     db.execute("DELETE FROM prospects WHERE id=?", (prospect_id,))
     return {"deleted": True, "missing": False, "protected": False}
 
