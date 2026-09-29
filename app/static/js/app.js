@@ -3301,10 +3301,12 @@
   let activeSource = page.dataset.recordsInitialSource || 'ALL';
   let searchTerm = '';
 
-  const visibleDeletableChecks = () => rowChecks.filter((check) => {
+  const visibleRowChecks = () => rowChecks.filter((check) => {
     const row = check.closest('[data-master-record-row]');
-    return row && !row.hidden && !check.disabled;
+    return row && !row.hidden;
   });
+
+  const visibleDeletableChecks = () => visibleRowChecks().filter((check) => !check.disabled);
 
   const clearSelection = () => {
     rowChecks.forEach((check) => { check.checked = false; });
@@ -3316,16 +3318,18 @@
 
   const updateSelection = () => {
     const selected = rowChecks.filter((check) => check.checked && !check.disabled);
-    const visibleChecks = visibleDeletableChecks();
-    const visibleSelected = visibleChecks.filter((check) => check.checked);
+    const visibleChecks = visibleRowChecks();
+    const visibleDeletable = visibleDeletableChecks();
+    const allVisibleSelected = visibleChecks.length > 0
+      && visibleChecks.every((check) => !check.disabled && check.checked);
 
     if (selectedCount) selectedCount.textContent = `Selected ${selected.length}`;
     if (deleteTrigger) deleteTrigger.disabled = selected.length === 0;
 
     if (selectAll) {
-      selectAll.checked = visibleChecks.length > 0 && visibleSelected.length === visibleChecks.length;
-      selectAll.indeterminate = visibleSelected.length > 0 && visibleSelected.length < visibleChecks.length;
-      selectAll.disabled = visibleChecks.length === 0;
+      selectAll.checked = allVisibleSelected;
+      selectAll.indeterminate = false;
+      selectAll.disabled = visibleDeletable.length === 0;
     }
   };
 
