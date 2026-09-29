@@ -4537,3 +4537,457 @@ textarea.prospect-inline-editor{resize:vertical}
   .deal-source-grid{grid-template-columns:1fr}
   .deal-source-field-wide{grid-column:auto}
 }
+
+
+/* v1.18.97 — Master Record detail story layout.
+   Presentation only: source data, links, relationships, and workflows stay unchanged. */
+.record-detail-v2{
+  max-width:1240px
+}
+.record-detail-v2 .record-detail-hero{
+  margin-bottom:16px
+}
+.record-detail-v2 .record-detail-hero .record-eyebrow{
+  display:block;
+  margin:10px 0 4px;
+  color:var(--workspace-emerald);
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.07em;
+  text-transform:uppercase
+}
+.record-detail-v2 .record-detail-hero h1{
+  margin-bottom:4px;
+  font-size:28px;
+  line-height:1.08
+}
+.record-detail-v2 .record-detail-hero p{
+  max-width:760px
+}
+
+.record-story-section{
+  min-width:0;
+  margin-bottom:16px;
+  padding:18px;
+  border:1px solid #dbe4e0;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 4px 16px rgba(25,55,46,.03)
+}
+.record-story-heading{
+  display:flex;
+  align-items:flex-start;
+  gap:11px;
+  margin-bottom:14px
+}
+.record-step-number{
+  display:grid;
+  place-items:center;
+  width:28px;
+  height:28px;
+  flex:0 0 28px;
+  border-radius:50%;
+  background:var(--workspace-emerald);
+  color:#fff;
+  font-size:12px;
+  font-weight:850
+}
+.record-story-heading h2{
+  margin:0;
+  color:var(--ux-section-ink);
+  font-size:17px;
+  line-height:1.2
+}
+.record-story-heading p{
+  margin:3px 0 0;
+  color:var(--ux-section-muted);
+  font-size:10.5px;
+  line-height:1.45
+}
+
+.record-client-card{
+  overflow:hidden;
+  border:1px solid #dce7e2;
+  border-radius:12px;
+  background:#fbfdfc
+}
+.record-client-primary{
+  padding:16px;
+  border-bottom:1px solid #e4ebe8
+}
+.record-client-primary span,
+.record-client-grid span{
+  display:block;
+  margin-bottom:5px;
+  color:var(--ux-section-muted);
+  font-size:8.5px;
+  font-weight:850;
+  letter-spacing:.055em;
+  text-transform:uppercase
+}
+.record-client-primary strong{
+  display:block;
+  color:var(--ux-section-ink);
+  font-size:20px;
+  line-height:1.2
+}
+.record-client-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr))
+}
+.record-client-grid>div{
+  min-width:0;
+  padding:14px 16px;
+  border-right:1px solid #e7eeeb
+}
+.record-client-grid>div:last-child{
+  border-right:0
+}
+.record-client-grid strong{
+  display:block;
+  color:var(--ux-section-ink);
+  font-size:12px;
+  line-height:1.35;
+  overflow-wrap:anywhere
+}
+.record-client-status strong{
+  color:var(--workspace-emerald)
+}
+.record-client-meta{
+  display:flex;
+  gap:18px;
+  flex-wrap:wrap;
+  padding:10px 16px;
+  border-top:1px solid #e7eeeb;
+  background:#f6faf8;
+  color:var(--ux-section-muted);
+  font-size:9.5px
+}
+.record-client-meta strong{
+  margin-left:4px;
+  color:var(--ux-section-ink)
+}
+
+.record-origin-card{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px
+}
+.record-origin-card:not(.is-merged){
+  grid-template-columns:minmax(0,520px)
+}
+.record-origin-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+  padding:14px 16px;
+  border:1px solid #dbe4e0;
+  border-radius:12px
+}
+.record-origin-outbound{
+  background:#f4fbf7
+}
+.record-origin-inbound{
+  background:#f3f8fd
+}
+.record-origin-icon{
+  display:grid;
+  place-items:center;
+  width:32px;
+  height:32px;
+  flex:0 0 32px;
+  border:1px solid #cfddd7;
+  border-radius:50%;
+  background:#fff;
+  color:var(--workspace-emerald);
+  font-size:17px;
+  font-weight:850
+}
+.record-origin-inbound .record-origin-icon{
+  color:#245d91
+}
+.record-origin-item small{
+  display:block;
+  color:var(--ux-section-muted);
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.06em;
+  text-transform:uppercase
+}
+.record-origin-item strong{
+  display:block;
+  margin-top:2px;
+  color:var(--ux-section-ink);
+  font-size:14px
+}
+.record-origin-item>div>span{
+  display:block;
+  margin-top:3px;
+  color:var(--ux-section-muted);
+  font-size:9.5px
+}
+.record-origin-merged{
+  grid-column:1/-1;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:10px 14px;
+  border:1px solid #ded6ea;
+  border-radius:10px;
+  background:#faf7fd
+}
+.record-origin-merged span{
+  color:#73559b;
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.055em;
+  text-transform:uppercase
+}
+.record-origin-merged strong{
+  color:#523b73;
+  font-size:11px
+}
+
+.record-timeline-v2{
+  padding:4px 4px 0
+}
+.record-timeline-v2 .record-timeline-item{
+  grid-template-columns:20px minmax(0,1fr);
+  gap:12px
+}
+.record-timeline-v2 .record-timeline-item:not(:last-child)::before{
+  left:7px;
+  top:15px;
+  bottom:-4px;
+  width:2px;
+  background:#dce7e2
+}
+.record-timeline-v2 .record-timeline-marker{
+  width:15px;
+  height:15px;
+  margin-top:2px;
+  border-width:3px
+}
+.record-timeline-v2 .record-timeline-body{
+  padding:0 0 18px
+}
+.record-timeline-v2 .record-timeline-top strong{
+  font-size:12px
+}
+.record-timeline-v2 .record-timeline-top time{
+  font-size:9.5px
+}
+.record-timeline-v2 .record-timeline-body>span{
+  font-size:10.5px
+}
+.record-timeline-kind-research .record-timeline-marker{
+  border-color:#1b7359
+}
+.record-timeline-kind-website .record-timeline-marker{
+  border-color:#367eb8
+}
+.record-timeline-kind-deal .record-timeline-marker{
+  border-color:#b48a42
+}
+
+.record-source-group{
+  margin-top:12px;
+  padding:14px;
+  border:1px solid #dfe8e4;
+  border-radius:12px
+}
+.record-source-group:first-of-type{
+  margin-top:0
+}
+.record-source-group-outbound{
+  background:#f6fbf8
+}
+.record-source-group-inbound{
+  background:#f5f9fd
+}
+.record-source-group-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px
+}
+.record-source-direction{
+  display:block;
+  margin-bottom:3px;
+  color:var(--ux-section-muted);
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.06em;
+  text-transform:uppercase
+}
+.record-source-group-head h3{
+  margin:0;
+  color:var(--ux-section-ink);
+  font-size:14px
+}
+.record-source-group-head p{
+  margin:3px 0 0;
+  color:var(--ux-section-muted);
+  font-size:9.5px
+}
+.record-source-group-outbound .record-source-direction,
+.record-source-card-outbound .record-source-type{
+  color:#14543f
+}
+.record-source-group-inbound .record-source-direction,
+.record-source-card-inbound .record-source-type{
+  color:#245d91
+}
+.record-detail-v2 .record-source-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr))
+}
+.record-detail-v2 .record-source-card,
+.record-detail-v2 .record-deal-card{
+  box-shadow:none
+}
+.record-detail-v2 .record-source-card{
+  background:#fff
+}
+.record-detail-v2 .record-detail-list-compact>div{
+  grid-template-columns:132px minmax(0,1fr)
+}
+
+.record-detail-v2 .record-deal-list{
+  grid-template-columns:repeat(2,minmax(0,1fr))
+}
+.record-deal-card-v2{
+  border-color:#d8e3df;
+  background:#fbfdfc
+}
+.record-deal-card-v2>header{
+  padding-bottom:9px;
+  border-bottom:1px solid #e8eeeb
+}
+.record-deal-card-v2 .record-source-type{
+  color:#8a682e
+}
+.record-documents-v2{
+  display:grid;
+  grid-template-columns:120px minmax(0,1fr);
+  align-items:start;
+  gap:12px;
+  margin-top:12px;
+  padding-top:12px
+}
+.record-documents-label{
+  display:flex;
+  align-items:center;
+  gap:6px
+}
+.record-documents-label strong{
+  color:var(--ux-section-muted);
+  font-size:8.5px;
+  letter-spacing:.055em;
+  text-transform:uppercase
+}
+.record-documents-label span{
+  display:grid;
+  place-items:center;
+  min-width:18px;
+  height:18px;
+  padding:0 5px;
+  border-radius:9px;
+  background:#edf4f1;
+  color:var(--workspace-emerald);
+  font-size:9px;
+  font-weight:850
+}
+.record-document-links{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap
+}
+.record-document-links a{
+  display:inline-flex;
+  align-items:center;
+  min-height:27px;
+  padding:5px 8px;
+  border:1px solid #d8e4df;
+  border-radius:7px;
+  background:#fff;
+  color:var(--workspace-emerald);
+  font-size:9.5px;
+  font-weight:800;
+  text-decoration:none
+}
+.record-document-links a:hover{
+  text-decoration:underline
+}
+.record-document-links>span{
+  color:var(--ux-section-muted);
+  font-size:10px
+}
+.record-no-deal{
+  display:grid;
+  gap:3px;
+  padding:15px 16px;
+  border:1px dashed #ccd9d4;
+  border-radius:10px;
+  background:#fafcfb
+}
+.record-no-deal strong{
+  color:var(--ux-section-ink);
+  font-size:12px
+}
+.record-no-deal span{
+  color:var(--ux-section-muted);
+  font-size:10px
+}
+
+@media(max-width:900px){
+  .record-detail-v2{
+    max-width:none
+  }
+  .record-client-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))
+  }
+  .record-client-grid>div:nth-child(2){
+    border-right:0
+  }
+  .record-client-grid>div:nth-child(-n+2){
+    border-bottom:1px solid #e7eeeb
+  }
+  .record-origin-card,
+  .record-origin-card.is-merged,
+  .record-detail-v2 .record-source-grid,
+  .record-detail-v2 .record-deal-list{
+    grid-template-columns:1fr
+  }
+  .record-origin-merged{
+    grid-column:auto
+  }
+}
+@media(max-width:650px){
+  .record-story-section{
+    padding:14px
+  }
+  .record-detail-v2 .record-detail-hero h1{
+    font-size:24px
+  }
+  .record-client-grid{
+    grid-template-columns:1fr
+  }
+  .record-client-grid>div{
+    border-right:0;
+    border-bottom:1px solid #e7eeeb
+  }
+  .record-client-grid>div:last-child{
+    border-bottom:0
+  }
+  .record-detail-v2 .record-detail-list-compact>div,
+  .record-documents-v2{
+    grid-template-columns:1fr
+  }
+  .record-origin-merged{
+    align-items:flex-start;
+    flex-direction:column
+  }
+}
