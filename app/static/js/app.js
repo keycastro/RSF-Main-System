@@ -2386,6 +2386,111 @@ document.addEventListener('click', (event) => {
     });
   });
 
+  const normalizeProspectLink = (rawValue) => {
+    const value = String(rawValue || '').trim();
+    if (!value) return '';
+    const withScheme = /^[a-z][a-z0-9+.-]*:/i.test(value) ? value : `https://${value}`;
+    try {
+      const url = new URL(withScheme);
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') return '';
+      return url.href;
+    } catch (_error) {
+      return '';
+    }
+  };
+
+  const prospectFieldValue = (row, fieldName, useDisplay = false) => {
+    const field = row.querySelector(`[data-prospect-edit-field][data-prospect-field="${fieldName}"]`);
+    if (!field) return '';
+    const activeEditor = field.querySelector('[data-prospect-editor-active]');
+    if (activeEditor) return String(activeEditor.value || '').trim();
+    if (useDisplay) {
+      const display = field.querySelector('[data-prospect-edit-trigger]');
+      if (display) return String(display.textContent || '').trim();
+    }
+    return String(field.dataset.prospectValue || '').trim();
+  };
+
+  const writeProspectClipboard = async (value) => {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(value);
+      return;
+    }
+    const fallback = document.createElement('textarea');
+    fallback.value = value;
+    fallback.setAttribute('readonly', '');
+    fallback.style.position = 'fixed';
+    fallback.style.opacity = '0';
+    document.body.appendChild(fallback);
+    fallback.select();
+    const copied = document.execCommand('copy');
+    fallback.remove();
+    if (!copied) throw new Error('Clipboard unavailable');
+  };
+
+  page.addEventListener('click', (event) => {
+    const openButton = event.target.closest('[data-prospect-open-link]');
+    if (!openButton) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (openButton.disabled) return;
+
+    const field = openButton.closest('[data-prospect-edit-field]');
+    const href = normalizeProspectLink(field?.dataset.prospectValue || '');
+    if (!href) {
+      showToast('This link is not valid yet.', true);
+      return;
+    }
+    window.open(href, '_blank', 'noopener,noreferrer');
+  });
+
+  page.addEventListener('click', async (event) => {
+    const copyButton = event.target.closest('[data-prospect-copy]');
+    if (!copyButton) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const row = copyButton.closest('[data-prospect-row]');
+    if (!row) return;
+
+    const notes = String(row.querySelector('[data-prospect-notes-compact]')?.value || '').trim();
+    const attempt = String(row.querySelector('[data-prospect-attempt-control]')?.dataset.prospectAttemptValue || '0').trim();
+
+    const emptyAsDash = (value) => value || '—';
+    const copyText = [
+      `Business Type: ${emptyAsDash(prospectFieldValue(row, 'business_type'))}`,
+      `Status: ${emptyAsDash(prospectFieldValue(row, 'status', true))}`,
+      `Budget: ${emptyAsDash(prospectFieldValue(row, 'budget'))}`,
+      `Post Date: ${emptyAsDash(prospectFieldValue(row, 'post_date', true))}`,
+      `Platform They Want: ${emptyAsDash(prospectFieldValue(row, 'platform_wanted'))}`,
+      '',
+      'Problem:',
+      emptyAsDash(prospectFieldValue(row, 'problem')),
+      '',
+      'System They Want:',
+      emptyAsDash(prospectFieldValue(row, 'system_wanted')),
+      '',
+      'Notes After Conversation:',
+      emptyAsDash(notes),
+      '',
+      `Post Link: ${emptyAsDash(prospectFieldValue(row, 'post_link'))}`,
+      `Website: ${emptyAsDash(prospectFieldValue(row, 'website'))}`,
+      `Location: ${emptyAsDash(prospectFieldValue(row, 'location'))}`,
+      `Company: ${emptyAsDash(prospectFieldValue(row, 'company'))}`,
+      `Client Name: ${emptyAsDash(prospectFieldValue(row, 'contact'))}`,
+      `Email: ${emptyAsDash(prospectFieldValue(row, 'email'))}`,
+      `Phone: ${emptyAsDash(prospectFieldValue(row, 'phone'))}`,
+      `Contact Attempt: ${attempt || '0'}`
+    ].join('\n');
+
+    try {
+      await writeProspectClipboard(copyText);
+      showToast('Prospect copied to clipboard.');
+    } catch (_error) {
+      showToast('Prospect could not be copied. Try again.', true);
+    }
+  });
+
   page.addEventListener('click', (event) => {
     const triggerEdit = event.target.closest('[data-prospect-edit-trigger]');
     if (!triggerEdit) return;
