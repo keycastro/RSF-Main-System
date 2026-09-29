@@ -375,7 +375,6 @@ CREATE TABLE IF NOT EXISTS client_conversations (
 CREATE INDEX IF NOT EXISTS idx_client_conversations_owner ON client_conversations(owner_partner_id,status,updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_client_conversations_lead ON client_conversations(lead_id,updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_client_conversations_email ON client_conversations(client_email,status,updated_at DESC);
-CREATE INDEX IF NOT EXISTS idx_client_conversations_prospect ON client_conversations(prospect_id,updated_at DESC);
 
 CREATE TABLE IF NOT EXISTS client_messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
