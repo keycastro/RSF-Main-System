@@ -3804,3 +3804,15 @@ textarea.prospect-inline-editor{resize:vertical}
     gap:4px;
   }
 }
+
+
+/* v1.18.82 — Inbound Records removes duplicate topbar and simplifies selection copy */
+.inbound-records-selection-divider{
+  flex:0 0 auto;
+  color:#a5b0ab;
+  font-size:12px;
+  line-height:1;
+}
+.inbound-records-selected-count{
+  white-space:nowrap;
+}
