@@ -4402,6 +4402,8 @@ textarea.prospect-inline-editor{resize:vertical}
 .deal-source-details-head{
   display:flex;
   align-items:center;
+  justify-content:space-between;
+  gap:10px;
   min-height:24px;
   margin-bottom:10px
 }
@@ -4416,6 +4418,35 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 .deal-source-research .deal-source-details-head h3{color:#14543f}
 .deal-source-website .deal-source-details-head h3{color:#245d91}
+.deal-source-collapse-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:28px;
+  height:28px;
+  flex:0 0 auto;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#6f817a;
+  font:inherit;
+  font-size:20px;
+  line-height:1;
+  cursor:pointer
+}
+.deal-source-collapse-button span{
+  display:block;
+  transition:transform .16s ease
+}
+.deal-source-collapse-button[aria-expanded="true"] span{
+  transform:rotate(180deg)
+}
+.deal-source-collapse-button:focus-visible{
+  outline:2px solid #c8aa71;
+  outline-offset:2px;
+  border-radius:6px
+}
+.deal-source-grid[hidden]{display:none!important}
 .deal-source-grid{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
