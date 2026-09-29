@@ -1298,6 +1298,36 @@ def prospect_new():
     if duplicate:
         return duplicate_response(duplicate)
 
+    website_duplicate = find_matching_website_inquiry(
+        db,
+        {
+            "company": submitted_company,
+            "contact_name": values["contact"],
+            "email": values["email"],
+            "phone": values["phone"],
+        },
+    )
+    if website_duplicate:
+        received_date = (website_duplicate["created_at"] or "")[:10] or today_str()
+        view_url = url_for("main.inquiries_list", date=received_date) + f"#website-inquiry-{website_duplicate['id']}"
+        if wants_json:
+            return jsonify(
+                {
+                    "ok": False,
+                    "error": "website_duplicate",
+                    "message": "This client already exists in Website Inbox.",
+                    "duplicate": {
+                        "id": website_duplicate["id"],
+                        "company": website_duplicate["company"],
+                        "received_date": received_date,
+                        "view_url": view_url,
+                        "source": "website",
+                    },
+                }
+            ), 409
+        flash("This client already exists in Website Inbox.", "error")
+        return redirect(view_url)
+
     now = utcnow_iso()
     recorded_date = today_str()
     try:
