@@ -3313,7 +3313,7 @@
     const visibleChecks = visibleDeletableChecks();
     const visibleSelected = visibleChecks.filter((check) => check.checked);
 
-    if (selectedCount) selectedCount.textContent = `${selected.length} selected`;
+    if (selectedCount) selectedCount.textContent = `Selected ${selected.length}`;
     if (deleteTrigger) deleteTrigger.disabled = selected.length === 0;
 
     if (selectAll) {
