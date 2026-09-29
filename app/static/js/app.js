@@ -1,3 +1,99 @@
+const RSFConversationTimeline = (() => {
+  const setAction = (element, href) => {
+    if (!element) return;
+    if (href) {
+      element.href = href;
+      element.removeAttribute('aria-disabled');
+      element.removeAttribute('tabindex');
+      element.classList.remove('is-disabled');
+    } else {
+      element.href = '#';
+      element.setAttribute('aria-disabled', 'true');
+      element.setAttribute('tabindex', '-1');
+      element.classList.add('is-disabled');
+    }
+  };
+
+  const render = (container, entries) => {
+    if (!container) return;
+    container.replaceChildren();
+    if (!entries?.length) {
+      const empty = document.createElement('div');
+      empty.className = 'conversation-timeline-empty';
+      empty.textContent = 'No conversation history yet.';
+      container.appendChild(empty);
+      return;
+    }
+
+    entries.forEach((entry) => {
+      const item = document.createElement('article');
+      item.className = 'conversation-timeline-item';
+
+      const head = document.createElement('div');
+      head.className = 'conversation-timeline-item-head';
+
+      const meta = document.createElement('strong');
+      meta.textContent = [entry.source, entry.channel].filter(Boolean).join(' · ');
+
+      const when = document.createElement('time');
+      const raw = entry.at || '';
+      const date = raw ? new Date(raw) : null;
+      when.textContent = date && !Number.isNaN(date.getTime())
+        ? new Intl.DateTimeFormat(undefined, {
+            month: 'short', day: 'numeric', year: 'numeric',
+            hour: 'numeric', minute: '2-digit'
+          }).format(date)
+        : raw;
+
+      head.append(meta, when);
+
+      const body = document.createElement('div');
+      body.className = 'conversation-timeline-item-body';
+      body.textContent = entry.body || '';
+
+      item.append(head, body);
+      container.appendChild(item);
+    });
+  };
+
+  const load = async (url, container, callAction, emailAction) => {
+    if (!url || !container) return;
+    container.replaceChildren();
+    const loading = document.createElement('div');
+    loading.className = 'conversation-timeline-empty';
+    loading.textContent = 'Loading conversation history...';
+    container.appendChild(loading);
+    setAction(callAction, '');
+    setAction(emailAction, '');
+
+    try {
+      const response = await fetch(url, {
+        headers: { Accept: 'application/json' },
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) throw new Error(data.message || 'Conversation history could not be loaded.');
+      render(container, data.entries || []);
+      setAction(callAction, data.call_url || '');
+      setAction(emailAction, data.email_url || '');
+    } catch (_error) {
+      container.replaceChildren();
+      const failed = document.createElement('div');
+      failed.className = 'conversation-timeline-empty is-error';
+      failed.textContent = 'Conversation history could not be loaded.';
+      container.appendChild(failed);
+    }
+  };
+
+  return { load };
+})();
+
+document.addEventListener('click', (event) => {
+  const disabled = event.target.closest?.('.conversation-action-icon[aria-disabled="true"]');
+  if (disabled) event.preventDefault();
+});
+
 (() => {
   const body = document.body;
   const menu = document.querySelector('[data-menu]');
@@ -1732,18 +1828,19 @@
     strong.textContent = data.message || 'Prospect already exists.';
     quickMessage.appendChild(strong);
 
-    if (duplicate.recorded_date) {
-      const date = new Date(`${duplicate.recorded_date}T00:00:00`);
-      const readable = Number.isNaN(date.getTime()) ? duplicate.recorded_date : new Intl.DateTimeFormat(undefined, { month: 'long', day: 'numeric', year: 'numeric' }).format(date);
+    const duplicateDate = duplicate.recorded_date || duplicate.received_date || '';
+    if (duplicateDate) {
+      const date = new Date(`${duplicateDate}T00:00:00`);
+      const readable = Number.isNaN(date.getTime()) ? duplicateDate : new Intl.DateTimeFormat(undefined, { month: 'long', day: 'numeric', year: 'numeric' }).format(date);
       const detail = document.createElement('span');
-      detail.textContent = `Recorded on ${readable}.`;
+      detail.textContent = duplicate.source === 'website' ? `Received on ${readable}.` : `Recorded on ${readable}.`;
       quickMessage.appendChild(detail);
     }
 
     if (duplicate.view_url) {
       const link = document.createElement('a');
       link.href = duplicate.view_url;
-      link.textContent = 'View Prospect';
+      link.textContent = duplicate.source === 'website' ? 'View Website Inquiry' : 'View Prospect';
       quickMessage.appendChild(link);
     }
     quickMessage.hidden = false;
@@ -1849,7 +1946,7 @@
           return;
         }
 
-        if (response.status === 409 && data.error === 'duplicate') {
+        if (response.status === 409 && (data.error === 'duplicate' || data.error === 'website_duplicate')) {
           showDuplicate(data);
           return;
         }
@@ -1900,6 +1997,9 @@
   const prospectNotesViewer = page.querySelector('[data-prospect-notes-viewer]');
   const prospectNotesViewerInput = page.querySelector('[data-prospect-notes-viewer-input]');
   const prospectNotesViewerClose = page.querySelector('[data-prospect-notes-viewer-close]');
+  const prospectConversationTimeline = page.querySelector('[data-prospect-conversation-timeline]');
+  const prospectCallAction = page.querySelector('[data-prospect-call-action]');
+  const prospectEmailAction = page.querySelector('[data-prospect-email-action]');
   let prospectNotesSource = null;
 
   const saveProspectNotes = async (source) => {
@@ -1982,6 +2082,12 @@
     prospectNotesSource = source;
     source.dataset.prospectNotesStartValue ??= source.value || '';
     if (prospectNotesViewerInput) prospectNotesViewerInput.value = source.value || '';
+    RSFConversationTimeline.load(
+      trigger.dataset.timelineUrl || '',
+      prospectConversationTimeline,
+      prospectCallAction,
+      prospectEmailAction
+    );
 
     if (prospectNotesViewer && typeof prospectNotesViewer.showModal === 'function') {
       prospectNotesViewer.showModal();
@@ -2484,6 +2590,9 @@
   const notesViewer = page.querySelector('[data-deal-notes-viewer]');
   const notesViewerInput = page.querySelector('[data-deal-notes-viewer-input]');
   const notesViewerClose = page.querySelector('[data-deal-notes-viewer-close]');
+  const dealConversationTimeline = page.querySelector('[data-deal-conversation-timeline]');
+  const dealCallAction = page.querySelector('[data-deal-call-action]');
+  const dealEmailAction = page.querySelector('[data-deal-email-action]');
   let notesSource = null;
 
   const saveExpandedNotesIfChanged = () => {
@@ -2511,6 +2620,12 @@
     notesSource = source;
     notesSource.dataset.dealStartValue = source.value || '';
     if (notesViewerInput) notesViewerInput.value = source.value || '';
+    RSFConversationTimeline.load(
+      trigger.dataset.timelineUrl || '',
+      dealConversationTimeline,
+      dealCallAction,
+      dealEmailAction
+    );
 
     if (notesViewer && typeof notesViewer.showModal === 'function') {
       notesViewer.showModal();
@@ -2934,6 +3049,9 @@
   const notesViewer = page.querySelector('[data-website-notes-viewer]');
   const notesViewerInput = page.querySelector('[data-website-notes-viewer-input]');
   const notesViewerClose = page.querySelector('[data-website-notes-viewer-close]');
+  const websiteConversationTimeline = page.querySelector('[data-website-conversation-timeline]');
+  const websiteCallAction = page.querySelector('[data-website-call-action]');
+  const websiteEmailAction = page.querySelector('[data-website-email-action]');
   let notesSource = null;
 
   const closeViewer = () => {
@@ -3044,6 +3162,12 @@
     notesSource = source;
     source.dataset.websiteNotesStartValue ??= source.value || '';
     if (notesViewerInput) notesViewerInput.value = source.value || '';
+    RSFConversationTimeline.load(
+      trigger.dataset.timelineUrl || '',
+      websiteConversationTimeline,
+      websiteCallAction,
+      websiteEmailAction
+    );
 
     if (notesViewer && typeof notesViewer.showModal === 'function') {
       notesViewer.showModal();
