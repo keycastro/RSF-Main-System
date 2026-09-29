@@ -96,10 +96,7 @@ CREATE TABLE IF NOT EXISTS deals (
     created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
-    CHECK (
-        (prospect_id IS NOT NULL AND website_inquiry_id IS NULL)
-        OR (prospect_id IS NULL AND website_inquiry_id IS NOT NULL)
-    )
+    CHECK (prospect_id IS NOT NULL OR website_inquiry_id IS NOT NULL)
 );
 
 CREATE TABLE IF NOT EXISTS deal_documents (
@@ -364,6 +361,7 @@ CREATE INDEX IF NOT EXISTS idx_website_inquiries_email ON website_inquiries(emai
 CREATE TABLE IF NOT EXISTS client_conversations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     inquiry_id INTEGER REFERENCES website_inquiries(id),
+    prospect_id INTEGER REFERENCES prospects(id),
     lead_id INTEGER REFERENCES leads(id),
     owner_partner_id INTEGER REFERENCES partners(id),
     client_name TEXT NOT NULL,
@@ -377,12 +375,14 @@ CREATE TABLE IF NOT EXISTS client_conversations (
 CREATE INDEX IF NOT EXISTS idx_client_conversations_owner ON client_conversations(owner_partner_id,status,updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_client_conversations_lead ON client_conversations(lead_id,updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_client_conversations_email ON client_conversations(client_email,status,updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_client_conversations_prospect ON client_conversations(prospect_id,updated_at DESC);
 
 CREATE TABLE IF NOT EXISTS client_messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     conversation_id INTEGER NOT NULL REFERENCES client_conversations(id) ON DELETE CASCADE,
     direction TEXT NOT NULL CHECK (direction IN ('INBOUND','OUTBOUND')),
     channel TEXT NOT NULL CHECK (channel IN ('WEBSITE','EMAIL')),
+    journey_source TEXT NOT NULL DEFAULT '',
     sender_email TEXT NOT NULL DEFAULT '',
     recipient_email TEXT NOT NULL DEFAULT '',
     subject TEXT NOT NULL DEFAULT '',
