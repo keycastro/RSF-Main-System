@@ -1666,14 +1666,15 @@ def deal_create_from_prospect(prospect_id: int):
     existing = db.execute("SELECT id FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
     if existing:
         deal_id = int(existing["id"])
-        db.execute("UPDATE prospects SET status='DEAL',updated_at=? WHERE id=?", (now, prospect_id))
         db.execute("UPDATE deals SET status='DEAL',updated_at=? WHERE id=?", (now, deal_id))
+        _sync_deal_source_statuses(db, deal_id, "DEAL", now)
         db.commit()
         flash("Deal opened.", "success")
         return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
     deal_id, _ = _ensure_deal_for_prospect(db, prospect_id, g.user["id"], now)
-    db.execute("UPDATE prospects SET status='DEAL',updated_at=? WHERE id=?", (now, prospect_id))
+    db.execute("UPDATE deals SET status='DEAL',updated_at=? WHERE id=?", (now, deal_id))
+    _sync_deal_source_statuses(db, deal_id, "DEAL", now)
     db.commit()
     flash("Deal created.", "success")
     return redirect(url_for("main.deals") + f"#deal-{deal_id}")
@@ -1693,20 +1694,15 @@ def deal_create_from_inquiry(inquiry_id: int):
     ).fetchone()
     if existing:
         deal_id = int(existing["id"])
-        db.execute(
-            "UPDATE website_inquiries SET workflow_status='DEAL',updated_at=? WHERE id=?",
-            (now, inquiry_id),
-        )
         db.execute("UPDATE deals SET status='DEAL',updated_at=? WHERE id=?", (now, deal_id))
+        _sync_deal_source_statuses(db, deal_id, "DEAL", now)
         db.commit()
         flash("Deal opened.", "success")
         return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
     deal_id, _ = _ensure_deal_for_website_inquiry(db, inquiry_id, g.user["id"], now)
-    db.execute(
-        "UPDATE website_inquiries SET workflow_status='DEAL',updated_at=? WHERE id=?",
-        (now, inquiry_id),
-    )
+    db.execute("UPDATE deals SET status='DEAL',updated_at=? WHERE id=?", (now, deal_id))
+    _sync_deal_source_statuses(db, deal_id, "DEAL", now)
     db.commit()
     flash("Deal created.", "success")
     return redirect(url_for("main.deals") + f"#deal-{deal_id}")
