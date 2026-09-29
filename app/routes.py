@@ -1596,6 +1596,25 @@ def prospect_contact_attempt(prospect_id: int):
     return jsonify({"ok": True, "value": updated})
 
 
+@bp.get("/prospects/<int:prospect_id>/conversation")
+@login_required
+def prospect_conversation_open(prospect_id: int):
+    owner_partner_id = partner_scope_id()
+    from .client_ops import ensure_prospect_conversation
+    try:
+        conversation_id = ensure_prospect_conversation(prospect_id, owner_partner_id=owner_partner_id)
+    except ValueError as exc:
+        flash(str(exc), "warning")
+        prospect = get_db().execute(
+            "SELECT recorded_date FROM prospects WHERE id=?",
+            (prospect_id,),
+        ).fetchone()
+        if not prospect:
+            abort(404)
+        return redirect(url_for("main.prospects", date=prospect["recorded_date"]) + f"#prospect-{prospect_id}")
+    return redirect(url_for("main.client_conversation", conversation_id=conversation_id))
+
+
 @bp.post("/prospects/<int:prospect_id>/delete")
 @login_required
 def prospect_delete(prospect_id: int):
@@ -4048,6 +4067,169 @@ def _authorized_client_conversation(conversation_id: int):
         if not g.partner or row["owner_partner_id"] != g.partner["id"]:
             abort(404)
     return row
+
+
+@bp.get("/communications/timeline")
+@login_required
+def communication_timeline():
+    db = get_db()
+    prospect_id = request.args.get("prospect_id", type=int)
+    inquiry_id = request.args.get("inquiry_id", type=int)
+    deal_id = request.args.get("deal_id", type=int)
+
+    deal = None
+    if deal_id:
+        deal = db.execute(
+            "SELECT id,prospect_id,website_inquiry_id,contact_number,email,notes_after_conversation,updated_at FROM deals WHERE id=?",
+            (deal_id,),
+        ).fetchone()
+        if not deal:
+            abort(404)
+        prospect_id = int(deal["prospect_id"]) if deal["prospect_id"] is not None else prospect_id
+        inquiry_id = int(deal["website_inquiry_id"]) if deal["website_inquiry_id"] is not None else inquiry_id
+
+    inquiry = _authorized_inquiry(inquiry_id) if inquiry_id else None
+    prospect = None
+    if prospect_id:
+        prospect = db.execute(
+            "SELECT id,name,contact,email,phone,notes_after_conversation,updated_at,recorded_date FROM prospects WHERE id=?",
+            (prospect_id,),
+        ).fetchone()
+        if not prospect:
+            abort(404)
+
+    if not deal and not inquiry and not prospect:
+        abort(400)
+
+    conversation_ids: set[int] = set()
+    if inquiry:
+        if inquiry["client_conversation_id"]:
+            conversation_ids.add(int(inquiry["client_conversation_id"]))
+        rows = db.execute(
+            "SELECT id FROM client_conversations WHERE inquiry_id=?",
+            (inquiry_id,),
+        ).fetchall()
+        conversation_ids.update(int(row["id"]) for row in rows)
+    if prospect:
+        rows = db.execute(
+            "SELECT id FROM client_conversations WHERE prospect_id=?",
+            (prospect_id,),
+        ).fetchall()
+        conversation_ids.update(int(row["id"]) for row in rows)
+
+    entries: list[dict] = []
+    if conversation_ids:
+        placeholders = ",".join("?" for _ in conversation_ids)
+        messages = db.execute(
+            f"""SELECT m.*,c.inquiry_id,c.prospect_id
+                FROM client_messages m
+                JOIN client_conversations c ON c.id=m.conversation_id
+                WHERE m.conversation_id IN ({placeholders})
+                ORDER BY m.created_at ASC,m.id ASC""",
+            sorted(conversation_ids),
+        ).fetchall()
+        for message in messages:
+            source = (message["journey_source"] or "").strip().upper()
+            if source not in ("OUTBOUND", "INBOUND"):
+                source = "INBOUND" if message["inquiry_id"] is not None or message["channel"] == "WEBSITE" else "OUTBOUND"
+            channel = "WEBSITE MESSAGE" if message["channel"] == "WEBSITE" else (message["channel"] or "NOTE").upper()
+            entries.append({
+                "id": f"message-{message['id']}",
+                "at": message["created_at"] or "",
+                "source": source,
+                "channel": channel,
+                "direction": "CLIENT" if message["direction"] == "INBOUND" else "RSF",
+                "body": message["body"] or "",
+            })
+
+    seen_notes: set[str] = set()
+    if prospect and (prospect["notes_after_conversation"] or "").strip():
+        body = (prospect["notes_after_conversation"] or "").strip()
+        seen_notes.add(body)
+        entries.append({
+            "id": f"prospect-note-{prospect_id}",
+            "at": prospect["updated_at"] or prospect["recorded_date"] or "",
+            "source": "OUTBOUND",
+            "channel": "NOTE",
+            "direction": "RSF",
+            "body": body,
+        })
+
+    if inquiry:
+        website_body = (inquiry["message"] or "").strip()
+        already_has_website_message = any(
+            item["channel"] == "WEBSITE MESSAGE" and item["body"].strip() == website_body
+            for item in entries
+        )
+        if website_body and not already_has_website_message:
+            entries.append({
+                "id": f"inquiry-message-{inquiry_id}",
+                "at": inquiry["created_at"] or "",
+                "source": "INBOUND",
+                "channel": "WEBSITE MESSAGE",
+                "direction": "CLIENT",
+                "body": website_body,
+            })
+
+        note_body = (inquiry["notes_after_conversation"] or "").strip()
+        if note_body and note_body not in seen_notes:
+            seen_notes.add(note_body)
+            entries.append({
+                "id": f"inquiry-note-{inquiry_id}",
+                "at": inquiry["updated_at"] or inquiry["created_at"] or "",
+                "source": "INBOUND",
+                "channel": "NOTE",
+                "direction": "RSF",
+                "body": note_body,
+            })
+
+    if deal:
+        note_body = (deal["notes_after_conversation"] or "").strip()
+        if note_body and note_body not in seen_notes:
+            entries.append({
+                "id": f"deal-note-{deal_id}",
+                "at": deal["updated_at"] or "",
+                "source": "INBOUND" if inquiry_id else "OUTBOUND",
+                "channel": "NOTE",
+                "direction": "RSF",
+                "body": note_body,
+            })
+
+    entries.sort(key=lambda item: (item["at"], item["id"]))
+
+    phone = ""
+    email = ""
+    if inquiry:
+        phone = (inquiry["phone"] or "").strip()
+        email = (inquiry["email"] or "").strip()
+    if prospect:
+        phone = phone or (prospect["phone"] or "").strip()
+        email = email or (prospect["email"] or "").strip()
+    if deal:
+        phone = phone or (deal["contact_number"] or "").strip()
+        email = email or (deal["email"] or "").strip()
+
+    email_url = ""
+    preferred_conversation_id = None
+    if inquiry and inquiry["client_conversation_id"]:
+        preferred_conversation_id = int(inquiry["client_conversation_id"])
+    elif conversation_ids:
+        preferred_conversation_id = max(conversation_ids)
+    if preferred_conversation_id:
+        email_url = url_for("main.client_conversation", conversation_id=preferred_conversation_id)
+    elif prospect_id and email:
+        email_url = url_for("main.prospect_conversation_open", prospect_id=prospect_id)
+
+    normalized_phone = normalize_phone(phone)
+    return jsonify({
+        "ok": True,
+        "entries": entries,
+        "call_url": f"tel:{normalized_phone}" if normalized_phone else "",
+        "email_url": email_url,
+        "email": email,
+        "phone": phone,
+        "dialer_ready": False,
+    })
 
 
 @bp.get("/inquiries")
