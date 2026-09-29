@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="record-detail-page">
+  <div class="page-head workspace-page-head record-detail-head">
+    <div>
+      <a class="inbound-records-back" href="{{ url_for('main.records') }}">← Records</a>
+      <h1>{{ record.client_title }}</h1>
+      <p>Complete client lifecycle record from first entry through the latest recorded process.</p>
+    </div>
+  </div>
+
+  <div class="record-detail-summary">
+    <div>
+      <span>First Seen</span>
+      <strong>{{ record.first_seen_at|dt }}</strong>
+    </div>
+    <div>
+      <span>Current Status</span>
+      <strong>{{ workflow_status_labels.get(record.current_status, record.current_status) }}</strong>
+    </div>
+    <div>
+      <span>Sources</span>
+      <strong>{{ record.source_label }}</strong>
+    </div>
+    <div>
+      <span>Linked Deals</span>
+      <strong>{{ record.deal_ids|length }}</strong>
+    </div>
+  </div>
+
+  <section class="workspace-section record-detail-section">
+    <div class="section-head"><div><h2>Client</h2><p>The clearest identity/contact data found across this record.</p></div></div>
+    <dl class="record-detail-list">
+      <div><dt>Company</dt><dd>{{ record.company or '—' }}</dd></div>
+      <div><dt>Contact</dt><dd>{{ record.contact_name or '—' }}</dd></div>
+      <div><dt>Email</dt><dd>{{ record.email or '—' }}</dd></div>
+      <div><dt>Phone</dt><dd>{{ record.phone or '—' }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="workspace-section record-detail-section">
+    <div class="section-head">
+      <div>
+        <h2>Lifecycle</h2>
+        <p>Recorded system activity for this client. New Workflow Status changes are tracked here going forward.</p>
+      </div>
+    </div>
+    {% if timeline %}
+      <div class="record-timeline">
+        {% for event in timeline %}
+          <div class="record-timeline-item">
+            <div class="record-timeline-marker" aria-hidden="true"></div>
+            <div class="record-timeline-body">
+              <div class="record-timeline-top">
+                <strong>{{ event.title }}</strong>
+                <time>{{ event.at|dt }}</time>
+              </div>
+              {% if event.description %}<span>{{ event.description }}</span>{% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="simple-empty">No recorded activity yet.</div>
+    {% endif %}
+  </section>
+
+  <section class="workspace-section record-detail-section">
+    <div class="section-head"><div><h2>Source Records</h2><p>The original records that make up this one client journey.</p></div></div>
+
+    <div class="record-source-grid">
+      {% for prospect in record.prospects %}
+      <article class="record-source-card">
+        <header>
+          <div>
+            <span class="record-source-type">Research</span>
+            <h3>{{ prospect.name }}</h3>
+          </div>
+          <a href="{{ url_for('main.prospects', date=prospect.recorded_date) }}#prospect-{{ prospect.id }}">Open Prospect</a>
+        </header>
+        <dl class="record-detail-list record-detail-list-compact">
+          <div><dt>Status</dt><dd>{{ workflow_status_labels.get(prospect.status, prospect.status) }}</dd></div>
+          <div><dt>Recorded</dt><dd>{{ prospect.recorded_date|dateonly }}</dd></div>
+          <div><dt>Contact</dt><dd>{{ prospect.contact or '—' }}</dd></div>
+          <div><dt>Email</dt><dd>{{ prospect.email or '—' }}</dd></div>
+          <div><dt>Phone</dt><dd>{{ prospect.phone or '—' }}</dd></div>
+          <div><dt>Website</dt><dd>{{ prospect.website or '—' }}</dd></div>
+          <div><dt>Location</dt><dd>{{ prospect.location or '—' }}</dd></div>
+          <div><dt>Business Type</dt><dd>{{ prospect.business_type or '—' }}</dd></div>
+          <div><dt>Problem</dt><dd>{{ prospect.problem or '—' }}</dd></div>
+          <div><dt>Platform Wanted</dt><dd>{{ prospect.platform_wanted or '—' }}</dd></div>
+          <div><dt>System Wanted</dt><dd>{{ prospect.system_wanted or '—' }}</dd></div>
+          <div><dt>Budget</dt><dd>{{ prospect.budget or '—' }}</dd></div>
+          <div><dt>Post Date</dt><dd>{{ prospect.post_date or '—' }}</dd></div>
+          <div><dt>Post Link</dt><dd>{{ prospect.post_link or '—' }}</dd></div>
+          <div><dt>Contact Attempts</dt><dd>{{ prospect.contact_attempt }}</dd></div>
+          <div class="record-detail-long"><dt>Notes</dt><dd>{{ prospect.notes_after_conversation or '—' }}</dd></div>
+        </dl>
+      </article>
+      {% endfor %}
+
+      {% for inquiry in record.inquiries %}
+      <article class="record-source-card">
+        <header>
+          <div>
+            <span class="record-source-type">Website</span>
+            <h3>{{ inquiry.name }}</h3>
+          </div>
+          <a href="{{ url_for('main.inquiries_list', date=inquiry.created_at[:10]) }}#website-inquiry-{{ inquiry.id }}">Open Inquiry</a>
+        </header>
+        <dl class="record-detail-list record-detail-list-compact">
+          <div><dt>Status</dt><dd>{{ workflow_status_labels.get(inquiry.workflow_status, inquiry.workflow_status) }}</dd></div>
+          <div><dt>Received</dt><dd>{{ inquiry.created_at|dt }}</dd></div>
+          <div><dt>Company</dt><dd>{{ inquiry.company or '—' }}</dd></div>
+          <div><dt>Email</dt><dd>{{ inquiry.email or '—' }}</dd></div>
+          <div><dt>Phone</dt><dd>{{ inquiry.phone or '—' }}</dd></div>
+          <div><dt>Request</dt><dd>{{ inquiry.source_action or inquiry.source_title or '—' }}</dd></div>
+          <div><dt>Routing</dt><dd>{{ inquiry.status|replace('_',' ')|title }}</dd></div>
+          <div><dt>Claimed By</dt><dd>{{ inquiry.claimed_by_name or '—' }}</dd></div>
+          <div class="record-detail-long"><dt>Message</dt><dd>{{ inquiry.message or '—' }}</dd></div>
+          <div class="record-detail-long"><dt>Notes</dt><dd>{{ inquiry.notes_after_conversation or '—' }}</dd></div>
+        </dl>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="workspace-section record-detail-section">
+    <div class="section-head"><div><h2>Deals</h2><p>Deal data stays attached to this same master Record instead of becoming a duplicate record.</p></div></div>
+
+    {% if record.deals %}
+      <div class="record-deal-list">
+        {% for deal in record.deals %}
+        <article class="record-deal-card">
+          <header>
+            <div>
+              <span class="record-source-type">Deal</span>
+              <h3>Deal #{{ deal.id }}</h3>
+            </div>
+            <a href="{{ url_for('main.deals') }}#deal-{{ deal.id }}">Open Deal</a>
+          </header>
+          <dl class="record-detail-list record-detail-list-compact">
+            <div><dt>Status</dt><dd>{{ workflow_status_labels.get(deal.status, deal.status) }}</dd></div>
+            <div><dt>Became Deal</dt><dd>{{ deal.created_at|dt }}</dd></div>
+            <div><dt>Demo Date</dt><dd>{{ deal.demo_date or '—' }}</dd></div>
+            <div><dt>Follow-up</dt><dd>{{ deal.followup_date or '—' }}</dd></div>
+            <div><dt>Next Step</dt><dd>{{ deal.next_step or '—' }}</dd></div>
+            <div><dt>Price</dt><dd>{{ deal.price or '—' }}</dd></div>
+            <div><dt>Contact</dt><dd>{{ deal.contact_person or '—' }}</dd></div>
+            <div><dt>Phone</dt><dd>{{ deal.contact_number or '—' }}</dd></div>
+            <div><dt>Email</dt><dd>{{ deal.email or '—' }}</dd></div>
+            <div class="record-detail-long"><dt>Notes</dt><dd>{{ deal.notes_after_conversation or '—' }}</dd></div>
+          </dl>
+
+          {% set documents = deal_documents.get(deal.id, []) %}
+          <div class="record-documents">
+            <strong>Documents {{ documents|length }}</strong>
+            {% if documents %}
+              {% for document in documents %}
+                <a href="{{ url_for('main.deal_document_download', deal_id=deal.id, document_id=document.id) }}">{{ document.display_name or document.original_name }}</a>
+              {% endfor %}
+            {% else %}
+              <span>No Deal documents.</span>
+            {% endif %}
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="simple-empty">This client has not entered the Deal pipeline.</div>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}
