@@ -4712,7 +4712,7 @@ def record_detail(record_key: str):
     for prospect in record["prospects"]:
         timeline.append({
             "at": prospect.get("created_at") or prospect.get("recorded_date") or "",
-            "title": "Researched Prospect added",
+            "title": "Prospect created",
             "description": prospect.get("name") or "",
             "kind": "research",
         })
@@ -4726,7 +4726,7 @@ def record_detail(record_key: str):
     for deal in record["deals"]:
         timeline.append({
             "at": deal.get("created_at") or "",
-            "title": "Deal created",
+            "title": "Became Deal",
             "description": "This client entered the Deal pipeline.",
             "kind": "deal",
         })
@@ -4764,7 +4764,8 @@ def record_detail(record_key: str):
                 "kind": "activity",
             })
 
-    timeline.sort(key=lambda item: item["at"] or "", reverse=True)
+    # Master Record detail reads like a story: earliest activity first.
+    timeline.sort(key=lambda item: item["at"] or "")
 
     return render_template(
         "record_detail.html",
