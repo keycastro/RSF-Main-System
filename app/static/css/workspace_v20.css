@@ -3839,3 +3839,42 @@ textarea.prospect-inline-editor{resize:vertical}
 .inbound-records-delete-selected{
   margin-left:0;
 }
+
+
+/* v1.18.85 — icon-only Inbound Records bulk delete control */
+.inbound-records-delete-selected{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:24px;
+  height:24px;
+  min-width:24px;
+  min-height:24px;
+  margin-left:0;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:#b54138;
+  box-shadow:none;
+  font-size:0;
+  cursor:pointer;
+}
+.inbound-records-delete-selected:hover:not(:disabled){
+  background:transparent;
+  color:#9f2f27;
+  transform:none;
+}
+.inbound-records-delete-selected:focus-visible{
+  outline:2px solid #d38b84;
+  outline-offset:2px;
+}
+.inbound-records-delete-selected:disabled{
+  opacity:.35;
+  cursor:default;
+}
+.inbound-records-delete-selected svg{
+  display:block;
+  width:16px;
+  height:16px;
+}
