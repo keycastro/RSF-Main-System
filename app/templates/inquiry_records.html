@@ -62,7 +62,7 @@
                 name="inquiry_ids"
                 value="{{ inquiry.id }}"
                 data-inbound-row-check
-                {% if not inquiry.can_delete %}disabled title="Protected: linked Deal or client history"{% endif %}
+                {% if not inquiry.can_delete %}disabled title="Protected while active: Deal / Demo / Proposal / Decision"{% endif %}
                 aria-label="Select Website Inquiry from {{ inquiry.name }}"
               >
             </td>
@@ -107,7 +107,7 @@
   <dialog class="deal-status-confirm" data-inbound-delete-confirm aria-labelledby="inbound-delete-confirm-title">
     <div class="deal-status-confirm-card">
       <h2 id="inbound-delete-confirm-title">Delete selected records?</h2>
-      <p data-inbound-delete-confirm-message>This permanently deletes the selected unprotected Website Inquiry records.</p>
+      <p data-inbound-delete-confirm-message>This permanently deletes selected inactive Website Inquiry records and their dedicated linked Deal/history data. This cannot be undone.</p>
       <div class="deal-status-confirm-actions">
         <button class="button secondary" type="button" data-inbound-delete-no>No</button>
         <button class="button primary" type="button" data-inbound-delete-yes>Yes</button>
