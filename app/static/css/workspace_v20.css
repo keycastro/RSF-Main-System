@@ -5096,3 +5096,35 @@ textarea.prospect-inline-editor{resize:vertical}
   display:none!important;
 }
 
+/* v1.18.104 — reorganized Prospect Problem/System fields with auto-grow */
+@media(min-width:901px){
+  .prospects-page .prospect-quick-business-type{
+    grid-column:1/-1;
+  }
+  .prospects-page .prospect-quick-business-type input{
+    width:calc(25% - 6px);
+    min-width:0;
+  }
+  .prospects-page .prospect-quick-platform{
+    grid-column:span 1;
+  }
+  .prospects-page .prospect-quick-post-link{
+    grid-column:span 2;
+  }
+  .prospects-page .prospect-quick-post-date{
+    grid-column:span 1;
+  }
+  .prospects-page .prospect-quick-problem,
+  .prospects-page .prospect-quick-system{
+    grid-column:1/-1;
+  }
+  .prospects-page .prospect-quick-problem textarea,
+  .prospects-page .prospect-quick-system textarea{
+    width:100%;
+    min-height:48px;
+    height:48px;
+    overflow-y:hidden;
+    resize:none;
+  }
+}
+
