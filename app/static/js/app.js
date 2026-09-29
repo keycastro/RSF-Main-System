@@ -2763,6 +2763,39 @@
   const page = document.querySelector('[data-website-inbox-page]');
   if (!page) return;
 
+  const websiteDealStatuses = new Set(['DEAL', 'DEMO', 'PROPOSAL', 'DECISION', 'WON', 'LOST']);
+
+  const renderWebsiteDealAction = (action, status, dealId) => {
+    if (!(action instanceof HTMLElement)) return;
+    action.replaceChildren();
+
+    if (websiteDealStatuses.has(status) && dealId) {
+      const link = document.createElement('a');
+      link.className = 'button secondary';
+      link.href = `${action.dataset.dealsUrl || '/app/deals'}#deal-${dealId}`;
+      link.textContent = 'View Deal';
+      action.appendChild(link);
+      return;
+    }
+
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = action.dataset.createUrl || '';
+
+    const csrf = document.createElement('input');
+    csrf.type = 'hidden';
+    csrf.name = 'csrf_token';
+    csrf.value = action.dataset.csrfToken || '';
+
+    const button = document.createElement('button');
+    button.className = 'button primary';
+    button.type = 'submit';
+    button.textContent = 'Create Deal';
+
+    form.append(csrf, button);
+    action.appendChild(form);
+  };
+
   const viewer = page.querySelector('[data-website-message-viewer]');
   const viewerInput = page.querySelector('[data-website-message-viewer-input]');
   const viewerClose = page.querySelector('[data-website-message-viewer-close]');
@@ -2914,7 +2947,10 @@
         field.value = previous;
         throw new Error(data.message || 'Website Inquiry status could not be updated.');
       }
-      field.dataset.websiteInquiryStartStatus = data.status || status;
+      const savedStatus = data.status || status;
+      field.dataset.websiteInquiryStartStatus = savedStatus;
+      const action = field.closest('.website-inquiry-card')?.querySelector('[data-website-deal-action]');
+      if (action) renderWebsiteDealAction(action, savedStatus, data.deal_id || null);
     } catch (error) {
       window.alert(error.message || 'Website Inquiry status could not be updated. Try again.');
     } finally {
