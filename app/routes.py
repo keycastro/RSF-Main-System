@@ -1493,6 +1493,39 @@ def deal_create_from_prospect(prospect_id: int):
     return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
 
+@bp.post("/deals/from-inquiry/<int:inquiry_id>")
+@login_required
+def deal_create_from_inquiry(inquiry_id: int):
+    validate_csrf()
+    _authorized_inquiry(inquiry_id)
+    db = get_db()
+
+    now = utcnow_iso()
+    existing = db.execute(
+        "SELECT id FROM deals WHERE website_inquiry_id=? LIMIT 1",
+        (inquiry_id,),
+    ).fetchone()
+    if existing:
+        deal_id = int(existing["id"])
+        db.execute(
+            "UPDATE website_inquiries SET workflow_status='DEAL',updated_at=? WHERE id=?",
+            (now, inquiry_id),
+        )
+        db.execute("UPDATE deals SET status='DEAL',updated_at=? WHERE id=?", (now, deal_id))
+        db.commit()
+        flash("Deal opened.", "success")
+        return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+
+    deal_id, _ = _ensure_deal_for_website_inquiry(db, inquiry_id, g.user["id"], now)
+    db.execute(
+        "UPDATE website_inquiries SET workflow_status='DEAL',updated_at=? WHERE id=?",
+        (now, inquiry_id),
+    )
+    db.commit()
+    flash("Deal created.", "success")
+    return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+
+
 @bp.post("/deals/<int:deal_id>/documents")
 @login_required
 def deal_document_upload(deal_id: int):
@@ -3839,12 +3872,25 @@ def inquiries_list():
         partners = db.execute(
             "SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND u.active=1 AND p.account_deleted_at IS NULL ORDER BY u.full_name"
         ).fetchall()
+    inquiry_deal_rows = db.execute(
+        """SELECT d.id,d.website_inquiry_id
+           FROM deals d
+           JOIN website_inquiries i ON i.id=d.website_inquiry_id
+           WHERE i.workflow_status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','LOST')"""
+    ).fetchall()
+    inquiry_deal_ids = {
+        int(row["website_inquiry_id"]): int(row["id"])
+        for row in inquiry_deal_rows
+        if row["website_inquiry_id"] is not None
+    }
+
     now = utcnow_iso()
     overdue = [row for row in claimed if row["first_response_due_at"] and not row["first_responded_at"] and row["first_response_due_at"] < now]
     from .client_ops import email_receive_configured, email_send_configured
     return render_template(
         "inquiries.html", title="Website Inbox", unclaimed=unclaimed, claimed=claimed, website_inquiries=website_inquiries, partners=partners, overdue=overdue, current_time_iso=now,
         inquiry_workflow_status_labels=PROSPECT_STATUS_LABELS,
+        inquiry_deal_ids=inquiry_deal_ids,
         email_send_ready=email_send_configured(), email_receive_ready=email_receive_configured(),
         auto_email_sync=bool(current_app.config.get("AUTO_EMAIL_SYNC")),
         response_sla_minutes=int(current_app.config.get("FIRST_RESPONSE_SLA_MINUTES", 60)),
@@ -3863,6 +3909,7 @@ def inquiry_workflow_status_update(inquiry_id: int):
     db = get_db()
     now = utcnow_iso()
     deal_created = False
+    deal_id = None
     db.execute(
         "UPDATE website_inquiries SET workflow_status=?,updated_at=? WHERE id=?",
         (status, now, inquiry_id),
@@ -3874,6 +3921,7 @@ def inquiry_workflow_status_update(inquiry_id: int):
     return jsonify({
         "ok": True,
         "status": status,
+        "deal_id": deal_id,
         "deal_created": deal_created,
         "removed_from_deals": status in DEAL_PRE_STATUS_STATUSES,
     })
