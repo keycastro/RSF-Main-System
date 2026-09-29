@@ -37,7 +37,7 @@
 <div class="app-shell">
   <aside class="sidebar" id="sidebar" aria-label="Main navigation">
     <button class="close-menu" type="button" data-close-menu aria-label="Close navigation">Close ×</button>
-    <a class="brand" href="{{ url_for('main.dashboard') }}">
+    <a class="brand" href="{{ url_for('main.inquiry_records') }}" aria-label="Open Inbound Records">
       <span class="brand-mark" aria-hidden="true"><img src="{{ url_for('static', filename='images/brand/icon_64.png') }}" alt=""></span>
       <span class="brand-copy"><strong>Realty Systems Foundry</strong><small>{{ 'Founder Workspace' if g.user.role=='admin' else 'Partner Workspace' }}</small></span>
     </a>
