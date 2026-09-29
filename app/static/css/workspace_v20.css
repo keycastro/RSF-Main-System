@@ -5224,52 +5224,56 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 
 
-/* v1.18.111 — fixed compact Problem/System fields with Notes-style expand viewer */
+/* v1.18.112 — Problem/System use the exact Notes After Conversation compact field geometry */
 .prospects-page .prospect-longtext-field{
-  box-sizing:border-box;
-  height:72px;
-  min-height:72px;
-  max-height:72px;
   display:grid;
-  grid-template-rows:auto minmax(0,1fr);
-  overflow:hidden;
+  gap:5px;
+  min-width:0;
 }
 .prospects-page .prospect-longtext-field>span{
-  margin-bottom:4px;
+  display:block;
+  margin:0;
+  color:#5f706a;
+  font-size:9px;
+  font-weight:650;
+  letter-spacing:.055em;
+  line-height:1.4;
+  text-transform:uppercase;
 }
 .prospects-page .prospect-longtext-compact{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) 40px;
-  align-items:center;
+  width:100%;
   min-width:0;
-  min-height:30px;
-  overflow:hidden;
+  box-sizing:border-box;
 }
-.prospects-page .prospect-longtext-preview{
+.prospects-page .prospect-longtext-compact>.prospect-longtext-preview{
   display:block;
   width:100%;
   min-width:0;
+  box-sizing:border-box;
+  height:37px;
+  min-height:37px;
+  max-height:37px;
   margin:0;
-  padding:0 4px 0 0;
+  padding:9px 4px 9px 10px;
   border:0;
   border-radius:0;
   background:transparent;
   box-shadow:none;
   color:var(--ux-section-ink);
-  font-size:12px;
-  font-weight:500;
-  line-height:1.45;
+  font:inherit;
+  font-size:12.5px;
+  font-weight:400;
+  line-height:1.4;
   text-align:left;
+  white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
-  white-space:nowrap;
-  overflow-wrap:normal;
+  resize:none;
   cursor:pointer;
 }
 .prospects-page .prospect-longtext-preview:hover{
   background:transparent;
 }
-
 .prospects-page .prospect-longtext-compact .deal-notes-expand-button{
   position:static;
   right:auto;
