@@ -176,24 +176,12 @@
   {% endfor %}
 
   <div class="workspace-empty-state" data-website-list-empty role="status" {% if website_inquiries %}hidden{% endif %}>
-      <div class="workspace-empty-state-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" focusable="false">
-              <path d="M4 5.2h16v13.6H4z"></path>
-              <path d="M4 13h4l1.6 2.2h4.8L16 13h4M8 8.5h8"></path>
-            </svg>
-          </div>
     <strong>{{ 'No Website Inquiries for today.' if is_today else 'No Website Inquiries for this date.' }}</strong>
     <span>{{ 'New inquiries and unfinished Not Contacted / No Answer follow-ups will appear here.' if is_today else 'Choose another date to view received Website Inquiries.' }}</span>
   </div>
 
   {% if is_today %}
     <div class="workspace-empty-state workspace-empty-state--filter" data-website-filter-empty role="status" hidden>
-          <div class="workspace-empty-state-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" focusable="false">
-                <path d="M4 5.2h16v13.6H4z"></path>
-                <path d="M4 13h4l1.6 2.2h4.8L16 13h4M8 8.5h8"></path>
-              </svg>
-            </div>
       <strong>No Website Inquiries in this status.</strong>
       <span>Try another status filter.</span>
     </div>
