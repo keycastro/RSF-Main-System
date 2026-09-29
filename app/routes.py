@@ -1313,6 +1313,14 @@ def prospect_update(prospect_id: int):
         status = raw_value.strip().upper()
         if status not in PROSPECT_STATUS_LABELS:
             return jsonify({"ok": False, "error": "validation", "message": "Invalid prospect status."}), 400
+        current_status = (prospect["status"] or "").strip().upper()
+        leaving_deal_pipeline = current_status in DEAL_ACTIVE_STATUSES and status in DEAL_PRE_STATUS_STATUSES
+        if leaving_deal_pipeline and (request.form.get("confirm_leave_deals", "") or "").strip().lower() != "yes":
+            return jsonify({
+                "ok": False,
+                "error": "confirmation_required",
+                "message": "Confirm the backward Status change before removing the linked Deal from Deals.",
+            }), 409
         db.execute("UPDATE prospects SET status=?,updated_at=? WHERE id=?", (status, now, prospect_id))
         if status in DEAL_ACTIVE_STATUSES:
             deal_id, deal_created = _ensure_deal_for_prospect(db, prospect_id, g.user["id"], now)
@@ -3907,6 +3915,15 @@ def inquiry_workflow_status_update(inquiry_id: int):
         return jsonify({"ok": False, "message": "Invalid Website Inquiry status."}), 400
 
     db = get_db()
+    current_status = (inquiry["workflow_status"] or "").strip().upper()
+    leaving_deal_pipeline = current_status in DEAL_ACTIVE_STATUSES and status in DEAL_PRE_STATUS_STATUSES
+    if leaving_deal_pipeline and (request.form.get("confirm_leave_deals", "") or "").strip().lower() != "yes":
+        return jsonify({
+            "ok": False,
+            "error": "confirmation_required",
+            "message": "Confirm the backward Status change before removing the linked Deal from Deals.",
+        }), 409
+
     now = utcnow_iso()
     deal_created = False
     deal_id = None
