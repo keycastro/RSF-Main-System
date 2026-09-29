@@ -3960,6 +3960,115 @@ def inquiries_list():
     )
 
 
+@bp.get("/inquiries/records")
+@login_required
+def inquiry_records():
+    db = get_db()
+    base_sql = """SELECT i.*,
+                         d.id AS linked_deal_id,
+                         COALESCE(u.full_name,NULLIF(p.historical_name,''),'') AS claimed_by_name,
+                         CASE
+                           WHEN i.status='CLAIMED' OR i.client_conversation_id IS NOT NULL OR d.id IS NOT NULL
+                           THEN 0 ELSE 1
+                         END AS can_delete
+                  FROM website_inquiries i
+                  LEFT JOIN deals d ON d.website_inquiry_id=i.id
+                  LEFT JOIN partners p ON p.id=i.claimed_by_partner_id
+                  LEFT JOIN users u ON u.id=p.user_id"""
+    params = []
+    if g.user["role"] == "admin":
+        rows = db.execute(base_sql + " ORDER BY i.created_at DESC,i.id DESC").fetchall()
+    else:
+        pid = g.partner["id"]
+        rows = db.execute(
+            base_sql + """
+             WHERE i.status='UNCLAIMED'
+                OR (i.status='CLAIMED' AND i.claimed_by_partner_id=?)
+             ORDER BY i.created_at DESC,i.id DESC""",
+            (pid,),
+        ).fetchall()
+
+    workflow_counts = {code: 0 for code in PROSPECT_STATUS_LABELS}
+    for row in rows:
+        status = (row["workflow_status"] or "").strip().upper()
+        if status in workflow_counts:
+            workflow_counts[status] += 1
+
+    requested_filter = (request.args.get("filter", "") or "").strip().upper()
+    initial_filter = requested_filter if requested_filter in PROSPECT_STATUS_LABELS else "ALL"
+    return render_template(
+        "inquiry_records.html",
+        title="Inbound Records",
+        inquiry_records=rows,
+        inquiry_workflow_status_labels=PROSPECT_STATUS_LABELS,
+        workflow_counts=workflow_counts,
+        initial_filter=initial_filter,
+    )
+
+
+@bp.post("/inquiries/records/delete")
+@admin_required
+def inquiry_records_bulk_delete():
+    validate_csrf()
+    raw_ids = request.form.getlist("inquiry_ids")
+    ids = []
+    for raw in raw_ids:
+        try:
+            inquiry_id = int(raw)
+        except (TypeError, ValueError):
+            continue
+        if inquiry_id > 0 and inquiry_id not in ids:
+            ids.append(inquiry_id)
+
+    current_filter = (request.form.get("filter", "") or "").strip().upper()
+    redirect_filter = current_filter if current_filter in PROSPECT_STATUS_LABELS else "ALL"
+    if not ids:
+        flash("Select at least one Website Inquiry record.", "warning")
+        return redirect(url_for("main.inquiry_records", filter=redirect_filter))
+
+    db = get_db()
+    placeholders = ",".join("?" for _ in ids)
+    rows = db.execute(
+        f"""SELECT i.id,i.status,i.client_conversation_id,d.id AS linked_deal_id
+            FROM website_inquiries i
+            LEFT JOIN deals d ON d.website_inquiry_id=i.id
+            WHERE i.id IN ({placeholders})""",
+        ids,
+    ).fetchall()
+
+    deletable_ids = [
+        int(row["id"])
+        for row in rows
+        if row["status"] != "CLAIMED" and not row["client_conversation_id"] and not row["linked_deal_id"]
+    ]
+    protected_count = len(rows) - len(deletable_ids)
+    missing_count = max(0, len(ids) - len(rows))
+
+    if deletable_ids:
+        delete_placeholders = ",".join("?" for _ in deletable_ids)
+        db.execute(
+            f"DELETE FROM client_notifications WHERE entity_type='inquiry' AND entity_id IN ({delete_placeholders})",
+            deletable_ids,
+        )
+        db.execute(
+            f"DELETE FROM website_inquiries WHERE id IN ({delete_placeholders})",
+            deletable_ids,
+        )
+        db.commit()
+
+    if deletable_ids:
+        message = f"Deleted {len(deletable_ids)} Website Inquiry record{'s' if len(deletable_ids) != 1 else ''}."
+        if protected_count:
+            message += f" {protected_count} protected record{'s were' if protected_count != 1 else ' was'} kept."
+        if missing_count:
+            message += f" {missing_count} selected record{'s were' if missing_count != 1 else ' was'} no longer available."
+        flash(message, "success" if not protected_count else "warning")
+    else:
+        flash("No selected records were deleted. Linked Deal/client-history records are protected.", "warning")
+
+    return redirect(url_for("main.inquiry_records", filter=redirect_filter))
+
+
 @bp.post("/inquiries/<int:inquiry_id>/workflow-status")
 @login_required
 def inquiry_workflow_status_update(inquiry_id: int):
