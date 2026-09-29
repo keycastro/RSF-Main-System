@@ -1495,9 +1495,17 @@ def prospect_update(prospect_id: int):
                 f"Prospect status changed from {PROSPECT_STATUS_LABELS.get(current_status, current_status)} to {PROSPECT_STATUS_LABELS.get(status, status)}.",
                 {"from": current_status, "to": status},
             )
-        if status in DEAL_ACTIVE_STATUSES:
+        linked_deal = db.execute(
+            "SELECT id FROM deals WHERE prospect_id=? LIMIT 1",
+            (prospect_id,),
+        ).fetchone()
+        deal_id = int(linked_deal["id"]) if linked_deal else None
+        if status in DEAL_ACTIVE_STATUSES and deal_id is None:
             deal_id, deal_created = _ensure_deal_for_prospect(db, prospect_id, g.user["id"], now)
-            db.execute("UPDATE deals SET status=?,updated_at=? WHERE id=?", (status, now, deal_id))
+        if deal_id is not None:
+            if status in DEAL_ACTIVE_STATUSES:
+                db.execute("UPDATE deals SET status=?,updated_at=? WHERE id=?", (status, now, deal_id))
+            _sync_deal_source_statuses(db, deal_id, status, now)
     elif field_name == "post_date":
         post_date = raw_value.strip()[:10]
         if post_date:
@@ -1519,6 +1527,15 @@ def prospect_update(prospect_id: int):
         elif field_name == "notes_after_conversation":
             db.execute(
                 "UPDATE deals SET notes_after_conversation=?,updated_at=? WHERE prospect_id=?",
+                (value, now, prospect_id),
+            )
+            db.execute(
+                """UPDATE website_inquiries
+                   SET notes_after_conversation=?,updated_at=?
+                   WHERE id IN (
+                     SELECT website_inquiry_id FROM deals
+                     WHERE prospect_id=? AND website_inquiry_id IS NOT NULL
+                   )""",
                 (value, now, prospect_id),
             )
 
