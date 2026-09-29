@@ -3363,7 +3363,7 @@
   deleteTrigger?.addEventListener('click', () => {
     const count = rowChecks.filter((check) => check.checked && !check.disabled).length;
     if (!count || !bulkForm) return;
-    const text = `Permanently delete ${count} selected Website Inquiry record${count === 1 ? '' : 's'}? Linked Deal/client-history records are protected and cannot be selected.`;
+    const text = `Permanently delete ${count} selected inactive Website Inquiry record${count === 1 ? '' : 's'}? This also deletes linked Deals, Deal documents, and dedicated client conversation/messages/attachments. Shared client history used by other records is preserved. This cannot be undone. Active Deal / Demo / Proposal / Decision records are protected.`;
     if (confirmMessage) confirmMessage.textContent = text;
 
     if (confirmDialog && typeof confirmDialog.showModal === 'function') {
