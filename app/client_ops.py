@@ -764,7 +764,8 @@ def send_client_email(conversation_id: int, actor_user_id: int, body: str, attac
     if len(body) > 20000:
         raise ValueError("Reply is too long.")
 
-    sender = current_app.config["RSF_EMAIL_ADDRESS"]
+    from .gmail_ops import connected_email, gmail_connected
+    sender = connected_email() if gmail_connected() else current_app.config["RSF_EMAIL_ADDRESS"]
     display = current_app.config.get("RSF_EMAIL_NAME", "Realty Systems Foundry")
     supplied_subject = (subject_override or "").strip()[:240]
     subject = supplied_subject or conv["subject"] or "Your Realty Systems Foundry inquiry"
@@ -1015,7 +1016,8 @@ def _sync_inbound_gmail(limit: int = 40) -> dict[str, int]:
 
         sender_name, sender_email = parseaddr(msg.get("From", ""))
         sender_email = normalize_email(sender_email)
-        rsf_email = normalize_email(current_app.config.get("RSF_EMAIL_ADDRESS", ""))
+        from .gmail_ops import connected_email
+        rsf_email = normalize_email(connected_email() or current_app.config.get("RSF_EMAIL_ADDRESS", ""))
         subject = _decode_subject(msg.get("Subject"))
 
         if sender_email and _mark_bounce_if_applicable(msg, sender_email, subject):
