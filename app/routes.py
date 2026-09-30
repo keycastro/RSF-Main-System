@@ -1701,12 +1701,14 @@ def deals():
         ).fetchall()
         for document in document_rows:
             deal_documents.setdefault(int(document["deal_id"]), []).append(document)
+    from .calendar_ops import connection_status as calendar_connection_status
     return render_template(
         "deals.html",
         title="Deals",
         deals=rows,
         deal_status_labels=PROSPECT_STATUS_LABELS,
         deal_documents=deal_documents,
+        calendar_status=calendar_connection_status(),
     )
 
 
