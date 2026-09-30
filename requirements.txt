@@ -5,3 +5,4 @@ cryptography==46.0.4
 PyMuPDF==1.26.4
 retell-sdk==6.0.1
 tzdata==2026.4
+geonamescache==3.0.2
