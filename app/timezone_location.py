@@ -339,6 +339,16 @@ def resolve_location_query(query: str) -> dict:
         return _country_result(country_code)
 
     whole_country_code = _country_code_for_token(raw)
+    whole_state_code = _us_state_aliases().get(_normalize(raw))
+    if whole_country_code and whole_state_code:
+        country_result = _country_result(whole_country_code)
+        combined = list(country_result.get("results") or []) + _state_results(whole_state_code)
+        return {
+            "status": "matches",
+            "message": "Choose the correct country or state.",
+            "auto_select": False,
+            "results": combined[:12],
+        }
     if whole_country_code:
         return _country_result(whole_country_code)
 
@@ -349,7 +359,23 @@ def resolve_location_query(query: str) -> dict:
     if state_code and (not country_code or country_code == "US"):
         exact_results.extend(_state_results(state_code))
 
-    city_matches = _GC.search_cities(city_text, case_sensitive=False, contains_search=True)
+    city_matches = []
+    city_matches.extend(
+        _GC.search_cities(
+            city_text,
+            attribute="name",
+            case_sensitive=False,
+            contains_search=True,
+        )
+    )
+    city_matches.extend(
+        _GC.search_cities(
+            city_text,
+            attribute="alternatenames",
+            case_sensitive=False,
+            contains_search=True,
+        )
+    )
     city_matches = sorted(city_matches, key=lambda row: int(row.get("population") or 0), reverse=True)
 
     seen = set()
