@@ -4361,6 +4361,420 @@ def communication_note_entry_delete():
     return jsonify({"ok": True, "message": "Note deleted."})
 
 
+
+def _communication_context_ids(*, prospect_id: int | None = None, inquiry_id: int | None = None, deal_id: int | None = None):
+    """Resolve one linked client journey without creating duplicate conversations."""
+    db = get_db()
+    deal = None
+    if deal_id:
+        deal = db.execute(
+            "SELECT id,prospect_id,website_inquiry_id FROM deals WHERE id=?",
+            (deal_id,),
+        ).fetchone()
+        if not deal:
+            abort(404)
+        prospect_id = int(deal["prospect_id"]) if deal["prospect_id"] is not None else prospect_id
+        inquiry_id = int(deal["website_inquiry_id"]) if deal["website_inquiry_id"] is not None else inquiry_id
+    if inquiry_id:
+        _authorized_inquiry(inquiry_id)
+    if prospect_id:
+        row = db.execute("SELECT id FROM prospects WHERE id=?", (prospect_id,)).fetchone()
+        if not row:
+            abort(404)
+    return prospect_id, inquiry_id, deal_id
+
+
+def _communication_conversation_id(*, prospect_id: int | None = None, inquiry_id: int | None = None,
+                                   deal_id: int | None = None, create: bool = False) -> int | None:
+    db = get_db()
+    prospect_id, inquiry_id, deal_id = _communication_context_ids(
+        prospect_id=prospect_id, inquiry_id=inquiry_id, deal_id=deal_id
+    )
+
+    # A merged Prospect + Website journey always collapses to one canonical thread.
+    if prospect_id and create:
+        from .client_ops import ensure_prospect_conversation
+        try:
+            return int(ensure_prospect_conversation(prospect_id, owner_partner_id=partner_scope_id()))
+        except ValueError:
+            pass
+
+    if inquiry_id:
+        inquiry = db.execute(
+            "SELECT client_conversation_id FROM website_inquiries WHERE id=?",
+            (inquiry_id,),
+        ).fetchone()
+        if inquiry and inquiry["client_conversation_id"]:
+            return int(inquiry["client_conversation_id"])
+
+    if prospect_id:
+        row = db.execute(
+            "SELECT id FROM client_conversations WHERE prospect_id=? AND status='ACTIVE' ORDER BY id DESC LIMIT 1",
+            (prospect_id,),
+        ).fetchone()
+        if row:
+            return int(row["id"])
+        if create:
+            from .client_ops import ensure_prospect_conversation
+            return int(ensure_prospect_conversation(prospect_id, owner_partner_id=partner_scope_id()))
+    return None
+
+
+@bp.get("/communications/email-thread")
+@login_required
+def communication_email_thread():
+    prospect_id = request.args.get("prospect_id", type=int)
+    inquiry_id = request.args.get("inquiry_id", type=int)
+    deal_id = request.args.get("deal_id", type=int)
+    conversation_id = _communication_conversation_id(
+        prospect_id=prospect_id, inquiry_id=inquiry_id, deal_id=deal_id, create=True
+    )
+    if not conversation_id:
+        return jsonify({"ok": False, "message": "No email conversation is available for this client."}), 404
+
+    conv = _authorized_client_conversation(conversation_id)
+    db = get_db()
+    rows = db.execute(
+        """SELECT m.*,u.full_name sent_by_name
+           FROM client_messages m
+           LEFT JOIN users u ON u.id=m.sent_by_user_id
+           WHERE m.conversation_id=? AND m.channel='EMAIL'
+           ORDER BY m.created_at ASC,m.id ASC""",
+        (conversation_id,),
+    ).fetchall()
+    attachments = _client_attachments_for_messages(db, [row["id"] for row in rows])
+    mark_client_notifications_read(entity_type="conversation", entity_id=conversation_id)
+    messages = []
+    for row in rows:
+        files = []
+        for item in attachments.get(int(row["id"]), []):
+            files.append({
+                "name": item["original_name"],
+                "size_bytes": int(item["size_bytes"] or 0),
+                "url": url_for("main.client_attachment", attachment_id=item["id"]),
+            })
+        messages.append({
+            "id": int(row["id"]),
+            "direction": row["direction"],
+            "subject": row["subject"] or "",
+            "body": row["body"] or "",
+            "at": row["created_at"] or "",
+            "delivery_status": row["delivery_status"] or "",
+            "sender_name": row["sent_by_name"] or "",
+            "attachments": files,
+        })
+
+    default_subject = (conv["subject"] or "RSF outreach").removeprefix("Re: ").strip()
+    return jsonify({
+        "ok": True,
+        "conversation_id": conversation_id,
+        "recipient": conv["client_email"],
+        "client_name": conv["client_name"],
+        "subject": default_subject,
+        "messages": messages,
+        "send_url": url_for("main.communication_email_send"),
+    })
+
+
+@bp.post("/communications/email-send")
+@login_required
+def communication_email_send():
+    validate_csrf()
+    conversation_id = request.form.get("conversation_id", type=int)
+    if not conversation_id:
+        return jsonify({"ok": False, "message": "Email conversation is missing."}), 400
+    _authorized_client_conversation(conversation_id)
+    body = (request.form.get("body", "") or "").strip()
+    subject = (request.form.get("subject", "") or "").strip()[:240]
+    from .client_ops import send_client_email
+    try:
+        message_id = send_client_email(
+            conversation_id,
+            g.user["id"],
+            body,
+            attachments=None,
+            subject_override=subject or None,
+        )
+    except (ValueError, RuntimeError) as exc:
+        return jsonify({"ok": False, "message": str(exc)}), 400
+    except Exception:
+        current_app.logger.exception("Inline client email send failed")
+        return jsonify({"ok": False, "message": "RSF could not send that email. Check the email setup and try again."}), 500
+    return jsonify({"ok": True, "message_id": message_id, "message": "Email sent."})
+
+
+def _retell_e164(value: str) -> str:
+    raw = (value or "").strip()
+    if raw.startswith("00"):
+        raw = "+" + raw[2:]
+    if not raw.startswith("+"):
+        return ""
+    digits = "".join(ch for ch in raw[1:] if ch.isdigit())
+    return f"+{digits}" if 8 <= len(digits) <= 15 else ""
+
+
+def _retell_timestamp(value) -> str:
+    try:
+        stamp = int(value or 0)
+    except (TypeError, ValueError):
+        return ""
+    if stamp <= 0:
+        return ""
+    # Retell timestamps are milliseconds in call payloads.
+    return datetime.fromtimestamp(stamp / 1000, tz=timezone.utc).replace(microsecond=0).isoformat()
+
+
+def _retell_result_code(call: dict) -> tuple[str, str]:
+    analysis = call.get("call_analysis") or {}
+    custom = analysis.get("custom_analysis_data") or {}
+    raw = (
+        custom.get("call_result")
+        or custom.get("result")
+        or custom.get("sales_result")
+        or ""
+    )
+    normalized = str(raw).strip().upper().replace(" ", "_").replace("-", "_")
+    next_step = str(custom.get("next_step") or "").strip()
+    if "REJECT" in normalized or normalized in {"NOT_INTERESTED", "DECLINED"}:
+        return "REJECTED", next_step
+    if "DEMO" in normalized:
+        return "DEMO", next_step
+    if normalized in {"INTERESTED", "DEAL", "QUALIFIED", "WANTS_DEMO"}:
+        return "DEAL", next_step
+    if normalized in {"NO_ANSWER", "BUSY", "VOICEMAIL"}:
+        return "NO_ANSWER", next_step
+
+    reason = str(call.get("disconnection_reason") or "").strip().lower()
+    if reason in {"dial_no_answer", "dial_busy", "user_declined", "voicemail_reached"}:
+        return "NO_ANSWER", next_step
+    if reason in {"dial_failed", "invalid_destination"}:
+        return "CALL_FAILED", next_step
+    return (normalized or "COMPLETED"), next_step
+
+
+def _apply_ai_sales_result(db, ai_call, result: str, next_step: str, now: str) -> int | None:
+    prospect_id = int(ai_call["prospect_id"])
+    prospect = db.execute("SELECT status FROM prospects WHERE id=?", (prospect_id,)).fetchone()
+    if not prospect:
+        return None
+    current = (prospect["status"] or "").upper()
+    if current in DEAL_ACTIVE_STATUSES:
+        deal = db.execute("SELECT id FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
+        return int(deal["id"]) if deal else None
+
+    if result == "NO_ANSWER":
+        db.execute("UPDATE prospects SET status='NO_ANSWER',updated_at=? WHERE id=?", (now, prospect_id))
+        return None
+    if result == "REJECTED":
+        db.execute("UPDATE prospects SET status='REJECTED',updated_at=? WHERE id=?", (now, prospect_id))
+        return None
+    if result in {"DEAL", "DEMO"}:
+        founder = db.execute(
+            "SELECT id FROM users WHERE role='admin' AND active=1 ORDER BY id LIMIT 1"
+        ).fetchone()
+        actor_id = int(founder["id"]) if founder else None
+        deal_id, _created = _ensure_deal_for_prospect(db, prospect_id, actor_id, now)
+        status = result
+        db.execute(
+            "UPDATE deals SET status=?,next_step=CASE WHEN ?<>'' THEN ? ELSE next_step END,updated_at=? WHERE id=?",
+            (status, next_step, next_step[:500], now, deal_id),
+        )
+        _sync_deal_source_statuses(db, deal_id, status, now)
+        return deal_id
+    return None
+
+
+@bp.post("/prospects/<int:prospect_id>/ai-call")
+@login_required
+def prospect_ai_call(prospect_id: int):
+    validate_csrf()
+    db = get_db()
+    prospect = db.execute(
+        """SELECT id,name,contact,email,phone,business_type,problem,platform_wanted,
+                  system_wanted,budget,location,website,status,contact_attempt
+           FROM prospects WHERE id=?""",
+        (prospect_id,),
+    ).fetchone()
+    if not prospect:
+        abort(404)
+    if (prospect["status"] or "").upper() in DEAL_ACTIVE_STATUSES:
+        return jsonify({"ok": False, "message": "AI Call stops once the Prospect enters Deals."}), 409
+
+    api_key = current_app.config.get("RETELL_API_KEY", "")
+    agent_id = current_app.config.get("RETELL_AGENT_ID", "")
+    from_number = _retell_e164(current_app.config.get("RETELL_FROM_NUMBER", ""))
+    to_number = _retell_e164(prospect["phone"] or "")
+    if not api_key or not agent_id or not from_number:
+        return jsonify({"ok": False, "message": "Retell AI is not configured yet. Add the API key, sales agent ID, and Retell phone number."}), 503
+    if not to_number:
+        return jsonify({"ok": False, "message": "Prospect phone must use international E.164 format, for example +15551234567."}), 400
+
+    attempt = int(db.execute(
+        "SELECT COALESCE(MAX(attempt_number),0)+1 n FROM ai_sales_calls WHERE prospect_id=?",
+        (prospect_id,),
+    ).fetchone()["n"])
+    now = utcnow_iso()
+    cur = db.execute(
+        """INSERT INTO ai_sales_calls(
+               prospect_id,attempt_number,status,phone,created_at,updated_at
+           ) VALUES (?,?,?,?,?,?)""",
+        (prospect_id, attempt, "STARTING", to_number, now, now),
+    )
+    ai_call_id = int(cur.lastrowid)
+    db.commit()
+
+    variables = {
+        "client_name": str(prospect["contact"] or prospect["name"] or ""),
+        "company": str(prospect["name"] or ""),
+        "business_type": str(prospect["business_type"] or ""),
+        "problem": str(prospect["problem"] or ""),
+        "system_wanted": str(prospect["system_wanted"] or ""),
+        "platform_wanted": str(prospect["platform_wanted"] or ""),
+        "budget": str(prospect["budget"] or ""),
+        "location": str(prospect["location"] or ""),
+        "website": str(prospect["website"] or ""),
+        "email": str(prospect["email"] or ""),
+    }
+    metadata = {
+        "rsf_ai_call_id": ai_call_id,
+        "rsf_prospect_id": prospect_id,
+        "rsf_source": "researched_prospect",
+    }
+    try:
+        from retell import Retell
+        client = Retell(api_key=api_key)
+        response = client.call.create_phone_call(
+            from_number=from_number,
+            to_number=to_number,
+            override_agent_id=agent_id,
+            metadata=metadata,
+            retell_llm_dynamic_variables=variables,
+        )
+        call_id = getattr(response, "call_id", "") or ""
+        if not call_id and hasattr(response, "model_dump"):
+            call_id = str(response.model_dump().get("call_id") or "")
+        if not call_id:
+            raise RuntimeError("Retell did not return a call ID.")
+    except Exception as exc:
+        current_app.logger.exception("Retell AI outbound call failed")
+        db.execute(
+            "UPDATE ai_sales_calls SET status='FAILED',result='CALL_FAILED',updated_at=? WHERE id=?",
+            (utcnow_iso(), ai_call_id),
+        )
+        db.commit()
+        return jsonify({"ok": False, "message": f"Retell could not start the call: {str(exc)[:240]}"}), 502
+
+    now = utcnow_iso()
+    db.execute(
+        """UPDATE ai_sales_calls
+           SET retell_call_id=?,status='INITIATED',updated_at=?
+           WHERE id=?""",
+        (call_id, now, ai_call_id),
+    )
+    db.execute(
+        "UPDATE prospects SET contact_attempt=contact_attempt+1,updated_at=? WHERE id=?",
+        (now, prospect_id),
+    )
+    db.commit()
+    return jsonify({
+        "ok": True,
+        "message": "AI sales call started.",
+        "call_id": call_id,
+        "ai_call_id": ai_call_id,
+        "attempt_number": attempt,
+    })
+
+
+@bp.post("/integrations/retell/webhook")
+def retell_webhook():
+    api_key = current_app.config.get("RETELL_API_KEY", "")
+    signature = request.headers.get("X-Retell-Signature", "")
+    raw = request.get_data(as_text=True)
+    if not api_key or not signature:
+        return "", 401
+    try:
+        from retell import Retell
+        if not Retell.verify(raw, api_key, signature):
+            return "", 401
+    except Exception:
+        current_app.logger.exception("Retell webhook verification failed")
+        return "", 401
+
+    payload = request.get_json(silent=True) or {}
+    event = str(payload.get("event") or "")
+    call = payload.get("call") or {}
+    call_id = str(call.get("call_id") or "")
+    metadata = call.get("metadata") or {}
+    ai_call_id = metadata.get("rsf_ai_call_id")
+    db = get_db()
+    ai_call = None
+    if call_id:
+        ai_call = db.execute("SELECT * FROM ai_sales_calls WHERE retell_call_id=?", (call_id,)).fetchone()
+    if not ai_call and ai_call_id:
+        ai_call = db.execute("SELECT * FROM ai_sales_calls WHERE id=?", (int(ai_call_id),)).fetchone()
+    if not ai_call:
+        return "", 204
+
+    now = utcnow_iso()
+    started_at = _retell_timestamp(call.get("start_timestamp"))
+    ended_at = _retell_timestamp(call.get("end_timestamp"))
+    duration = 0
+    try:
+        start_ms = int(call.get("start_timestamp") or 0)
+        end_ms = int(call.get("end_timestamp") or 0)
+        if end_ms > start_ms > 0:
+            duration = max(0, int((end_ms - start_ms) / 1000))
+    except (TypeError, ValueError):
+        duration = 0
+
+    if event == "call_started":
+        db.execute(
+            """UPDATE ai_sales_calls SET status='IN_PROGRESS',
+               started_at=CASE WHEN ?<>'' THEN ? ELSE started_at END,updated_at=?
+               WHERE id=?""",
+            (started_at, started_at, now, ai_call["id"]),
+        )
+    elif event in {"call_ended", "call_analyzed"}:
+        result, next_step = _retell_result_code(call)
+        analysis = call.get("call_analysis") or {}
+        summary = str(analysis.get("call_summary") or analysis.get("summary") or "")
+        transcript = str(call.get("transcript") or "")
+        recording_url = str(call.get("recording_url") or "")
+        deal_id = _apply_ai_sales_result(db, ai_call, result, next_step, now)
+        db.execute(
+            """UPDATE ai_sales_calls
+               SET retell_call_id=COALESCE(NULLIF(?,''),retell_call_id),
+                   deal_id=COALESCE(?,deal_id),status=?,result=?,
+                   duration_seconds=CASE WHEN ?>0 THEN ? ELSE duration_seconds END,
+                   recording_url=CASE WHEN ?<>'' THEN ? ELSE recording_url END,
+                   transcript=CASE WHEN ?<>'' THEN ? ELSE transcript END,
+                   summary=CASE WHEN ?<>'' THEN ? ELSE summary END,
+                   next_step=CASE WHEN ?<>'' THEN ? ELSE next_step END,
+                   disconnection_reason=?,
+                   started_at=CASE WHEN ?<>'' THEN ? ELSE started_at END,
+                   ended_at=CASE WHEN ?<>'' THEN ? ELSE ended_at END,
+                   updated_at=?
+               WHERE id=?""",
+            (
+                call_id, deal_id,
+                "ANALYZED" if event == "call_analyzed" else "ENDED",
+                result,
+                duration, duration,
+                recording_url, recording_url,
+                transcript, transcript,
+                summary, summary,
+                next_step, next_step,
+                str(call.get("disconnection_reason") or ""),
+                started_at, started_at,
+                ended_at, ended_at,
+                now,
+                ai_call["id"],
+            ),
+        )
+    db.commit()
+    return "", 204
+
+
 @bp.get("/communications/timeline")
 @login_required
 def communication_timeline():
@@ -4531,6 +4945,30 @@ def communication_timeline():
                 "source_id": int(deal_id),
             })
 
+    if prospect_id:
+        ai_rows = db.execute(
+            """SELECT * FROM ai_sales_calls
+               WHERE prospect_id=?
+               ORDER BY created_at ASC,id ASC""",
+            (prospect_id,),
+        ).fetchall()
+        for call in ai_rows:
+            entries.append({
+                "id": f"ai-sales-call-{call['id']}",
+                "at": call["created_at"] or "",
+                "source": "OUTBOUND",
+                "channel": "AI SALES CALL",
+                "direction": "RSF",
+                "body": call["summary"] or call["result"] or call["status"] or "AI sales call",
+                "attempt_number": int(call["attempt_number"] or 1),
+                "duration_seconds": int(call["duration_seconds"] or 0),
+                "result": call["result"] or call["status"] or "",
+                "recording_url": call["recording_url"] or "",
+                "transcript": call["transcript"] or "",
+                "summary": call["summary"] or "",
+                "next_step": call["next_step"] or "",
+            })
+
     entries.sort(key=lambda item: (item["at"], item["id"]))
 
     phone = ""
@@ -4545,26 +4983,57 @@ def communication_timeline():
         phone = phone or (deal["contact_number"] or "").strip()
         email = email or (deal["email"] or "").strip()
 
-    email_url = ""
     preferred_conversation_id = None
     if inquiry and inquiry["client_conversation_id"]:
         preferred_conversation_id = int(inquiry["client_conversation_id"])
     elif conversation_ids:
         preferred_conversation_id = max(conversation_ids)
-    if preferred_conversation_id:
-        email_url = url_for("main.client_conversation", conversation_id=preferred_conversation_id)
-    elif prospect_id and email:
-        email_url = url_for("main.prospect_conversation_open", prospect_id=prospect_id)
 
-    normalized_phone = normalize_phone(phone)
+    email_url = ""
+    if email:
+        if deal_id:
+            email_url = url_for("main.communication_email_thread", deal_id=deal_id)
+        elif inquiry_id:
+            email_url = url_for("main.communication_email_thread", inquiry_id=inquiry_id)
+        elif prospect_id:
+            email_url = url_for("main.communication_email_thread", prospect_id=prospect_id)
+
+    email_unread = 0
+    email_message_count = 0
+    if preferred_conversation_id:
+        email_unread = int(db.execute(
+            """SELECT COUNT(*) c FROM client_notifications
+               WHERE user_id=? AND entity_type='conversation' AND entity_id=?
+                 AND read_at IS NULL AND kind='CLIENT_REPLY'""",
+            (g.user["id"], preferred_conversation_id),
+        ).fetchone()["c"])
+        email_message_count = int(db.execute(
+            "SELECT COUNT(*) c FROM client_messages WHERE conversation_id=? AND channel='EMAIL'",
+            (preferred_conversation_id,),
+        ).fetchone()["c"])
+
+    retell_ready = bool(
+        prospect_id
+        and phone
+        and current_app.config.get("RETELL_API_KEY")
+        and current_app.config.get("RETELL_AGENT_ID")
+        and current_app.config.get("RETELL_FROM_NUMBER")
+        and (prospect["status"] or "").upper() not in DEAL_ACTIVE_STATUSES
+    ) if prospect else False
+    call_url = url_for("main.prospect_ai_call", prospect_id=prospect_id) if retell_ready else ""
+
     return jsonify({
         "ok": True,
         "entries": entries,
-        "call_url": f"tel:{normalized_phone}" if normalized_phone else "",
+        "call_url": call_url,
         "email_url": email_url,
         "email": email,
         "phone": phone,
-        "dialer_ready": False,
+        "dialer_ready": retell_ready,
+        "retell_ready": retell_ready,
+        "email_unread": email_unread,
+        "email_message_count": email_message_count,
+        "conversation_id": preferred_conversation_id,
     })
 
 
