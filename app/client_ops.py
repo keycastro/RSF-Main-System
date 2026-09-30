@@ -325,7 +325,7 @@ def _create_conversation(*, inquiry_id: int | None, lead_id: int | None, owner_p
 
 
 def ensure_prospect_conversation(prospect_id: int, owner_partner_id: int | None = None) -> int:
-    """Create/reuse the official-email conversation for one outbound Prospect."""
+    """Create/reuse one canonical official-email conversation for an outbound Prospect."""
     db = get_db()
     prospect = db.execute(
         "SELECT id,name,contact,email FROM prospects WHERE id=?",
@@ -338,6 +338,49 @@ def ensure_prospect_conversation(prospect_id: int, owner_partner_id: int | None 
         raise ValueError("Add the Prospect email before opening Email.")
 
     existing = _conversation_for_prospect(prospect_id)
+
+    # If this Prospect is already merged with a Website Inquiry, that inquiry's
+    # client conversation is canonical. Merge any older Prospect-only thread into
+    # it so Prospect, Website Inquiry, and Deal always expose one email thread.
+    linked = db.execute(
+        """SELECT i.client_conversation_id
+           FROM deals d
+           JOIN website_inquiries i ON i.id=d.website_inquiry_id
+           WHERE d.prospect_id=? AND i.client_conversation_id IS NOT NULL
+           ORDER BY d.id DESC LIMIT 1""",
+        (prospect_id,),
+    ).fetchone()
+    if linked and linked["client_conversation_id"]:
+        conversation_id = int(linked["client_conversation_id"])
+        if existing and int(existing["id"]) != conversation_id:
+            old_id = int(existing["id"])
+            db.execute(
+                "UPDATE client_messages SET conversation_id=? WHERE conversation_id=?",
+                (conversation_id, old_id),
+            )
+            db.execute(
+                "UPDATE client_notifications SET entity_id=? WHERE entity_type='conversation' AND entity_id=?",
+                (conversation_id, old_id),
+            )
+            db.execute("DELETE FROM client_conversations WHERE id=?", (old_id,))
+        db.execute(
+            """UPDATE client_conversations
+               SET prospect_id=?,client_name=?,client_email=?,company=?,
+                   owner_partner_id=COALESCE(owner_partner_id,?),updated_at=?
+               WHERE id=?""",
+            (
+                prospect_id,
+                (prospect["contact"] or prospect["name"] or "")[:100],
+                email_value[:254],
+                (prospect["name"] or "")[:140],
+                owner_partner_id,
+                utcnow_iso(),
+                conversation_id,
+            ),
+        )
+        db.commit()
+        return conversation_id
+
     if existing:
         conversation_id = int(existing["id"])
         db.execute(
@@ -701,7 +744,7 @@ def assign_inquiry(inquiry_id: int, partner_id: int, actor_user_id: int) -> tupl
     return claim_inquiry(inquiry_id, partner_id, actor_user_id)
 
 
-def send_client_email(conversation_id: int, actor_user_id: int, body: str, attachments=None) -> int:
+def send_client_email(conversation_id: int, actor_user_id: int, body: str, attachments=None, subject_override: str | None = None) -> int:
     if not email_send_configured():
         raise RuntimeError("Email sending is not set up yet.")
     db = get_db()
@@ -717,9 +760,17 @@ def send_client_email(conversation_id: int, actor_user_id: int, body: str, attac
 
     sender = current_app.config["RSF_EMAIL_ADDRESS"]
     display = current_app.config.get("RSF_EMAIL_NAME", "Realty Systems Foundry")
-    subject = conv["subject"] or "Your Realty Systems Foundry inquiry"
-    if not subject.lower().startswith("re:"):
-        subject = "Re: " + subject
+    supplied_subject = (subject_override or "").strip()[:240]
+    subject = supplied_subject or conv["subject"] or "Your Realty Systems Foundry inquiry"
+    previous_email = db.execute(
+        "SELECT 1 FROM client_messages WHERE conversation_id=? AND channel='EMAIL' LIMIT 1",
+        (conversation_id,),
+    ).fetchone()
+    # First outbound Research email is a new message, not a fake reply. Existing
+    # threads and Website-origin conversations retain normal Re: reply semantics.
+    if previous_email or conv["inquiry_id"]:
+        if not subject.lower().startswith("re:"):
+            subject = "Re: " + subject
 
     last_msg = db.execute(
         """SELECT external_message_id FROM client_messages
