@@ -4130,6 +4130,81 @@ def _authorized_client_conversation(conversation_id: int):
     return row
 
 
+@bp.post("/communications/manual-note")
+@login_required
+def communication_manual_note():
+    validate_csrf()
+    body = (request.form.get("body", "") or "").strip()[:3000]
+    if not body:
+        return jsonify({"ok": False, "error": "validation", "message": "Write a manual note first."}), 400
+
+    prospect_id = request.form.get("prospect_id", type=int)
+    inquiry_id = request.form.get("inquiry_id", type=int)
+    deal_id = request.form.get("deal_id", type=int)
+    supplied = [value for value in (prospect_id, inquiry_id, deal_id) if value is not None]
+    if len(supplied) != 1:
+        return jsonify({"ok": False, "error": "validation", "message": "Choose one communication record."}), 400
+
+    db = get_db()
+    journey_source = "OUTBOUND"
+
+    if deal_id is not None:
+        deal = db.execute(
+            "SELECT id,prospect_id,website_inquiry_id FROM deals WHERE id=?",
+            (deal_id,),
+        ).fetchone()
+        if not deal:
+            return jsonify({"ok": False, "error": "not_found", "message": "Deal not found."}), 404
+        prospect_id = int(deal["prospect_id"]) if deal["prospect_id"] is not None else None
+        inquiry_id = int(deal["website_inquiry_id"]) if deal["website_inquiry_id"] is not None else None
+        if inquiry_id is not None:
+            _authorized_inquiry(inquiry_id)
+            journey_source = "INBOUND"
+    elif prospect_id is not None:
+        prospect = db.execute("SELECT id FROM prospects WHERE id=?", (prospect_id,)).fetchone()
+        if not prospect:
+            return jsonify({"ok": False, "error": "not_found", "message": "Prospect not found."}), 404
+        linked = db.execute(
+            "SELECT id,website_inquiry_id FROM deals WHERE prospect_id=? LIMIT 1",
+            (prospect_id,),
+        ).fetchone()
+        if linked:
+            deal_id = int(linked["id"])
+            inquiry_id = int(linked["website_inquiry_id"]) if linked["website_inquiry_id"] is not None else None
+    else:
+        _authorized_inquiry(inquiry_id)
+        journey_source = "INBOUND"
+        linked = db.execute(
+            "SELECT id,prospect_id FROM deals WHERE website_inquiry_id=? LIMIT 1",
+            (inquiry_id,),
+        ).fetchone()
+        if linked:
+            deal_id = int(linked["id"])
+            prospect_id = int(linked["prospect_id"]) if linked["prospect_id"] is not None else None
+
+    now = utcnow_iso()
+    cur = db.execute(
+        """INSERT INTO communication_notes(
+               prospect_id,website_inquiry_id,deal_id,journey_source,body,created_by_user_id,created_at
+           ) VALUES (?,?,?,?,?,?,?)""",
+        (prospect_id, inquiry_id, deal_id, journey_source, body, g.user["id"], now),
+    )
+    note_id = int(cur.lastrowid)
+    db.commit()
+    return jsonify({
+        "ok": True,
+        "message": "Manual note saved.",
+        "entry": {
+            "id": f"manual-note-{note_id}",
+            "at": now,
+            "source": journey_source,
+            "channel": "NOTE",
+            "direction": "RSF",
+            "body": body,
+        },
+    })
+
+
 @bp.get("/communications/timeline")
 @login_required
 def communication_timeline():
@@ -4201,6 +4276,35 @@ def communication_timeline():
                 "channel": channel,
                 "direction": "CLIENT" if message["direction"] == "INBOUND" else "RSF",
                 "body": message["body"] or "",
+            })
+
+    note_conditions = []
+    note_params: list[int] = []
+    if prospect_id:
+        note_conditions.append("prospect_id=?")
+        note_params.append(prospect_id)
+    if inquiry_id:
+        note_conditions.append("website_inquiry_id=?")
+        note_params.append(inquiry_id)
+    if deal_id:
+        note_conditions.append("deal_id=?")
+        note_params.append(deal_id)
+    if note_conditions:
+        note_rows = db.execute(
+            f"""SELECT id,journey_source,body,created_at
+                FROM communication_notes
+                WHERE {" OR ".join(note_conditions)}
+                ORDER BY created_at ASC,id ASC""",
+            note_params,
+        ).fetchall()
+        for note in note_rows:
+            entries.append({
+                "id": f"manual-note-{note['id']}",
+                "at": note["created_at"] or "",
+                "source": (note["journey_source"] or "OUTBOUND").strip().upper(),
+                "channel": "NOTE",
+                "direction": "RSF",
+                "body": note["body"] or "",
             })
 
     seen_notes: set[str] = set()
