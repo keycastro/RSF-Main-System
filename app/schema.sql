@@ -89,6 +89,7 @@ CREATE TABLE IF NOT EXISTS deals (
     demo_date TEXT NOT NULL DEFAULT '',
     demo_time TEXT NOT NULL DEFAULT '',
     demo_timezone TEXT NOT NULL DEFAULT '',
+    demo_timezone_location TEXT NOT NULL DEFAULT '',
     google_calendar_event_id TEXT NOT NULL DEFAULT '',
     google_calendar_html_url TEXT NOT NULL DEFAULT '',
     google_meet_url TEXT NOT NULL DEFAULT '',
