@@ -3907,10 +3907,14 @@ document.addEventListener('click', (event) => {
         return;
       }
 
-      if (event.key === 'Enter' && isOpen && state.activeIndex >= 0 && state.matches[state.activeIndex]) {
+      if (event.key === 'Enter') {
         event.preventDefault();
         event.stopPropagation();
-        applyTimezoneLocation(root, state.matches[state.activeIndex], true);
+        if (isOpen && state.activeIndex >= 0 && state.matches[state.activeIndex]) {
+          applyTimezoneLocation(root, state.matches[state.activeIndex], true);
+        } else if (!isOpen) {
+          searchTimezoneLocations(root, input.value, {persistUnresolved:false});
+        }
       }
     });
 
