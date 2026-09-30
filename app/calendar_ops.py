@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError, available_timezones
 
 from cryptography.fernet import Fernet, InvalidToken
 from flask import current_app, session
@@ -26,6 +26,68 @@ CALENDAR_API_BASE = "https://www.googleapis.com/calendar/v3"
 
 _token_lock = threading.Lock()
 _token_cache = {"access_token": "", "expires_at": 0.0}
+
+PHILIPPINES_TIMEZONE = "Asia/Manila"
+
+
+def timezone_options() -> list[str]:
+    return sorted(
+        zone
+        for zone in available_timezones()
+        if "/" in zone and not zone.startswith(("Etc/", "posix/", "right/"))
+    )
+
+
+def validate_demo_timezone(value: str) -> str:
+    timezone_name = (value or "").strip()[:120]
+    if not timezone_name:
+        return ""
+    try:
+        ZoneInfo(timezone_name)
+    except (ZoneInfoNotFoundError, ValueError) as exc:
+        raise ValueError("Select a valid client time zone.") from exc
+    return timezone_name
+
+
+def _friendly_demo_time(value: datetime) -> str:
+    month = value.strftime("%b")
+    day = str(value.day)
+    hour = value.strftime("%I").lstrip("0") or "0"
+    minute = value.strftime("%M")
+    ampm = value.strftime("%p")
+    return f"{month} {day} · {hour}:{minute} {ampm}"
+
+
+def demo_time_display(demo_date: str, demo_time: str, demo_timezone: str) -> dict[str, str]:
+    demo_date = (demo_date or "").strip()
+    demo_time = (demo_time or "").strip()
+    demo_timezone = (demo_timezone or "").strip()
+    if not demo_date or not demo_time:
+        return {"client": "Set demo date and time", "philippines": "—"}
+    try:
+        local_naive = datetime.fromisoformat(f"{demo_date}T{demo_time}:00")
+    except ValueError:
+        return {"client": "Invalid demo date or time", "philippines": "—"}
+
+    if not demo_timezone:
+        return {
+            "client": f"{_friendly_demo_time(local_naive)} · Select client time zone",
+            "philippines": "Select client time zone",
+        }
+    try:
+        client_zone = ZoneInfo(demo_timezone)
+    except (ZoneInfoNotFoundError, ValueError):
+        return {
+            "client": f"{_friendly_demo_time(local_naive)} · Invalid time zone",
+            "philippines": "Invalid client time zone",
+        }
+
+    client_time = local_naive.replace(tzinfo=client_zone)
+    philippines_time = client_time.astimezone(ZoneInfo(PHILIPPINES_TIMEZONE))
+    return {
+        "client": f"{_friendly_demo_time(client_time)} · {demo_timezone}",
+        "philippines": _friendly_demo_time(philippines_time),
+    }
 
 
 class CalendarAPIError(RuntimeError):
@@ -276,14 +338,12 @@ def _meeting_url(event: dict) -> str:
     return ""
 
 
-def _event_payload(*, client_name: str, client_email: str, demo_date: str, demo_time: str) -> dict:
-    timezone_name = current_app.config.get("GOOGLE_CALENDAR_TIMEZONE", "Asia/Manila")
+def _event_payload(*, client_name: str, client_email: str, demo_date: str, demo_time: str, demo_timezone: str) -> dict:
+    timezone_name = validate_demo_timezone(demo_timezone)
+    if not timezone_name:
+        raise RuntimeError("Client time zone is required before scheduling the demo.")
     duration = int(current_app.config.get("GOOGLE_CALENDAR_DEMO_DURATION_MINUTES", 60))
-    try:
-        tz = ZoneInfo(timezone_name)
-    except Exception:
-        tz = ZoneInfo("Asia/Manila")
-        timezone_name = "Asia/Manila"
+    tz = ZoneInfo(timezone_name)
     start_local = datetime.fromisoformat(f"{demo_date}T{demo_time}:00").replace(tzinfo=tz)
     end_local = start_local + timedelta(minutes=duration)
     payload = {
@@ -305,6 +365,7 @@ def create_or_update_deal_meeting(
     client_email: str,
     demo_date: str,
     demo_time: str,
+    demo_timezone: str,
 ) -> dict:
     if not calendar_connected():
         raise RuntimeError("Google Calendar is not connected to RSF yet.")
@@ -313,6 +374,7 @@ def create_or_update_deal_meeting(
         client_email=client_email,
         demo_date=demo_date,
         demo_time=demo_time,
+        demo_timezone=demo_timezone,
     )
     token = access_token_for_api()
     encoded_calendar = quote("primary", safe="")
