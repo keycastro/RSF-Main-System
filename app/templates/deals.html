@@ -267,14 +267,26 @@
               <span>Platform They Want</span>
               <input type="text" maxlength="200" value="{{ deal['research_platform_wanted'] }}" data-deal-research-field="platform_wanted">
             </label>
-            <label class="deal-source-field-wide">
+            <div class="deal-source-field-wide deal-research-longtext-field conversation-notes-field"
+                 data-deal-research-longtext-field
+                 data-deal-research-field-name="problem"
+                 data-deal-research-value="{{ deal['research_problem'] }}">
               <span>Problem</span>
-              <textarea maxlength="2000" rows="2" data-deal-research-field="problem">{{ deal['research_problem'] }}</textarea>
-            </label>
-            <label class="deal-source-field-wide">
+              <div class="deal-research-longtext-compact conversation-notes-compact">
+                <button class="deal-research-longtext-preview" type="button" data-deal-research-longtext-expand data-deal-research-longtext-label="Problem" aria-label="Open full Problem" title="Open full Problem">{{ deal['research_problem'] or '—' }}</button>
+                <button class="deal-notes-expand-button" type="button" data-deal-research-longtext-expand data-deal-research-longtext-label="Problem" aria-label="Open full Problem" title="Open full Problem"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 4h6v6h-2V7.4l-4.8 4.8-1.4-1.4L16.6 6H14V4ZM10 20H4v-6h2v2.6l4.8-4.8 1.4 1.4L7.4 18H10v2Z" fill="currentColor"/></svg></button>
+              </div>
+            </div>
+            <div class="deal-source-field-wide deal-research-longtext-field conversation-notes-field"
+                 data-deal-research-longtext-field
+                 data-deal-research-field-name="system_wanted"
+                 data-deal-research-value="{{ deal['research_system_wanted'] }}">
               <span>System They Want</span>
-              <textarea maxlength="2000" rows="2" data-deal-research-field="system_wanted">{{ deal['research_system_wanted'] }}</textarea>
-            </label>
+              <div class="deal-research-longtext-compact conversation-notes-compact">
+                <button class="deal-research-longtext-preview" type="button" data-deal-research-longtext-expand data-deal-research-longtext-label="System They Want" aria-label="Open full System They Want" title="Open full System They Want">{{ deal['research_system_wanted'] or '—' }}</button>
+                <button class="deal-notes-expand-button" type="button" data-deal-research-longtext-expand data-deal-research-longtext-label="System They Want" aria-label="Open full System They Want" title="Open full System They Want"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 4h6v6h-2V7.4l-4.8 4.8-1.4-1.4L16.6 6H14V4ZM10 20H4v-6h2v2.6l4.8-4.8 1.4 1.4L7.4 18H10v2Z" fill="currentColor"/></svg></button>
+              </div>
+            </div>
             <label>
               <span>Company</span>
               <input type="text" maxlength="200" value="{{ deal['prospect_name'] }}" data-deal-research-field="company">
@@ -395,6 +407,18 @@
       <footer class="deal-document-viewer-footer">
         <a class="button primary" href="#" data-deal-document-viewer-download>Download</a>
       </footer>
+    </div>
+  </dialog>
+
+  <dialog class="deal-notes-viewer deal-research-longtext-viewer" data-deal-research-longtext-viewer aria-labelledby="deal-research-longtext-viewer-title">
+    <div class="deal-notes-viewer-card">
+      <header class="deal-notes-viewer-head">
+        <h2 id="deal-research-longtext-viewer-title" data-deal-research-longtext-viewer-title>Full text</h2>
+        <button class="deal-notes-viewer-close" type="button" data-deal-research-longtext-viewer-close aria-label="Close full text" title="Close">×</button>
+      </header>
+      <div class="deal-notes-viewer-body deal-research-longtext-viewer-body">
+        <textarea maxlength="2000" data-deal-research-longtext-viewer-input aria-label="Full Outbound Detail text"></textarea>
+      </div>
     </div>
   </dialog>
 
