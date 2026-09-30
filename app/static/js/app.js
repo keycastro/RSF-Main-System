@@ -3625,6 +3625,221 @@ document.addEventListener('click', (event) => {
     return state;
   };
 
+  const timezoneDataNode = page.querySelector('[data-rsf-timezone-data]');
+  let dealTimezoneOptions = [];
+  try {
+    const parsed = JSON.parse(timezoneDataNode?.textContent || '[]');
+    if (Array.isArray(parsed)) {
+      dealTimezoneOptions = parsed.filter((value) => typeof value === 'string' && value);
+    }
+  } catch (_error) {
+    dealTimezoneOptions = [];
+  }
+  const dealTimezoneLookup = new Map(
+    dealTimezoneOptions.map((zone) => [zone.toLowerCase(), zone])
+  );
+  const dealTimezoneState = new WeakMap();
+  const dealTimezoneRoots = Array.from(page.querySelectorAll('[data-timezone-combobox]'));
+
+  const normalizedTimezoneSearch = (value) =>
+    String(value || '')
+      .toLowerCase()
+      .replace(/[_/]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const timezoneStateFor = (root) => {
+    let state = dealTimezoneState.get(root);
+    if (!state) {
+      state = {matches:[], activeIndex:-1};
+      dealTimezoneState.set(root, state);
+    }
+    return state;
+  };
+
+  const closeTimezoneDropdown = (root) => {
+    const input = root?.querySelector('[data-timezone-input]');
+    const dropdown = root?.querySelector('[data-timezone-dropdown]');
+    if (!input || !dropdown) return;
+    dropdown.hidden = true;
+    root.classList.remove('is-open');
+    input.setAttribute('aria-expanded', 'false');
+    input.removeAttribute('aria-activedescendant');
+    timezoneStateFor(root).activeIndex = -1;
+  };
+
+  const matchingTimezones = (query) => {
+    const raw = String(query || '').trim().toLowerCase();
+    const friendlyQuery = normalizedTimezoneSearch(query);
+    if (!raw) return dealTimezoneOptions.slice(0, 40);
+
+    return dealTimezoneOptions
+      .map((zone) => {
+        const lower = zone.toLowerCase();
+        const friendly = normalizedTimezoneSearch(zone);
+        let score = null;
+        if (lower === raw) score = 0;
+        else if (lower.startsWith(raw)) score = 1;
+        else if (friendly.startsWith(friendlyQuery)) score = 2;
+        else if (lower.includes(raw)) score = 3;
+        else if (friendly.includes(friendlyQuery)) score = 4;
+        return score === null ? null : {zone, score};
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.score - b.score || a.zone.localeCompare(b.zone))
+      .slice(0, 40)
+      .map((item) => item.zone);
+  };
+
+  const setActiveTimezoneOption = (root, index) => {
+    const dropdown = root?.querySelector('[data-timezone-dropdown]');
+    const input = root?.querySelector('[data-timezone-input]');
+    if (!dropdown || !input) return;
+    const options = Array.from(dropdown.querySelectorAll('[data-timezone-option]'));
+    const state = timezoneStateFor(root);
+    if (!options.length) {
+      state.activeIndex = -1;
+      input.removeAttribute('aria-activedescendant');
+      return;
+    }
+    const nextIndex = Math.max(0, Math.min(index, options.length - 1));
+    state.activeIndex = nextIndex;
+    options.forEach((option, optionIndex) => {
+      option.classList.toggle('is-active', optionIndex === nextIndex);
+    });
+    const active = options[nextIndex];
+    if (active?.id) input.setAttribute('aria-activedescendant', active.id);
+    active?.scrollIntoView?.({block:'nearest'});
+  };
+
+  const renderTimezoneDropdown = (root, query) => {
+    const dropdown = root?.querySelector('[data-timezone-dropdown]');
+    const input = root?.querySelector('[data-timezone-input]');
+    if (!dropdown || !input) return;
+    const state = timezoneStateFor(root);
+    state.matches = matchingTimezones(query);
+    dropdown.replaceChildren();
+
+    if (!state.matches.length) {
+      const empty = document.createElement('div');
+      empty.className = 'deal-timezone-empty';
+      empty.textContent = 'No matching time zones.';
+      dropdown.appendChild(empty);
+      state.activeIndex = -1;
+      input.removeAttribute('aria-activedescendant');
+      return;
+    }
+
+    state.matches.forEach((zone, index) => {
+      const option = document.createElement('button');
+      option.type = 'button';
+      option.className = 'deal-timezone-option';
+      option.dataset.timezoneOption = zone;
+      option.id = `${dropdown.id}-option-${index}`;
+      option.setAttribute('role', 'option');
+      option.setAttribute('aria-selected', String(zone === input.value));
+      option.textContent = zone;
+      dropdown.appendChild(option);
+    });
+
+    const selectedIndex = state.matches.indexOf(input.value);
+    setActiveTimezoneOption(root, selectedIndex >= 0 ? selectedIndex : 0);
+  };
+
+  const openTimezoneDropdown = (root) => {
+    const input = root?.querySelector('[data-timezone-input]');
+    const dropdown = root?.querySelector('[data-timezone-dropdown]');
+    if (!input || !dropdown || !dealTimezoneOptions.length) return;
+    renderTimezoneDropdown(root, input.value);
+    dropdown.hidden = false;
+    root.classList.add('is-open');
+    input.setAttribute('aria-expanded', 'true');
+  };
+
+  const chooseTimezone = (root, zone) => {
+    const input = root?.querySelector('[data-timezone-input]');
+    if (!input || !dealTimezoneLookup.has(String(zone || '').toLowerCase())) return;
+    input.value = dealTimezoneLookup.get(String(zone).toLowerCase());
+    closeTimezoneDropdown(root);
+    input.focus();
+    input.dispatchEvent(new Event('change', {bubbles:true}));
+  };
+
+  dealTimezoneRoots.forEach((root) => {
+    const input = root.querySelector('[data-timezone-input]');
+    const toggle = root.querySelector('[data-timezone-toggle]');
+    const dropdown = root.querySelector('[data-timezone-dropdown]');
+    if (!(input instanceof HTMLInputElement) || !dropdown) return;
+
+    root.dataset.selectedTimezone = input.value || '';
+
+    input.addEventListener('focus', () => openTimezoneDropdown(root));
+    input.addEventListener('input', () => {
+      openTimezoneDropdown(root);
+      renderTimezoneDropdown(root, input.value);
+    });
+    input.addEventListener('keydown', (event) => {
+      const state = timezoneStateFor(root);
+      const isOpen = input.getAttribute('aria-expanded') === 'true';
+
+      if (event.key === 'Escape') {
+        if (isOpen) {
+          event.preventDefault();
+          event.stopPropagation();
+          closeTimezoneDropdown(root);
+        }
+        return;
+      }
+
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (!isOpen) openTimezoneDropdown(root);
+        const current = timezoneStateFor(root).activeIndex;
+        const delta = event.key === 'ArrowDown' ? 1 : -1;
+        const start = current < 0 ? (delta > 0 ? 0 : state.matches.length - 1) : current + delta;
+        setActiveTimezoneOption(root, start);
+        return;
+      }
+
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (isOpen && state.activeIndex >= 0 && state.matches[state.activeIndex]) {
+          chooseTimezone(root, state.matches[state.activeIndex]);
+          return;
+        }
+        const canonical = dealTimezoneLookup.get((input.value || '').trim().toLowerCase());
+        if (canonical) chooseTimezone(root, canonical);
+      }
+    });
+
+    toggle?.addEventListener('click', () => {
+      const isOpen = input.getAttribute('aria-expanded') === 'true';
+      if (isOpen) {
+        closeTimezoneDropdown(root);
+      } else {
+        input.focus();
+        openTimezoneDropdown(root);
+      }
+    });
+
+    dropdown.addEventListener('pointerdown', (event) => {
+      if (event.target.closest('[data-timezone-option]')) event.preventDefault();
+    });
+    dropdown.addEventListener('click', (event) => {
+      const option = event.target.closest('[data-timezone-option]');
+      if (!option) return;
+      chooseTimezone(root, option.dataset.timezoneOption || '');
+    });
+  });
+
+  document.addEventListener('pointerdown', (event) => {
+    dealTimezoneRoots.forEach((root) => {
+      if (!root.contains(event.target)) closeTimezoneDropdown(root);
+    });
+  });
+
   const updateDealMeetState = (form, data = {}) => {
     const card = form?.closest?.('[data-deal-card]');
     if (!card) return;
@@ -3644,6 +3859,8 @@ document.addEventListener('click', (event) => {
     if (timezoneField && typeof data.demo_timezone === 'string') {
       timezoneField.value = data.demo_timezone;
       timezoneField.dataset.dealStartValue = data.demo_timezone;
+      const timezoneRoot = timezoneField.closest('[data-timezone-combobox]');
+      if (timezoneRoot) timezoneRoot.dataset.selectedTimezone = data.demo_timezone;
     }
 
     if (field) {
@@ -4047,6 +4264,20 @@ document.addEventListener('click', (event) => {
     const field = event.target;
     const form = dealFormForField(field);
     if (!form || !dealAutosaveFields.has(field.name || '')) return;
+
+    if (field.name === 'demo_timezone') {
+      const raw = (field.value || '').trim();
+      const canonical = raw ? dealTimezoneLookup.get(raw.toLowerCase()) : '';
+      const timezoneRoot = field.closest('[data-timezone-combobox]');
+      if (raw && !canonical) {
+        field.value = timezoneRoot?.dataset.selectedTimezone || field.dataset.dealStartValue || '';
+        closeTimezoneDropdown(timezoneRoot);
+        return;
+      }
+      if (canonical) field.value = canonical;
+      closeTimezoneDropdown(timezoneRoot);
+    }
+
     const previous = field.dataset.dealStartValue ?? field.value;
     if (field.value === previous) return;
     field.dataset.dealStartValue = field.value;
