@@ -14,7 +14,50 @@ const RSFConversationTimeline = (() => {
     }
   };
 
-  const render = (container, entries) => {
+  const notePayload = (entry, csrfToken, body = null) => {
+    const payload = new URLSearchParams({
+      csrf_token: csrfToken || '',
+      kind: entry.note_kind || ''
+    });
+    if (entry.note_kind === 'manual') {
+      payload.set('note_id', String(entry.note_id || ''));
+    } else if (entry.note_kind === 'legacy') {
+      payload.set('source_type', entry.source_type || '');
+      payload.set('source_id', String(entry.source_id || ''));
+    }
+    if (body !== null) payload.set('body', body);
+    return payload;
+  };
+
+  const mutateNote = async (action, entry, csrfToken, body = null) => {
+    const response = await fetch(`/app/communications/note-entry/${action}`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+      },
+      body: notePayload(entry, csrfToken, body).toString(),
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) {
+      throw new Error(data.message || `Note could not be ${action === 'delete' ? 'deleted' : 'updated'}.`);
+    }
+    return data;
+  };
+
+  const iconButton = (label, className, svg) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `conversation-note-action ${className}`;
+    button.setAttribute('aria-label', label);
+    button.title = label;
+    button.innerHTML = svg;
+    return button;
+  };
+
+  const render = (container, entries, context = {}) => {
     if (!container) return;
     container.replaceChildren();
     if (!entries?.length) {
@@ -35,6 +78,9 @@ const RSFConversationTimeline = (() => {
       const meta = document.createElement('strong');
       meta.textContent = [entry.source, entry.channel].filter(Boolean).join(' · ');
 
+      const headRight = document.createElement('div');
+      headRight.className = 'conversation-timeline-item-right';
+
       const when = document.createElement('time');
       const raw = entry.at || '';
       const date = raw ? new Date(raw) : null;
@@ -44,19 +90,115 @@ const RSFConversationTimeline = (() => {
             hour: 'numeric', minute: '2-digit'
           }).format(date)
         : raw;
-
-      head.append(meta, when);
+      headRight.appendChild(when);
 
       const body = document.createElement('div');
       body.className = 'conversation-timeline-item-body';
       body.textContent = entry.body || '';
 
+      if (entry.editable) {
+        const actions = document.createElement('div');
+        actions.className = 'conversation-note-actions';
+
+        const edit = iconButton(
+          'Edit note',
+          'conversation-note-edit',
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16.5V20h3.5L18.8 8.7l-3.5-3.5L4 16.5Zm16.7-10.6a1 1 0 0 0 0-1.4l-1.2-1.2a1 1 0 0 0-1.4 0l-1.8 1.8 3.5 3.5 1.9-1.8Z" fill="currentColor"/></svg>'
+        );
+        const trash = iconButton(
+          'Delete note',
+          'conversation-note-delete',
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 21a2 2 0 0 1-2-2V7h14v12a2 2 0 0 1-2 2H7Zm2-3h2V10H9v8Zm4 0h2V10h-2v8ZM4 4h5l1-1h4l1 1h5v2H4V4Z" fill="currentColor"/></svg>'
+        );
+
+        edit.addEventListener('click', () => {
+          if (item.classList.contains('is-editing')) return;
+          item.classList.add('is-editing');
+
+          const input = document.createElement('textarea');
+          input.className = 'conversation-timeline-edit-input';
+          input.maxLength = 3000;
+          input.value = entry.body || '';
+          body.replaceChildren(input);
+          input.focus();
+          input.setSelectionRange(input.value.length, input.value.length);
+
+          const cancelEdit = () => {
+            item.classList.remove('is-editing');
+            body.textContent = entry.body || '';
+          };
+
+          const saveEdit = async () => {
+            const value = input.value.trim();
+            if (!value) {
+              window.alert('A saved note cannot be empty. Use the trash icon to delete it.');
+              return;
+            }
+            edit.disabled = true;
+            trash.disabled = true;
+            input.disabled = true;
+            try {
+              await mutateNote('update', entry, context.csrfToken || '', value);
+              if (entry.note_kind === 'legacy') context.onLegacyChanged?.(value);
+              await load(
+                context.timelineUrl || '',
+                container,
+                context.callAction,
+                context.emailAction,
+                context.options || {}
+              );
+            } catch (error) {
+              input.disabled = false;
+              edit.disabled = false;
+              trash.disabled = false;
+              window.alert(error.message || 'Note could not be updated.');
+            }
+          };
+
+          input.addEventListener('keydown', (event) => {
+            if (event.isComposing) return;
+            if (event.key === 'Enter' && !event.shiftKey) {
+              event.preventDefault();
+              saveEdit();
+            } else if (event.key === 'Escape') {
+              event.preventDefault();
+              cancelEdit();
+            }
+          });
+        });
+
+        trash.addEventListener('click', async () => {
+          if (!window.confirm('Delete this note? This cannot be undone.')) return;
+          edit.disabled = true;
+          trash.disabled = true;
+          try {
+            await mutateNote('delete', entry, context.csrfToken || '');
+            if (entry.note_kind === 'legacy') context.onLegacyChanged?.('');
+            await load(
+              context.timelineUrl || '',
+              container,
+              context.callAction,
+              context.emailAction,
+              context.options || {}
+            );
+          } catch (error) {
+            edit.disabled = false;
+            trash.disabled = false;
+            window.alert(error.message || 'Note could not be deleted.');
+          }
+        });
+
+        actions.append(edit, trash);
+        headRight.appendChild(actions);
+      }
+
+      head.append(meta, headRight);
       item.append(head, body);
       container.appendChild(item);
     });
   };
 
-  const load = async (url, container, callAction, emailAction) => {
+  const load = async (url, container, callAction, emailAction, options = {}) => {
     if (!url || !container) return;
     container.replaceChildren();
     const loading = document.createElement('div');
@@ -74,7 +216,14 @@ const RSFConversationTimeline = (() => {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.ok) throw new Error(data.message || 'Conversation history could not be loaded.');
-      render(container, data.entries || []);
+      render(container, data.entries || [], {
+        timelineUrl: url,
+        callAction,
+        emailAction,
+        csrfToken: options.csrfToken || '',
+        onLegacyChanged: options.onLegacyChanged,
+        options
+      });
       setAction(callAction, data.call_url || '');
       setAction(emailAction, data.email_url || '');
     } catch (_error) {
@@ -2157,11 +2306,21 @@ document.addEventListener('click', (event) => {
     source.dataset.prospectNotesStartValue ??= source.value || '';
     prospectNotesTimelineUrl = trigger.dataset.timelineUrl || '';
     if (prospectNotesViewerInput) prospectNotesViewerInput.value = '';
+    const prospectNotesRow = prospectNotesSource.closest('[data-prospect-row]');
+    const prospectTimelineOptions = {
+      csrfToken: csrfForRow(prospectNotesRow),
+      onLegacyChanged: (value) => {
+        if (!prospectNotesSource) return;
+        prospectNotesSource.value = value;
+        prospectNotesSource.dataset.prospectNotesStartValue = value;
+      }
+    };
     RSFConversationTimeline.load(
       prospectNotesTimelineUrl,
       prospectConversationTimeline,
       prospectCallAction,
-      prospectEmailAction
+      prospectEmailAction,
+      prospectTimelineOptions
     );
 
     if (prospectNotesViewer && typeof prospectNotesViewer.showModal === 'function') {
@@ -2188,7 +2347,15 @@ document.addEventListener('click', (event) => {
         prospectNotesTimelineUrl,
         prospectConversationTimeline,
         prospectCallAction,
-        prospectEmailAction
+        prospectEmailAction,
+        {
+          csrfToken: csrfForRow(row),
+          onLegacyChanged: (value) => {
+            if (!prospectNotesSource) return;
+            prospectNotesSource.value = value;
+            prospectNotesSource.dataset.prospectNotesStartValue = value;
+          }
+        }
       );
       showToast('Manual note saved.');
       prospectNotesViewerInput.focus();
@@ -2196,6 +2363,13 @@ document.addEventListener('click', (event) => {
       showToast(error.message || 'Manual note could not be saved.', true);
     } finally {
       prospectNotesSave.disabled = false;
+    }
+  });
+  prospectNotesViewerInput?.addEventListener('keydown', (event) => {
+    if (event.isComposing) return;
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      prospectNotesSave?.click();
     }
   });
   prospectNotesViewerClose?.addEventListener('click', closeProspectNotesViewer);
@@ -3181,11 +3355,21 @@ document.addEventListener('click', (event) => {
     notesSource.dataset.dealStartValue = source.value || '';
     dealNotesTimelineUrl = trigger.dataset.timelineUrl || '';
     if (notesViewerInput) notesViewerInput.value = '';
+    const dealNotesForm = notesSource.closest('[data-deal-form]');
+    const dealTimelineOptions = {
+      csrfToken: dealNotesForm?.querySelector('input[name="csrf_token"]')?.value || '',
+      onLegacyChanged: (value) => {
+        if (!notesSource) return;
+        notesSource.value = value;
+        notesSource.dataset.dealStartValue = value;
+      }
+    };
     RSFConversationTimeline.load(
       dealNotesTimelineUrl,
       dealConversationTimeline,
       dealCallAction,
-      dealEmailAction
+      dealEmailAction,
+      dealTimelineOptions
     );
 
     if (notesViewer && typeof notesViewer.showModal === 'function') {
@@ -3213,13 +3397,28 @@ document.addEventListener('click', (event) => {
         dealNotesTimelineUrl,
         dealConversationTimeline,
         dealCallAction,
-        dealEmailAction
+        dealEmailAction,
+        {
+          csrfToken,
+          onLegacyChanged: (value) => {
+            if (!notesSource) return;
+            notesSource.value = value;
+            notesSource.dataset.dealStartValue = value;
+          }
+        }
       );
       notesViewerInput.focus();
     } catch (error) {
       window.alert(error.message || 'Manual note could not be saved.');
     } finally {
       dealNotesSave.disabled = false;
+    }
+  });
+  notesViewerInput?.addEventListener('keydown', (event) => {
+    if (event.isComposing) return;
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      dealNotesSave?.click();
     }
   });
 
@@ -3748,11 +3947,20 @@ document.addEventListener('click', (event) => {
     source.dataset.websiteNotesStartValue ??= source.value || '';
     websiteNotesTimelineUrl = trigger.dataset.timelineUrl || '';
     if (notesViewerInput) notesViewerInput.value = '';
+    const websiteTimelineOptions = {
+      csrfToken: notesSource.dataset.csrfToken || '',
+      onLegacyChanged: (value) => {
+        if (!notesSource) return;
+        notesSource.value = value;
+        notesSource.dataset.websiteNotesStartValue = value;
+      }
+    };
     RSFConversationTimeline.load(
       websiteNotesTimelineUrl,
       websiteConversationTimeline,
       websiteCallAction,
-      websiteEmailAction
+      websiteEmailAction,
+      websiteTimelineOptions
     );
 
     if (notesViewer && typeof notesViewer.showModal === 'function') {
@@ -3884,13 +4092,28 @@ document.addEventListener('click', (event) => {
         websiteNotesTimelineUrl,
         websiteConversationTimeline,
         websiteCallAction,
-        websiteEmailAction
+        websiteEmailAction,
+        {
+          csrfToken: notesSource.dataset.csrfToken || '',
+          onLegacyChanged: (value) => {
+            if (!notesSource) return;
+            notesSource.value = value;
+            notesSource.dataset.websiteNotesStartValue = value;
+          }
+        }
       );
       notesViewerInput.focus();
     } catch (error) {
       window.alert(error.message || 'Manual note could not be saved.');
     } finally {
       websiteNotesSave.disabled = false;
+    }
+  });
+  notesViewerInput?.addEventListener('keydown', (event) => {
+    if (event.isComposing) return;
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      websiteNotesSave?.click();
     }
   });
   notesViewerClose?.addEventListener('click', closeWebsiteNotesViewer);
