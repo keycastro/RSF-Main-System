@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 32
-SCHEMA_NAME = "rsf-main-system-v1.18.122-google-calendar-meet"
+SCHEMA_VERSION = 33
+SCHEMA_NAME = "rsf-main-system-v1.18.125-client-demo-timezones"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents","communication_notes","ai_sales_calls"}
 
 
@@ -1271,6 +1271,17 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
         db.execute(
             "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
             (32, "rsf-v1.18.122-google-calendar-meet"),
+        )
+
+    # V33 stores the client's IANA time zone for Deal demo scheduling so RSF can
+    # show the client time and the automatically converted Philippines time.
+    if 33 not in applied:
+        deal_columns = {row["name"] for row in db.execute("PRAGMA table_info(deals)").fetchall()}
+        if "demo_timezone" not in deal_columns:
+            db.execute("ALTER TABLE deals ADD COLUMN demo_timezone TEXT NOT NULL DEFAULT ''")
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (33, "rsf-v1.18.125-client-demo-timezones"),
         )
 
 
