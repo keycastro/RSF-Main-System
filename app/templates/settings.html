@@ -38,4 +38,37 @@
     {% endif %}
   </div>
 </section>
+
+<section class="workspace-section" style="margin-top:20px">
+  <div class="section-head">
+    <div>
+      <h2>Google Calendar</h2>
+      <p>Used by Deals to schedule demos and automatically create Google Meet links.</p>
+    </div>
+  </div>
+  <div class="form-stack">
+    <div>
+      <strong>Status:</strong>
+      {% if calendar_status.connected %}
+        Connected
+      {% elif calendar_status.oauth_configured %}
+        Ready to connect
+      {% else %}
+        OAuth setup required
+      {% endif %}
+    </div>
+    <div><strong>Calendar:</strong> {{ calendar_status.calendar_id }}</div>
+    <div><strong>Timezone:</strong> {{ calendar_status.timezone }}</div>
+    {% if calendar_status.connected %}
+      <form method="post" action="{{ url_for('main.calendar_verify') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="button secondary" type="submit">Verify Google Calendar</button>
+      </form>
+    {% elif calendar_status.oauth_configured %}
+      <a class="button primary" href="{{ url_for('main.calendar_connect') }}">Connect Google Calendar</a>
+    {% else %}
+      <small class="help">Google OAuth Client ID and Client Secret must be configured in Render before Calendar can be connected.</small>
+    {% endif %}
+  </div>
+</section>
 {% endblock %}
