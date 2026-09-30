@@ -5295,3 +5295,76 @@ textarea.prospect-inline-editor{resize:vertical}
   overflow:auto;
   resize:none;
 }
+
+
+/* v1.18.113 — Deal Outbound Problem/System mirror the compact Prospect format */
+.deal-source-grid>.deal-research-longtext-field{
+  display:grid;
+  gap:5px;
+  min-width:0;
+}
+.deal-source-grid>.deal-research-longtext-field>span{
+  display:block;
+  margin:0;
+  color:#6f7f79;
+  font-size:8.5px;
+  font-weight:650;
+  letter-spacing:.055em;
+  line-height:1.3;
+  text-transform:uppercase;
+}
+.deal-research-longtext-compact{
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+}
+.deal-research-longtext-compact>.deal-research-longtext-preview{
+  display:block;
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+  height:37px;
+  min-height:37px;
+  max-height:37px;
+  margin:0;
+  padding:9px 4px 9px 10px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  color:var(--ux-section-ink);
+  font:inherit;
+  font-size:12.5px;
+  font-weight:400;
+  line-height:1.4;
+  text-align:left;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  overflow-wrap:normal;
+  cursor:pointer;
+}
+.deal-research-longtext-preview:hover{
+  background:transparent;
+}
+.deal-research-longtext-compact .deal-notes-expand-button{
+  position:static;
+  right:auto;
+  bottom:auto;
+  align-self:center;
+  justify-self:center;
+  margin:0;
+  z-index:1;
+}
+.deal-research-longtext-viewer{
+  width:min(720px,calc(100vw - 28px));
+  height:min(520px,calc(100vh - 28px));
+}
+.deal-research-longtext-viewer-body{
+  min-height:0;
+}
+.deal-research-longtext-viewer-body textarea{
+  white-space:pre-wrap;
+  overflow:auto;
+  resize:none;
+}
