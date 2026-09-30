@@ -137,7 +137,7 @@
                 <strong data-deal-meet-status>
                   {% if not calendar_status.connected %}Connect Google Calendar
                   {% elif deal['demo_date'] and deal['demo_time'] %}Waiting to sync
-                  {% else %}Set Demo Date + Time{% endif %}
+                  {% else %}Set Demo Date & Time{% endif %}
                 </strong>
               {% endif %}
               <small data-deal-meet-error {% if not deal['google_calendar_sync_error'] %}hidden{% endif %}>{{ deal['google_calendar_sync_error'] }}</small>
