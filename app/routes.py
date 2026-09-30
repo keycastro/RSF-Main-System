@@ -4205,6 +4205,162 @@ def communication_manual_note():
     })
 
 
+def _authorized_communication_note(note_id: int):
+    db = get_db()
+    note = db.execute(
+        """SELECT id,prospect_id,website_inquiry_id,deal_id,journey_source,body,
+                  created_by_user_id,created_at
+           FROM communication_notes
+           WHERE id=?""",
+        (note_id,),
+    ).fetchone()
+    if not note:
+        abort(404)
+
+    inquiry_id = int(note["website_inquiry_id"]) if note["website_inquiry_id"] is not None else None
+    if inquiry_id is None and note["deal_id"] is not None:
+        deal = db.execute(
+            "SELECT website_inquiry_id FROM deals WHERE id=?",
+            (note["deal_id"],),
+        ).fetchone()
+        if deal and deal["website_inquiry_id"] is not None:
+            inquiry_id = int(deal["website_inquiry_id"])
+    if inquiry_id is not None:
+        _authorized_inquiry(inquiry_id)
+    return note
+
+
+def _set_legacy_notes_after_conversation(db, source_type: str, source_id: int, value: str) -> None:
+    source_type = (source_type or "").strip().lower()
+    now = utcnow_iso()
+
+    if source_type == "prospect":
+        prospect = db.execute("SELECT id FROM prospects WHERE id=?", (source_id,)).fetchone()
+        if not prospect:
+            abort(404)
+        db.execute(
+            "UPDATE prospects SET notes_after_conversation=?,updated_at=? WHERE id=?",
+            (value, now, source_id),
+        )
+        db.execute(
+            "UPDATE deals SET notes_after_conversation=?,updated_at=? WHERE prospect_id=?",
+            (value, now, source_id),
+        )
+        db.execute(
+            """UPDATE website_inquiries
+               SET notes_after_conversation=?,updated_at=?
+               WHERE id IN (
+                 SELECT website_inquiry_id FROM deals
+                 WHERE prospect_id=? AND website_inquiry_id IS NOT NULL
+               )""",
+            (value, now, source_id),
+        )
+        return
+
+    if source_type == "inquiry":
+        _authorized_inquiry(source_id)
+        db.execute(
+            "UPDATE website_inquiries SET notes_after_conversation=?,updated_at=? WHERE id=?",
+            (value, now, source_id),
+        )
+        db.execute(
+            "UPDATE deals SET notes_after_conversation=?,updated_at=? WHERE website_inquiry_id=?",
+            (value, now, source_id),
+        )
+        db.execute(
+            """UPDATE prospects
+               SET notes_after_conversation=?,updated_at=?
+               WHERE id IN (
+                 SELECT prospect_id FROM deals
+                 WHERE website_inquiry_id=? AND prospect_id IS NOT NULL
+               )""",
+            (value, now, source_id),
+        )
+        return
+
+    if source_type == "deal":
+        deal = db.execute(
+            "SELECT id,prospect_id,website_inquiry_id FROM deals WHERE id=?",
+            (source_id,),
+        ).fetchone()
+        if not deal:
+            abort(404)
+        if deal["website_inquiry_id"] is not None:
+            _authorized_inquiry(int(deal["website_inquiry_id"]))
+        db.execute(
+            "UPDATE deals SET notes_after_conversation=?,updated_at=? WHERE id=?",
+            (value, now, source_id),
+        )
+        if deal["prospect_id"] is not None:
+            db.execute(
+                "UPDATE prospects SET notes_after_conversation=?,updated_at=? WHERE id=?",
+                (value, now, int(deal["prospect_id"])),
+            )
+        if deal["website_inquiry_id"] is not None:
+            db.execute(
+                "UPDATE website_inquiries SET notes_after_conversation=?,updated_at=? WHERE id=?",
+                (value, now, int(deal["website_inquiry_id"])),
+            )
+        return
+
+    abort(400)
+
+
+@bp.post("/communications/note-entry/update")
+@login_required
+def communication_note_entry_update():
+    validate_csrf()
+    kind = (request.form.get("kind", "") or "").strip().lower()
+    body = (request.form.get("body", "") or "").strip()[:3000]
+    if not body:
+        return jsonify({"ok": False, "error": "validation", "message": "A saved note cannot be empty. Delete it instead."}), 400
+
+    db = get_db()
+    if kind == "manual":
+        note_id = request.form.get("note_id", type=int)
+        if not note_id:
+            return jsonify({"ok": False, "error": "validation", "message": "Manual note is missing."}), 400
+        _authorized_communication_note(note_id)
+        db.execute("UPDATE communication_notes SET body=? WHERE id=?", (body, note_id))
+    elif kind == "legacy":
+        source_type = (request.form.get("source_type", "") or "").strip().lower()
+        source_id = request.form.get("source_id", type=int)
+        if not source_id:
+            return jsonify({"ok": False, "error": "validation", "message": "Note source is missing."}), 400
+        _set_legacy_notes_after_conversation(db, source_type, source_id, body)
+    else:
+        return jsonify({"ok": False, "error": "validation", "message": "Unsupported note type."}), 400
+
+    db.commit()
+    return jsonify({"ok": True, "body": body, "message": "Note updated."})
+
+
+@bp.post("/communications/note-entry/delete")
+@login_required
+def communication_note_entry_delete():
+    validate_csrf()
+    kind = (request.form.get("kind", "") or "").strip().lower()
+    db = get_db()
+
+    if kind == "manual":
+        note_id = request.form.get("note_id", type=int)
+        if not note_id:
+            return jsonify({"ok": False, "error": "validation", "message": "Manual note is missing."}), 400
+        _authorized_communication_note(note_id)
+        db.execute("DELETE FROM communication_notes WHERE id=?", (note_id,))
+    elif kind == "legacy":
+        source_type = (request.form.get("source_type", "") or "").strip().lower()
+        source_id = request.form.get("source_id", type=int)
+        if not source_id:
+            return jsonify({"ok": False, "error": "validation", "message": "Note source is missing."}), 400
+        _set_legacy_notes_after_conversation(db, source_type, source_id, "")
+    else:
+        return jsonify({"ok": False, "error": "validation", "message": "Unsupported note type."}), 400
+
+    db.commit()
+    return jsonify({"ok": True, "message": "Note deleted."})
+
+
 @bp.get("/communications/timeline")
 @login_required
 def communication_timeline():
@@ -4305,6 +4461,9 @@ def communication_timeline():
                 "channel": "NOTE",
                 "direction": "RSF",
                 "body": note["body"] or "",
+                "editable": True,
+                "note_kind": "manual",
+                "note_id": int(note["id"]),
             })
 
     seen_notes: set[str] = set()
@@ -4318,6 +4477,10 @@ def communication_timeline():
             "channel": "NOTE",
             "direction": "RSF",
             "body": body,
+            "editable": True,
+            "note_kind": "legacy",
+            "source_type": "prospect",
+            "source_id": int(prospect_id),
         })
 
     if inquiry:
@@ -4346,6 +4509,10 @@ def communication_timeline():
                 "channel": "NOTE",
                 "direction": "RSF",
                 "body": note_body,
+                "editable": True,
+                "note_kind": "legacy",
+                "source_type": "inquiry",
+                "source_id": int(inquiry_id),
             })
 
     if deal:
@@ -4358,6 +4525,10 @@ def communication_timeline():
                 "channel": "NOTE",
                 "direction": "RSF",
                 "body": note_body,
+                "editable": True,
+                "note_kind": "legacy",
+                "source_type": "deal",
+                "source_id": int(deal_id),
             })
 
     entries.sort(key=lambda item: (item["at"], item["id"]))
