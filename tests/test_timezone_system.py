@@ -101,6 +101,19 @@ class RSFTimezoneSystemTests(unittest.TestCase):
         self.assertEqual(result["status"], "ambiguous")
         self.assertGreater(len({item["timezone"] for item in result["results"]}), 1)
 
+
+    def test_state_california_auto_resolves(self):
+        self._assert_auto_timezone("California, USA", "America/Los_Angeles")
+
+    def test_province_or_region_search_uses_worldwide_admin1_data(self):
+        self._assert_auto_timezone("New South Wales, Australia", "Australia/Sydney")
+
+    def test_multizone_country_australia_is_never_auto_selected(self):
+        result = resolve_location_query("Australia")
+        self.assertFalse(result["auto_select"])
+        self.assertEqual(result["status"], "ambiguous")
+        self.assertGreater(len({item["timezone"] for item in result["results"]}), 1)
+
     def test_exact_iana_zone_remains_supported(self):
         self._assert_auto_timezone("Pacific/Auckland", "Pacific/Auckland")
 
