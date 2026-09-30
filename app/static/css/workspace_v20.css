@@ -890,31 +890,57 @@ textarea.prospect-inline-editor{resize:vertical}
 .deal-field-wide{grid-column:1/-1}
 .deal-demo-schedule-box{
   display:grid;
-  gap:8px;
-  padding:9px 10px;
+  gap:9px;
+  padding:10px;
   border:1px solid #d7e1dd;
   border-radius:8px;
   background:#fff
 }
-.deal-demo-schedule-controls{
+.deal-demo-date-time-row{
   display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(0,.8fr) minmax(0,1.45fr);
-  gap:8px
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:9px
 }
-.deal-demo-schedule-controls input{
-  min-height:34px;
-  padding:7px 8px;
-  border-radius:7px;
-  background:#f8faf9
+.deal-demo-control{
+  display:grid;
+  gap:4px;
+  min-width:0
+}
+.deal-demo-control>small{
+  color:#6f7f79;
+  font-size:9px;
+  font-weight:650;
+  letter-spacing:.055em;
+  text-transform:uppercase
+}
+.deal-demo-control input{
+  width:100%;
+  min-width:0;
+  min-height:39px;
+  padding:8px 10px;
+  border:1px solid #d7e1dd;
+  border-radius:8px;
+  background:#fff;
+  color:var(--ux-section-ink);
+  font:inherit;
+  font-size:12.5px;
+  outline:none
+}
+.deal-demo-control input:focus{
+  border-color:var(--workspace-emerald);
+  box-shadow:0 0 0 2px rgba(27,94,74,.10)
+}
+.deal-demo-timezone-control input{
+  padding-right:10px
 }
 .deal-demo-time-summary{
   display:grid;
-  gap:3px;
-  padding-top:7px;
+  gap:4px;
+  padding-top:8px;
   border-top:1px solid #e2e8e5;
   color:#53665f;
-  font-size:11px;
-  line-height:1.35
+  font-size:11.5px;
+  line-height:1.4
 }
 .deal-demo-time-summary strong{
   color:var(--ux-section-ink);
@@ -924,7 +950,7 @@ textarea.prospect-inline-editor{resize:vertical}
   overflow-wrap:anywhere
 }
 @media(max-width:460px){
-  .deal-demo-schedule-controls{grid-template-columns:1fr}
+  .deal-demo-date-time-row{grid-template-columns:1fr}
 }
 .prospect-notes-field{
   display:grid;
