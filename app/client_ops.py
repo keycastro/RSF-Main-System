@@ -80,6 +80,9 @@ def _text_part(message) -> str:
 
 
 def email_send_configured() -> bool:
+    from .gmail_ops import gmail_connected
+    if gmail_connected():
+        return True
     return bool(
         current_app.config.get("RSF_EMAIL_ADDRESS")
         and current_app.config.get("SMTP_HOST")
@@ -89,6 +92,9 @@ def email_send_configured() -> bool:
 
 
 def email_receive_configured() -> bool:
+    from .gmail_ops import gmail_connected
+    if gmail_connected():
+        return True
     return bool(
         current_app.config.get("RSF_EMAIL_ADDRESS")
         and current_app.config.get("IMAP_HOST")
@@ -821,28 +827,32 @@ def send_client_email(conversation_id: int, actor_user_id: int, body: str, attac
         maintype, subtype = (mime_type.split("/", 1) + ["octet-stream"])[:2]
         msg.add_attachment(data, maintype=maintype, subtype=subtype, filename=name)
 
-    host = current_app.config["SMTP_HOST"]
-    port = int(current_app.config.get("SMTP_PORT", 465))
-    username = current_app.config["SMTP_USERNAME"]
-    password = current_app.config["SMTP_PASSWORD"]
-    use_ssl = bool(current_app.config.get("SMTP_USE_SSL", True))
-    use_tls = bool(current_app.config.get("SMTP_USE_TLS", False))
     try:
-        server = smtplib.SMTP_SSL(host, port, timeout=20) if use_ssl else smtplib.SMTP(host, port, timeout=20)
-        try:
-            server.ehlo()
-            if use_tls and not use_ssl:
-                server.starttls()
-                server.ehlo()
-            server.login(username, password)
-            refused = server.send_message(msg)
-            if refused:
-                raise RuntimeError("The mail server refused the client email address.")
-        finally:
+        from .gmail_ops import gmail_connected, send_raw_message
+        if gmail_connected():
+            send_raw_message(msg.as_bytes())
+        else:
+            host = current_app.config["SMTP_HOST"]
+            port = int(current_app.config.get("SMTP_PORT", 465))
+            username = current_app.config["SMTP_USERNAME"]
+            password = current_app.config["SMTP_PASSWORD"]
+            use_ssl = bool(current_app.config.get("SMTP_USE_SSL", True))
+            use_tls = bool(current_app.config.get("SMTP_USE_TLS", False))
+            server = smtplib.SMTP_SSL(host, port, timeout=20) if use_ssl else smtplib.SMTP(host, port, timeout=20)
             try:
-                server.quit()
-            except Exception:
-                pass
+                server.ehlo()
+                if use_tls and not use_ssl:
+                    server.starttls()
+                    server.ehlo()
+                server.login(username, password)
+                refused = server.send_message(msg)
+                if refused:
+                    raise RuntimeError("The mail server refused the client email address.")
+            finally:
+                try:
+                    server.quit()
+                except Exception:
+                    pass
     except Exception as exc:
         try:
             db.execute(
@@ -987,9 +997,92 @@ def _mark_bounce_if_applicable(message, sender_email: str, subject: str) -> bool
     return True
 
 
+def _sync_inbound_gmail(limit: int = 40) -> dict[str, int]:
+    from .gmail_ops import history_message_ids, raw_message, set_history_id
+
+    message_ids, latest_history_id = history_message_ids(limit=max(1, min(limit, 200)))
+    imported = 0
+    skipped = 0
+    bounced = 0
+    for gmail_message_id in message_ids:
+        raw_bytes = raw_message(gmail_message_id)
+        msg = email.message_from_bytes(raw_bytes, policy=email.policy.default)
+        ext_id = (msg.get("Message-ID") or "").strip() or f"gmail:{gmail_message_id}"
+        db = get_db()
+        if ext_id and db.execute("SELECT 1 FROM client_messages WHERE external_message_id=?", (ext_id,)).fetchone():
+            skipped += 1
+            continue
+
+        sender_name, sender_email = parseaddr(msg.get("From", ""))
+        sender_email = normalize_email(sender_email)
+        rsf_email = normalize_email(current_app.config.get("RSF_EMAIL_ADDRESS", ""))
+        subject = _decode_subject(msg.get("Subject"))
+
+        if sender_email and _mark_bounce_if_applicable(msg, sender_email, subject):
+            bounced += 1
+            continue
+        if not sender_email or sender_email == rsf_email:
+            skipped += 1
+            continue
+
+        body = _text_part(msg)[:20000]
+        attachments = _extract_inbound_attachments(msg)
+        conv = _match_conversation(msg, sender_email)
+        if conv and conv["owner_partner_id"] is not None and not _active_partner(int(conv["owner_partner_id"])):
+            conv = None
+
+        if conv:
+            now = utcnow_iso()
+            cur = db.execute(
+                """INSERT INTO client_messages
+                   (conversation_id,direction,channel,journey_source,sender_email,recipient_email,subject,body,external_message_id,in_reply_to,created_at,delivery_status,delivery_error)
+                   VALUES (?,'INBOUND','EMAIL',?,?,?,?,?,?,?,?,'RECEIVED','')""",
+                (
+                    conv["id"],
+                    "INBOUND" if conv["inquiry_id"] else ("OUTBOUND" if conv["prospect_id"] else ""),
+                    sender_email,
+                    rsf_email,
+                    subject,
+                    body,
+                    ext_id,
+                    (msg.get("In-Reply-To") or "")[:500],
+                    now,
+                ),
+            )
+            message_id = int(cur.lastrowid)
+            for name, mime_type, data_bytes in attachments:
+                _store_attachment_bytes(message_id, name, data_bytes, mime_type)
+            db.execute(
+                "UPDATE client_conversations SET updated_at=?,last_client_message_at=? WHERE id=?",
+                (now, now, conv["id"]),
+            )
+            owner_user_id = _partner_user_id(conv["owner_partner_id"])
+            label = conv["company"] or conv["client_name"]
+            _notify(owner_user_id, "CLIENT_REPLY", f"New reply from {label}", subject or "Client replied to RSF.", entity_type="conversation", entity_id=conv["id"])
+            _notify_founders("CLIENT_REPLY", f"New reply from {label}", subject or "Client replied to RSF.", entity_type="conversation", entity_id=conv["id"])
+            if conv["lead_id"]:
+                db.execute("UPDATE leads SET last_activity_at=? WHERE id=?", (now, conv["lead_id"]))
+                db.execute(
+                    """INSERT INTO activity_log(actor_user_id,action_type,entity_type,entity_id,description,metadata_json,created_at)
+                       VALUES (NULL,'CLIENT_EMAIL_RECEIVED','lead',?,'Client email reply received.','{}',?)""",
+                    (conv["lead_id"], now),
+                )
+            db.commit()
+        else:
+            _create_direct_email_inquiry(sender_name, sender_email, subject, body, ext_id, attachments)
+        imported += 1
+
+    if latest_history_id:
+        set_history_id(latest_history_id)
+    return {"imported": imported, "skipped": skipped, "bounced": bounced}
+
+
 def sync_inbound_email(limit: int = 40) -> dict[str, int]:
     if not email_receive_configured():
         raise RuntimeError("Email receiving is not set up yet.")
+    from .gmail_ops import gmail_connected
+    if gmail_connected():
+        return _sync_inbound_gmail(limit=limit)
     host = current_app.config["IMAP_HOST"]
     port = int(current_app.config.get("IMAP_PORT", 993))
     username = current_app.config["IMAP_USERNAME"]
