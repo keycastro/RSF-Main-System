@@ -999,7 +999,8 @@ textarea.prospect-inline-editor{resize:vertical}
 }
 .deal-timezone-dropdown[hidden]{display:none!important}
 .deal-timezone-option{
-  display:block;
+  display:grid;
+  gap:2px;
   width:100%;
   margin:0;
   padding:8px 9px;
@@ -1008,17 +1009,29 @@ textarea.prospect-inline-editor{resize:vertical}
   background:transparent;
   color:var(--ux-section-ink);
   font:inherit;
-  font-size:11.75px;
-  font-weight:600;
   line-height:1.25;
   text-align:left;
   cursor:pointer;
   overflow-wrap:anywhere
 }
+.deal-timezone-option-location{
+  color:var(--ux-section-ink);
+  font-size:11.8px;
+  font-weight:750
+}
+.deal-timezone-option-meta{
+  color:#74847e;
+  font-size:10.4px;
+  font-weight:550
+}
 .deal-timezone-option:hover,
 .deal-timezone-option.is-active,
 .deal-timezone-option[aria-selected="true"]{
-  background:#edf5f1;
+  background:#edf5f1
+}
+.deal-timezone-option:hover .deal-timezone-option-location,
+.deal-timezone-option.is-active .deal-timezone-option-location,
+.deal-timezone-option[aria-selected="true"] .deal-timezone-option-location{
   color:var(--workspace-emerald)
 }
 .deal-timezone-empty{
@@ -1026,6 +1039,22 @@ textarea.prospect-inline-editor{resize:vertical}
   color:#71827b;
   font-size:11.5px;
   line-height:1.35
+}
+.deal-timezone-resolution{
+  min-height:16px;
+  color:#6b7b75;
+  font-size:10.5px;
+  line-height:1.35
+}
+.deal-timezone-resolution strong{
+  color:#2f574a;
+  font-weight:750
+}
+.deal-timezone-resolution.is-warning{
+  color:#8a5a22
+}
+.deal-timezone-resolution.is-error{
+  color:#9a3f32
 }
 .deal-demo-time-summary{
   display:grid;
