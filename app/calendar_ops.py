@@ -7,10 +7,12 @@ import secrets
 import threading
 import time
 from datetime import datetime, timedelta, timezone
+from importlib.metadata import version as package_version
+from importlib.resources import files
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError, available_timezones
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError, available_timezones, reset_tzpath
 
 from cryptography.fernet import Fernet, InvalidToken
 from flask import current_app, session
@@ -28,6 +30,13 @@ _token_lock = threading.Lock()
 _token_cache = {"access_token": "", "expires_at": 0.0}
 
 PHILIPPINES_TIMEZONE = "Asia/Manila"
+
+# Use the project-pinned tzdata package as RSF's authoritative IANA database.
+# This avoids production behavior changing based on whichever OS timezone files
+# happen to be installed on the host.
+IANA_TZDATA_VERSION = package_version("tzdata")
+_TZDATA_ZONEINFO_PATH = files("tzdata").joinpath("zoneinfo")
+reset_tzpath([str(_TZDATA_ZONEINFO_PATH)])
 
 
 def timezone_options() -> list[str]:
@@ -93,11 +102,13 @@ def resolve_demo_datetime(demo_date: str, demo_time: str, demo_timezone: str) ->
     return candidates[0]
 
 
-def server_time_snapshot() -> dict[str, str]:
+def server_time_snapshot() -> dict[str, str | int]:
     now_utc = server_utc_now()
     return {
         "utc": now_utc.replace(microsecond=0).isoformat(),
         "philippines": now_utc.astimezone(ZoneInfo(PHILIPPINES_TIMEZONE)).replace(microsecond=0).isoformat(),
+        "timezone_database": f"tzdata-{IANA_TZDATA_VERSION}",
+        "timezone_count": len(timezone_options()),
     }
 
 
