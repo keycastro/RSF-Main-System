@@ -52,10 +52,11 @@ def validate_demo_timezone(value: str) -> str:
 def _friendly_demo_time(value: datetime) -> str:
     month = value.strftime("%b")
     day = str(value.day)
+    year = value.strftime("%Y")
     hour = value.strftime("%I").lstrip("0") or "0"
     minute = value.strftime("%M")
     ampm = value.strftime("%p")
-    return f"{month} {day} · {hour}:{minute} {ampm}"
+    return f"{month} {day}, {year} · {hour}:{minute} {ampm}"
 
 
 def demo_time_display(demo_date: str, demo_time: str, demo_timezone: str) -> dict[str, str]:
@@ -63,30 +64,24 @@ def demo_time_display(demo_date: str, demo_time: str, demo_timezone: str) -> dic
     demo_time = (demo_time or "").strip()
     demo_timezone = (demo_timezone or "").strip()
     if not demo_date or not demo_time:
-        return {"client": "Set demo date and time", "philippines": "—"}
+        return {"client": "—", "philippines": "—"}
     try:
         local_naive = datetime.fromisoformat(f"{demo_date}T{demo_time}:00")
     except ValueError:
         return {"client": "Invalid demo date or time", "philippines": "—"}
 
     if not demo_timezone:
-        return {
-            "client": f"{_friendly_demo_time(local_naive)} · Select client time zone",
-            "philippines": "Select client time zone",
-        }
+        return {"client": "Select client time zone", "philippines": "—"}
     try:
         client_zone = ZoneInfo(demo_timezone)
     except (ZoneInfoNotFoundError, ValueError):
-        return {
-            "client": f"{_friendly_demo_time(local_naive)} · Invalid time zone",
-            "philippines": "Invalid client time zone",
-        }
+        return {"client": "Invalid client time zone", "philippines": "—"}
 
     client_time = local_naive.replace(tzinfo=client_zone)
     philippines_time = client_time.astimezone(ZoneInfo(PHILIPPINES_TIMEZONE))
     return {
         "client": f"{_friendly_demo_time(client_time)} · {demo_timezone}",
-        "philippines": _friendly_demo_time(philippines_time),
+        "philippines": f"{_friendly_demo_time(philippines_time)} · Asia/Manila",
     }
 
 
