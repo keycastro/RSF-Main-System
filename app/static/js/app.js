@@ -3625,6 +3625,49 @@ document.addEventListener('click', (event) => {
     return state;
   };
 
+  const updateDealMeetState = (form, data = {}) => {
+    const card = form?.closest?.('[data-deal-card]');
+    if (!card) return;
+    const field = card.querySelector('[data-deal-calendar-meet-field]');
+    const notesTrigger = card.querySelector('[data-deal-notes-expand]');
+    const meetUrl = data.google_meet_url || notesTrigger?.dataset.googleMeetUrl || '';
+    if (notesTrigger) notesTrigger.dataset.googleMeetUrl = meetUrl;
+
+    if (field) {
+      let link = field.querySelector('[data-deal-scheduled-meet]');
+      let status = field.querySelector('[data-deal-meet-status]');
+      if (meetUrl) {
+        if (!link) {
+          link = document.createElement('a');
+          link.dataset.dealScheduledMeet = '';
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.textContent = 'Join Meeting';
+          status?.replaceWith(link);
+        }
+        link.href = meetUrl;
+      } else if (data.calendar_message && status) {
+        status.textContent = data.calendar_message;
+      }
+      const error = field.querySelector('[data-deal-meet-error]');
+      if (error) {
+        const message = data.calendar_status === 'error' ? (data.calendar_message || 'Google Calendar sync failed.') : '';
+        error.textContent = message;
+        error.hidden = !message;
+      }
+    }
+
+    const openDialog = page.querySelector('[data-deal-notes-viewer][open]');
+    if (openDialog && notesSource?.closest?.('[data-deal-card]') === card) {
+      const action = openDialog.querySelector('[data-deal-meet-action]');
+      if (action) {
+        action.href = meetUrl || 'https://meet.google.com/';
+        action.title = meetUrl ? 'Join scheduled Google Meet' : 'Open Google Meet';
+        action.setAttribute('aria-label', action.title);
+      }
+    }
+  };
+
   const saveDealFormInBackground = async (form) => {
     if (!(form instanceof HTMLFormElement)) return;
     const state = autosaveStateFor(form);
@@ -3662,6 +3705,7 @@ document.addEventListener('click', (event) => {
           if (card) card.dataset.dealStatus = data.status;
           applyDealFilter();
         }
+        updateDealMeetState(form, data);
       } while (state.pending);
     } catch (error) {
       state.pending = false;
@@ -3677,6 +3721,7 @@ document.addEventListener('click', (event) => {
   const dealNotesSave = page.querySelector('[data-deal-notes-save]');
   const dealConversationTimeline = page.querySelector('[data-deal-conversation-timeline]');
   const dealCallAction = page.querySelector('[data-deal-call-action]');
+  const dealMeetAction = page.querySelector('[data-deal-meet-action]');
   const dealEmailAction = page.querySelector('[data-deal-email-action]');
   let notesSource = null;
   let dealNotesTimelineUrl = '';
@@ -3707,6 +3752,12 @@ document.addEventListener('click', (event) => {
     notesSource = source;
     notesSource.dataset.dealStartValue = source.value || '';
     dealNotesTimelineUrl = trigger.dataset.timelineUrl || '';
+    if (dealMeetAction) {
+      const scheduledMeetUrl = trigger.dataset.googleMeetUrl || '';
+      dealMeetAction.href = scheduledMeetUrl || 'https://meet.google.com/';
+      dealMeetAction.title = scheduledMeetUrl ? 'Join scheduled Google Meet' : 'Open Google Meet';
+      dealMeetAction.setAttribute('aria-label', dealMeetAction.title);
+    }
     if (notesViewerInput) notesViewerInput.value = '';
     const dealNotesForm = notesSource.closest('[data-deal-form]');
     const dealTimelineOptions = {
@@ -3960,6 +4011,7 @@ document.addEventListener('click', (event) => {
   };
   const dealAutosaveFields = new Set([
     'demo_date',
+    'demo_time',
     'followup_date',
     'email',
     'price',
