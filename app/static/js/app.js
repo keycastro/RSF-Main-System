@@ -1,4 +1,6 @@
 const RSFConversationTimeline = (() => {
+  const activeLoads = new WeakMap();
+
   const setAction = (element, href) => {
     if (!element) return;
     const locked = element.dataset.actionLocked === 'true';
@@ -77,7 +79,12 @@ const RSFConversationTimeline = (() => {
       head.className = 'conversation-timeline-item-head';
 
       const meta = document.createElement('strong');
-      meta.textContent = [entry.source, entry.channel].filter(Boolean).join(' · ');
+      const channel = (entry.channel || '').toUpperCase();
+      if (channel === 'NOTE') meta.textContent = 'MANUAL NOTE';
+      else if (channel === 'EMAIL') meta.textContent = entry.direction === 'CLIENT' ? 'CLIENT REPLY' : 'EMAIL SENT';
+      else if (channel === 'WEBSITE MESSAGE') meta.textContent = 'WEBSITE MESSAGE';
+      else if (channel === 'AI SALES CALL') meta.textContent = 'AI SALES CALL';
+      else meta.textContent = channel || entry.source || 'COMMUNICATION';
 
       const headRight = document.createElement('div');
       headRight.className = 'conversation-timeline-item-right';
@@ -95,7 +102,66 @@ const RSFConversationTimeline = (() => {
 
       const body = document.createElement('div');
       body.className = 'conversation-timeline-item-body';
-      body.textContent = entry.body || '';
+
+      if (channel === 'AI SALES CALL') {
+        body.classList.add('ai-sales-call-entry');
+        const facts = document.createElement('div');
+        facts.className = 'ai-sales-call-facts';
+        const duration = Number(entry.duration_seconds || 0);
+        const factValues = [
+          ['Attempt', `#${Number(entry.attempt_number || 1)}`],
+          ['Duration', duration > 0 ? `${Math.floor(duration / 60)}m ${duration % 60}s` : '—'],
+          ['Result', entry.result || 'In progress']
+        ];
+        factValues.forEach(([label, value]) => {
+          const fact = document.createElement('span');
+          const strong = document.createElement('strong');
+          strong.textContent = label;
+          fact.append(strong, document.createTextNode(`: ${value}`));
+          facts.appendChild(fact);
+        });
+        body.appendChild(facts);
+
+        if (entry.recording_url) {
+          const recording = document.createElement('a');
+          recording.className = 'ai-sales-call-recording';
+          recording.href = entry.recording_url;
+          recording.target = '_blank';
+          recording.rel = 'noopener noreferrer';
+          recording.textContent = '▶ Play Recording';
+          body.appendChild(recording);
+        }
+        if (entry.summary) {
+          const summary = document.createElement('p');
+          const strong = document.createElement('strong');
+          strong.textContent = 'Summary: ';
+          summary.append(strong, document.createTextNode(entry.summary));
+          body.appendChild(summary);
+        } else if (entry.body) {
+          const summary = document.createElement('p');
+          summary.textContent = entry.body;
+          body.appendChild(summary);
+        }
+        if (entry.next_step) {
+          const next = document.createElement('p');
+          const strong = document.createElement('strong');
+          strong.textContent = 'Next Step: ';
+          next.append(strong, document.createTextNode(entry.next_step));
+          body.appendChild(next);
+        }
+        if (entry.transcript) {
+          const details = document.createElement('details');
+          details.className = 'ai-sales-call-transcript';
+          const summary = document.createElement('summary');
+          summary.textContent = 'Transcript';
+          const text = document.createElement('div');
+          text.textContent = entry.transcript;
+          details.append(summary, text);
+          body.appendChild(details);
+        }
+      } else {
+        body.textContent = entry.body || '';
+      }
 
       if (entry.editable) {
         const actions = document.createElement('div');
@@ -200,7 +266,9 @@ const RSFConversationTimeline = (() => {
   };
 
   const load = async (url, container, callAction, emailAction, options = {}) => {
-    if (!url || !container) return;
+    if (!url || !container) return null;
+    activeLoads.set(container, { url, callAction, emailAction, options });
+    container.dataset.timelineUrl = url;
     container.replaceChildren();
     const loading = document.createElement('div');
     loading.className = 'conversation-timeline-empty';
@@ -227,13 +295,21 @@ const RSFConversationTimeline = (() => {
       });
       setAction(callAction, data.call_url || '');
       setAction(emailAction, data.email_url || '');
+      return data;
     } catch (_error) {
       container.replaceChildren();
       const failed = document.createElement('div');
       failed.className = 'conversation-timeline-empty is-error';
       failed.textContent = 'Conversation history could not be loaded.';
       container.appendChild(failed);
+      return null;
     }
+  };
+
+  const refresh = async (container) => {
+    const state = container ? activeLoads.get(container) : null;
+    if (!state) return null;
+    return load(state.url, container, state.callAction, state.emailAction, state.options);
   };
 
   const saveManualNote = async (timelineUrl, body, csrfToken) => {
@@ -268,8 +344,278 @@ const RSFConversationTimeline = (() => {
     return data;
   };
 
-  return { load, saveManualNote };
+  return { load, refresh, saveManualNote };
 })();
+
+const RSFInlineEmail = (() => {
+  const formatWhen = (raw) => {
+    const date = raw ? new Date(raw) : null;
+    return date && !Number.isNaN(date.getTime())
+      ? new Intl.DateTimeFormat(undefined, {
+          month: 'short', day: 'numeric', year: 'numeric',
+          hour: 'numeric', minute: '2-digit'
+        }).format(date)
+      : (raw || '');
+  };
+
+  const renderThread = (panel, payload) => {
+    const thread = panel.querySelector('[data-email-thread]');
+    if (!thread) return;
+    thread.replaceChildren();
+    const messages = payload.messages || [];
+    if (!messages.length) {
+      const empty = document.createElement('div');
+      empty.className = 'conversation-email-empty';
+      empty.textContent = 'No emails yet. Write the first outreach email below.';
+      thread.appendChild(empty);
+      return;
+    }
+    messages.forEach((message) => {
+      const item = document.createElement('article');
+      item.className = `conversation-email-message ${message.direction === 'INBOUND' ? 'is-client' : 'is-rsf'}`;
+      const head = document.createElement('div');
+      head.className = 'conversation-email-message-head';
+      const who = document.createElement('strong');
+      who.textContent = message.direction === 'INBOUND' ? (payload.client_name || 'Client') : 'Realty Systems Foundry';
+      const when = document.createElement('time');
+      when.textContent = formatWhen(message.at);
+      head.append(who, when);
+      const subject = document.createElement('div');
+      subject.className = 'conversation-email-message-subject';
+      subject.textContent = message.subject || '';
+      const body = document.createElement('div');
+      body.className = 'conversation-email-message-body';
+      body.textContent = message.body || '';
+      item.append(head);
+      if (message.subject) item.append(subject);
+      item.append(body);
+      if (message.attachments?.length) {
+        const files = document.createElement('div');
+        files.className = 'conversation-email-attachments';
+        message.attachments.forEach((file) => {
+          const link = document.createElement('a');
+          link.href = file.url;
+          link.textContent = file.name;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          files.appendChild(link);
+        });
+        item.append(files);
+      }
+      if (message.direction === 'OUTBOUND' && message.delivery_status) {
+        const delivery = document.createElement('small');
+        delivery.textContent = message.delivery_status;
+        item.append(delivery);
+      }
+      thread.appendChild(item);
+    });
+    thread.scrollTop = thread.scrollHeight;
+  };
+
+  const load = async (action, focusComposer = false) => {
+    if (!action || action.getAttribute('aria-disabled') === 'true' || !action.href || action.href.endsWith('#')) return null;
+    const dialog = action.closest('dialog');
+    const panel = dialog?.querySelector('[data-email-panel]');
+    if (!dialog || !panel) return null;
+    panel.hidden = false;
+    dialog.classList.add('conversation-email-open');
+    const status = panel.querySelector('[data-email-status]');
+    if (status) status.textContent = 'Loading…';
+    try {
+      const response = await fetch(action.href, {
+        headers: { Accept: 'application/json' },
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) throw new Error(data.message || 'Email conversation could not be loaded.');
+      panel.dataset.threadUrl = action.href;
+      panel.dataset.conversationId = String(data.conversation_id || '');
+      panel.dataset.sendUrl = data.send_url || '';
+      const recipient = panel.querySelector('[data-email-recipient]');
+      if (recipient) recipient.textContent = data.recipient || '';
+      const subjectWrap = panel.querySelector('[data-email-subject-wrap]');
+      const subject = panel.querySelector('[data-email-subject]');
+      const send = panel.querySelector('[data-email-send]');
+      const hasMessages = Boolean(data.messages?.length);
+      if (subjectWrap) subjectWrap.hidden = hasMessages;
+      if (subject) {
+        subject.value = data.subject || '';
+        subject.disabled = hasMessages;
+      }
+      if (send) send.textContent = hasMessages ? 'Send Reply' : 'Send Email';
+      renderThread(panel, data);
+      if (status) status.textContent = '';
+      if (focusComposer) window.setTimeout(() => panel.querySelector('[data-email-body]')?.focus(), 0);
+      return data;
+    } catch (error) {
+      if (status) status.textContent = error.message || 'Email conversation could not be loaded.';
+      return null;
+    }
+  };
+
+  const close = (panel) => {
+    const dialog = panel?.closest('dialog');
+    if (!dialog || !panel) return;
+    panel.hidden = true;
+    dialog.classList.remove('conversation-email-open');
+  };
+
+  document.addEventListener('click', (event) => {
+    const action = event.target.closest?.('.conversation-action--email');
+    if (action) {
+      if (action.getAttribute('aria-disabled') === 'true') return;
+      event.preventDefault();
+      load(action, true);
+      return;
+    }
+    const closeButton = event.target.closest?.('[data-email-panel-close]');
+    if (closeButton) {
+      event.preventDefault();
+      close(closeButton.closest('[data-email-panel]'));
+    }
+  });
+
+  document.addEventListener('submit', async (event) => {
+    const form = event.target.closest?.('[data-email-form]');
+    if (!form) return;
+    event.preventDefault();
+    const panel = form.closest('[data-email-panel]');
+    const dialog = panel?.closest('dialog');
+    const action = dialog?.querySelector('.conversation-action--email');
+    const body = panel?.querySelector('[data-email-body]');
+    const subject = panel?.querySelector('[data-email-subject]');
+    const status = panel?.querySelector('[data-email-status]');
+    const send = panel?.querySelector('[data-email-send]');
+    const value = (body?.value || '').trim();
+    if (!value) {
+      if (status) status.textContent = 'Write an email first.';
+      body?.focus();
+      return;
+    }
+    const payload = new URLSearchParams({
+      csrf_token: panel?.dataset.csrfToken || '',
+      conversation_id: panel?.dataset.conversationId || '',
+      subject: subject?.value || '',
+      body: value
+    });
+    if (send) send.disabled = true;
+    if (status) status.textContent = 'Sending…';
+    try {
+      const response = await fetch(panel?.dataset.sendUrl || '', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        credentials: 'same-origin',
+        cache: 'no-store',
+        body: payload.toString()
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) throw new Error(data.message || 'Email could not be sent.');
+      if (body) body.value = '';
+      if (status) status.textContent = 'Sent.';
+      await load(action, false);
+      const timeline = dialog?.querySelector('.conversation-timeline');
+      if (timeline) await RSFConversationTimeline.refresh(timeline);
+      hydrateEmailBadges();
+    } catch (error) {
+      if (status) status.textContent = error.message || 'Email could not be sent.';
+    } finally {
+      if (send) send.disabled = false;
+    }
+  });
+
+  return { load, close };
+})();
+
+const hydrateEmailBadges = async () => {
+  const buttons = [...document.querySelectorAll('[data-email-conversation-open][data-timeline-url]')];
+  const cache = new Map();
+  await Promise.all(buttons.map(async (button) => {
+    const url = button.dataset.timelineUrl || '';
+    if (!url) return;
+    if (!cache.has(url)) {
+      cache.set(url, fetch(url, {
+        headers: { Accept: 'application/json' },
+        credentials: 'same-origin',
+        cache: 'no-store'
+      }).then((response) => response.json().then((data) => ({response, data}))).catch(() => null));
+    }
+    const result = await cache.get(url);
+    const label = button.querySelector('[data-email-conversation-label]');
+    if (!result || !result.response.ok || !result.data?.ok) {
+      if (label) label.textContent = 'Unavailable';
+      button.disabled = true;
+      return;
+    }
+    const data = result.data;
+    if (!data.email_url) {
+      if (label) label.textContent = 'No email';
+      button.disabled = true;
+      return;
+    }
+    button.disabled = false;
+    const unread = Number(data.email_unread || 0);
+    if (label) label.textContent = unread > 0
+      ? `${unread} New ${unread === 1 ? 'Reply' : 'Replies'}`
+      : (Number(data.email_message_count || 0) > 0 ? 'Up to date' : 'Ready to email');
+  }));
+};
+
+document.addEventListener('click', async (event) => {
+  const field = event.target.closest?.('[data-email-conversation-open]');
+  if (!field || field.disabled) return;
+  event.preventDefault();
+  const card = field.closest('[data-prospect-row],[data-deal-card],[data-website-inquiry-card]');
+  const notesTrigger = card?.querySelector('[data-prospect-notes-expand],[data-deal-notes-expand],[data-website-notes-expand]');
+  if (!notesTrigger) return;
+  notesTrigger.click();
+  for (let attempt = 0; attempt < 25; attempt += 1) {
+    await new Promise((resolve) => window.setTimeout(resolve, 80));
+    const dialog = document.querySelector('[data-prospect-notes-viewer][open],[data-deal-notes-viewer][open],[data-website-notes-viewer][open]');
+    const emailAction = dialog?.querySelector('.conversation-action--email');
+    if (emailAction && emailAction.getAttribute('aria-disabled') !== 'true') {
+      emailAction.click();
+      return;
+    }
+  }
+});
+
+document.addEventListener('click', async (event) => {
+  const action = event.target.closest?.('[data-prospect-call-action]');
+  if (!action || action.getAttribute('aria-disabled') === 'true' || !action.href || action.href.endsWith('#')) return;
+  event.preventDefault();
+  if (action.dataset.callStarting === '1') return;
+  action.dataset.callStarting = '1';
+  const label = action.querySelector('.conversation-action-label');
+  const original = label?.textContent || 'AI Call';
+  if (label) label.textContent = 'Starting…';
+  try {
+    const response = await fetch(action.href, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+      },
+      body: new URLSearchParams({ csrf_token: action.dataset.csrfToken || '' }).toString(),
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) throw new Error(data.message || 'AI sales call could not start.');
+    const timeline = action.closest('dialog')?.querySelector('.conversation-timeline');
+    if (timeline) await RSFConversationTimeline.refresh(timeline);
+  } catch (error) {
+    window.alert(error.message || 'AI sales call could not start.');
+  } finally {
+    delete action.dataset.callStarting;
+    if (label) label.textContent = original;
+  }
+});
+
+window.setTimeout(hydrateEmailBadges, 0);
 
 document.addEventListener('click', (event) => {
   const disabled = event.target.closest?.('.conversation-action-icon[aria-disabled="true"]');
