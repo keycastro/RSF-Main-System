@@ -87,3 +87,8 @@ class Config:
     CLIENT_MAX_FILE_MB = max(1, min(25, int(os.environ.get("CLIENT_MAX_FILE_MB", "15"))))
     CLIENT_MAX_TOTAL_MB = max(1, min(50, int(os.environ.get("CLIENT_MAX_TOTAL_MB", "25"))))
     AUTO_BACKUP_INTERVAL_HOURS = max(1, min(168, int(os.environ.get("AUTO_BACKUP_INTERVAL_HOURS", "24"))))
+
+    # Retell AI outbound sales calling. Secrets stay in environment variables.
+    RETELL_API_KEY = os.environ.get("RETELL_API_KEY", "").strip()
+    RETELL_AGENT_ID = os.environ.get("RETELL_AGENT_ID", "").strip()
+    RETELL_FROM_NUMBER = os.environ.get("RETELL_FROM_NUMBER", "").strip()
