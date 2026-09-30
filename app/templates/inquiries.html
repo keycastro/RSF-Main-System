@@ -227,10 +227,13 @@
     </header>
     <div class="deal-notes-viewer-body conversation-history-body">
       <div class="conversation-timeline" data-website-conversation-timeline aria-live="polite"></div>
-      <label class="conversation-manual-note">
+      <div class="conversation-manual-note">
         <span>Manual note</span>
-        <textarea maxlength="3000" data-website-notes-viewer-input aria-label="Manual Notes After Conversation" placeholder="Add or update a manual conversation note..."></textarea>
-      </label>
+        <textarea maxlength="3000" data-website-notes-viewer-input aria-label="Manual Notes After Conversation" placeholder="Write a new manual note..."></textarea>
+        <div class="conversation-manual-note-actions">
+          <button class="button primary conversation-manual-note-save" type="button" data-website-notes-save>Save note</button>
+        </div>
+      </div>
     </div>
   </div>
 </dialog>
