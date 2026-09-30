@@ -97,7 +97,7 @@
       <header class="deal-notes-viewer-head">
         <h2 id="prospect-notes-viewer-title">Notes After Conversation</h2>
         <div class="conversation-header-actions" aria-label="Client communication actions">
-          <a class="conversation-action-icon conversation-action--call" href="#" data-prospect-call-action aria-disabled="true" title="AI Call" aria-label="AI Call">
+          <a class="conversation-action-icon conversation-action--call" href="#" data-prospect-call-action data-csrf-token="{{ csrf_token() }}" aria-disabled="true" title="AI Call" aria-label="AI Call">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8c1.8 3.5 3.1 4.8 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.3 1.2.4 2.4.6 3.5.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.4 0 .8-.3 1.1l-2.2 2.2Z" fill="currentColor"/></svg>
             <span class="conversation-action-label">AI Call</span>
           </a>
@@ -122,7 +122,31 @@
           </div>
         </div>
       </div>
-    </div>
+
+      <section class="conversation-email-panel" data-email-panel hidden data-csrf-token="{{ csrf_token() }}" aria-label="Email Conversation">
+        <header class="conversation-email-panel-head">
+          <div>
+            <strong>Email Conversation</strong>
+            <span data-email-recipient></span>
+          </div>
+          <button type="button" class="conversation-email-panel-close" data-email-panel-close aria-label="Close Email Conversation" title="Close Email">×</button>
+        </header>
+        <div class="conversation-email-thread" data-email-thread aria-live="polite"></div>
+        <form class="conversation-email-compose" data-email-form>
+          <label data-email-subject-wrap>
+            <span>Subject</span>
+            <input type="text" maxlength="240" data-email-subject autocomplete="off">
+          </label>
+          <label>
+            <span>Message</span>
+            <textarea maxlength="20000" rows="6" data-email-body placeholder="Write an email..."></textarea>
+          </label>
+          <div class="conversation-email-compose-actions">
+            <span data-email-status aria-live="polite"></span>
+            <button class="button primary" type="submit" data-email-send>Send Email</button>
+          </div>
+        </form>
+      </section>    </div>
   </dialog>
 
   <dialog class="deal-notes-viewer prospect-longtext-viewer" data-prospect-longtext-viewer aria-labelledby="prospect-longtext-viewer-title">
