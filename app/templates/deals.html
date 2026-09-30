@@ -107,20 +107,29 @@
             <label class="deal-field-wide deal-demo-schedule-field">
               <span>Demo Date &amp; Time</span>
               <div class="deal-demo-schedule-box">
-                <div class="deal-demo-schedule-controls">
-                  <input type="date" name="demo_date" value="{{ deal['demo_date'] }}" aria-label="Client demo date">
-                  <input type="time" name="demo_time" value="{{ deal['demo_time'] }}" aria-label="Client demo time">
+                <div class="deal-demo-date-time-row">
+                  <label class="deal-demo-control">
+                    <small>Date</small>
+                    <input type="date" name="demo_date" value="{{ deal['demo_date'] }}" aria-label="Client demo date">
+                  </label>
+                  <label class="deal-demo-control">
+                    <small>Time</small>
+                    <input type="time" name="demo_time" value="{{ deal['demo_time'] }}" aria-label="Client demo time">
+                  </label>
+                </div>
+                <label class="deal-demo-control deal-demo-timezone-control">
+                  <small>Client Time Zone</small>
                   <input
                     type="text"
                     name="demo_timezone"
                     value="{{ deal['demo_timezone'] }}"
                     list="rsf-client-timezones"
-                    placeholder="Client Time Zone"
+                    placeholder="Search e.g. America/New_York"
                     autocomplete="off"
                     spellcheck="false"
                     aria-label="Client time zone"
                   >
-                </div>
+                </label>
                 <div class="deal-demo-time-summary" aria-live="polite">
                   <div><strong>Client Time:</strong> <span data-client-time-display>{{ deal_demo_time_displays[deal['id']]['client'] }}</span></div>
                   <div><strong>Philippines Time:</strong> <span data-philippines-time-display>{{ deal_demo_time_displays[deal['id']]['philippines'] }}</span></div>
