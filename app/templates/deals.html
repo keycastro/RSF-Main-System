@@ -21,6 +21,12 @@
     <button class="prospect-filter-button" type="button" data-deal-filter="LOST" aria-pressed="false">Lost</button>
   </div>
 
+  <datalist id="rsf-client-timezones">
+    {% for timezone_name in timezone_options %}
+      <option value="{{ timezone_name }}"></option>
+    {% endfor %}
+  </datalist>
+
   <div class="deals-list">
     {% for deal in deals %}
       <article class="deal-card" id="deal-{{ deal['id'] }}" data-deal-card data-deal-status="{{ deal['workflow_status'] }}">
@@ -98,13 +104,28 @@
               <span>Location</span>
               <input type="text" name="location" maxlength="200" value="{{ deal['prospect_location'] }}">
             </label>
-            <label class="deal-field-wide">
+            <label class="deal-field-wide deal-demo-schedule-field">
               <span>Demo Date &amp; Time</span>
-              <input
-                type="datetime-local"
-                name="demo_datetime"
-                value="{{ (deal['demo_date'] ~ 'T' ~ deal['demo_time']) if deal['demo_date'] and deal['demo_time'] else '' }}"
-              >
+              <div class="deal-demo-schedule-box">
+                <div class="deal-demo-schedule-controls">
+                  <input type="date" name="demo_date" value="{{ deal['demo_date'] }}" aria-label="Client demo date">
+                  <input type="time" name="demo_time" value="{{ deal['demo_time'] }}" aria-label="Client demo time">
+                  <input
+                    type="text"
+                    name="demo_timezone"
+                    value="{{ deal['demo_timezone'] }}"
+                    list="rsf-client-timezones"
+                    placeholder="Client Time Zone"
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-label="Client time zone"
+                  >
+                </div>
+                <div class="deal-demo-time-summary" aria-live="polite">
+                  <div><strong>Client Time:</strong> <span data-client-time-display>{{ deal_demo_time_displays[deal['id']]['client'] }}</span></div>
+                  <div><strong>Philippines Time:</strong> <span data-philippines-time-display>{{ deal_demo_time_displays[deal['id']]['philippines'] }}</span></div>
+                </div>
+              </div>
             </label>
             <label class="deal-field-wide">
               <span>Next Step</span>
@@ -136,7 +157,8 @@
               {% else %}
                 <strong data-deal-meet-status>
                   {% if not calendar_status.connected %}Connect Google Calendar
-                  {% elif deal['demo_date'] and deal['demo_time'] %}Waiting to sync
+                  {% elif deal['demo_date'] and deal['demo_time'] and deal['demo_timezone'] %}Waiting to sync
+                  {% elif deal['demo_date'] and deal['demo_time'] %}Select client time zone
                   {% else %}Set Demo Date & Time{% endif %}
                 </strong>
               {% endif %}
