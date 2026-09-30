@@ -942,8 +942,90 @@ textarea.prospect-inline-editor{resize:vertical}
   border-color:var(--workspace-emerald);
   box-shadow:0 0 0 2px rgba(27,94,74,.10)
 }
-.deal-demo-timezone-control input{
-  padding-right:10px
+.deal-demo-timezone-control{position:relative}
+.deal-timezone-combobox{
+  position:relative;
+  min-width:0
+}
+.deal-timezone-combobox>input{
+  padding-right:38px
+}
+.deal-timezone-toggle{
+  position:absolute;
+  top:50%;
+  right:5px;
+  width:30px;
+  height:30px;
+  padding:0;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:#61736c;
+  cursor:pointer;
+  transform:translateY(-50%);
+  display:grid;
+  place-items:center
+}
+.deal-timezone-toggle:hover,
+.deal-timezone-toggle:focus-visible{
+  background:#eef4f1;
+  color:var(--workspace-emerald);
+  outline:none
+}
+.deal-timezone-toggle svg{
+  width:18px;
+  height:18px;
+  pointer-events:none
+}
+.deal-timezone-combobox.is-open .deal-timezone-toggle svg{
+  transform:rotate(180deg)
+}
+.deal-timezone-dropdown{
+  position:absolute;
+  z-index:45;
+  top:calc(100% + 5px);
+  left:0;
+  right:0;
+  max-height:190px;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding:5px;
+  border:1px solid #cfdcd6;
+  border-radius:9px;
+  background:#fff;
+  box-shadow:0 10px 24px rgba(24,52,44,.16);
+  scrollbar-width:thin;
+  scrollbar-color:#bacbc4 transparent
+}
+.deal-timezone-dropdown[hidden]{display:none!important}
+.deal-timezone-option{
+  display:block;
+  width:100%;
+  margin:0;
+  padding:8px 9px;
+  border:0;
+  border-radius:6px;
+  background:transparent;
+  color:var(--ux-section-ink);
+  font:inherit;
+  font-size:11.75px;
+  font-weight:600;
+  line-height:1.25;
+  text-align:left;
+  cursor:pointer;
+  overflow-wrap:anywhere
+}
+.deal-timezone-option:hover,
+.deal-timezone-option.is-active,
+.deal-timezone-option[aria-selected="true"]{
+  background:#edf5f1;
+  color:var(--workspace-emerald)
+}
+.deal-timezone-empty{
+  padding:10px 9px;
+  color:#71827b;
+  font-size:11.5px;
+  line-height:1.35
 }
 .deal-demo-time-summary{
   display:grid;
