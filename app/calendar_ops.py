@@ -31,10 +31,14 @@ PHILIPPINES_TIMEZONE = "Asia/Manila"
 
 
 def timezone_options() -> list[str]:
+    # Serve the complete installed IANA zone set to the RSF custom selector.
+    # Exclude only local/system implementation entries that are not portable
+    # client time-zone identifiers.
+    excluded = {"localtime", "posixrules"}
     return sorted(
         zone
         for zone in available_timezones()
-        if "/" in zone and not zone.startswith(("Etc/", "posix/", "right/"))
+        if zone not in excluded and not zone.startswith(("posix/", "right/"))
     )
 
 
