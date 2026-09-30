@@ -6,7 +6,7 @@ import json
 import secrets
 import threading
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
@@ -16,7 +16,7 @@ from cryptography.fernet import Fernet, InvalidToken
 from flask import current_app, session
 
 from .db import get_db
-from .services import normalize_email, utcnow_iso
+from .services import normalize_email, server_utc_now, utcnow_iso
 
 
 CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.events"
@@ -63,25 +63,58 @@ def _friendly_demo_time(value: datetime) -> str:
     return f"{month} {day}, {year} · {hour}:{minute} {ampm}"
 
 
+def resolve_demo_datetime(demo_date: str, demo_time: str, demo_timezone: str) -> datetime:
+    """Resolve a client-local demo time safely, including DST transition validation."""
+    timezone_name = validate_demo_timezone(demo_timezone)
+    if not timezone_name:
+        raise ValueError("Select a valid client time zone.")
+
+    try:
+        local_naive = datetime.fromisoformat(f"{(demo_date or '').strip()}T{(demo_time or '').strip()}:00")
+    except ValueError as exc:
+        raise ValueError("Demo Date & Time must be valid.") from exc
+
+    client_zone = ZoneInfo(timezone_name)
+    candidates: list[datetime] = []
+    candidate_offsets = set()
+
+    for fold in (0, 1):
+        aware = local_naive.replace(tzinfo=client_zone, fold=fold)
+        round_trip = aware.astimezone(timezone.utc).astimezone(client_zone).replace(tzinfo=None)
+        offset = aware.utcoffset()
+        if round_trip == local_naive and offset not in candidate_offsets:
+            candidates.append(aware)
+            candidate_offsets.add(offset)
+
+    if not candidates:
+        raise ValueError("This client time does not exist because of a daylight-saving time change. Choose another time.")
+    if len(candidates) > 1:
+        raise ValueError("This client time is ambiguous because of a daylight-saving time change. Choose another time.")
+    return candidates[0]
+
+
+def server_time_snapshot() -> dict[str, str]:
+    now_utc = server_utc_now()
+    return {
+        "utc": now_utc.replace(microsecond=0).isoformat(),
+        "philippines": now_utc.astimezone(ZoneInfo(PHILIPPINES_TIMEZONE)).replace(microsecond=0).isoformat(),
+    }
+
+
 def demo_time_display(demo_date: str, demo_time: str, demo_timezone: str) -> dict[str, str]:
     demo_date = (demo_date or "").strip()
     demo_time = (demo_time or "").strip()
     demo_timezone = (demo_timezone or "").strip()
     if not demo_date or not demo_time:
         return {"client": "—", "philippines": "—"}
-    try:
-        local_naive = datetime.fromisoformat(f"{demo_date}T{demo_time}:00")
-    except ValueError:
-        return {"client": "Invalid demo date or time", "philippines": "—"}
-
     if not demo_timezone:
         return {"client": "Select client time zone", "philippines": "—"}
-    try:
-        client_zone = ZoneInfo(demo_timezone)
-    except (ZoneInfoNotFoundError, ValueError):
-        return {"client": "Invalid client time zone", "philippines": "—"}
 
-    client_time = local_naive.replace(tzinfo=client_zone)
+    try:
+        client_time = resolve_demo_datetime(demo_date, demo_time, demo_timezone)
+    except ValueError as exc:
+        return {"client": str(exc), "philippines": "—"}
+
     philippines_time = client_time.astimezone(ZoneInfo(PHILIPPINES_TIMEZONE))
     return {
         "client": f"{_friendly_demo_time(client_time)} · {demo_timezone}",
@@ -342,8 +375,7 @@ def _event_payload(*, client_name: str, client_email: str, demo_date: str, demo_
     if not timezone_name:
         raise RuntimeError("Client time zone is required before scheduling the demo.")
     duration = int(current_app.config.get("GOOGLE_CALENDAR_DEMO_DURATION_MINUTES", 60))
-    tz = ZoneInfo(timezone_name)
-    start_local = datetime.fromisoformat(f"{demo_date}T{demo_time}:00").replace(tzinfo=tz)
+    start_local = resolve_demo_datetime(demo_date, demo_time, timezone_name)
     end_local = start_local + timedelta(minutes=duration)
     payload = {
         "summary": f"RSF Demo — {client_name or 'Client'}",
