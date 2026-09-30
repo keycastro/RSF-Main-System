@@ -2018,8 +2018,26 @@ def deal_update(deal_id: int):
         flash("Confirm the backward Status change before removing this record from Deals.", "warning")
         return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
-    demo_date = (request.form.get("demo_date", "") or "").strip()[:10]
-    demo_time = (request.form.get("demo_time", "") or "").strip()[:5]
+    submitted_demo_datetime = request.form.get("demo_datetime")
+    if submitted_demo_datetime is not None:
+        demo_datetime = (submitted_demo_datetime or "").strip()[:16]
+        demo_date = ""
+        demo_time = ""
+        if demo_datetime:
+            try:
+                parsed_demo_datetime = datetime.fromisoformat(demo_datetime)
+                demo_date = parsed_demo_datetime.date().isoformat()
+                demo_time = parsed_demo_datetime.strftime("%H:%M")
+            except ValueError:
+                if async_request:
+                    return jsonify({"ok": False, "message": "Demo Date & Time must be valid."}), 400
+                flash("Demo Date & Time must be valid.", "error")
+                return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+    else:
+        # Backward-compatible support for older Deal forms/bookmarked clients.
+        demo_date = (request.form.get("demo_date", "") or "").strip()[:10]
+        demo_time = (request.form.get("demo_time", "") or "").strip()[:5]
+
     followup_date = (request.form.get("followup_date", "") or "").strip()[:10]
     for label, value in (("Demo Date", demo_date), ("Follow-up Date", followup_date)):
         if value:
