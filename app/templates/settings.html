@@ -5,4 +5,37 @@
   <section class="workspace-section"><div class="section-head"><div><h2>Workspace</h2></div></div><form method="post" class="form-stack"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Company name<input name="company_name" value="{{ company_name }}" maxlength="160"></label><label>Currency<input name="currency_code" value="{{ currency_code }}" maxlength="3" autocapitalize="characters"><small class="help">Three-letter code such as USD or PHP.</small></label><button class="button primary" type="submit">Save Settings</button></form></section>
   <section class="workspace-section"><div class="section-head"><div><h2>Commission levels</h2><p>Used when new commissions are created.</p></div></div><div class="ladder-list refined-ladder">{% for s in stages %}<div><span>{{ s.name }}</span><strong>{{ s.rate_bp|rate }}</strong></div>{% endfor %}</div><small class="help">Existing commissions keep their original rate.</small></section>
 </div>
+
+<section class="workspace-section" style="margin-top:20px">
+  <div class="section-head">
+    <div>
+      <h2>RSF Gmail</h2>
+      <p>Official client email connection used by Email Conversation.</p>
+    </div>
+  </div>
+  <div class="form-stack">
+    <div>
+      <strong>Status:</strong>
+      {% if gmail_status.connected %}
+        Connected
+      {% elif gmail_status.oauth_configured %}
+        Ready to connect
+      {% else %}
+        OAuth setup required
+      {% endif %}
+    </div>
+    {% if gmail_status.email %}<div><strong>Connected account:</strong> {{ gmail_status.email }}</div>{% endif %}
+    {% if gmail_status.configured_sender %}<div><strong>Approved sender:</strong> {{ gmail_status.configured_sender }}</div>{% endif %}
+    {% if gmail_status.connected %}
+      <form method="post" action="{{ url_for('main.gmail_verify') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="button secondary" type="submit">Verify Gmail Connection</button>
+      </form>
+    {% elif gmail_status.oauth_configured %}
+      <a class="button primary" href="{{ url_for('main.gmail_connect') }}">Connect Gmail</a>
+    {% else %}
+      <small class="help">Google OAuth Client ID and Client Secret must be configured in Render before Gmail can be connected.</small>
+    {% endif %}
+  </div>
+</section>
 {% endblock %}
