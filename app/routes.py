@@ -2001,7 +2001,7 @@ def deal_update(deal_id: int):
     async_request = request.headers.get("X-RSF-Async") == "1"
     db = get_db()
     deal = db.execute(
-        """SELECT id,prospect_id,website_inquiry_id,demo_date,demo_time,email,contact_person,
+        """SELECT id,prospect_id,website_inquiry_id,demo_date,demo_time,demo_timezone,email,contact_person,
                   google_calendar_event_id,google_meet_url
            FROM deals WHERE id=?""",
         (deal_id,),
@@ -2071,6 +2071,15 @@ def deal_update(deal_id: int):
             flash("Demo Time must be a valid time.", "error")
             return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
+    from .calendar_ops import demo_time_display, validate_demo_timezone
+    try:
+        demo_timezone = validate_demo_timezone(request.form.get("demo_timezone", deal["demo_timezone"] or ""))
+    except ValueError as exc:
+        if async_request:
+            return jsonify({"ok": False, "message": str(exc)}), 400
+        flash(str(exc), "error")
+        return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+
     next_step = (request.form.get("next_step", "") or "").strip()[:500]
     price = (request.form.get("price", "") or "").strip()[:200]
     contact_number = (request.form.get("contact_number", "") or "").strip()[:120]
@@ -2083,13 +2092,14 @@ def deal_update(deal_id: int):
     if status in DEAL_ACTIVE_STATUSES:
         db.execute(
             """UPDATE deals
-               SET status=?,demo_date=?,demo_time=?,followup_date=?,next_step=?,price=?,
+               SET status=?,demo_date=?,demo_time=?,demo_timezone=?,followup_date=?,next_step=?,price=?,
                    contact_number=?,email=?,notes_after_conversation=?,updated_at=?
                WHERE id=?""",
             (
                 status,
                 demo_date,
                 demo_time,
+                demo_timezone,
                 followup_date,
                 next_step,
                 price,
@@ -2105,12 +2115,13 @@ def deal_update(deal_id: int):
         # The legacy deals.status column only accepts deal-side statuses.
         db.execute(
             """UPDATE deals
-               SET demo_date=?,demo_time=?,followup_date=?,next_step=?,price=?,
+               SET demo_date=?,demo_time=?,demo_timezone=?,followup_date=?,next_step=?,price=?,
                    contact_number=?,email=?,notes_after_conversation=?,updated_at=?
                WHERE id=?""",
             (
                 demo_date,
                 demo_time,
+                demo_timezone,
                 followup_date,
                 next_step,
                 price,
@@ -2188,10 +2199,11 @@ def deal_update(deal_id: int):
     scheduling_changed = any([
         demo_date != (deal["demo_date"] or ""),
         demo_time != (deal["demo_time"] or ""),
+        demo_timezone != (deal["demo_timezone"] or ""),
         email != (deal["email"] or ""),
         contact_person != (deal["contact_person"] or ""),
     ])
-    if demo_date and demo_time and scheduling_changed:
+    if demo_date and demo_time and demo_timezone and scheduling_changed:
         from .calendar_ops import calendar_connected, create_or_update_deal_meeting
         if calendar_connected():
             try:
@@ -2201,6 +2213,7 @@ def deal_update(deal_id: int):
                     client_email=email,
                     demo_date=demo_date,
                     demo_time=demo_time,
+                    demo_timezone=demo_timezone,
                 )
                 meet_url = calendar_result["meet_url"]
                 db.execute(
@@ -2222,7 +2235,7 @@ def deal_update(deal_id: int):
                     "deal",
                     deal_id,
                     "Deal demo synchronized to Google Calendar with Google Meet.",
-                    {"demo_date": demo_date, "demo_time": demo_time},
+                    {"demo_date": demo_date, "demo_time": demo_time, "demo_timezone": demo_timezone},
                 )
                 db.commit()
                 calendar_state = "synced"
@@ -2239,6 +2252,11 @@ def deal_update(deal_id: int):
         else:
             calendar_state = "not_connected"
             calendar_message = "Connect Google Calendar in Settings to create the Meet link."
+    elif demo_date and demo_time and not demo_timezone and scheduling_changed:
+        calendar_state = "timezone_required"
+        calendar_message = "Select the client time zone before creating the Meet link."
+
+    display = demo_time_display(demo_date, demo_time, demo_timezone)
 
     if async_request:
         return jsonify({
@@ -2248,6 +2266,9 @@ def deal_update(deal_id: int):
             "calendar_status": calendar_state,
             "calendar_message": calendar_message,
             "google_meet_url": meet_url,
+            "demo_timezone": demo_timezone,
+            "client_time_display": display["client"],
+            "philippines_time_display": display["philippines"],
         })
     if status in DEAL_PRE_STATUS_STATUSES:
         flash("Status updated. Record removed from Deals.", "success")
