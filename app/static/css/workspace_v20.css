@@ -888,6 +888,44 @@ textarea.prospect-inline-editor{resize:vertical}
   box-shadow:0 0 0 2px rgba(27,94,74,.10)
 }
 .deal-field-wide{grid-column:1/-1}
+.deal-demo-schedule-box{
+  display:grid;
+  gap:8px;
+  padding:9px 10px;
+  border:1px solid #d7e1dd;
+  border-radius:8px;
+  background:#fff
+}
+.deal-demo-schedule-controls{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,.8fr) minmax(0,1.45fr);
+  gap:8px
+}
+.deal-demo-schedule-controls input{
+  min-height:34px;
+  padding:7px 8px;
+  border-radius:7px;
+  background:#f8faf9
+}
+.deal-demo-time-summary{
+  display:grid;
+  gap:3px;
+  padding-top:7px;
+  border-top:1px solid #e2e8e5;
+  color:#53665f;
+  font-size:11px;
+  line-height:1.35
+}
+.deal-demo-time-summary strong{
+  color:var(--ux-section-ink);
+  font-weight:700
+}
+.deal-demo-time-summary span{
+  overflow-wrap:anywhere
+}
+@media(max-width:460px){
+  .deal-demo-schedule-controls{grid-template-columns:1fr}
+}
 .prospect-notes-field{
   display:grid;
   grid-column:1/-1;
