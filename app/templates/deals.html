@@ -94,9 +94,16 @@
               <span>Contact Number</span>
               <input type="text" name="contact_number" maxlength="120" value="{{ deal['contact_number'] }}">
             </label>
-            <label class="deal-field-wide">
+            <label class="deal-field-wide deal-location-field">
               <span>Location</span>
-              <input type="text" name="location" maxlength="200" value="{{ deal['prospect_location'] }}">
+              <small class="deal-location-format">City, State/Province, Country</small>
+              <input
+                type="text"
+                name="location"
+                maxlength="200"
+                value="{{ deal['prospect_location'] }}"
+                placeholder="e.g. Toronto, Ontario, Canada"
+              >
             </label>
             <div class="deal-field-wide deal-demo-schedule-field">
               <span>Demo Date &amp; Time</span>
