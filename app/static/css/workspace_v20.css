@@ -1025,31 +1025,101 @@ textarea.prospect-inline-editor{resize:vertical}
   margin-left:auto
 }
 .conversation-action-icon{
-  display:grid;
-  place-items:center;
-  width:34px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  width:auto;
+  min-width:34px;
   height:34px;
   flex:0 0 auto;
+  box-sizing:border-box;
+  padding:0 9px;
   border:1px solid #d6e1dc;
   border-radius:9px;
   background:#f5f9f7;
   color:var(--workspace-emerald);
-  text-decoration:none
+  font:inherit;
+  font-size:11px;
+  font-weight:750;
+  line-height:1;
+  text-decoration:none;
+  white-space:nowrap;
+  cursor:pointer
 }
-.conversation-action-icon:hover{
-  background:#eaf3ef;
-  color:#123f31
+.conversation-action-icon svg{
+  width:17px;
+  height:17px;
+  flex:0 0 auto
+}
+.conversation-action-label{
+  display:inline-block
+}
+.conversation-action--call{
+  border-color:#f0d5d5;
+  background:#fff6f6;
+  color:#c62828
+}
+.conversation-action--call:hover{
+  border-color:#e7bdbd;
+  background:#ffeded;
+  color:#a61f1f
+}
+.conversation-action--zoom{
+  border-color:#d3e5ff;
+  background:#f4f8ff;
+  color:#2d8cff
+}
+.conversation-action--zoom:hover{
+  border-color:#b7d5ff;
+  background:#eaf3ff;
+  color:#176dcc
+}
+.conversation-action--email{
+  border-color:#cfe4df;
+  background:#f2faf8;
+  color:#087365
+}
+.conversation-action--email:hover{
+  border-color:#b7d8d0;
+  background:#e8f6f2;
+  color:#055d53
 }
 .conversation-action-icon:focus-visible{
   outline:2px solid rgba(27,94,74,.24);
   outline-offset:2px
 }
 .conversation-action-icon.is-disabled,
-.conversation-action-icon[aria-disabled="true"]{
+.conversation-action-icon[aria-disabled="true"],
+.conversation-action-icon:disabled{
   opacity:.38;
   cursor:not-allowed
 }
-.conversation-action-icon svg{width:17px;height:17px}
+.conversation-action-icon:disabled{
+  pointer-events:none
+}
+@media(max-width:620px){
+  .deal-notes-viewer-head{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:center
+  }
+  .deal-notes-viewer-head h2{
+    grid-column:1;
+    grid-row:1
+  }
+  .deal-notes-viewer-close{
+    grid-column:2;
+    grid-row:1
+  }
+  .conversation-header-actions{
+    grid-column:1/-1;
+    grid-row:2;
+    margin-left:0;
+    justify-content:flex-start;
+    flex-wrap:wrap
+  }
+}
 .conversation-history-body{
   display:grid;
   grid-template-rows:minmax(0,1fr) auto;
