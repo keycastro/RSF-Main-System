@@ -443,10 +443,15 @@ const RSFInlineEmail = (() => {
         subject.value = data.subject || '';
         subject.disabled = hasMessages;
       }
-      if (send) send.textContent = hasMessages ? 'Send Reply' : 'Send Email';
+      if (send) {
+        send.textContent = hasMessages ? 'Send Reply' : 'Send Email';
+        send.disabled = !data.send_ready;
+      }
       renderThread(panel, data);
-      if (status) status.textContent = '';
-      if (focusComposer) window.setTimeout(() => panel.querySelector('[data-email-body]')?.focus(), 0);
+      if (status) status.textContent = data.send_ready ? '' : 'RSF Gmail is not connected yet.';
+      if (body) body.disabled = !data.send_ready;
+      if (subject) subject.disabled = hasMessages || !data.send_ready;
+      if (focusComposer && data.send_ready) window.setTimeout(() => panel.querySelector('[data-email-body]')?.focus(), 0);
       return data;
     } catch (error) {
       if (status) status.textContent = error.message || 'Email conversation could not be loaded.';
