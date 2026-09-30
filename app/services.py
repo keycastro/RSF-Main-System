@@ -21,8 +21,13 @@ RESOURCE_CATEGORIES = [
 ]
 
 
+def server_utc_now() -> datetime:
+    """Authoritative RSF current time from the server/system UTC clock."""
+    return datetime.now(timezone.utc)
+
+
 def utcnow_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    return server_utc_now().replace(microsecond=0).isoformat()
 
 
 def normalize_text(value: str | None) -> str:
