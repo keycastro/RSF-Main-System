@@ -2840,6 +2840,112 @@ document.addEventListener('click', (event) => {
     field.blur();
   });
 
+  const dealResearchLongTextViewer = page.querySelector('[data-deal-research-longtext-viewer]');
+  const dealResearchLongTextViewerTitle = page.querySelector('[data-deal-research-longtext-viewer-title]');
+  const dealResearchLongTextViewerInput = page.querySelector('[data-deal-research-longtext-viewer-input]');
+  const dealResearchLongTextViewerClose = page.querySelector('[data-deal-research-longtext-viewer-close]');
+  let dealResearchLongTextSource = null;
+  let dealResearchLongTextStartValue = '';
+  let dealResearchLongTextSavePromise = null;
+
+  const saveDealResearchLongText = async () => {
+    if (!dealResearchLongTextSource || !dealResearchLongTextViewerInput) return true;
+    if (dealResearchLongTextSavePromise) return dealResearchLongTextSavePromise;
+
+    const section = dealResearchLongTextSource.closest('[data-deal-research-section]');
+    if (!section) return false;
+
+    const fieldName = dealResearchLongTextSource.dataset.dealResearchFieldName || '';
+    if (fieldName !== 'problem' && fieldName !== 'system_wanted') return false;
+
+    const value = dealResearchLongTextViewerInput.value.trim().slice(0, 2000);
+    if (value === dealResearchLongTextStartValue) return true;
+
+    dealResearchLongTextSavePromise = (async () => {
+      try {
+        const response = await fetch(section.dataset.updateUrl || '', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+          },
+          body: new URLSearchParams({
+            csrf_token: section.dataset.csrfToken || '',
+            field: fieldName,
+            value
+          }).toString(),
+          credentials: 'same-origin',
+          cache: 'no-store'
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok) {
+          throw new Error(data.message || 'Research detail could not be saved.');
+        }
+
+        dealResearchLongTextSource.dataset.dealResearchValue = value;
+        const preview = dealResearchLongTextSource.querySelector('.deal-research-longtext-preview');
+        if (preview) preview.textContent = value || '—';
+        dealResearchLongTextStartValue = value;
+        return true;
+      } catch (error) {
+        window.alert(error.message || 'Research detail could not be saved. Try again.');
+        return false;
+      } finally {
+        dealResearchLongTextSavePromise = null;
+      }
+    })();
+
+    return dealResearchLongTextSavePromise;
+  };
+
+  const closeDealResearchLongTextViewer = async () => {
+    const saved = await saveDealResearchLongText();
+    if (!saved) return;
+    if (dealResearchLongTextViewer?.open) dealResearchLongTextViewer.close();
+    dealResearchLongTextSource = null;
+    dealResearchLongTextStartValue = '';
+  };
+
+  page.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-deal-research-longtext-expand]');
+    if (!trigger) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const source = trigger.closest('[data-deal-research-longtext-field]');
+    if (!source || !dealResearchLongTextViewerInput) return;
+
+    dealResearchLongTextSource = source;
+    dealResearchLongTextStartValue = source.dataset.dealResearchValue || '';
+    dealResearchLongTextViewerInput.value = dealResearchLongTextStartValue;
+    if (dealResearchLongTextViewerTitle) {
+      dealResearchLongTextViewerTitle.textContent = trigger.dataset.dealResearchLongtextLabel
+        || (source.dataset.dealResearchFieldName === 'problem' ? 'Problem' : 'System They Want');
+    }
+
+    if (dealResearchLongTextViewer && typeof dealResearchLongTextViewer.showModal === 'function') {
+      dealResearchLongTextViewer.showModal();
+      window.setTimeout(() => dealResearchLongTextViewerInput.focus(), 0);
+      return;
+    }
+
+    dealResearchLongTextViewerInput.focus();
+  });
+
+  dealResearchLongTextViewerInput?.addEventListener('blur', () => {
+    saveDealResearchLongText();
+  });
+  dealResearchLongTextViewerClose?.addEventListener('click', () => {
+    closeDealResearchLongTextViewer();
+  });
+  dealResearchLongTextViewer?.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    closeDealResearchLongTextViewer();
+  });
+  dealResearchLongTextViewer?.addEventListener('click', (event) => {
+    if (event.target === dealResearchLongTextViewer) closeDealResearchLongTextViewer();
+  });
+
   page.addEventListener('click', async (event) => {
     const button = event.target.closest?.('[data-deal-research-attempt-delta]');
     if (!(button instanceof HTMLButtonElement)) return;
