@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
+from zoneinfo import ZoneInfo
 
 from cryptography.fernet import Fernet, InvalidToken
 from flask import current_app, session
@@ -278,7 +279,12 @@ def _meeting_url(event: dict) -> str:
 def _event_payload(*, client_name: str, client_email: str, demo_date: str, demo_time: str) -> dict:
     timezone_name = current_app.config.get("GOOGLE_CALENDAR_TIMEZONE", "Asia/Manila")
     duration = int(current_app.config.get("GOOGLE_CALENDAR_DEMO_DURATION_MINUTES", 60))
-    start_local = datetime.fromisoformat(f"{demo_date}T{demo_time}:00")
+    try:
+        tz = ZoneInfo(timezone_name)
+    except Exception:
+        tz = ZoneInfo("Asia/Manila")
+        timezone_name = "Asia/Manila"
+    start_local = datetime.fromisoformat(f"{demo_date}T{demo_time}:00").replace(tzinfo=tz)
     end_local = start_local + timedelta(minutes=duration)
     payload = {
         "summary": f"RSF Demo — {client_name or 'Client'}",
