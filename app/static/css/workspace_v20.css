@@ -1065,12 +1065,12 @@ textarea.prospect-inline-editor{resize:vertical}
   background:#ffeded;
   color:#a61f1f
 }
-.conversation-action--zoom{
+.conversation-action--meet{
   border-color:#d3e5ff;
   background:#f4f8ff;
   color:#2d8cff
 }
-.conversation-action--zoom:hover{
+.conversation-action--meet:hover{
   border-color:#b7d5ff;
   background:#eaf3ff;
   color:#176dcc
