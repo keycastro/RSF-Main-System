@@ -2783,6 +2783,37 @@ document.addEventListener('click', (event) => {
     nextStepFields.forEach(resizeNextStep);
   });
 
+  const normalizeDealResearchLink = (rawValue) => {
+    const value = String(rawValue || '').trim();
+    if (!value) return '';
+    const withScheme = /^[a-z][a-z0-9+.-]*:/i.test(value) ? value : `https://${value}`;
+    try {
+      const url = new URL(withScheme);
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') return '';
+      return url.href;
+    } catch (_error) {
+      return '';
+    }
+  };
+
+  page.addEventListener('click', (event) => {
+    const openButton = event.target.closest('[data-deal-research-open-link]');
+    if (!openButton) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const control = openButton.closest('.deal-source-link-control');
+    const field = control?.querySelector('[data-deal-research-field]');
+    if (!(field instanceof HTMLInputElement)) return;
+
+    const href = normalizeDealResearchLink(field.value || '');
+    if (!href) {
+      window.alert('This link is not valid yet.');
+      return;
+    }
+    window.open(href, '_blank', 'noopener,noreferrer');
+  });
+
   const saveResearchField = async (field) => {
     if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) return;
     const section = field.closest('[data-deal-research-section]');
