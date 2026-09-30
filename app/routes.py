@@ -3969,15 +3969,16 @@ def settings():
             db.commit()
             flash("Settings updated.", "success")
             return redirect(url_for("main.settings"))
-    from .gmail_ops import connection_status
-    gmail_status = connection_status()
+    from .gmail_ops import connection_status as gmail_connection_status
+    from .calendar_ops import connection_status as calendar_connection_status
     return render_template(
         "settings.html",
         title="Settings",
         stages=stages,
         company_name=setting("company_name","Realty Systems Foundry"),
         currency_code=setting("currency_code","USD"),
-        gmail_status=gmail_status,
+        gmail_status=gmail_connection_status(),
+        calendar_status=calendar_connection_status(),
     )
 
 
@@ -4028,6 +4029,56 @@ def gmail_verify():
         flash(str(exc), "error")
     else:
         flash(f"Gmail connection verified: {profile.get('emailAddress','')}", "success")
+    return redirect(url_for("main.settings"))
+
+
+@bp.get("/admin/settings/calendar/connect")
+@admin_required
+def calendar_connect():
+    from .calendar_ops import build_authorization_url
+    redirect_uri = current_app.config.get("GOOGLE_CALENDAR_OAUTH_REDIRECT_URI", "").strip()
+    if not redirect_uri:
+        flash("Google Calendar OAuth redirect URI is not configured yet.", "error")
+        return redirect(url_for("main.settings"))
+    try:
+        authorization_url = build_authorization_url(redirect_uri)
+    except RuntimeError as exc:
+        flash(str(exc), "error")
+        return redirect(url_for("main.settings"))
+    return redirect(authorization_url)
+
+
+@bp.get("/admin/settings/calendar/callback")
+@admin_required
+def calendar_callback():
+    from .calendar_ops import complete_authorization, validate_oauth_state
+    if request.args.get("error"):
+        flash("Google Calendar authorization was cancelled or denied.", "warning")
+        return redirect(url_for("main.settings"))
+    redirect_uri = current_app.config.get("GOOGLE_CALENDAR_OAUTH_REDIRECT_URI", "").strip()
+    try:
+        validate_oauth_state(request.args.get("state", ""))
+        complete_authorization(request.args.get("code", ""), redirect_uri)
+    except RuntimeError as exc:
+        current_app.logger.warning("Google Calendar OAuth connection failed: %s", exc)
+        flash(str(exc), "error")
+        return redirect(url_for("main.settings"))
+    log_activity("GOOGLE_CALENDAR_CONNECTED", "settings", None, "Google Calendar connected for Deal demo scheduling.")
+    flash("Google Calendar connected.", "success")
+    return redirect(url_for("main.settings"))
+
+
+@bp.post("/admin/settings/calendar/verify")
+@admin_required
+def calendar_verify():
+    validate_csrf()
+    from .calendar_ops import verify_connection
+    try:
+        verify_connection()
+    except RuntimeError as exc:
+        flash(str(exc), "error")
+    else:
+        flash("Google Calendar connection verified.", "success")
     return redirect(url_for("main.settings"))
 
 
