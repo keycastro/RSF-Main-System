@@ -79,10 +79,6 @@
           <input type="hidden" name="confirm_leave_deals" value="" data-deal-confirm-field>
           <div class="deal-form-grid">
             <label>
-              <span>Location</span>
-              <input type="text" name="location" maxlength="200" value="{{ deal['prospect_location'] }}">
-            </label>
-            <label>
               <span>Follow-up Date</span>
               <input type="date" name="followup_date" value="{{ deal['followup_date'] }}">
             </label>
@@ -97,6 +93,10 @@
             <label>
               <span>Contact Number</span>
               <input type="text" name="contact_number" maxlength="120" value="{{ deal['contact_number'] }}">
+            </label>
+            <label class="deal-field-wide">
+              <span>Location</span>
+              <input type="text" name="location" maxlength="200" value="{{ deal['prospect_location'] }}">
             </label>
             <label class="deal-field-wide">
               <span>Demo Date &amp; Time</span>
