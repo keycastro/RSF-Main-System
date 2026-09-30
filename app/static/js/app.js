@@ -436,6 +436,7 @@ const RSFInlineEmail = (() => {
       if (recipient) recipient.textContent = data.recipient || '';
       const subjectWrap = panel.querySelector('[data-email-subject-wrap]');
       const subject = panel.querySelector('[data-email-subject]');
+      const body = panel.querySelector('[data-email-body]');
       const send = panel.querySelector('[data-email-send]');
       const hasMessages = Boolean(data.messages?.length);
       if (subjectWrap) subjectWrap.hidden = hasMessages;
