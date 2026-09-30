@@ -2271,7 +2271,7 @@ def deal_update(deal_id: int):
             calendar_message = "Connect Google Calendar in Settings to create the Meet link."
     elif demo_date and demo_time and not demo_timezone and scheduling_changed:
         calendar_state = "timezone_required"
-        calendar_message = "Select the client time zone before creating the Meet link."
+        calendar_message = "Add a more specific client location before creating the Meet link."
 
     display = demo_time_display(demo_date, demo_time, demo_timezone)
 
