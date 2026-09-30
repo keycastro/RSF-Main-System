@@ -216,11 +216,17 @@
     <header class="deal-notes-viewer-head">
       <h2 id="website-notes-viewer-title">Notes After Conversation</h2>
       <div class="conversation-header-actions" aria-label="Client communication actions">
-        <a class="conversation-action-icon" href="#" data-website-call-action aria-disabled="true" title="Call client" aria-label="Call client">
+        <a class="conversation-action-icon conversation-action--call" href="#" data-website-call-action data-action-locked="true" aria-disabled="true" title="AI Call — available only in Researched Prospects" aria-label="AI Call — available only in Researched Prospects">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8c1.8 3.5 3.1 4.8 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.3 1.2.4 2.4.6 3.5.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.4 0 .8-.3 1.1l-2.2 2.2Z" fill="currentColor"/></svg>
+          <span class="conversation-action-label">AI Call</span>
         </a>
-        <a class="conversation-action-icon" href="#" data-website-email-action aria-disabled="true" title="Email client in RSF" aria-label="Email client in RSF">
+        <button class="conversation-action-icon conversation-action--zoom" type="button" data-website-zoom-action disabled aria-disabled="true" title="Zoom Meeting — available in Deals" aria-label="Zoom Meeting — available in Deals">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h13v12H3V6Zm15 3 3-2v10l-3-2V9Z" fill="currentColor"/></svg>
+          <span class="conversation-action-label">Zoom Meeting</span>
+        </button>
+        <a class="conversation-action-icon conversation-action--email" href="#" data-website-email-action aria-disabled="true" title="Email" aria-label="Email">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3V5Zm9 7 7-5H5l7 5Zm0 2.4L5 9.4V17h14V9.4l-7 5Z" fill="currentColor"/></svg>
+          <span class="conversation-action-label">Email</span>
         </a>
       </div>
       <button class="deal-notes-viewer-close" type="button" data-website-notes-viewer-close aria-label="Close full notes" title="Close">×</button>
