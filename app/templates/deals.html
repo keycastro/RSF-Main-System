@@ -21,11 +21,7 @@
     <button class="prospect-filter-button" type="button" data-deal-filter="LOST" aria-pressed="false">Lost</button>
   </div>
 
-  <datalist id="rsf-client-timezones">
-    {% for timezone_name in timezone_options %}
-      <option value="{{ timezone_name }}"></option>
-    {% endfor %}
-  </datalist>
+  <script type="application/json" data-rsf-timezone-data>{{ timezone_options|tojson }}</script>
 
   <div class="deals-list">
     {% for deal in deals %}
@@ -117,19 +113,47 @@
                     <input type="time" name="demo_time" value="{{ deal['demo_time'] }}" aria-label="Client demo time">
                   </label>
                 </div>
-                <label class="deal-demo-control deal-demo-timezone-control">
+                <div class="deal-demo-control deal-demo-timezone-control">
                   <small>Client Time Zone</small>
-                  <input
-                    type="text"
-                    name="demo_timezone"
-                    value="{{ deal['demo_timezone'] }}"
-                    list="rsf-client-timezones"
-                    placeholder="Search e.g. America/New_York"
-                    autocomplete="off"
-                    spellcheck="false"
-                    aria-label="Client time zone"
+                  <div
+                    class="deal-timezone-combobox"
+                    data-timezone-combobox
+                    data-selected-timezone="{{ deal['demo_timezone'] }}"
                   >
-                </label>
+                    <input
+                      type="text"
+                      name="demo_timezone"
+                      value="{{ deal['demo_timezone'] }}"
+                      placeholder="Search e.g. America/New_York"
+                      autocomplete="off"
+                      spellcheck="false"
+                      role="combobox"
+                      aria-autocomplete="list"
+                      aria-expanded="false"
+                      aria-controls="deal-timezone-options-{{ deal['id'] }}"
+                      aria-label="Client time zone"
+                      data-timezone-input
+                    >
+                    <button
+                      type="button"
+                      class="deal-timezone-toggle"
+                      aria-label="Open client time zone options"
+                      tabindex="-1"
+                      data-timezone-toggle
+                    >
+                      <svg viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="M5.5 7.5 10 12l4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                    <div
+                      class="deal-timezone-dropdown"
+                      id="deal-timezone-options-{{ deal['id'] }}"
+                      role="listbox"
+                      data-timezone-dropdown
+                      hidden
+                    ></div>
+                  </div>
+                </div>
                 <div class="deal-demo-time-summary" aria-live="polite">
                   <div><strong>Client Time:</strong> <span data-client-time-display>{{ deal_demo_time_displays[deal['id']]['client'] }}</span></div>
                   <div><strong>Philippines Time:</strong> <span data-philippines-time-display>{{ deal_demo_time_displays[deal['id']]['philippines'] }}</span></div>
