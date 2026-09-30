@@ -3967,7 +3967,66 @@ def settings():
             db.commit()
             flash("Settings updated.", "success")
             return redirect(url_for("main.settings"))
-    return render_template("settings.html", title="Settings", stages=stages, company_name=setting("company_name","Realty Systems Foundry"), currency_code=setting("currency_code","USD"))
+    from .gmail_ops import connection_status
+    gmail_status = connection_status()
+    return render_template(
+        "settings.html",
+        title="Settings",
+        stages=stages,
+        company_name=setting("company_name","Realty Systems Foundry"),
+        currency_code=setting("currency_code","USD"),
+        gmail_status=gmail_status,
+    )
+
+
+@bp.get("/admin/settings/gmail/connect")
+@admin_required
+def gmail_connect():
+    from .gmail_ops import build_authorization_url
+    redirect_uri = current_app.config.get("GMAIL_OAUTH_REDIRECT_URI", "").strip()
+    if not redirect_uri:
+        flash("Gmail OAuth redirect URI is not configured yet.", "error")
+        return redirect(url_for("main.settings"))
+    try:
+        authorization_url = build_authorization_url(redirect_uri)
+    except RuntimeError as exc:
+        flash(str(exc), "error")
+        return redirect(url_for("main.settings"))
+    return redirect(authorization_url)
+
+
+@bp.get("/admin/settings/gmail/callback")
+@admin_required
+def gmail_callback():
+    from .gmail_ops import complete_authorization, validate_oauth_state
+    if request.args.get("error"):
+        flash("Google Gmail authorization was cancelled or denied.", "warning")
+        return redirect(url_for("main.settings"))
+    redirect_uri = current_app.config.get("GMAIL_OAUTH_REDIRECT_URI", "").strip()
+    try:
+        validate_oauth_state(request.args.get("state", ""))
+        email_address = complete_authorization(request.args.get("code", ""), redirect_uri)
+    except RuntimeError as exc:
+        current_app.logger.warning("Gmail OAuth connection failed: %s", exc)
+        flash(str(exc), "error")
+        return redirect(url_for("main.settings"))
+    log_activity("GMAIL_CONNECTED", "settings", None, f"Gmail API connected for {email_address}.")
+    flash(f"Gmail connected: {email_address}", "success")
+    return redirect(url_for("main.settings"))
+
+
+@bp.post("/admin/settings/gmail/verify")
+@admin_required
+def gmail_verify():
+    validate_csrf()
+    from .gmail_ops import verify_connection
+    try:
+        profile = verify_connection()
+    except RuntimeError as exc:
+        flash(str(exc), "error")
+    else:
+        flash(f"Gmail connection verified: {profile.get('emailAddress','')}", "success")
+    return redirect(url_for("main.settings"))
 
 
 @bp.get("/profile-picture/<int:user_id>")
@@ -4465,6 +4524,7 @@ def communication_email_thread():
         })
 
     default_subject = (conv["subject"] or "RSF outreach").removeprefix("Re: ").strip()
+    from .client_ops import email_send_configured
     return jsonify({
         "ok": True,
         "conversation_id": conversation_id,
@@ -4473,6 +4533,7 @@ def communication_email_thread():
         "subject": default_subject,
         "messages": messages,
         "send_url": url_for("main.communication_email_send"),
+        "send_ready": email_send_configured(),
     })
 
 
