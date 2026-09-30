@@ -352,11 +352,18 @@ def health():
         version = version_file.read_text(encoding="utf-8").strip() or "unknown"
     except OSError:
         version = "unknown"
+
+    from .calendar_ops import server_time_snapshot
+    clock = server_time_snapshot()
     return jsonify(
         status="ok",
         app=current_app.config.get("APP_NAME", "Realty Systems Foundry"),
         environment=current_app.config.get("ENVIRONMENT_LABEL", "unknown"),
         version=version,
+        server_time_utc=clock["utc"],
+        philippines_time=clock["philippines"],
+        timezone_database=clock["timezone_database"],
+        timezone_count=clock["timezone_count"],
     )
 
 
