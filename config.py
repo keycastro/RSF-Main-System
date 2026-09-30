@@ -84,6 +84,15 @@ class Config:
     GMAIL_OAUTH_CLIENT_SECRET = os.environ.get("GMAIL_OAUTH_CLIENT_SECRET", "").strip()
     GMAIL_OAUTH_REDIRECT_URI = os.environ.get("GMAIL_OAUTH_REDIRECT_URI", "").strip()
 
+    # Google Calendar OAuth for Deal demo scheduling + automatic Google Meet links.
+    GOOGLE_OAUTH_CLIENT_ID = os.environ.get("GOOGLE_OAUTH_CLIENT_ID", "").strip()
+    GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET", "").strip()
+    GOOGLE_CALENDAR_OAUTH_CLIENT_ID = os.environ.get("GOOGLE_CALENDAR_OAUTH_CLIENT_ID", "").strip()
+    GOOGLE_CALENDAR_OAUTH_CLIENT_SECRET = os.environ.get("GOOGLE_CALENDAR_OAUTH_CLIENT_SECRET", "").strip()
+    GOOGLE_CALENDAR_OAUTH_REDIRECT_URI = os.environ.get("GOOGLE_CALENDAR_OAUTH_REDIRECT_URI", "").strip()
+    GOOGLE_CALENDAR_TIMEZONE = os.environ.get("GOOGLE_CALENDAR_TIMEZONE", "Asia/Manila").strip() or "Asia/Manila"
+    GOOGLE_CALENDAR_DEMO_DURATION_MINUTES = max(15, min(480, int(os.environ.get("GOOGLE_CALENDAR_DEMO_DURATION_MINUTES", "60"))))
+
     # Unified operations automation
     AUTO_EMAIL_SYNC = os.environ.get("AUTO_EMAIL_SYNC", "1").strip().lower() in {"1","true","yes","on"}
     EMAIL_SYNC_INTERVAL_SECONDS = max(30, min(900, int(os.environ.get("EMAIL_SYNC_INTERVAL_SECONDS", "60"))))
