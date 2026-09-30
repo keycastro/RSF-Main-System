@@ -287,17 +287,23 @@
                 <button class="deal-notes-expand-button" type="button" data-deal-research-longtext-expand data-deal-research-longtext-label="System They Want" aria-label="Open full System They Want" title="Open full System They Want"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 4h6v6h-2V7.4l-4.8 4.8-1.4-1.4L16.6 6H14V4ZM10 20H4v-6h2v2.6l4.8-4.8 1.4 1.4L7.4 18H10v2Z" fill="currentColor"/></svg></button>
               </div>
             </div>
+            <label class="deal-source-link-field">
+              <span>Post Link</span>
+              <div class="deal-source-link-control">
+                <input type="url" maxlength="1000" value="{{ deal['research_post_link'] }}" data-deal-research-field="post_link">
+                <button class="deal-source-link-open" type="button" data-deal-research-open-link aria-label="Open Post Link in new tab" title="Open Post Link"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.35 2.5 3.5 5.5 3.5 9S14.35 18.5 12 21M12 3C9.65 5.5 8.5 8.5 8.5 12S9.65 18.5 12 21"></path></svg></button>
+              </div>
+            </label>
+            <label class="deal-source-link-field">
+              <span>Website</span>
+              <div class="deal-source-link-control">
+                <input type="url" maxlength="1000" value="{{ deal['research_website'] }}" data-deal-research-field="website">
+                <button class="deal-source-link-open" type="button" data-deal-research-open-link aria-label="Open Website in new tab" title="Open Website"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.35 2.5 3.5 5.5 3.5 9S14.35 18.5 12 21M12 3C9.65 5.5 8.5 8.5 8.5 12S9.65 18.5 12 21"></path></svg></button>
+              </div>
+            </label>
             <label>
               <span>Company</span>
               <input type="text" maxlength="200" value="{{ deal['prospect_name'] }}" data-deal-research-field="company">
-            </label>
-            <label>
-              <span>Website</span>
-              <input type="url" maxlength="1000" value="{{ deal['research_website'] }}" data-deal-research-field="website">
-            </label>
-            <label>
-              <span>Post Link</span>
-              <input type="url" maxlength="1000" value="{{ deal['research_post_link'] }}" data-deal-research-field="post_link">
             </label>
             <div class="deal-source-contact-attempt">
               <span>Contact Attempt</span>
