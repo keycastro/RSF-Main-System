@@ -83,14 +83,6 @@
               <input type="text" name="location" maxlength="200" value="{{ deal['prospect_location'] }}">
             </label>
             <label>
-              <span>Demo Date</span>
-              <input type="date" name="demo_date" value="{{ deal['demo_date'] }}">
-            </label>
-            <label>
-              <span>Demo Time</span>
-              <input type="time" name="demo_time" value="{{ deal['demo_time'] }}">
-            </label>
-            <label>
               <span>Follow-up Date</span>
               <input type="date" name="followup_date" value="{{ deal['followup_date'] }}">
             </label>
@@ -105,6 +97,14 @@
             <label>
               <span>Contact Number</span>
               <input type="text" name="contact_number" maxlength="120" value="{{ deal['contact_number'] }}">
+            </label>
+            <label class="deal-field-wide">
+              <span>Demo Date &amp; Time</span>
+              <input
+                type="datetime-local"
+                name="demo_datetime"
+                value="{{ (deal['demo_date'] ~ 'T' ~ deal['demo_time']) if deal['demo_date'] and deal['demo_time'] else '' }}"
+              >
             </label>
             <label class="deal-field-wide">
               <span>Next Step</span>
