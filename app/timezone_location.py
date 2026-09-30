@@ -139,6 +139,15 @@ def _result(*, location: str, country_code: str, timezone_name: str, kind: str, 
     }
 
 
+def timezone_display_location(timezone_name: str) -> str:
+    result = _iana_fallback_result(timezone_name)
+    return str(result.get("location") or timezone_name) if result else (timezone_name or "")
+
+
+def timezone_offset_label(timezone_name: str) -> str:
+    return _offset_label(timezone_name)
+
+
 def _iana_fallback_result(query: str) -> dict | None:
     candidate = (query or "").strip()
     if not candidate:
