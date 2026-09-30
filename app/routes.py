@@ -1701,16 +1701,20 @@ def deals():
         ).fetchall()
         for document in document_rows:
             deal_documents.setdefault(int(document["deal_id"]), []).append(document)
-    from .calendar_ops import (
-        connection_status as calendar_connection_status,
-        demo_time_display,
-        timezone_options,
-    )
+    from .calendar_ops import connection_status as calendar_connection_status, demo_time_display
+    from .timezone_location import timezone_display_location
     deal_demo_time_displays = {
         int(row["id"]): demo_time_display(
             row["demo_date"],
             row["demo_time"],
             row["demo_timezone"],
+        )
+        for row in rows
+    }
+    deal_timezone_location_displays = {
+        int(row["id"]): (
+            (row["demo_timezone_location"] or "").strip()
+            or timezone_display_location((row["demo_timezone"] or "").strip())
         )
         for row in rows
     }
@@ -1721,8 +1725,8 @@ def deals():
         deal_status_labels=PROSPECT_STATUS_LABELS,
         deal_documents=deal_documents,
         calendar_status=calendar_connection_status(),
-        timezone_options=timezone_options(),
         deal_demo_time_displays=deal_demo_time_displays,
+        deal_timezone_location_displays=deal_timezone_location_displays,
     )
 
 
@@ -2001,7 +2005,7 @@ def deal_update(deal_id: int):
     async_request = request.headers.get("X-RSF-Async") == "1"
     db = get_db()
     deal = db.execute(
-        """SELECT id,prospect_id,website_inquiry_id,demo_date,demo_time,demo_timezone,email,contact_person,
+        """SELECT id,prospect_id,website_inquiry_id,demo_date,demo_time,demo_timezone,demo_timezone_location,email,contact_person,
                   google_calendar_event_id,google_meet_url
            FROM deals WHERE id=?""",
         (deal_id,),
@@ -2072,8 +2076,17 @@ def deal_update(deal_id: int):
             return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
     from .calendar_ops import demo_time_display, resolve_demo_datetime, server_time_snapshot, validate_demo_timezone
+    from .timezone_location import resolve_location_query
+    demo_timezone_location = (request.form.get("demo_timezone_location", deal["demo_timezone_location"] or "") or "").strip()[:200]
+    requested_timezone = (request.form.get("demo_timezone", deal["demo_timezone"] or "") or "").strip()[:120]
+    if demo_timezone_location and not requested_timezone:
+        location_resolution = resolve_location_query(demo_timezone_location)
+        if location_resolution.get("auto_select") and len(location_resolution.get("results") or []) == 1:
+            resolved = location_resolution["results"][0]
+            requested_timezone = str(resolved.get("timezone") or "")
+            demo_timezone_location = str(resolved.get("location") or demo_timezone_location)[:200]
     try:
-        demo_timezone = validate_demo_timezone(request.form.get("demo_timezone", deal["demo_timezone"] or ""))
+        demo_timezone = validate_demo_timezone(requested_timezone)
         if demo_date and demo_time and demo_timezone:
             resolve_demo_datetime(demo_date, demo_time, demo_timezone)
     except ValueError as exc:
@@ -2094,7 +2107,7 @@ def deal_update(deal_id: int):
     if status in DEAL_ACTIVE_STATUSES:
         db.execute(
             """UPDATE deals
-               SET status=?,demo_date=?,demo_time=?,demo_timezone=?,followup_date=?,next_step=?,price=?,
+               SET status=?,demo_date=?,demo_time=?,demo_timezone=?,demo_timezone_location=?,followup_date=?,next_step=?,price=?,
                    contact_number=?,email=?,notes_after_conversation=?,updated_at=?
                WHERE id=?""",
             (
@@ -2102,6 +2115,7 @@ def deal_update(deal_id: int):
                 demo_date,
                 demo_time,
                 demo_timezone,
+                demo_timezone_location,
                 followup_date,
                 next_step,
                 price,
@@ -2117,13 +2131,14 @@ def deal_update(deal_id: int):
         # The legacy deals.status column only accepts deal-side statuses.
         db.execute(
             """UPDATE deals
-               SET demo_date=?,demo_time=?,demo_timezone=?,followup_date=?,next_step=?,price=?,
+               SET demo_date=?,demo_time=?,demo_timezone=?,demo_timezone_location=?,followup_date=?,next_step=?,price=?,
                    contact_number=?,email=?,notes_after_conversation=?,updated_at=?
                WHERE id=?""",
             (
                 demo_date,
                 demo_time,
                 demo_timezone,
+                demo_timezone_location,
                 followup_date,
                 next_step,
                 price,
@@ -2269,6 +2284,7 @@ def deal_update(deal_id: int):
             "calendar_message": calendar_message,
             "google_meet_url": meet_url,
             "demo_timezone": demo_timezone,
+            "demo_timezone_location": demo_timezone_location,
             "client_time_display": display["client"],
             "philippines_time_display": display["philippines"],
             "server_time": server_time_snapshot(),
@@ -2283,6 +2299,15 @@ def deal_update(deal_id: int):
     else:
         flash("Deal updated.", "success")
     return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+
+
+@bp.get("/deals/timezone-location-search")
+@login_required
+def timezone_location_search():
+    from .timezone_location import resolve_location_query
+    query = (request.args.get("q", "") or "").strip()[:200]
+    result = resolve_location_query(query)
+    return jsonify({"ok": True, "query": query, **result})
 
 
 @bp.get("/system/time")
