@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 33
-SCHEMA_NAME = "rsf-main-system-v1.18.125-client-demo-timezones"
+SCHEMA_VERSION = 34
+SCHEMA_NAME = "rsf-main-system-v1.18.129-location-timezone-resolver"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents","communication_notes","ai_sales_calls"}
 
 
@@ -1282,6 +1282,17 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
         db.execute(
             "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
             (33, "rsf-v1.18.125-client-demo-timezones"),
+        )
+
+    # V34 stores only the human-friendly demo timezone search/display location.
+    # The authoritative IANA value remains deals.demo_timezone.
+    if 34 not in applied:
+        deal_columns = {row["name"] for row in db.execute("PRAGMA table_info(deals)").fetchall()}
+        if "demo_timezone_location" not in deal_columns:
+            db.execute("ALTER TABLE deals ADD COLUMN demo_timezone_location TEXT NOT NULL DEFAULT ''")
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (34, "rsf-v1.18.129-location-timezone-resolver"),
         )
 
 
