@@ -5368,3 +5368,53 @@ textarea.prospect-inline-editor{resize:vertical}
   overflow:auto;
   resize:none;
 }
+
+
+/* v1.18.114 — Deal Outbound link icons and approved Post Link / Company position swap */
+.deal-source-link-control{
+  position:relative;
+  min-width:0;
+}
+.deal-source-grid .deal-source-link-control>input{
+  display:block;
+  width:100%;
+  min-width:0;
+  padding-right:40px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.deal-source-link-open{
+  position:absolute;
+  right:8px;
+  top:50%;
+  transform:translateY(-50%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:24px;
+  height:24px;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:#151a18;
+  cursor:pointer;
+}
+.deal-source-link-open svg{
+  width:17px;
+  height:17px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.deal-source-link-open:hover{
+  color:#000;
+}
+.deal-source-link-open:focus-visible{
+  outline:2px solid #72867e;
+  outline-offset:2px;
+  border-radius:4px;
+}
