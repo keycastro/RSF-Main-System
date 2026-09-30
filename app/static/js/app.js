@@ -3757,16 +3757,20 @@ document.addEventListener('click', (event) => {
     const input = root?.querySelector('[data-timezone-input]');
     const hidden = root?.querySelector('[data-timezone-value]');
     if (!input || !hidden || !result?.timezone) return;
-    input.value = result.location || input.value || '';
-    hidden.value = result.timezone;
-    root.dataset.selectedLocation = input.value;
-    root.dataset.selectedTimezone = hidden.value;
-    input.dataset.dealStartValue = input.value;
-    hidden.dataset.dealStartValue = hidden.value;
-    showResolvedTimezone(root, hidden.value);
+    const nextLocation = result.location || input.value || '';
+    const nextTimezone = result.timezone;
+    const changed = nextLocation !== (root.dataset.selectedLocation || '') || nextTimezone !== (root.dataset.selectedTimezone || '');
+
+    input.value = nextLocation;
+    hidden.value = nextTimezone;
+    root.dataset.selectedLocation = nextLocation;
+    root.dataset.selectedTimezone = nextTimezone;
+    input.dataset.dealStartValue = nextLocation;
+    hidden.dataset.dealStartValue = nextTimezone;
+    showResolvedTimezone(root, nextTimezone);
     closeTimezoneDropdown(root);
 
-    if (autosave) {
+    if (autosave && changed) {
       const form = timezoneFormForRoot(root);
       if (form) saveDealFormInBackground(form);
     }
@@ -3843,6 +3847,22 @@ document.addEventListener('click', (event) => {
 
     input.addEventListener('focus', () => {
       if ((input.value || '').trim()) searchTimezoneLocations(root, input.value, {persistUnresolved:false});
+    });
+
+    input.addEventListener('blur', () => {
+      window.setTimeout(() => {
+        if (root.contains(document.activeElement)) return;
+        closeTimezoneDropdown(root);
+        const changed = (input.value || '') !== (root.dataset.selectedLocation || '')
+          || (hidden.value || '') !== (root.dataset.selectedTimezone || '');
+        if (!changed) return;
+        root.dataset.selectedLocation = input.value || '';
+        root.dataset.selectedTimezone = hidden.value || '';
+        input.dataset.dealStartValue = input.value || '';
+        hidden.dataset.dealStartValue = hidden.value || '';
+        const form = timezoneFormForRoot(root);
+        if (form) saveDealFormInBackground(form);
+      }, 0);
     });
 
     input.addEventListener('input', () => {
@@ -3951,7 +3971,20 @@ document.addEventListener('click', (event) => {
           timezoneLocationField.dataset.dealStartValue = data.demo_timezone_location;
           timezoneRoot.dataset.selectedLocation = data.demo_timezone_location;
         }
-        showResolvedTimezone(timezoneRoot, data.demo_timezone);
+        if (data.demo_timezone) {
+          showResolvedTimezone(timezoneRoot, data.demo_timezone);
+        } else {
+          const resolution = timezoneRoot.parentElement?.querySelector?.('[data-timezone-resolution]');
+          if (!resolution?.classList.contains('is-warning') && !resolution?.classList.contains('is-error')) {
+            setTimezoneResolution(
+              timezoneRoot,
+              data.demo_timezone_location
+                ? 'Add a city or state/province to identify the exact time zone.'
+                : 'Type a client location to identify the time zone.',
+              data.demo_timezone_location ? 'is-warning' : ''
+            );
+          }
+        }
       }
     }
 
