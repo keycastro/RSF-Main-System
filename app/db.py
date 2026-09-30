@@ -25,9 +25,9 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 29
-SCHEMA_NAME = "rsf-main-system-v1.18.116-append-only-manual-notes"
-SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents","communication_notes"}
+SCHEMA_VERSION = 31
+SCHEMA_NAME = "rsf-main-system-v1.18.120-gmail-api-email"
+SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents","communication_notes","ai_sales_calls"}
 
 
 def using_postgres() -> bool:
@@ -1220,6 +1220,27 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
             (30, "rsf-v1.18.119-retell-ai-sales-calls"),
         )
 
+    # V31 stores the one approved Gmail OAuth refresh token encrypted with the
+    # existing RSF credential vault key. Access tokens remain memory-only.
+    if 31 not in applied:
+        db.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS gmail_oauth_credentials (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                email_address TEXT NOT NULL DEFAULT '',
+                encrypted_refresh_token TEXT NOT NULL DEFAULT '',
+                scope TEXT NOT NULL DEFAULT '',
+                history_id TEXT NOT NULL DEFAULT '',
+                connected_at TEXT NOT NULL DEFAULT '',
+                updated_at TEXT NOT NULL DEFAULT ''
+            );
+            """
+        )
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (31, "rsf-v1.18.120-gmail-api-email"),
+        )
+
 
 def _table_exists_postgres(db, table: str) -> bool:
     row = db.execute(
@@ -1272,7 +1293,7 @@ def _import_seed_payload(db) -> None:
         "users", "account_password_vault", "commission_stages", "partners", "leads", "lead_notes", "followups", "sales", "commissions", "sale_corrections",
         "resources", "duplicate_claims", "activity_log", "messages", "message_attachments", "voice_calls",
         "voice_call_signals", "settings", "website_inquiries", "client_conversations", "client_messages",
-        "client_attachments", "client_notifications", "prospects", "deals", "deal_documents", "communication_notes", "ai_sales_calls"
+        "client_attachments", "client_notifications", "prospects", "deals", "deal_documents", "communication_notes", "ai_sales_calls", "gmail_oauth_credentials"
     ]
     for table in order:
         rows = tables.get(table) or []
