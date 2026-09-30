@@ -161,7 +161,9 @@ def create_app(test_config=None):
         # Lock before reading authorization or business state. SQLite otherwise
         # starts its write transaction only after these checks have already run.
         if request.method == "POST" and request.blueprint == "main":
-            validate_csrf()
+            # Retell signs its server-to-server webhook; browser CSRF does not apply.
+            if request.endpoint != "main.retell_webhook":
+                validate_csrf()
             try:
                 db.get_db().execute("BEGIN IMMEDIATE")
             except (sqlite3.OperationalError, db.OperationalError) as exc:
