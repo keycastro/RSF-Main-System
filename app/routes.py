@@ -1986,7 +1986,12 @@ def deal_update(deal_id: int):
     validate_csrf()
     async_request = request.headers.get("X-RSF-Async") == "1"
     db = get_db()
-    deal = db.execute("SELECT id,prospect_id,website_inquiry_id FROM deals WHERE id=?", (deal_id,)).fetchone()
+    deal = db.execute(
+        """SELECT id,prospect_id,website_inquiry_id,demo_date,demo_time,email,contact_person,
+                  google_calendar_event_id,google_meet_url
+           FROM deals WHERE id=?""",
+        (deal_id,),
+    ).fetchone()
     if not deal:
         abort(404)
 
@@ -2014,6 +2019,7 @@ def deal_update(deal_id: int):
         return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
     demo_date = (request.form.get("demo_date", "") or "").strip()[:10]
+    demo_time = (request.form.get("demo_time", "") or "").strip()[:5]
     followup_date = (request.form.get("followup_date", "") or "").strip()[:10]
     for label, value in (("Demo Date", demo_date), ("Follow-up Date", followup_date)):
         if value:
@@ -2024,6 +2030,14 @@ def deal_update(deal_id: int):
                     return jsonify({"ok": False, "message": f"{label} must be a valid date."}), 400
                 flash(f"{label} must be a valid date.", "error")
                 return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+    if demo_time:
+        try:
+            datetime.strptime(demo_time, "%H:%M")
+        except ValueError:
+            if async_request:
+                return jsonify({"ok": False, "message": "Demo Time must be a valid time."}), 400
+            flash("Demo Time must be a valid time.", "error")
+            return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
     next_step = (request.form.get("next_step", "") or "").strip()[:500]
     price = (request.form.get("price", "") or "").strip()[:200]
@@ -2037,12 +2051,13 @@ def deal_update(deal_id: int):
     if status in DEAL_ACTIVE_STATUSES:
         db.execute(
             """UPDATE deals
-               SET status=?,demo_date=?,followup_date=?,next_step=?,price=?,
+               SET status=?,demo_date=?,demo_time=?,followup_date=?,next_step=?,price=?,
                    contact_number=?,email=?,notes_after_conversation=?,updated_at=?
                WHERE id=?""",
             (
                 status,
                 demo_date,
+                demo_time,
                 followup_date,
                 next_step,
                 price,
@@ -2058,11 +2073,12 @@ def deal_update(deal_id: int):
         # The legacy deals.status column only accepts deal-side statuses.
         db.execute(
             """UPDATE deals
-               SET demo_date=?,followup_date=?,next_step=?,price=?,
+               SET demo_date=?,demo_time=?,followup_date=?,next_step=?,price=?,
                    contact_number=?,email=?,notes_after_conversation=?,updated_at=?
                WHERE id=?""",
             (
                 demo_date,
+                demo_time,
                 followup_date,
                 next_step,
                 price,
@@ -2133,16 +2149,83 @@ def deal_update(deal_id: int):
             {"from": previous_workflow_status, "to": status},
         )
     db.commit()
+
+    calendar_state = "unchanged"
+    calendar_message = ""
+    meet_url = (deal["google_meet_url"] or "").strip()
+    scheduling_changed = any([
+        demo_date != (deal["demo_date"] or ""),
+        demo_time != (deal["demo_time"] or ""),
+        email != (deal["email"] or ""),
+        contact_person != (deal["contact_person"] or ""),
+    ])
+    if demo_date and demo_time and scheduling_changed:
+        from .calendar_ops import calendar_connected, create_or_update_deal_meeting
+        if calendar_connected():
+            try:
+                calendar_result = create_or_update_deal_meeting(
+                    event_id=(deal["google_calendar_event_id"] or "").strip(),
+                    client_name=contact_person,
+                    client_email=email,
+                    demo_date=demo_date,
+                    demo_time=demo_time,
+                )
+                meet_url = calendar_result["meet_url"]
+                db.execute(
+                    """UPDATE deals
+                       SET google_calendar_event_id=?,google_calendar_html_url=?,google_meet_url=?,
+                           google_calendar_sync_error='',google_calendar_synced_at=?,updated_at=?
+                       WHERE id=?""",
+                    (
+                        calendar_result["event_id"],
+                        calendar_result["html_link"],
+                        meet_url,
+                        utcnow_iso(),
+                        utcnow_iso(),
+                        deal_id,
+                    ),
+                )
+                log_activity(
+                    "DEMO_MEETING_SYNCED",
+                    "deal",
+                    deal_id,
+                    "Deal demo synchronized to Google Calendar with Google Meet.",
+                    {"demo_date": demo_date, "demo_time": demo_time},
+                )
+                db.commit()
+                calendar_state = "synced"
+                calendar_message = "Google Calendar and Meet updated."
+            except Exception as exc:
+                current_app.logger.exception("Google Calendar Deal sync failed")
+                calendar_message = str(exc)[:500] or "Google Calendar sync failed."
+                db.execute(
+                    "UPDATE deals SET google_calendar_sync_error=?,updated_at=? WHERE id=?",
+                    (calendar_message, utcnow_iso(), deal_id),
+                )
+                db.commit()
+                calendar_state = "error"
+        else:
+            calendar_state = "not_connected"
+            calendar_message = "Connect Google Calendar in Settings to create the Meet link."
+
     if async_request:
         return jsonify({
             "ok": True,
             "status": status,
             "removed_from_deals": status in DEAL_PRE_STATUS_STATUSES,
+            "calendar_status": calendar_state,
+            "calendar_message": calendar_message,
+            "google_meet_url": meet_url,
         })
     if status in DEAL_PRE_STATUS_STATUSES:
         flash("Status updated. Record removed from Deals.", "success")
         return redirect(url_for("main.deals"))
-    flash("Deal updated.", "success")
+    if calendar_state == "synced":
+        flash("Deal updated. Google Calendar and Meet are synced.", "success")
+    elif calendar_state == "error":
+        flash("Deal saved, but Google Calendar could not sync. Check Settings.", "warning")
+    else:
+        flash("Deal updated.", "success")
     return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
 
