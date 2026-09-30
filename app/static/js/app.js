@@ -3629,9 +3629,22 @@ document.addEventListener('click', (event) => {
     const card = form?.closest?.('[data-deal-card]');
     if (!card) return;
     const field = card.querySelector('[data-deal-calendar-meet-field]');
+    const clientTimeDisplay = card.querySelector('[data-client-time-display]');
+    const philippinesTimeDisplay = card.querySelector('[data-philippines-time-display]');
+    const timezoneField = form.querySelector('input[name="demo_timezone"]');
     const notesTrigger = card.querySelector('[data-deal-notes-expand]');
     const meetUrl = data.google_meet_url || notesTrigger?.dataset.googleMeetUrl || '';
     if (notesTrigger) notesTrigger.dataset.googleMeetUrl = meetUrl;
+    if (clientTimeDisplay && typeof data.client_time_display === 'string') {
+      clientTimeDisplay.textContent = data.client_time_display;
+    }
+    if (philippinesTimeDisplay && typeof data.philippines_time_display === 'string') {
+      philippinesTimeDisplay.textContent = data.philippines_time_display;
+    }
+    if (timezoneField && typeof data.demo_timezone === 'string') {
+      timezoneField.value = data.demo_timezone;
+      timezoneField.dataset.dealStartValue = data.demo_timezone;
+    }
 
     if (field) {
       let link = field.querySelector('[data-deal-scheduled-meet]');
@@ -4010,7 +4023,9 @@ document.addEventListener('click', (event) => {
     }
   };
   const dealAutosaveFields = new Set([
-    'demo_datetime',
+    'demo_date',
+    'demo_time',
+    'demo_timezone',
     'followup_date',
     'email',
     'price',
@@ -4041,7 +4056,15 @@ document.addEventListener('click', (event) => {
   page.addEventListener('change', (event) => {
     const field = event.target;
     const form = dealFormForField(field);
-    if (!form || field?.name !== 'status') return;
+    if (!form) return;
+
+    if (['demo_date', 'demo_time', 'demo_timezone'].includes(field?.name || '')) {
+      field.dataset.dealStartValue = field.value || '';
+      saveDealFormInBackground(form);
+      return;
+    }
+
+    if (field?.name !== 'status') return;
     const status = field.value || '';
     if (status === (form.dataset.dealCurrentStatus || '')) return;
     if (preDealStatuses.has(status)) {
