@@ -1183,6 +1183,43 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
             (29, "rsf-v1.18.116-append-only-manual-notes"),
         )
 
+    # V30 stores structured external AI sales calls separately from manual notes.
+    # Retell recordings stay as provider URLs; RSF stores call metadata, transcript,
+    # analysis, and pipeline result so communication history remains chronological.
+    if 30 not in applied:
+        db.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS ai_sales_calls (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                prospect_id INTEGER NOT NULL REFERENCES prospects(id) ON DELETE CASCADE,
+                deal_id INTEGER REFERENCES deals(id) ON DELETE SET NULL,
+                retell_call_id TEXT UNIQUE,
+                attempt_number INTEGER NOT NULL DEFAULT 1,
+                status TEXT NOT NULL DEFAULT 'STARTING',
+                result TEXT NOT NULL DEFAULT '',
+                phone TEXT NOT NULL DEFAULT '',
+                duration_seconds INTEGER NOT NULL DEFAULT 0,
+                recording_url TEXT NOT NULL DEFAULT '',
+                transcript TEXT NOT NULL DEFAULT '',
+                summary TEXT NOT NULL DEFAULT '',
+                next_step TEXT NOT NULL DEFAULT '',
+                disconnection_reason TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                started_at TEXT NOT NULL DEFAULT '',
+                ended_at TEXT NOT NULL DEFAULT '',
+                updated_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_ai_sales_calls_prospect
+                ON ai_sales_calls(prospect_id,created_at,id);
+            CREATE INDEX IF NOT EXISTS idx_ai_sales_calls_deal
+                ON ai_sales_calls(deal_id,created_at,id);
+            """
+        )
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (30, "rsf-v1.18.119-retell-ai-sales-calls"),
+        )
+
 
 def _table_exists_postgres(db, table: str) -> bool:
     row = db.execute(
@@ -1235,7 +1272,7 @@ def _import_seed_payload(db) -> None:
         "users", "account_password_vault", "commission_stages", "partners", "leads", "lead_notes", "followups", "sales", "commissions", "sale_corrections",
         "resources", "duplicate_claims", "activity_log", "messages", "message_attachments", "voice_calls",
         "voice_call_signals", "settings", "website_inquiries", "client_conversations", "client_messages",
-        "client_attachments", "client_notifications", "prospects", "deals", "deal_documents"
+        "client_attachments", "client_notifications", "prospects", "deals", "deal_documents", "communication_notes", "ai_sales_calls"
     ]
     for table in order:
         rows = tables.get(table) or []
