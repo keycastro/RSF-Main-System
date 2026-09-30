@@ -87,6 +87,10 @@
               <input type="date" name="demo_date" value="{{ deal['demo_date'] }}">
             </label>
             <label>
+              <span>Demo Time</span>
+              <input type="time" name="demo_time" value="{{ deal['demo_time'] }}">
+            </label>
+            <label>
               <span>Follow-up Date</span>
               <input type="date" name="followup_date" value="{{ deal['followup_date'] }}">
             </label>
@@ -115,6 +119,7 @@
                   type="button"
                   data-deal-notes-expand
                   data-timeline-url="{{ url_for('main.communication_timeline', deal_id=deal['id']) }}"
+                  data-google-meet-url="{{ deal['google_meet_url'] }}"
                   aria-label="Open full Notes After Conversation"
                   title="Open full notes"
                 >
@@ -124,6 +129,20 @@
                 </button>
               </div>
             </label>
+            <div class="deal-calendar-meet-field" data-deal-calendar-meet-field>
+              <span>Google Meet</span>
+              {% if deal['google_meet_url'] %}
+                <a href="{{ deal['google_meet_url'] }}" target="_blank" rel="noopener noreferrer" data-deal-scheduled-meet>Join Meeting</a>
+              {% else %}
+                <strong data-deal-meet-status>
+                  {% if not calendar_status.connected %}Connect Google Calendar
+                  {% elif deal['demo_date'] and deal['demo_time'] %}Waiting to sync
+                  {% else %}Set Demo Date + Time{% endif %}
+                </strong>
+              {% endif %}
+              <small data-deal-meet-error {% if not deal['google_calendar_sync_error'] %}hidden{% endif %}>{{ deal['google_calendar_sync_error'] }}</small>
+            </div>
+
             <button
               class="deal-email-conversation-field conversation-email-card-field"
               type="button"
