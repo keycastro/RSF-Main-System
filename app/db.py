@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 31
-SCHEMA_NAME = "rsf-main-system-v1.18.120-gmail-api-email"
+SCHEMA_VERSION = 32
+SCHEMA_NAME = "rsf-main-system-v1.18.122-google-calendar-meet"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents","communication_notes","ai_sales_calls"}
 
 
@@ -1241,6 +1241,38 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
             (31, "rsf-v1.18.120-gmail-api-email"),
         )
 
+    # V32 adds Deal demo time + Google Calendar / Meet linkage and stores one
+    # encrypted Calendar OAuth refresh token. Existing Deal history is preserved.
+    if 32 not in applied:
+        deal_columns = {row["name"] for row in db.execute("PRAGMA table_info(deals)").fetchall()}
+        additions = {
+            "demo_time": "TEXT NOT NULL DEFAULT ''",
+            "google_calendar_event_id": "TEXT NOT NULL DEFAULT ''",
+            "google_calendar_html_url": "TEXT NOT NULL DEFAULT ''",
+            "google_meet_url": "TEXT NOT NULL DEFAULT ''",
+            "google_calendar_sync_error": "TEXT NOT NULL DEFAULT ''",
+            "google_calendar_synced_at": "TEXT NOT NULL DEFAULT ''",
+        }
+        for column, definition in additions.items():
+            if column not in deal_columns:
+                db.execute(f"ALTER TABLE deals ADD COLUMN {column} {definition}")
+        db.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS google_calendar_oauth_credentials (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                calendar_id TEXT NOT NULL DEFAULT 'primary',
+                encrypted_refresh_token TEXT NOT NULL DEFAULT '',
+                scope TEXT NOT NULL DEFAULT '',
+                connected_at TEXT NOT NULL DEFAULT '',
+                updated_at TEXT NOT NULL DEFAULT ''
+            );
+            """
+        )
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (32, "rsf-v1.18.122-google-calendar-meet"),
+        )
+
 
 def _table_exists_postgres(db, table: str) -> bool:
     row = db.execute(
@@ -1293,7 +1325,7 @@ def _import_seed_payload(db) -> None:
         "users", "account_password_vault", "commission_stages", "partners", "leads", "lead_notes", "followups", "sales", "commissions", "sale_corrections",
         "resources", "duplicate_claims", "activity_log", "messages", "message_attachments", "voice_calls",
         "voice_call_signals", "settings", "website_inquiries", "client_conversations", "client_messages",
-        "client_attachments", "client_notifications", "prospects", "deals", "deal_documents", "communication_notes", "ai_sales_calls", "gmail_oauth_credentials"
+        "client_attachments", "client_notifications", "prospects", "deals", "deal_documents", "communication_notes", "ai_sales_calls", "gmail_oauth_credentials", "google_calendar_oauth_credentials"
     ]
     for table in order:
         rows = tables.get(table) or []
