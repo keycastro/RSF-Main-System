@@ -5605,6 +5605,43 @@ textarea.prospect-inline-editor{resize:vertical}
 .deal-email-conversation-field{
   width:100%
 }
+.deal-calendar-meet-field{
+  min-width:0;
+  min-height:58px;
+  padding:9px 10px;
+  border:1px solid #d7e1dd;
+  border-radius:8px;
+  background:#fff
+}
+.deal-calendar-meet-field>span{
+  display:block;
+  margin-bottom:5px;
+  color:#6f7f79;
+  font-size:9px;
+  font-weight:650;
+  letter-spacing:.055em;
+  text-transform:uppercase
+}
+.deal-calendar-meet-field>a,
+.deal-calendar-meet-field>strong{
+  display:block;
+  overflow:hidden;
+  color:#2859a7;
+  font-size:12.5px;
+  font-weight:700;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+.deal-calendar-meet-field>a:hover{
+  text-decoration:underline
+}
+.deal-calendar-meet-field>small{
+  display:block;
+  margin-top:4px;
+  color:#8a3b2d;
+  font-size:10.5px;
+  line-height:1.3
+}
 .website-inquiry-email-conversation{
   width:100%;
   margin-top:10px
