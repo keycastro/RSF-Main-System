@@ -1,7 +1,8 @@
 const RSFConversationTimeline = (() => {
   const setAction = (element, href) => {
     if (!element) return;
-    if (href) {
+    const locked = element.dataset.actionLocked === 'true';
+    if (href && !locked) {
       element.href = href;
       element.removeAttribute('aria-disabled');
       element.removeAttribute('tabindex');
