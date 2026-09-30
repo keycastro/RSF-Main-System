@@ -4010,8 +4010,7 @@ document.addEventListener('click', (event) => {
     }
   };
   const dealAutosaveFields = new Set([
-    'demo_date',
-    'demo_time',
+    'demo_datetime',
     'followup_date',
     'email',
     'price',
