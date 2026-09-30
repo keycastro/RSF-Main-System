@@ -353,18 +353,66 @@ def health():
     except OSError:
         version = "unknown"
 
-    from .calendar_ops import server_time_snapshot
+    from .calendar_ops import PHILIPPINES_TIMEZONE, resolve_demo_datetime, server_time_snapshot
     clock = server_time_snapshot()
-    return jsonify(
-        status="ok",
-        app=current_app.config.get("APP_NAME", "Realty Systems Foundry"),
-        environment=current_app.config.get("ENVIRONMENT_LABEL", "unknown"),
-        version=version,
-        server_time_utc=clock["utc"],
-        philippines_time=clock["philippines"],
-        timezone_database=clock["timezone_database"],
-        timezone_count=clock["timezone_count"],
-    )
+    payload = {
+        "status": "ok",
+        "app": current_app.config.get("APP_NAME", "Realty Systems Foundry"),
+        "environment": current_app.config.get("ENVIRONMENT_LABEL", "unknown"),
+        "version": version,
+        "server_time_utc": clock["utc"],
+        "philippines_time": clock["philippines"],
+        "timezone_database": clock["timezone_database"],
+        "timezone_count": clock["timezone_count"],
+    }
+
+    if (request.args.get("deep") or "").strip().lower() == "timezone":
+        from zoneinfo import ZoneInfo
+        from .timezone_location import resolve_location_query
+
+        expected = {
+            "Philippines": "Asia/Manila",
+            "Davao City": "Asia/Manila",
+            "Tokyo, Japan": "Asia/Tokyo",
+            "London, United Kingdom": "Europe/London",
+            "New York, USA": "America/New_York",
+            "Los Angeles, USA": "America/Los_Angeles",
+        }
+        resolver_checks = {}
+        for query, expected_timezone in expected.items():
+            result = resolve_location_query(query)
+            rows = result.get("results") or []
+            resolver_checks[query] = bool(
+                result.get("auto_select")
+                and len(rows) == 1
+                and rows[0].get("timezone") == expected_timezone
+            )
+
+        ambiguous_checks = {}
+        for query in ("United States", "Canada"):
+            result = resolve_location_query(query)
+            ambiguous_checks[query] = bool(
+                not result.get("auto_select")
+                and result.get("status") == "ambiguous"
+                and len({row.get("timezone") for row in result.get("results") or [] if row.get("timezone")}) > 1
+            )
+
+        manila = ZoneInfo(PHILIPPINES_TIMEZONE)
+        winter = resolve_demo_datetime("2026-01-15", "14:00", "America/New_York").astimezone(manila)
+        summer = resolve_demo_datetime("2026-07-15", "14:00", "America/New_York").astimezone(manila)
+        dst_check = (
+            winter.strftime("%Y-%m-%d %H:%M") == "2026-01-16 03:00"
+            and summer.strftime("%Y-%m-%d %H:%M") == "2026-07-16 02:00"
+        )
+
+        payload["timezone_deep_check"] = {
+            "resolver": resolver_checks,
+            "ambiguous": ambiguous_checks,
+            "dst": dst_check,
+            "all_passed": all(resolver_checks.values()) and all(ambiguous_checks.values()) and dst_check,
+        }
+
+    return jsonify(payload)
 
 
 @site.get("/robots.txt")
