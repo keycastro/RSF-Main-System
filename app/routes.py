@@ -1701,7 +1701,19 @@ def deals():
         ).fetchall()
         for document in document_rows:
             deal_documents.setdefault(int(document["deal_id"]), []).append(document)
-    from .calendar_ops import connection_status as calendar_connection_status
+    from .calendar_ops import (
+        connection_status as calendar_connection_status,
+        demo_time_display,
+        timezone_options,
+    )
+    deal_demo_time_displays = {
+        int(row["id"]): demo_time_display(
+            row["demo_date"],
+            row["demo_time"],
+            row["demo_timezone"],
+        )
+        for row in rows
+    }
     return render_template(
         "deals.html",
         title="Deals",
@@ -1709,6 +1721,8 @@ def deals():
         deal_status_labels=PROSPECT_STATUS_LABELS,
         deal_documents=deal_documents,
         calendar_status=calendar_connection_status(),
+        timezone_options=timezone_options(),
+        deal_demo_time_displays=deal_demo_time_displays,
     )
 
 
