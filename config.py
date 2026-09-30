@@ -79,6 +79,11 @@ class Config:
     IMAP_USE_SSL = os.environ.get("IMAP_USE_SSL", "1").strip().lower() in {"1","true","yes","on"}
     IMAP_MAILBOX = os.environ.get("IMAP_MAILBOX", "INBOX").strip() or "INBOX"
 
+    # Gmail API OAuth. Preferred on Render Free because normal SMTP ports are blocked.
+    GMAIL_OAUTH_CLIENT_ID = os.environ.get("GMAIL_OAUTH_CLIENT_ID", "").strip()
+    GMAIL_OAUTH_CLIENT_SECRET = os.environ.get("GMAIL_OAUTH_CLIENT_SECRET", "").strip()
+    GMAIL_OAUTH_REDIRECT_URI = os.environ.get("GMAIL_OAUTH_REDIRECT_URI", "").strip()
+
     # Unified operations automation
     AUTO_EMAIL_SYNC = os.environ.get("AUTO_EMAIL_SYNC", "1").strip().lower() in {"1","true","yes","on"}
     EMAIL_SYNC_INTERVAL_SECONDS = max(30, min(900, int(os.environ.get("EMAIL_SYNC_INTERVAL_SECONDS", "60"))))
