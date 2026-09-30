@@ -4,6 +4,7 @@ import re
 import unicodedata
 from functools import lru_cache
 from importlib.resources import files
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import geonamescache
@@ -85,18 +86,57 @@ def _zone_country_codes() -> dict[str, tuple[str, ...]]:
     return {zone: tuple(sorted(set(codes))) for zone, codes in reverse.items()}
 
 
-@lru_cache(maxsize=1)
-def _us_states() -> dict[str, dict]:
-    return _GC.get_us_states()
+_ADMIN1_PATH = Path(__file__).resolve().parent / "data" / "geonames_admin1_codes_ascii.tsv"
 
 
 @lru_cache(maxsize=1)
-def _us_state_aliases() -> dict[str, str]:
-    aliases: dict[str, str] = {}
-    for code, row in _us_states().items():
-        aliases[_normalize(code)] = code
-        aliases[_normalize(str(row.get("name") or ""))] = code
-    return aliases
+def _admin1_records() -> tuple[dict, ...]:
+    rows: list[dict] = []
+    if not _ADMIN1_PATH.exists():
+        return tuple(rows)
+    for raw in _ADMIN1_PATH.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split("\t")
+        if len(parts) < 4 or "." not in parts[0]:
+            continue
+        country_code, admin1_code = parts[0].split(".", 1)
+        rows.append(
+            {
+                "country_code": country_code,
+                "admin1_code": admin1_code,
+                "name": parts[1].strip(),
+                "ascii_name": parts[2].strip(),
+            }
+        )
+    return tuple(rows)
+
+
+@lru_cache(maxsize=1)
+def _admin1_by_code() -> dict[tuple[str, str], str]:
+    return {
+        (row["country_code"], row["admin1_code"]): row["name"]
+        for row in _admin1_records()
+    }
+
+
+@lru_cache(maxsize=1)
+def _admin1_aliases() -> dict[str, tuple[dict, ...]]:
+    aliases: dict[str, list[dict]] = {}
+    for row in _admin1_records():
+        for value in (row["name"], row["ascii_name"]):
+            key = _normalize(value)
+            if key:
+                aliases.setdefault(key, []).append(row)
+    return {key: tuple(value) for key, value in aliases.items()}
+
+
+def _subdivision_candidates(value: str, country_code: str = "") -> list[dict]:
+    rows = list(_admin1_aliases().get(_normalize(value), ()))
+    if country_code:
+        rows = [row for row in rows if row["country_code"] == country_code]
+    return rows
 
 
 def _country_name(code: str) -> str:
@@ -213,12 +253,10 @@ def _city_result(record: dict) -> dict | None:
         return None
 
     location = name
-    if country_code == "US":
-        state_code = str(record.get("admin1code") or "").strip()
-        state = _us_states().get(state_code) or {}
-        state_name = str(state.get("name") or "").strip()
-        if state_name and _normalize(state_name) != _normalize(name):
-            location = f"{name}, {state_name}"
+    admin1_code = str(record.get("admin1code") or "").strip()
+    admin1_name = _admin1_by_code().get((country_code, admin1_code), "")
+    if admin1_name and _normalize(admin1_name) != _normalize(name):
+        location = f"{name}, {admin1_name}"
     return _result(
         location=location,
         country_code=country_code,
@@ -228,23 +266,29 @@ def _city_result(record: dict) -> dict | None:
     )
 
 
-def _state_results(state_code: str) -> list[dict]:
-    state = _us_states().get(state_code) or {}
-    state_name = str(state.get("name") or state_code)
+def _subdivision_results(country_code: str, admin1_code: str, display_name: str) -> list[dict]:
     zone_populations: dict[str, int] = {}
     for city in _GC.get_cities().values():
-        if city.get("countrycode") != "US" or str(city.get("admin1code") or "") != state_code:
+        if str(city.get("countrycode") or "") != country_code:
+            continue
+        if str(city.get("admin1code") or "") != admin1_code:
             continue
         timezone_name = str(city.get("timezone") or "")
         if not timezone_name:
             continue
         zone_populations[timezone_name] = zone_populations.get(timezone_name, 0) + int(city.get("population") or 0)
+
+    if not zone_populations:
+        country_zones = _country_zones().get(country_code, ())
+        if len(country_zones) == 1:
+            zone_populations[country_zones[0]] = 0
+
     return [
         _result(
-            location=state_name,
-            country_code="US",
+            location=display_name,
+            country_code=country_code,
             timezone_name=zone,
-            kind="state",
+            kind="subdivision",
             population=population,
         )
         for zone, population in sorted(zone_populations.items(), key=lambda item: (-item[1], item[0]))
@@ -339,13 +383,21 @@ def resolve_location_query(query: str) -> dict:
         return _country_result(country_code)
 
     whole_country_code = _country_code_for_token(raw)
-    whole_state_code = _us_state_aliases().get(_normalize(raw))
-    if whole_country_code and whole_state_code:
+    whole_subdivisions = _subdivision_candidates(raw)
+    if whole_country_code and whole_subdivisions:
         country_result = _country_result(whole_country_code)
-        combined = list(country_result.get("results") or []) + _state_results(whole_state_code)
+        combined = list(country_result.get("results") or [])
+        for subdivision in whole_subdivisions:
+            combined.extend(
+                _subdivision_results(
+                    subdivision["country_code"],
+                    subdivision["admin1_code"],
+                    subdivision["name"],
+                )
+            )
         return {
             "status": "matches",
-            "message": "Choose the correct country or state.",
+            "message": "Choose the correct country or region.",
             "auto_select": False,
             "results": combined[:12],
         }
@@ -355,9 +407,14 @@ def resolve_location_query(query: str) -> dict:
     normalized_city = _normalize(city_text)
     exact_results: list[dict] = []
 
-    state_code = _us_state_aliases().get(normalized_city)
-    if state_code and (not country_code or country_code == "US"):
-        exact_results.extend(_state_results(state_code))
+    for subdivision in _subdivision_candidates(city_text, country_code):
+        exact_results.extend(
+            _subdivision_results(
+                subdivision["country_code"],
+                subdivision["admin1_code"],
+                subdivision["name"],
+            )
+        )
 
     city_matches = []
     city_matches.extend(
