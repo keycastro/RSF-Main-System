@@ -119,7 +119,7 @@ def demo_time_display(demo_date: str, demo_time: str, demo_timezone: str) -> dic
     if not demo_date or not demo_time:
         return {"client": "—", "philippines": "—"}
     if not demo_timezone:
-        return {"client": "Select client time zone", "philippines": "—"}
+        return {"client": "Add a more specific client location.", "philippines": "—"}
 
     try:
         client_time = resolve_demo_datetime(demo_date, demo_time, demo_timezone)
