@@ -1121,6 +1121,19 @@ textarea.prospect-inline-editor{resize:vertical}
   min-height:100px;
   resize:vertical
 }
+.conversation-manual-note-actions{
+  display:flex;
+  justify-content:flex-end
+}
+.conversation-manual-note-save{
+  min-width:84px;
+  padding:7px 12px;
+  font-size:11px
+}
+.conversation-manual-note-save:disabled{
+  opacity:.55;
+  cursor:wait
+}
 .deal-linked-merged a{
   color:inherit;
   text-decoration:none
