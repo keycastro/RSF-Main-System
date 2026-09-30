@@ -21,8 +21,6 @@
     <button class="prospect-filter-button" type="button" data-deal-filter="LOST" aria-pressed="false">Lost</button>
   </div>
 
-  <script type="application/json" data-rsf-timezone-data>{{ timezone_options|tojson }}</script>
-
   <div class="deals-list">
     {% for deal in deals %}
       <article class="deal-card" id="deal-{{ deal['id'] }}" data-deal-card data-deal-status="{{ deal['workflow_status'] }}">
@@ -114,30 +112,33 @@
                   </label>
                 </div>
                 <div class="deal-demo-control deal-demo-timezone-control">
-                  <small>Client Time Zone</small>
+                  <small>Client Location / Country</small>
                   <div
                     class="deal-timezone-combobox"
                     data-timezone-combobox
+                    data-timezone-search-url="{{ url_for('main.timezone_location_search') }}"
                     data-selected-timezone="{{ deal['demo_timezone'] }}"
+                    data-selected-location="{{ deal_timezone_location_displays[deal['id']] }}"
                   >
+                    <input type="hidden" name="demo_timezone" value="{{ deal['demo_timezone'] }}" data-timezone-value>
                     <input
                       type="text"
-                      name="demo_timezone"
-                      value="{{ deal['demo_timezone'] }}"
-                      placeholder="Search e.g. America/New_York"
+                      name="demo_timezone_location"
+                      value="{{ deal_timezone_location_displays[deal['id']] }}"
+                      placeholder="Type city, state, province, or country"
                       autocomplete="off"
                       spellcheck="false"
                       role="combobox"
                       aria-autocomplete="list"
                       aria-expanded="false"
                       aria-controls="deal-timezone-options-{{ deal['id'] }}"
-                      aria-label="Client time zone"
+                      aria-label="Client location or country"
                       data-timezone-input
                     >
                     <button
                       type="button"
                       class="deal-timezone-toggle"
-                      aria-label="Open client time zone options"
+                      aria-label="Open location time zone options"
                       tabindex="-1"
                       data-timezone-toggle
                     >
@@ -152,6 +153,13 @@
                       data-timezone-dropdown
                       hidden
                     ></div>
+                  </div>
+                  <div class="deal-timezone-resolution" data-timezone-resolution>
+                    {% if deal['demo_timezone'] %}
+                      Time Zone: <strong>{{ deal['demo_timezone'] }}</strong>
+                    {% else %}
+                      Type a client location to identify the time zone.
+                    {% endif %}
                   </div>
                 </div>
                 <div class="deal-demo-time-summary" aria-live="polite">
