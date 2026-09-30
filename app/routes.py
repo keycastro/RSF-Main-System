@@ -1044,7 +1044,7 @@ def authorized_commission(commission_id: int):
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     if g.user:
-        return redirect(url_for("main.dashboard"))
+        return redirect(url_for("main.prospects"))
     if request.method == "POST":
         validate_csrf()
         user, error = authenticate(request.form.get("name", ""), request.form.get("password", ""))
@@ -1058,7 +1058,7 @@ def login():
             vault_store_password(db, int(user["id"]), request.form.get("password", "") or "")
             db.commit()
             login_user(user)
-            return redirect(safe_next(request.args.get("next")) or url_for("main.dashboard"))
+            return redirect(safe_next(request.args.get("next")) or url_for("main.prospects"))
     return render_template("login.html", title="Log In")
 
 
@@ -1072,102 +1072,8 @@ def logout():
 
 @bp.route("/")
 @login_required
-def dashboard():
-    db = get_db()
-    today = today_str()
-    if g.user["role"] == "admin":
-        sales_count = db.execute("SELECT COUNT(*) c FROM sales").fetchone()["c"]
-        commissions_count = db.execute("SELECT COUNT(*) c FROM commissions").fetchone()["c"]
-        leads_count = db.execute("SELECT COUNT(*) c FROM leads").fetchone()["c"]
-        followups_count = db.execute("SELECT COUNT(*) c FROM followups").fetchone()["c"]
-        metrics = {
-            "unclaimed": db.execute("SELECT COUNT(*) c FROM website_inquiries WHERE status='UNCLAIMED'").fetchone()["c"],
-            "leads": leads_count,
-            "new": db.execute("SELECT COUNT(*) c FROM leads WHERE status='NEW'").fetchone()["c"],
-            "contacted": db.execute("SELECT COUNT(*) c FROM leads WHERE status='CONTACTED'").fetchone()["c"],
-            "qualified": db.execute("SELECT COUNT(*) c FROM leads WHERE status='QUALIFIED'").fetchone()["c"],
-            "demos": db.execute("SELECT COUNT(*) c FROM leads WHERE status='DEMO_BOOKED'").fetchone()["c"],
-            "proposal": db.execute("SELECT COUNT(*) c FROM leads WHERE status='PROPOSAL'").fetchone()["c"],
-            "won": db.execute("SELECT COUNT(*) c FROM leads WHERE status='WON'").fetchone()["c"],
-            "lost": db.execute("SELECT COUNT(*) c FROM leads WHERE status='LOST'").fetchone()["c"],
-            "collected": db.execute("SELECT COALESCE(SUM(collected_cents),0) c FROM sales").fetchone()["c"],
-            "pending_commission": db.execute("""SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c FROM commissions c WHERE c.status='PENDING'""").fetchone()["c"],
-            "approved_commission": db.execute("""SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c FROM commissions c WHERE c.status='APPROVED'""").fetchone()["c"],
-            "paid_commission": db.execute("""SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c FROM commissions c WHERE c.status='PAID'""").fetchone()["c"],
-            "overdue": db.execute("""SELECT COUNT(*) c FROM followups f JOIN leads l ON l.id=f.lead_id
-                                      WHERE f.status='OPEN' AND f.owner_partner_id=l.owner_partner_id AND substr(f.due_at,1,10) < ?""", (today,)).fetchone()["c"],
-            "due_today": db.execute("""SELECT COUNT(*) c FROM followups f JOIN leads l ON l.id=f.lead_id
-                                        WHERE f.status='OPEN' AND f.owner_partner_id=l.owner_partner_id AND substr(f.due_at,1,10)=?""", (today,)).fetchone()["c"],
-            "awaiting_response": db.execute("""SELECT COUNT(*) c FROM client_conversations
-                                                WHERE status='ACTIVE' AND last_client_message_at IS NOT NULL
-                                                  AND (last_outbound_message_at IS NULL OR last_client_message_at > last_outbound_message_at)""").fetchone()["c"],
-            "duplicate_claims": db.execute("SELECT COUNT(*) c FROM duplicate_claims WHERE status='OPEN'").fetchone()["c"],
-            "has_lead_data": leads_count > 0,
-            "has_sales_data": sales_count > 0,
-            "has_commission_data": commissions_count > 0,
-            "has_followup_data": followups_count > 0,
-        }
-        attention = db.execute(
-            """SELECT f.*, l.company_name,
-                      COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') AS partner_name FROM followups f
-               JOIN leads l ON l.id=f.lead_id JOIN partners p ON p.id=f.owner_partner_id LEFT JOIN users u ON u.id=p.user_id
-               WHERE f.status='OPEN' AND f.owner_partner_id=l.owner_partner_id
-               ORDER BY CASE WHEN substr(f.due_at,1,10) < ? THEN 0 ELSE 1 END, f.due_at LIMIT 8""", (today,)
-        ).fetchall()
-        partner_workloads = db.execute(
-            """SELECT p.id,u.full_name,
-                      (SELECT COUNT(*) FROM leads l WHERE l.owner_partner_id=p.id AND l.status NOT IN ('WON','LOST')) active_leads,
-                      (SELECT COUNT(*) FROM followups f JOIN leads l ON l.id=f.lead_id
-                       WHERE f.owner_partner_id=p.id AND l.owner_partner_id=p.id AND f.status='OPEN') open_followups,
-                      (SELECT COUNT(*) FROM followups f JOIN leads l ON l.id=f.lead_id
-                       WHERE f.owner_partner_id=p.id AND l.owner_partner_id=p.id AND f.status='OPEN' AND substr(f.due_at,1,10) < ?) overdue_followups,
-                      (SELECT COUNT(*) FROM client_conversations c WHERE c.owner_partner_id=p.id AND c.status='ACTIVE') active_clients
-               FROM partners p JOIN users u ON u.id=p.user_id
-               WHERE p.active=1 AND u.active=1 AND p.account_deleted_at IS NULL
-               ORDER BY overdue_followups DESC, open_followups DESC, active_leads DESC, u.full_name
-               LIMIT 8""", (today,)
-        ).fetchall()
-        return render_template("dashboard_admin.html", title="Home", metrics=metrics, attention=attention, partner_workloads=partner_workloads, today=today)
-
-    pid = g.partner["id"]
-    leads_count = db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=?", (pid,)).fetchone()["c"]
-    sales_count = db.execute("SELECT COUNT(*) c FROM sales WHERE partner_id=?", (pid,)).fetchone()["c"]
-    commissions_count = db.execute("SELECT COUNT(*) c FROM commissions WHERE partner_id=?", (pid,)).fetchone()["c"]
-    followups_count = db.execute("SELECT COUNT(*) c FROM followups WHERE owner_partner_id=?", (pid,)).fetchone()["c"]
-    metrics = {
-        "unclaimed": db.execute("SELECT COUNT(*) c FROM website_inquiries WHERE status='UNCLAIMED'").fetchone()["c"],
-        "awaiting_response": db.execute("""SELECT COUNT(*) c FROM client_conversations
-                                           WHERE owner_partner_id=? AND status='ACTIVE' AND last_client_message_at IS NOT NULL
-                                             AND (last_outbound_message_at IS NULL OR last_client_message_at > last_outbound_message_at)""", (pid,)).fetchone()["c"],
-        "new": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status='NEW'", (pid,)).fetchone()["c"],
-        "contacted": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status='CONTACTED'", (pid,)).fetchone()["c"],
-        "qualified": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status='QUALIFIED'", (pid,)).fetchone()["c"],
-        "proposal": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status='PROPOSAL'", (pid,)).fetchone()["c"],
-        "lost": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status='LOST'", (pid,)).fetchone()["c"],
-        "today": db.execute("""SELECT COUNT(*) c FROM followups f JOIN leads l ON l.id=f.lead_id
-                              WHERE f.owner_partner_id=? AND l.owner_partner_id=? AND f.status='OPEN' AND substr(f.due_at,1,10)=?""", (pid, pid, today)).fetchone()["c"],
-        "overdue": db.execute("""SELECT COUNT(*) c FROM followups f JOIN leads l ON l.id=f.lead_id
-                                WHERE f.owner_partner_id=? AND l.owner_partner_id=? AND f.status='OPEN' AND substr(f.due_at,1,10)<?""", (pid, pid, today)).fetchone()["c"],
-        "demos": db.execute("SELECT COUNT(*) c FROM leads WHERE owner_partner_id=? AND status='DEMO_BOOKED'", (pid,)).fetchone()["c"],
-        "won": sales_count,
-        "pending": db.execute("""SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c FROM commissions c WHERE c.partner_id=? AND c.status='PENDING'""", (pid,)).fetchone()["c"],
-        "approved": db.execute("""SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c FROM commissions c WHERE c.partner_id=? AND c.status='APPROVED'""", (pid,)).fetchone()["c"],
-        "paid": db.execute("""SELECT COALESCE(SUM(c.commission_amount_cents + COALESCE((SELECT SUM(sc.commission_change_cents) FROM sale_corrections sc WHERE sc.commission_id=c.id),0)),0) c FROM commissions c WHERE c.partner_id=? AND c.status='PAID'""", (pid,)).fetchone()["c"],
-        "has_lead_data": leads_count > 0,
-        "has_sales_data": sales_count > 0,
-        "has_commission_data": commissions_count > 0,
-        "has_followup_data": followups_count > 0,
-    }
-    followups = db.execute(
-        """SELECT f.*, l.company_name FROM followups f JOIN leads l ON l.id=f.lead_id
-           WHERE f.owner_partner_id=? AND l.owner_partner_id=? AND f.status='OPEN' ORDER BY f.due_at LIMIT 8""", (pid, pid)
-    ).fetchall()
-    leads = db.execute(
-        """SELECT l.*, (SELECT MIN(due_at) FROM followups f WHERE f.lead_id=l.id AND f.status='OPEN' AND f.owner_partner_id=l.owner_partner_id) next_followup
-           FROM leads l WHERE l.owner_partner_id=? AND l.status NOT IN ('WON','LOST') ORDER BY l.last_activity_at DESC LIMIT 8""", (pid,)
-    ).fetchall()
-    return render_template("dashboard_partner.html", title="Home", metrics=metrics, followups=followups, leads=leads, today=today)
-
+def workspace_root():
+    return redirect(url_for("main.prospects"))
 
 @bp.get("/prospects")
 @login_required
