@@ -5563,3 +5563,316 @@ textarea.prospect-inline-editor{resize:vertical}
   outline-offset:2px;
   border-radius:4px;
 }
+
+/* v1.18.119 — unified communication workspace */
+.conversation-email-card-field{
+  min-width:0;
+  min-height:58px;
+  padding:9px 10px;
+  border:1px solid #d7e1dd;
+  border-radius:8px;
+  background:#fff;
+  color:var(--ux-section-ink);
+  text-align:left;
+  cursor:pointer
+}
+.conversation-email-card-field:hover:not(:disabled){
+  border-color:#8eb7aa;
+  background:#f7fbf9
+}
+.conversation-email-card-field:disabled{
+  cursor:not-allowed;
+  opacity:.58
+}
+.conversation-email-card-field span{
+  display:block;
+  margin-bottom:5px;
+  color:#6f7f79;
+  font-size:9px;
+  font-weight:650;
+  letter-spacing:.055em;
+  text-transform:uppercase
+}
+.conversation-email-card-field strong{
+  display:block;
+  overflow:hidden;
+  color:#23453a;
+  font-size:12.5px;
+  font-weight:700;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+.deal-email-conversation-field{
+  width:100%
+}
+.website-inquiry-email-conversation{
+  width:100%;
+  margin-top:10px
+}
+
+.deal-notes-viewer.conversation-email-open{
+  width:min(1180px,calc(100vw - 28px))
+}
+.deal-notes-viewer.conversation-email-open .deal-notes-viewer-card{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  grid-template-rows:auto minmax(0,1fr)
+}
+.deal-notes-viewer.conversation-email-open .deal-notes-viewer-head{
+  grid-column:1/-1;
+  grid-row:1
+}
+.deal-notes-viewer.conversation-email-open .deal-notes-viewer-body{
+  grid-column:1;
+  grid-row:2;
+  min-width:0;
+  border-right:1px solid #e1e9e5
+}
+.conversation-email-panel{
+  grid-column:2;
+  grid-row:2;
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto;
+  min-width:0;
+  min-height:0;
+  background:#f7faf8
+}
+.conversation-email-panel[hidden]{
+  display:none
+}
+.conversation-email-panel-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:58px;
+  padding:11px 13px;
+  border-bottom:1px solid #e1e9e5;
+  background:#fff
+}
+.conversation-email-panel-head>div{
+  min-width:0
+}
+.conversation-email-panel-head strong{
+  display:block;
+  color:var(--ux-section-ink);
+  font-size:13px
+}
+.conversation-email-panel-head span{
+  display:block;
+  overflow:hidden;
+  margin-top:2px;
+  color:#6f7f79;
+  font-size:11px;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+.conversation-email-panel-close{
+  display:grid;
+  place-items:center;
+  width:30px;
+  height:30px;
+  flex:0 0 auto;
+  padding:0;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:#53665f;
+  font:inherit;
+  font-size:22px;
+  cursor:pointer
+}
+.conversation-email-panel-close:hover{
+  background:#edf4f1;
+  color:#183c31
+}
+.conversation-email-thread{
+  min-height:0;
+  overflow:auto;
+  padding:12px 13px;
+  background:#f7faf8
+}
+.conversation-email-empty{
+  padding:18px 14px;
+  border:1px dashed #ccd9d4;
+  border-radius:9px;
+  background:#fff;
+  color:#6c7c76;
+  font-size:12px;
+  text-align:center
+}
+.conversation-email-message{
+  max-width:88%;
+  margin:0 0 10px;
+  padding:10px 11px;
+  border:1px solid #dce5e1;
+  border-radius:10px;
+  background:#fff
+}
+.conversation-email-message.is-rsf{
+  margin-left:auto;
+  border-color:#bfd8cf;
+  background:#f0f8f5
+}
+.conversation-email-message.is-client{
+  margin-right:auto
+}
+.conversation-email-message-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:5px
+}
+.conversation-email-message-head strong{
+  color:#29493f;
+  font-size:11px
+}
+.conversation-email-message-head time{
+  flex:0 0 auto;
+  color:#7c8a85;
+  font-size:9.5px
+}
+.conversation-email-message-subject{
+  margin-bottom:5px;
+  color:#496058;
+  font-size:10.5px;
+  font-weight:700
+}
+.conversation-email-message-body{
+  color:#233b33;
+  font-size:12px;
+  line-height:1.48;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere
+}
+.conversation-email-message small{
+  display:block;
+  margin-top:6px;
+  color:#7a8983;
+  font-size:9.5px;
+  text-transform:capitalize
+}
+.conversation-email-attachments{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:7px
+}
+.conversation-email-attachments a{
+  padding:4px 7px;
+  border:1px solid #cfddd8;
+  border-radius:6px;
+  background:#fff;
+  color:#216a55;
+  font-size:10px;
+  text-decoration:none
+}
+.conversation-email-compose{
+  display:grid;
+  gap:9px;
+  padding:12px 13px;
+  border-top:1px solid #e1e9e5;
+  background:#fff
+}
+.conversation-email-compose label{
+  display:grid;
+  gap:4px
+}
+.conversation-email-compose label>span{
+  color:#677872;
+  font-size:9.5px;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase
+}
+.conversation-email-compose input,
+.conversation-email-compose textarea{
+  width:100%;
+  min-width:0;
+  padding:9px 10px;
+  border:1px solid #d5e0dc;
+  border-radius:8px;
+  background:#fff;
+  color:var(--ux-section-ink);
+  font:inherit;
+  font-size:12px;
+  line-height:1.45;
+  outline:none
+}
+.conversation-email-compose textarea{
+  min-height:96px;
+  max-height:180px;
+  resize:vertical
+}
+.conversation-email-compose input:focus,
+.conversation-email-compose textarea:focus{
+  border-color:var(--workspace-emerald);
+  box-shadow:0 0 0 2px rgba(27,94,74,.10)
+}
+.conversation-email-compose-actions{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px
+}
+.conversation-email-compose-actions [data-email-status]{
+  color:#64756f;
+  font-size:10.5px
+}
+
+.ai-sales-call-entry{
+  display:grid;
+  gap:8px
+}
+.ai-sales-call-facts{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px 14px;
+  color:#425851;
+  font-size:11px
+}
+.ai-sales-call-facts strong{
+  color:#223e35
+}
+.ai-sales-call-recording{
+  width:max-content;
+  color:#a92f2f;
+  font-size:11.5px;
+  font-weight:700;
+  text-decoration:none
+}
+.ai-sales-call-recording:hover{
+  text-decoration:underline
+}
+.ai-sales-call-entry p{
+  margin:0;
+  white-space:pre-wrap
+}
+.ai-sales-call-transcript{
+  padding:7px 8px;
+  border:1px solid #dce5e1;
+  border-radius:7px;
+  background:#fff
+}
+.ai-sales-call-transcript summary{
+  cursor:pointer;
+  color:#4b6059;
+  font-size:10.5px;
+  font-weight:700
+}
+.ai-sales-call-transcript div{
+  margin-top:7px;
+  color:#354b43;
+  font-size:11px;
+  line-height:1.45;
+  white-space:pre-wrap
+}
+
+@media (max-width:760px){
+  .deal-notes-viewer.conversation-email-open{
+    width:calc(100vw - 16px)
+  }
+  .deal-notes-viewer.conversation-email-open .deal-notes-viewer-card{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)
+  }
+}
