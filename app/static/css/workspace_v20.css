@@ -888,6 +888,13 @@ textarea.prospect-inline-editor{resize:vertical}
   box-shadow:0 0 0 2px rgba(27,94,74,.10)
 }
 .deal-field-wide{grid-column:1/-1}
+.deal-location-field{gap:4px}
+.deal-location-format{
+  color:#7a8984;
+  font-size:10.5px;
+  font-weight:550;
+  line-height:1.3
+}
 .deal-demo-schedule-field{
   display:grid;
   gap:5px;
