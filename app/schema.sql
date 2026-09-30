@@ -393,3 +393,17 @@ CREATE TABLE IF NOT EXISTS client_messages (
 );
 CREATE INDEX IF NOT EXISTS idx_client_messages_conversation ON client_messages(conversation_id,id);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_client_messages_external_id ON client_messages(external_message_id) WHERE external_message_id <> '';
+
+CREATE TABLE IF NOT EXISTS communication_notes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    prospect_id INTEGER REFERENCES prospects(id) ON DELETE SET NULL,
+    website_inquiry_id INTEGER REFERENCES website_inquiries(id) ON DELETE SET NULL,
+    deal_id INTEGER REFERENCES deals(id) ON DELETE SET NULL,
+    journey_source TEXT NOT NULL DEFAULT 'OUTBOUND' CHECK (journey_source IN ('OUTBOUND','INBOUND')),
+    body TEXT NOT NULL,
+    created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_communication_notes_prospect ON communication_notes(prospect_id,created_at,id);
+CREATE INDEX IF NOT EXISTS idx_communication_notes_inquiry ON communication_notes(website_inquiry_id,created_at,id);
+CREATE INDEX IF NOT EXISTS idx_communication_notes_deal ON communication_notes(deal_id,created_at,id);
