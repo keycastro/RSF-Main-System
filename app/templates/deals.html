@@ -104,7 +104,7 @@
               <span>Location</span>
               <input type="text" name="location" maxlength="200" value="{{ deal['prospect_location'] }}">
             </label>
-            <label class="deal-field-wide deal-demo-schedule-field">
+            <div class="deal-field-wide deal-demo-schedule-field">
               <span>Demo Date &amp; Time</span>
               <div class="deal-demo-schedule-box">
                 <div class="deal-demo-date-time-row">
@@ -135,7 +135,7 @@
                   <div><strong>Philippines Time:</strong> <span data-philippines-time-display>{{ deal_demo_time_displays[deal['id']]['philippines'] }}</span></div>
                 </div>
               </div>
-            </label>
+            </div>
             <label class="deal-field-wide">
               <span>Next Step</span>
               <textarea name="next_step" maxlength="500" rows="1" data-deal-next-step>{{ deal['next_step'] }}</textarea>
