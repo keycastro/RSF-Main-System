@@ -87,6 +87,12 @@ CREATE TABLE IF NOT EXISTS deals (
     location TEXT NOT NULL DEFAULT '',
     status TEXT NOT NULL DEFAULT 'DEAL' CHECK (status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','LOST')),
     demo_date TEXT NOT NULL DEFAULT '',
+    demo_time TEXT NOT NULL DEFAULT '',
+    google_calendar_event_id TEXT NOT NULL DEFAULT '',
+    google_calendar_html_url TEXT NOT NULL DEFAULT '',
+    google_meet_url TEXT NOT NULL DEFAULT '',
+    google_calendar_sync_error TEXT NOT NULL DEFAULT '',
+    google_calendar_synced_at TEXT NOT NULL DEFAULT '',
     followup_date TEXT NOT NULL DEFAULT '',
     next_step TEXT NOT NULL DEFAULT '',
     price TEXT NOT NULL DEFAULT '',
@@ -97,6 +103,15 @@ CREATE TABLE IF NOT EXISTS deals (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     CHECK (prospect_id IS NOT NULL OR website_inquiry_id IS NOT NULL)
+);
+
+CREATE TABLE IF NOT EXISTS google_calendar_oauth_credentials (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    calendar_id TEXT NOT NULL DEFAULT 'primary',
+    encrypted_refresh_token TEXT NOT NULL DEFAULT '',
+    scope TEXT NOT NULL DEFAULT '',
+    connected_at TEXT NOT NULL DEFAULT '',
+    updated_at TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS deal_documents (
