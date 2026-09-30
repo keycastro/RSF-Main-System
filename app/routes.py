@@ -2071,9 +2071,11 @@ def deal_update(deal_id: int):
             flash("Demo Time must be a valid time.", "error")
             return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
-    from .calendar_ops import demo_time_display, validate_demo_timezone
+    from .calendar_ops import demo_time_display, resolve_demo_datetime, server_time_snapshot, validate_demo_timezone
     try:
         demo_timezone = validate_demo_timezone(request.form.get("demo_timezone", deal["demo_timezone"] or ""))
+        if demo_date and demo_time and demo_timezone:
+            resolve_demo_datetime(demo_date, demo_time, demo_timezone)
     except ValueError as exc:
         if async_request:
             return jsonify({"ok": False, "message": str(exc)}), 400
@@ -2269,6 +2271,7 @@ def deal_update(deal_id: int):
             "demo_timezone": demo_timezone,
             "client_time_display": display["client"],
             "philippines_time_display": display["philippines"],
+            "server_time": server_time_snapshot(),
         })
     if status in DEAL_PRE_STATUS_STATUSES:
         flash("Status updated. Record removed from Deals.", "success")
@@ -2280,6 +2283,13 @@ def deal_update(deal_id: int):
     else:
         flash("Deal updated.", "success")
     return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+
+
+@bp.get("/system/time")
+@login_required
+def system_time():
+    from .calendar_ops import server_time_snapshot
+    return jsonify({"ok": True, **server_time_snapshot()})
 
 
 @bp.get("/clients")
