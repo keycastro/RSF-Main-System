@@ -86,7 +86,39 @@ const RSFConversationTimeline = (() => {
     }
   };
 
-  return { load };
+  const saveManualNote = async (timelineUrl, body, csrfToken) => {
+    const value = (body || '').trim();
+    if (!value) throw new Error('Write a manual note first.');
+    if (!timelineUrl) throw new Error('Communication record is unavailable.');
+
+    const timeline = new URL(timelineUrl, window.location.origin);
+    const payload = new URLSearchParams({
+      csrf_token: csrfToken || '',
+      body: value
+    });
+    ['prospect_id', 'inquiry_id', 'deal_id'].forEach((name) => {
+      const id = timeline.searchParams.get(name);
+      if (id) payload.set(name, id);
+    });
+
+    const response = await fetch('/app/communications/manual-note', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+      },
+      body: payload.toString(),
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) {
+      throw new Error(data.message || 'Manual note could not be saved.');
+    }
+    return data;
+  };
+
+  return { load, saveManualNote };
 })();
 
 document.addEventListener('click', (event) => {
@@ -2037,10 +2069,12 @@ document.addEventListener('click', (event) => {
   const prospectNotesViewer = page.querySelector('[data-prospect-notes-viewer]');
   const prospectNotesViewerInput = page.querySelector('[data-prospect-notes-viewer-input]');
   const prospectNotesViewerClose = page.querySelector('[data-prospect-notes-viewer-close]');
+  const prospectNotesSave = page.querySelector('[data-prospect-notes-save]');
   const prospectConversationTimeline = page.querySelector('[data-prospect-conversation-timeline]');
   const prospectCallAction = page.querySelector('[data-prospect-call-action]');
   const prospectEmailAction = page.querySelector('[data-prospect-email-action]');
   let prospectNotesSource = null;
+  let prospectNotesTimelineUrl = '';
 
   const saveProspectNotes = async (source) => {
     if (!(source instanceof HTMLTextAreaElement)) return;
@@ -2091,10 +2125,10 @@ document.addEventListener('click', (event) => {
   };
 
   const closeProspectNotesViewer = () => {
-    const source = prospectNotesSource;
     if (prospectNotesViewer?.open) prospectNotesViewer.close();
     prospectNotesSource = null;
-    if (source) saveProspectNotes(source);
+    prospectNotesTimelineUrl = '';
+    if (prospectNotesViewerInput) prospectNotesViewerInput.value = '';
   };
 
   page.addEventListener('focusin', (event) => {
@@ -2121,9 +2155,10 @@ document.addEventListener('click', (event) => {
 
     prospectNotesSource = source;
     source.dataset.prospectNotesStartValue ??= source.value || '';
-    if (prospectNotesViewerInput) prospectNotesViewerInput.value = source.value || '';
+    prospectNotesTimelineUrl = trigger.dataset.timelineUrl || '';
+    if (prospectNotesViewerInput) prospectNotesViewerInput.value = '';
     RSFConversationTimeline.load(
-      trigger.dataset.timelineUrl || '',
+      prospectNotesTimelineUrl,
       prospectConversationTimeline,
       prospectCallAction,
       prospectEmailAction
@@ -2138,17 +2173,36 @@ document.addEventListener('click', (event) => {
     source.focus();
   });
 
-  prospectNotesViewerInput?.addEventListener('input', () => {
-    if (prospectNotesSource) prospectNotesSource.value = prospectNotesViewerInput.value;
-  });
-  prospectNotesViewerInput?.addEventListener('blur', () => {
-    if (prospectNotesSource) saveProspectNotes(prospectNotesSource);
+  prospectNotesSave?.addEventListener('click', async () => {
+    if (!prospectNotesViewerInput || !prospectNotesSource) return;
+    prospectNotesSave.disabled = true;
+    try {
+      const row = prospectNotesSource.closest('[data-prospect-row]');
+      await RSFConversationTimeline.saveManualNote(
+        prospectNotesTimelineUrl,
+        prospectNotesViewerInput.value,
+        csrfForRow(row)
+      );
+      prospectNotesViewerInput.value = '';
+      await RSFConversationTimeline.load(
+        prospectNotesTimelineUrl,
+        prospectConversationTimeline,
+        prospectCallAction,
+        prospectEmailAction
+      );
+      showToast('Manual note saved.');
+      prospectNotesViewerInput.focus();
+    } catch (error) {
+      showToast(error.message || 'Manual note could not be saved.', true);
+    } finally {
+      prospectNotesSave.disabled = false;
+    }
   });
   prospectNotesViewerClose?.addEventListener('click', closeProspectNotesViewer);
   prospectNotesViewer?.addEventListener('cancel', () => {
-    const source = prospectNotesSource;
     prospectNotesSource = null;
-    if (source) saveProspectNotes(source);
+    prospectNotesTimelineUrl = '';
+    if (prospectNotesViewerInput) prospectNotesViewerInput.value = '';
   });
   prospectNotesViewer?.addEventListener('click', (event) => {
     if (event.target === prospectNotesViewer) closeProspectNotesViewer();
@@ -3093,10 +3147,12 @@ document.addEventListener('click', (event) => {
   const notesViewer = page.querySelector('[data-deal-notes-viewer]');
   const notesViewerInput = page.querySelector('[data-deal-notes-viewer-input]');
   const notesViewerClose = page.querySelector('[data-deal-notes-viewer-close]');
+  const dealNotesSave = page.querySelector('[data-deal-notes-save]');
   const dealConversationTimeline = page.querySelector('[data-deal-conversation-timeline]');
   const dealCallAction = page.querySelector('[data-deal-call-action]');
   const dealEmailAction = page.querySelector('[data-deal-email-action]');
   let notesSource = null;
+  let dealNotesTimelineUrl = '';
 
   const saveExpandedNotesIfChanged = () => {
     if (!notesSource) return;
@@ -3108,9 +3164,10 @@ document.addEventListener('click', (event) => {
   };
 
   const closeDealNotesViewer = () => {
-    saveExpandedNotesIfChanged();
     if (notesViewer?.open) notesViewer.close();
     notesSource = null;
+    dealNotesTimelineUrl = '';
+    if (notesViewerInput) notesViewerInput.value = '';
   };
 
   page.addEventListener('click', (event) => {
@@ -3122,9 +3179,10 @@ document.addEventListener('click', (event) => {
 
     notesSource = source;
     notesSource.dataset.dealStartValue = source.value || '';
-    if (notesViewerInput) notesViewerInput.value = source.value || '';
+    dealNotesTimelineUrl = trigger.dataset.timelineUrl || '';
+    if (notesViewerInput) notesViewerInput.value = '';
     RSFConversationTimeline.load(
-      trigger.dataset.timelineUrl || '',
+      dealNotesTimelineUrl,
       dealConversationTimeline,
       dealCallAction,
       dealEmailAction
@@ -3139,15 +3197,37 @@ document.addEventListener('click', (event) => {
     source.focus();
   });
 
-  notesViewerInput?.addEventListener('input', () => {
-    if (notesSource) notesSource.value = notesViewerInput.value;
+  dealNotesSave?.addEventListener('click', async () => {
+    if (!notesViewerInput || !notesSource) return;
+    dealNotesSave.disabled = true;
+    try {
+      const form = notesSource.closest('[data-deal-form]');
+      const csrfToken = form?.querySelector('input[name="csrf_token"]')?.value || '';
+      await RSFConversationTimeline.saveManualNote(
+        dealNotesTimelineUrl,
+        notesViewerInput.value,
+        csrfToken
+      );
+      notesViewerInput.value = '';
+      await RSFConversationTimeline.load(
+        dealNotesTimelineUrl,
+        dealConversationTimeline,
+        dealCallAction,
+        dealEmailAction
+      );
+      notesViewerInput.focus();
+    } catch (error) {
+      window.alert(error.message || 'Manual note could not be saved.');
+    } finally {
+      dealNotesSave.disabled = false;
+    }
   });
-  notesViewerInput?.addEventListener('blur', saveExpandedNotesIfChanged);
 
   notesViewerClose?.addEventListener('click', closeDealNotesViewer);
   notesViewer?.addEventListener('cancel', () => {
-    saveExpandedNotesIfChanged();
     notesSource = null;
+    dealNotesTimelineUrl = '';
+    if (notesViewerInput) notesViewerInput.value = '';
   });
   notesViewer?.addEventListener('click', (event) => {
     if (event.target === notesViewer) closeDealNotesViewer();
@@ -3552,10 +3632,12 @@ document.addEventListener('click', (event) => {
   const notesViewer = page.querySelector('[data-website-notes-viewer]');
   const notesViewerInput = page.querySelector('[data-website-notes-viewer-input]');
   const notesViewerClose = page.querySelector('[data-website-notes-viewer-close]');
+  const websiteNotesSave = page.querySelector('[data-website-notes-save]');
   const websiteConversationTimeline = page.querySelector('[data-website-conversation-timeline]');
   const websiteCallAction = page.querySelector('[data-website-call-action]');
   const websiteEmailAction = page.querySelector('[data-website-email-action]');
   let notesSource = null;
+  let websiteNotesTimelineUrl = '';
 
   const closeViewer = () => {
     if (viewer?.open) viewer.close();
@@ -3608,10 +3690,10 @@ document.addEventListener('click', (event) => {
   };
 
   const closeWebsiteNotesViewer = () => {
-    const source = notesSource;
     if (notesViewer?.open) notesViewer.close();
     notesSource = null;
-    if (source) saveWebsiteNotes(source);
+    websiteNotesTimelineUrl = '';
+    if (notesViewerInput) notesViewerInput.value = '';
   };
 
   page.addEventListener('click', (event) => {
@@ -3664,9 +3746,10 @@ document.addEventListener('click', (event) => {
 
     notesSource = source;
     source.dataset.websiteNotesStartValue ??= source.value || '';
-    if (notesViewerInput) notesViewerInput.value = source.value || '';
+    websiteNotesTimelineUrl = trigger.dataset.timelineUrl || '';
+    if (notesViewerInput) notesViewerInput.value = '';
     RSFConversationTimeline.load(
-      trigger.dataset.timelineUrl || '',
+      websiteNotesTimelineUrl,
       websiteConversationTimeline,
       websiteCallAction,
       websiteEmailAction
@@ -3787,17 +3870,34 @@ document.addEventListener('click', (event) => {
     if (event.target === viewer) closeViewer();
   });
 
-  notesViewerInput?.addEventListener('input', () => {
-    if (notesSource) notesSource.value = notesViewerInput.value;
-  });
-  notesViewerInput?.addEventListener('blur', () => {
-    if (notesSource) saveWebsiteNotes(notesSource);
+  websiteNotesSave?.addEventListener('click', async () => {
+    if (!notesViewerInput || !notesSource) return;
+    websiteNotesSave.disabled = true;
+    try {
+      await RSFConversationTimeline.saveManualNote(
+        websiteNotesTimelineUrl,
+        notesViewerInput.value,
+        notesSource.dataset.csrfToken || ''
+      );
+      notesViewerInput.value = '';
+      await RSFConversationTimeline.load(
+        websiteNotesTimelineUrl,
+        websiteConversationTimeline,
+        websiteCallAction,
+        websiteEmailAction
+      );
+      notesViewerInput.focus();
+    } catch (error) {
+      window.alert(error.message || 'Manual note could not be saved.');
+    } finally {
+      websiteNotesSave.disabled = false;
+    }
   });
   notesViewerClose?.addEventListener('click', closeWebsiteNotesViewer);
   notesViewer?.addEventListener('cancel', () => {
-    const source = notesSource;
     notesSource = null;
-    if (source) saveWebsiteNotes(source);
+    websiteNotesTimelineUrl = '';
+    if (notesViewerInput) notesViewerInput.value = '';
   });
   notesViewer?.addEventListener('click', (event) => {
     if (event.target === notesViewer) closeWebsiteNotesViewer();
