@@ -73,6 +73,15 @@
         <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="contact" data-prospect-editor="text" data-prospect-value="{{ prospect['contact'] }}"><span>Client Name</span><button class="prospect-edit-value prospect-uppercase-value" type="button" data-prospect-edit-trigger aria-label="Edit Client Name">{{ prospect['contact']|upper if prospect['contact'] else '—' }}</button></div>
         <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="email" data-prospect-editor="email" data-prospect-value="{{ prospect['email'] }}"><span>Email</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Email">{{ prospect['email'] or '—' }}</button></div>
         <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="phone" data-prospect-editor="tel" data-prospect-value="{{ prospect['phone'] }}"><span>Phone</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Phone">{{ prospect['phone'] or '—' }}</button></div>
+        <button
+          class="prospect-detail conversation-email-card-field"
+          type="button"
+          data-email-conversation-open
+          data-timeline-url="{{ url_for('main.communication_timeline', prospect_id=prospect['id']) }}"
+        >
+          <span>Email Conversation</span>
+          <strong data-email-conversation-label>Checking…</strong>
+        </button>
         <div class="prospect-detail prospect-contact-attempt">
           <span>Contact Attempt</span>
           <div class="prospect-attempt-control" data-prospect-attempt-control data-prospect-attempt-value="{{ prospect['contact_attempt']|int }}">
