@@ -924,6 +924,26 @@ textarea.prospect-inline-editor{resize:vertical}
   padding-top:14px
 }
 
+/* v1.18.154 — keep Prospect Post Date typography consistent after field reordering */
+.prospects-page [data-card-layout-field="post_date"]>span{
+  display:block;
+  margin-bottom:4px;
+  color:#5f706a;
+  font-size:9px;
+  font-weight:650;
+  letter-spacing:.055em;
+  line-height:1.35;
+  text-transform:uppercase;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+.prospects-page [data-card-layout-field="post_date"]>.prospect-edit-value{
+  font-size:12px;
+  font-weight:600;
+  line-height:1.4
+}
+
 /* v1.18.153 — compact linked Prospect navigation footer on Deal cards */
 .deal-card-footer{
   padding:0 12px 8px;
