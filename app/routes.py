@@ -1540,7 +1540,11 @@ def prospect_update(prospect_id: int):
             deal_id, deal_created = _ensure_deal_for_prospect(db, prospect_id, g.user["id"], now)
         if deal_id is not None:
             if status in DEAL_ACTIVE_STATUSES:
+                if current_status not in DEAL_ACTIVE_STATUSES:
+                    _mark_deal_became(db, deal_id, now)
                 db.execute("UPDATE deals SET status=?,updated_at=? WHERE id=?", (status, now, deal_id))
+                deal_id = _reconcile_deal_sources_on_activation(db, deal_id, now)
+                _mark_deal_became(db, deal_id, now)
             _sync_deal_source_statuses(db, deal_id, status, now)
     elif field_name == "post_date":
         post_date = raw_value.strip()[:10]
@@ -1858,14 +1862,20 @@ def deal_create_from_prospect(prospect_id: int):
     existing = db.execute("SELECT id FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
     if existing:
         deal_id = int(existing["id"])
+        _mark_deal_became(db, deal_id, now)
         db.execute("UPDATE deals SET status='DEAL',updated_at=? WHERE id=?", (now, deal_id))
+        deal_id = _reconcile_deal_sources_on_activation(db, deal_id, now)
+        _mark_deal_became(db, deal_id, now)
         _sync_deal_source_statuses(db, deal_id, "DEAL", now)
         db.commit()
         flash("Deal opened.", "success")
         return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
     deal_id, _ = _ensure_deal_for_prospect(db, prospect_id, g.user["id"], now)
+    _mark_deal_became(db, deal_id, now)
     db.execute("UPDATE deals SET status='DEAL',updated_at=? WHERE id=?", (now, deal_id))
+    deal_id = _reconcile_deal_sources_on_activation(db, deal_id, now)
+    _mark_deal_became(db, deal_id, now)
     _sync_deal_source_statuses(db, deal_id, "DEAL", now)
     db.commit()
     flash("Deal created.", "success")
@@ -2142,7 +2152,12 @@ def deal_update(deal_id: int):
             return jsonify({"ok": False, "message": "Invalid Deal status."}), 400
         flash("Invalid Deal status.", "error")
         return redirect(url_for("main.deals") + f"#deal-{deal_id}")
-    if status in DEAL_PRE_STATUS_STATUSES and (request.form.get("confirm_leave_deals", "") or "").strip().lower() != "yes":
+    if (
+        previous_workflow_status in DEAL_ACTIVE_STATUSES
+        and status in DEAL_PRE_STATUS_STATUSES
+        and status != previous_workflow_status
+        and (request.form.get("confirm_leave_deals", "") or "").strip().lower() != "yes"
+    ):
         if async_request:
             return jsonify({"ok": False, "message": "Confirm the backward Status change before removing this record from Deals."}), 409
         flash("Confirm the backward Status change before removing this record from Deals.", "warning")
@@ -2217,6 +2232,8 @@ def deal_update(deal_id: int):
     now = utcnow_iso()
 
     if status in DEAL_ACTIVE_STATUSES:
+        if previous_workflow_status not in DEAL_ACTIVE_STATUSES:
+            _mark_deal_became(db, deal_id, now)
         db.execute(
             """UPDATE deals
                SET status=?,demo_date=?,demo_time=?,demo_timezone=?,demo_timezone_location=?,followup_date=?,next_step=?,price=?,
@@ -5966,7 +5983,11 @@ def inquiry_workflow_status_update(inquiry_id: int):
         deal_id, deal_created = _ensure_deal_for_website_inquiry(db, inquiry_id, g.user["id"], now)
     if deal_id is not None:
         if status in DEAL_ACTIVE_STATUSES:
+            if current_status not in DEAL_ACTIVE_STATUSES:
+                _mark_deal_became(db, deal_id, now)
             db.execute("UPDATE deals SET status=?,updated_at=? WHERE id=?", (status, now, deal_id))
+            deal_id = _reconcile_deal_sources_on_activation(db, deal_id, now)
+            _mark_deal_became(db, deal_id, now)
         _sync_deal_source_statuses(db, deal_id, status, now)
     db.commit()
     return jsonify({
