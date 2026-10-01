@@ -40,6 +40,7 @@ h3{font-size:21px;line-height:1.2}
   margin-top:13px;
 }
 .simple-section-head{align-items:end}
+.section-head-link{flex:0 0 auto;white-space:nowrap}
 
 .button{
   min-height:48px;
@@ -533,6 +534,8 @@ h3{font-size:21px;line-height:1.2}
 
 @media(max-width:680px){
   :root{--header:68px}
+  .simple-section-head{align-items:flex-start}
+  .section-head-link{margin-top:2px;white-space:normal}
   h1{font-size:38px}
   h2{font-size:30px}
 
