@@ -8,192 +8,173 @@
   </div>
 </section>
 
-<section class="section services-section">
-  <div class="container services-reading-width">
-    <div class="section-head simple-section-head reveal">
+<section class="section services-flow-section">
+  <div class="container services-shell">
+
+    <section class="services-block services-build-intro reveal" aria-labelledby="custom-system-build-title">
       <div>
         <p class="page-kicker">CUSTOM SYSTEM BUILD</p>
-        <h2>Built around your business.</h2>
-        <p>Tell us what is hard to track, repeated, scattered, or missing. We agree on what the system should do before work starts.</p>
+        <h2 id="custom-system-build-title">Built around your business.</h2>
       </div>
-    </div>
-  </div>
-</section>
+      <p>Tell us what is hard to track, repeated, scattered, or missing. We agree on what the system should do before work starts.</p>
+    </section>
 
-{% if free_build_program.visible %}
-<section class="section section-soft services-section" id="free-custom-build-program">
-  <div class="container services-reading-width">
-    <div class="section-head simple-section-head reveal">
-      <div>
-        <p class="page-kicker">LIMITED 5-MONTH PROGRAM</p>
-        <h2>Free Custom System Build Program</h2>
-        <p><strong>{{ free_build_program.period }}</strong></p>
+    {% if free_build_program.visible %}
+    <section class="services-block free-program-panel reveal" id="free-custom-build-program" aria-labelledby="free-program-title">
+      <div class="free-program-panel-head">
+        <div>
+          <p class="page-kicker">LIMITED 5-MONTH PROGRAM</p>
+          <h2 id="free-program-title">Free Custom System Build Program</h2>
+          <p class="free-program-period"><strong>{{ free_build_program.period }}</strong></p>
+        </div>
+        <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">Request a Free Custom Build</a>
       </div>
-    </div>
 
-    <div class="program-summary reveal">
-      <div class="program-summary-main">
+      <div class="program-summary">
         <strong>$0 development fee for accepted projects.</strong>
         <p>RSF reviews every business and project first. Not every request is accepted.</p>
         <p>This temporary program helps RSF gain real client experience, build real systems, collect honest testimonials, and create real case studies.</p>
       </div>
-      <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">Request a Free Custom Build</a>
-    </div>
 
-    <div class="free-build-scope-grid reveal">
-      <section class="program-list">
-        <h3>What the free build includes</h3>
-        <ul class="management-detail-list">
-          <li>The system and features we agree on before work starts</li>
-          <li>A complete working system based on that agreement</li>
-          <li>Testing of the agreed features</li>
-          <li>Fixes for bugs or problems in the agreed features</li>
-        </ul>
-      </section>
+      <div class="free-build-scope-grid">
+        <section class="program-list">
+          <h3>What the free build includes</h3>
+          <ul class="management-detail-list">
+            <li>The system and features we agree on before work starts</li>
+            <li>A complete working system based on that agreement</li>
+            <li>Testing of the agreed features</li>
+            <li>Fixes for bugs or problems in the agreed features</li>
+          </ul>
+        </section>
 
-      <section class="program-list program-list--limits">
-        <h3>What it does not include</h3>
-        <ul class="management-detail-list">
-          <li>Unlimited free changes or extra features</li>
-          <li>Lifetime support</li>
-          <li>Hosting costs</li>
-          <li>Costs from other apps, services, APIs, or providers</li>
-          <li>Future big features, big changes, or major system expansion</li>
-          <li>Big new connections to other apps or services</li>
-          <li>Paid RSF support after the system is finished</li>
-        </ul>
-      </section>
-    </div>
-
-    <div class="program-after-note reveal">
-      <strong>After {{ free_build_program.end_date }}</strong>
-      <p>Starting April 1, 2027, RSF will start moving toward paid custom system development.</p>
-    </div>
-  </div>
-</section>
-{% endif %}
-
-<section class="section services-section">
-  <div class="container services-reading-width">
-    <div class="section-head simple-section-head reveal">
-      <div>
-        <p class="page-kicker">HOW IT WORKS</p>
-        <h2>From problem to finished system.</h2>
+        <section class="program-list program-list--limits">
+          <h3>What it does not include</h3>
+          <ul class="management-detail-list">
+            <li>Unlimited free changes or extra features</li>
+            <li>Lifetime support</li>
+            <li>Hosting costs</li>
+            <li>Costs from other apps, services, APIs, or providers</li>
+            <li>Future big features, big changes, or major system expansion</li>
+            <li>Big new connections to other apps or services</li>
+            <li>Paid RSF support after the system is finished</li>
+          </ul>
+        </section>
       </div>
-    </div>
 
-    <ol class="template-steps compact-steps services-process reveal">
-      <li><span>1</span><p><strong>Tell us the problem.</strong> Explain what the business needs help with.</p></li>
-      <li><span>2</span><p><strong>Agree on what we will build.</strong> We list the system, features, people using it, and important rules.</p></li>
-      <li><span>3</span><p><strong>Build the system.</strong> RSF creates the agreed system and features.</p></li>
-      <li><span>4</span><p><strong>Test it.</strong> We make sure the agreed features work before delivery.</p></li>
-    </ol>
-  </div>
-</section>
+      <div class="program-after-note">
+        <strong>After {{ free_build_program.end_date }}</strong>
+        <p>Starting April 1, 2027, RSF will start moving toward paid custom system development.</p>
+      </div>
+    </section>
+    {% endif %}
 
-<section class="section section-soft services-section" id="management-options">
-  <div class="container services-reading-width">
-    <div class="section-head simple-section-head reveal">
-      <div>
+    <section class="services-block services-process-block reveal" aria-labelledby="services-process-title">
+      <div class="services-block-head">
+        <p class="page-kicker">HOW IT WORKS</p>
+        <h2 id="services-process-title">From problem to finished system.</h2>
+      </div>
+
+      <ol class="services-process" aria-label="Custom system build process">
+        <li><span>1</span><p><strong>Tell us the problem.</strong> Explain what the business needs help with.</p></li>
+        <li><span>2</span><p><strong>Agree on what we will build.</strong> We list the system, features, people using it, and important rules.</p></li>
+        <li><span>3</span><p><strong>Build the system.</strong> RSF creates the agreed system and features.</p></li>
+        <li><span>4</span><p><strong>Test it.</strong> We make sure the agreed features work before delivery.</p></li>
+      </ol>
+    </section>
+
+    <section class="services-block services-after-delivery reveal" id="management-options" aria-labelledby="after-delivery-title">
+      <div class="services-block-head">
         <p class="page-kicker">AFTER DELIVERY</p>
-        <h2>Choose who takes care of the system.</h2>
+        <h2 id="after-delivery-title">Choose who takes care of the system.</h2>
         <p>Paid RSF support is optional. It is separate from the custom system build.</p>
       </div>
-    </div>
 
-    <div class="management-choice-grid management-clarity-grid reveal">
-      <section class="management-choice management-clarity-card">
-        <p class="choice-label choice-label-pill">YOU TAKE CARE OF IT</p>
-        <h3>We build it. You take care of it.</h3>
-        <p>You or someone you hire handles hosting, updates, backups, and fixes.</p>
+      <div class="management-choice-grid management-clarity-grid">
+        <section class="management-choice management-clarity-card">
+          <p class="choice-label choice-label-pill">YOU TAKE CARE OF IT</p>
+          <h3>We build it. You take care of it.</h3>
+          <p>You or someone you hire handles hosting, updates, backups, and fixes.</p>
 
-        <div class="management-price-panel management-price-panel--single" aria-label="Self-managed pricing">
-          <div class="management-price-column">
-            <strong>$0/month</strong>
-            <span>No RSF support fee</span>
+          <div class="management-price-panel management-price-panel--single" aria-label="Self-managed pricing">
+            <div class="management-price-column">
+              <strong>$0/month</strong>
+              <span>No RSF support fee</span>
+            </div>
           </div>
-        </div>
 
-        <div class="management-detail-block">
-          <strong class="management-detail-title">You handle:</strong>
-          <ul class="management-detail-list">
-            <li>Hosting and putting the system online</li>
-            <li>Security and updates</li>
-            <li>Backups</li>
-            <li>Fixing system problems</li>
-          </ul>
-        </div>
-      </section>
-
-      <section class="management-choice managed-choice management-clarity-card">
-        <p class="choice-label choice-label-pill">PAID RSF SUPPORT — OPTIONAL</p>
-        <h3>RSF helps keep it working.</h3>
-        <p>RSF can keep the system online, check it, handle backups, fix problems, and make small changes.</p>
-
-        <div class="management-price-panel management-price-panel--single" aria-label="RSF support pricing">
-          <div class="management-price-column">
-            <strong>Price by Agreement</strong>
-            <span>Based on the system and the support it needs</span>
+          <div class="management-detail-block">
+            <strong class="management-detail-title">You handle:</strong>
+            <ul class="management-detail-list">
+              <li>Hosting and putting the system online</li>
+              <li>Security and updates</li>
+              <li>Backups</li>
+              <li>Fixing system problems</li>
+            </ul>
           </div>
-        </div>
+        </section>
 
-        <div class="management-detail-block">
-          <strong class="management-detail-title">RSF can handle:</strong>
-          <ul class="management-detail-list">
-            <li>Hosting and putting the system online</li>
-            <li>Regular system checks</li>
-            <li>Backups when used</li>
-            <li>Fixing problems in the current system</li>
-            <li>Small changes to the current system</li>
-          </ul>
-        </div>
-      </section>
-    </div>
-  </div>
-</section>
+        <section class="management-choice managed-choice management-clarity-card">
+          <p class="choice-label choice-label-pill">PAID RSF SUPPORT — OPTIONAL</p>
+          <h3>RSF helps keep it working.</h3>
+          <p>RSF can keep the system online, check it, handle backups, fix problems, and make small changes.</p>
 
-<section class="section services-section">
-  <div class="container services-reading-width">
-    <div class="section-head simple-section-head reveal">
-      <div>
-        <p class="page-kicker">FUTURE BIG CHANGES</p>
-        <h2>Big changes are separate.</h2>
+          <div class="management-price-panel management-price-panel--single" aria-label="RSF support pricing">
+            <div class="management-price-column">
+              <strong>Price by Agreement</strong>
+              <span>Based on the system and the support it needs</span>
+            </div>
+          </div>
+
+          <div class="management-detail-block">
+            <strong class="management-detail-title">RSF can handle:</strong>
+            <ul class="management-detail-list">
+              <li>Hosting and putting the system online</li>
+              <li>Regular system checks</li>
+              <li>Backups when used</li>
+              <li>Fixing problems in the current system</li>
+              <li>Small changes to the current system</li>
+            </ul>
+          </div>
+        </section>
+      </div>
+
+      <div class="services-future-note">
+        <div>
+          <p class="page-kicker">FUTURE BIG CHANGES</p>
+          <h3>Big changes are separate.</h3>
+        </div>
         <p>New sections, big features, large expansions, or big connections to other apps or services are priced separately. We agree on the price before that work starts.</p>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<section class="section section-soft" id="faq">
-  <div class="container services-reading-width">
-    <div class="section-head simple-section-head reveal">
-      <div>
+    <section class="services-block services-faq-block reveal" id="faq" aria-labelledby="services-faq-title">
+      <div class="services-block-head">
         <p class="page-kicker">COMMON QUESTIONS</p>
-        <h2>Simple answers.</h2>
+        <h2 id="services-faq-title">Simple answers.</h2>
       </div>
-    </div>
 
-    <div class="reveal">
-      <details class="detail-disclosure human-disclosure">
-        <summary>Does RSF sell ready-made systems?</summary>
-        <p>No. The systems shown on this website are examples of work RSF has built. Client systems are built around each business’s needs.</p>
-      </details>
+      <div>
+        <details class="detail-disclosure human-disclosure">
+          <summary>Does RSF sell ready-made systems?</summary>
+          <p>No. The systems shown on this website are examples of work RSF has built. Client systems are built around each business’s needs.</p>
+        </details>
 
-      <details class="detail-disclosure human-disclosure">
-        <summary>Can I take care of the system myself after delivery?</summary>
-        <p>Yes. There is no RSF support fee if you choose to handle hosting, updates, backups, and fixes yourself.</p>
-      </details>
+        <details class="detail-disclosure human-disclosure">
+          <summary>Can I take care of the system myself after delivery?</summary>
+          <p>Yes. There is no RSF support fee if you choose to handle hosting, updates, backups, and fixes yourself.</p>
+        </details>
 
-      <details class="detail-disclosure human-disclosure">
-        <summary>Can RSF support the system after delivery?</summary>
-        <p>Yes. Paid RSF support is optional and priced by agreement.</p>
-      </details>
+        <details class="detail-disclosure human-disclosure">
+          <summary>Can RSF support the system after delivery?</summary>
+          <p>Yes. Paid RSF support is optional and priced by agreement.</p>
+        </details>
 
-      <details class="detail-disclosure human-disclosure">
-        <summary>Can I ask for changes later?</summary>
-        <p>Yes. Small changes can be part of paid RSF support. Big changes are priced separately.</p>
-      </details>
-    </div>
+        <details class="detail-disclosure human-disclosure">
+          <summary>Can I ask for changes later?</summary>
+          <p>Yes. Small changes can be part of paid RSF support. Big changes are priced separately.</p>
+        </details>
+      </div>
+    </section>
 
     <div class="catalog-next-step reveal human-next-step services-final-cta">
       <div>
@@ -202,6 +183,7 @@
       </div>
       <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">{% if free_build_program.visible %}Request a Free Custom Build{% else %}Build a Custom System{% endif %}</a>
     </div>
+
   </div>
 </section>
 {% endblock %}
