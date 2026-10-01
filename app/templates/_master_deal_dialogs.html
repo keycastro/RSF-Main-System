@@ -1,0 +1,94 @@
+<dialog class="deal-notes-viewer" data-deal-notes-viewer aria-labelledby="deal-notes-viewer-title">
+  <div class="deal-notes-viewer-card">
+    <header class="deal-notes-viewer-head">
+      <h2 id="deal-notes-viewer-title">Notes After Conversation</h2>
+      <div class="conversation-header-actions" aria-label="Client communication actions">
+        <a class="conversation-action-icon conversation-action--call" href="#" data-deal-call-action data-action-locked="true" aria-disabled="true" title="AI Call — available only in Researched Prospects" aria-label="AI Call — available only in Researched Prospects">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8c1.8 3.5 3.1 4.8 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.3 1.2.4 2.4.6 3.5.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.4 0 .8-.3 1.1l-2.2 2.2Z" fill="currentColor"/></svg>
+          <span class="conversation-action-label">AI Call</span>
+        </a>
+        <a class="conversation-action-icon conversation-action--meet" href="https://meet.google.com/" target="_blank" rel="noopener noreferrer" data-deal-meet-action title="Open Google Meet" aria-label="Open Google Meet">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h13v12H3V6Zm15 3 3-2v10l-3-2V9Z" fill="currentColor"/></svg>
+          <span class="conversation-action-label">Google Meet</span>
+        </a>
+        <a class="conversation-action-icon conversation-action--email" href="#" data-deal-email-action aria-disabled="true" title="Email" aria-label="Email">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3V5Zm9 7 7-5H5l7 5Zm0 2.4L5 9.4V17h14V9.4l-7 5Z" fill="currentColor"/></svg>
+          <span class="conversation-action-label">Email</span>
+        </a>
+      </div>
+      <button class="deal-notes-viewer-close" type="button" data-deal-notes-viewer-close aria-label="Close full notes" title="Close">×</button>
+    </header>
+    <div class="deal-notes-viewer-body conversation-history-body">
+      <div class="conversation-timeline" data-deal-conversation-timeline aria-live="polite"></div>
+      <div class="conversation-manual-note">
+        <span>Manual note</span>
+        <textarea maxlength="3000" data-deal-notes-viewer-input aria-label="Manual Notes After Conversation" placeholder="Write a new manual note..."></textarea>
+        <div class="conversation-manual-note-actions">
+          <button class="button primary conversation-manual-note-save" type="button" data-deal-notes-save>Save note</button>
+        </div>
+      </div>
+    </div>
+    <section class="conversation-email-panel" data-email-panel hidden data-csrf-token="{{ csrf_token() }}" aria-label="Email Conversation">
+      <header class="conversation-email-panel-head">
+        <div>
+          <strong>Email Conversation</strong>
+          <span data-email-recipient></span>
+        </div>
+        <button type="button" class="conversation-email-panel-close" data-email-panel-close aria-label="Close Email Conversation" title="Close Email">×</button>
+      </header>
+      <div class="conversation-email-thread" data-email-thread aria-live="polite"></div>
+      <form class="conversation-email-compose" data-email-form>
+        <label data-email-subject-wrap>
+          <span>Subject</span>
+          <input type="text" maxlength="240" data-email-subject autocomplete="off">
+        </label>
+        <label>
+          <span>Message</span>
+          <textarea maxlength="20000" rows="6" data-email-body placeholder="Write an email..."></textarea>
+        </label>
+        <div class="conversation-email-compose-actions">
+          <span data-email-status aria-live="polite"></span>
+          <button class="button primary" type="submit" data-email-send>Send Email</button>
+        </div>
+      </form>
+    </section>
+  </div>
+</dialog>
+
+<dialog class="deal-document-viewer" data-deal-document-viewer aria-labelledby="deal-document-viewer-title">
+  <div class="deal-document-viewer-card">
+    <header class="deal-document-viewer-head">
+      <h2 id="deal-document-viewer-title" data-deal-document-viewer-title>File Preview</h2>
+      <button class="deal-document-viewer-close" type="button" data-deal-document-viewer-close aria-label="Close file preview" title="Close">×</button>
+    </header>
+    <div class="deal-document-viewer-body">
+      <iframe data-deal-document-viewer-frame title="Deal file preview"></iframe>
+    </div>
+    <footer class="deal-document-viewer-footer">
+      <a class="button primary" href="#" data-deal-document-viewer-download>Download</a>
+    </footer>
+  </div>
+</dialog>
+
+<dialog class="deal-notes-viewer deal-research-longtext-viewer" data-deal-research-longtext-viewer aria-labelledby="deal-research-longtext-viewer-title">
+  <div class="deal-notes-viewer-card">
+    <header class="deal-notes-viewer-head">
+      <h2 id="deal-research-longtext-viewer-title" data-deal-research-longtext-viewer-title>Full text</h2>
+      <button class="deal-notes-viewer-close" type="button" data-deal-research-longtext-viewer-close aria-label="Close full text" title="Close">×</button>
+    </header>
+    <div class="deal-notes-viewer-body deal-research-longtext-viewer-body">
+      <textarea maxlength="2000" data-deal-research-longtext-viewer-input aria-label="Full Outbound Detail text"></textarea>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="deal-status-confirm" data-deal-status-confirm aria-labelledby="deal-status-confirm-title">
+  <div class="deal-status-confirm-card">
+    <h2 id="deal-status-confirm-title">Confirm status change</h2>
+    <p data-deal-status-confirm-message>Are you sure you want to move this record out of Deals?</p>
+    <div class="deal-status-confirm-actions">
+      <button class="button secondary" type="button" data-deal-status-confirm-no>No</button>
+      <button class="button primary" type="button" data-deal-status-confirm-yes>Yes</button>
+    </div>
+  </div>
+</dialog>
