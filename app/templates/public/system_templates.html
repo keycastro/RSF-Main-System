@@ -28,17 +28,22 @@
         <div class="template-card-copy">
           <h2>{{ item.name }}</h2>
           <p>{{ item.short_description }}</p>
-          <p class="system-audience"><strong>Could help:</strong> {{ item.card_audience }}</p>
-          <ul class="template-list compact-list">
-            {% for feature in item.features[:3] %}<li>{{ feature }}</li>{% endfor %}
-          </ul>
         </div>
+
         {% if item.screenshots %}
         <a class="template-card-image" href="{{ url_for('site.system_template_detail', slug=item.slug) }}" aria-label="View {{ item.name }}">
           <img src="{{ url_for('static', filename=item.screenshots[0].src) }}" alt="{{ item.screenshots[0].alt }}" width="1600" height="1000" loading="lazy" decoding="async">
           <span aria-hidden="true">Preview</span>
         </a>
         {% endif %}
+
+        <div class="template-card-details">
+          <p class="system-audience"><strong>Could help:</strong> {{ item.card_audience }}</p>
+          <ul class="template-list compact-list">
+            {% for feature in item.features[:3] %}<li>{{ feature }}</li>{% endfor %}
+          </ul>
+        </div>
+
         <div class="template-card-actions system-card-footer">
           <a class="button secondary" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">View System</a>
         </div>
