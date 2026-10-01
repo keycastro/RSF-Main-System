@@ -887,6 +887,35 @@ textarea.prospect-inline-editor{resize:vertical}
   border-color:var(--workspace-emerald);
   box-shadow:0 0 0 2px rgba(27,94,74,.10)
 }
+.master-deal-information{
+  min-width:0;
+  margin-top:18px;
+  border:1px solid #d7e1dd;
+  border-radius:12px;
+  background:#f6faf8;
+  box-shadow:0 3px 12px rgba(25,55,46,.035)
+}
+.master-card-section-head{
+  padding:14px 18px 0
+}
+.master-card-section-head h3{
+  margin:0;
+  color:#14543f;
+  font-size:11.5px;
+  font-weight:800;
+  line-height:1.3
+}
+.master-deal-information .deal-form{
+  padding-top:13px
+}
+.master-deal-information .deal-documents{
+  border-radius:0 0 12px 12px
+}
+@media(max-width:620px){
+  .master-deal-information{margin-top:14px}
+  .master-card-section-head{padding:13px 14px 0}
+}
+
 .deal-field-wide{grid-column:1/-1}
 .deal-location-field{gap:4px}
 .deal-location-format{
