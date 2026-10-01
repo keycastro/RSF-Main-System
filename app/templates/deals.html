@@ -84,6 +84,10 @@
         {% set deal_return_to = '' %}
         {% set show_deal_section_heading = false %}
         {% set deal_embed_identity = false %}
+        {% set deal_show_email = not deal['prospect_id'] %}
+        {% set deal_show_contact_number = not deal['prospect_id'] %}
+        {% set deal_external_email = deal['prospect_id'] %}
+        {% set deal_external_contact_number = deal['prospect_id'] %}
         {% include '_master_deal_information.html' %}
 
         {% if deal['prospect_id'] %}
@@ -169,6 +173,14 @@
                 <button type="button" class="prospect-attempt-step" data-deal-research-attempt-delta="1" aria-label="Increase Contact Attempt">›</button>
               </div>
             </div>
+            <label>
+              <span>Email</span>
+              <input type="email" name="email" form="{{ deal_form_id }}" maxlength="320" value="{{ deal_client_email }}">
+            </label>
+            <label>
+              <span>Contact Number</span>
+              <input type="text" name="contact_number" form="{{ deal_form_id }}" maxlength="120" value="{{ deal_client_phone }}">
+            </label>
             <div class="deal-source-readonly">
               <span>Added Date</span>
               <strong>{{ deal['research_created_at']|dt }}</strong>
