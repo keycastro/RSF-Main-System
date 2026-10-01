@@ -178,7 +178,7 @@
               <span class="record-source-type">Website</span>
               <h3>{{ inquiry.name }}</h3>
             </div>
-            <a href="{{ url_for('main.inquiries_list', date=inquiry.created_at[:10]) }}#website-inquiry-{{ inquiry.id }}">Open Inquiry</a>
+            <a href="{{ url_for('main.inquiries_list') }}#website-inquiry-{{ inquiry.id }}">Open Inquiry</a>
           </header>
           <dl class="record-detail-list record-detail-list-compact">
             <div><dt>Status</dt><dd>{{ workflow_status_labels.get(inquiry.workflow_status, inquiry.workflow_status) }}</dd></div>
