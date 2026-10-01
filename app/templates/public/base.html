@@ -31,6 +31,16 @@
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
 
+  {% if free_build_program.visible %}
+  <aside class="free-program-bar" aria-label="Limited Free Custom System Build program">
+    <div class="container free-program-bar-inner">
+      <strong>Free Custom System Builds — Limited 5-Month Beginning-Stage Program</strong>
+      <span>{% if free_build_program.is_upcoming %}Starts {{ free_build_program.start_date }} and ends {{ free_build_program.end_date }}.{% else %}Available now through {{ free_build_program.end_date }}.{% endif %}</span>
+      <a href="{{ url_for('site.services') }}#free-custom-build-program">Program details</a>
+    </div>
+  </aside>
+  {% endif %}
+
   <header class="site-header" data-header>
     <div class="container nav-shell">
       <a class="brand" href="{{ url_for('site.home') }}" aria-label="Realty Systems Foundry home">
