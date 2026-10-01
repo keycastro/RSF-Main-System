@@ -5,20 +5,20 @@
     <div class="hero-copy reveal">
       <p class="page-kicker">CUSTOM BUSINESS SYSTEMS</p>
       <h1>We Build Custom Systems for Real Estate Businesses.</h1>
-      <p class="hero-lead">Tell us how your business works and what you need. RSF builds a custom system around your business.</p>
-
-      {% if free_build_program.visible %}
-      <div class="free-program-inline">
-        <strong>Limited 5-Month Free Build Program</strong>
-        <span>Free custom system builds {% if free_build_program.is_upcoming %}start {{ free_build_program.start_date }}{% else %}are available now{% endif %} and end {{ free_build_program.end_date }}. RSF reviews every request first.</span>
-        <a class="text-link" href="{{ url_for('site.services') }}#free-custom-build-program">View Program Details</a>
-      </div>
-      {% endif %}
+      <p class="hero-lead">Tell us what your business needs. RSF builds a system around the way your business works.</p>
 
       <div class="hero-actions">
         <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">{% if free_build_program.visible %}Request a Free Custom Build{% else %}Build a Custom System{% endif %}</a>
         <a class="button secondary" href="{{ url_for('site.system_templates') }}">View Systems We Built</a>
       </div>
+
+      {% if free_build_program.visible %}
+      <div class="free-program-inline">
+        <strong>Limited Free Build Program</strong>
+        <span>Accepted projects have a $0 development fee from {{ free_build_program.start_date }} to {{ free_build_program.end_date }}. RSF reviews every request first.</span>
+        <a class="text-link" href="{{ url_for('site.services') }}#free-custom-build-program">Program details</a>
+      </div>
+      {% endif %}
     </div>
   </div>
 </section>
@@ -27,36 +27,19 @@
   <div class="container">
     <div class="section-head simple-section-head reveal">
       <div>
-        <p class="page-kicker">WHAT RSF OFFERS</p>
-        <h2>A custom system built around your business.</h2>
-        <p>We first understand the problem, the people using the system, and the features you need. Then we build the system around that agreement.</p>
+        <p class="page-kicker">WHAT RSF DOES</p>
+        <h2>A system built around your business.</h2>
+        <p>We understand the problem first, agree on what the system should do, then build and test it.</p>
       </div>
+      <a class="text-link desktop-link" href="{{ url_for('site.services') }}">How it works</a>
     </div>
 
-    <div class="single-offer-wrap reveal">
-      <article class="human-option-card single-offer-card">
-        {% if free_build_program.visible %}
-        <p class="choice-label choice-label-pill">LIMITED FREE BUILD PROGRAM</p>
-        <strong>Custom System Build</strong>
-        <div class="system-choice-price system-choice-price--quote free-program-price" aria-label="Limited free custom system development">
-          <b>$0 Development Fee</b>
-          <span>{% if free_build_program.is_upcoming %}Starts {{ free_build_program.start_date }}{% else %}Available now{% endif %} · Ends {{ free_build_program.end_date }}</span>
-        </div>
-        <p class="human-option-explanation">If your project is accepted, RSF builds the system and features we agree on with no development fee. Extra changes, hosting, costs from other apps or services, future big changes, and paid RSF support after the system is finished are separate.</p>
-        <p class="single-offer-note"><strong>Not every request is accepted.</strong> RSF reviews every business and project first.</p>
-        <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Request a Free Custom Build</a>
-        {% else %}
-        <p class="choice-label choice-label-pill">CUSTOM SYSTEM</p>
-        <strong>Custom System Build</strong>
-        <div class="system-choice-price system-choice-price--quote" aria-label="Custom system pricing">
-          <b>Price by Agreement</b>
-          <span>We agree on the work and price before we start</span>
-        </div>
-        <p class="human-option-explanation">Tell us what your business needs. We agree on what we will build and the price before work starts.</p>
-        <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Build a Custom System</a>
-        {% endif %}
-      </article>
+    <div class="home-process-row reveal" aria-label="How a custom system build works">
+      <div><span>1</span><strong>Tell us the problem</strong><p>Explain what is hard to track, repeated, scattered, or missing.</p></div>
+      <div><span>2</span><strong>Agree on what we build</strong><p>We agree on the system and features before work starts.</p></div>
+      <div><span>3</span><strong>Build and test</strong><p>RSF builds the system and makes sure the agreed features work.</p></div>
     </div>
+    <a class="text-link mobile-link" href="{{ url_for('site.services') }}">How it works</a>
   </div>
 </section>
 
@@ -66,7 +49,7 @@
       <div>
         <p class="page-kicker">PORTFOLIO</p>
         <h2>Systems We Built.</h2>
-        <p class="system-choice-helper">These are examples of systems RSF has built. They show the kind of organized business systems we can create.</p>
+        <p>These are examples of systems RSF has built and the kind of business problems we can organize.</p>
       </div>
       <a class="text-link desktop-link" href="{{ url_for('site.system_templates') }}">View All Systems</a>
     </div>
@@ -75,7 +58,6 @@
       {% for item in published_system_templates %}
       <article class="system-showcase-card simple-system-card system-choice-card system-choice-card--{{ item.slug }} reveal delay-{{ loop.index0 % 2 }}">
         <div class="system-showcase-copy">
-          <p class="portfolio-label">PORTFOLIO SYSTEM</p>
           <h3>{{ item.name }}</h3>
           <p>{{ item.short_description }}</p>
         </div>
@@ -100,46 +82,37 @@
   <div class="container">
     <div class="section-head simple-section-head reveal">
       <div>
-        <p class="page-kicker">REAL WORK</p>
-        <h2>See what RSF has built.</h2>
-        <p>We show real system screens and explain what each system does in simple language.</p>
+        <p class="page-kicker">CLEAR PROOF</p>
+        <h2>See the work clearly.</h2>
       </div>
     </div>
     <div class="proof-row reveal">
       <div>
-        <strong>Real system previews</strong>
-        <p>Portfolio pages use screenshots from systems RSF has built. Sample or synthetic data is clearly identified.</p>
+        <strong>Real system screens</strong>
+        <p>See actual screens from systems RSF has built.</p>
       </div>
       <div>
-        <strong>Clear project context</strong>
-        <p>Portfolio projects are shown as examples of our work. We do not present them as client projects when they are not.</p>
+        <strong>Clear project notes</strong>
+        <p>We clearly say when a system is an independent portfolio project.</p>
       </div>
       <div>
-        <strong>Custom for each business</strong>
-        <p>We use these examples to show what is possible. Your system is built around your own business needs.</p>
+        <strong>Simple explanations</strong>
+        <p>Each system page explains the problem, how it works, and what it can do.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section class="home-featured-actions-section" aria-label="More ways to continue">
+<section class="home-featured-actions-section" aria-label="Next step">
   <div class="home-featured-actions-shell">
-    <div class="container home-featured-actions">
+    <div class="container home-featured-actions home-final-action">
       <div class="home-featured-action home-featured-action--primary reveal">
-        <span class="home-featured-action-kicker">NEED A SYSTEM FOR YOUR BUSINESS?</span>
+        <span class="home-featured-action-kicker">READY TO TALK ABOUT YOUR BUSINESS?</span>
         <a class="home-featured-action-link home-featured-action-link--primary" href="{{ url_for('site.contact', intent='custom-build') }}">
-          <span>Build a Custom System</span><span class="home-featured-action-arrow" aria-hidden="true">→</span>
+          <span>{% if free_build_program.visible %}Request a Free Custom Build{% else %}Build a Custom System{% endif %}</span><span class="home-featured-action-arrow" aria-hidden="true">→</span>
         </a>
       </div>
-
-      <span class="home-featured-action-divider" aria-hidden="true"></span>
-
-      <div class="home-featured-action home-featured-action--secondary reveal">
-        <span class="home-featured-action-kicker home-featured-action-kicker--secondary">WANT TO KNOW WHAT IS INCLUDED?</span>
-        <a class="home-featured-action-link home-featured-action-link--secondary" href="{{ url_for('site.services') }}">
-          <span>See Services & Pricing</span><span class="home-featured-action-arrow" aria-hidden="true">→</span>
-        </a>
-      </div>
+      <a class="text-link home-final-secondary" href="{{ url_for('site.services') }}">See Services & Pricing</a>
     </div>
   </div>
 </section>
