@@ -4004,11 +4004,13 @@ document.addEventListener('click', (event) => {
       }
       if (typeof data.email === 'string') {
         const email = card.querySelector('[data-inquiry-email]');
-        if (email) email.textContent = data.email || '—';
+        if (email instanceof HTMLInputElement) email.value = data.email;
+        else if (email) email.textContent = data.email || '—';
       }
       if (typeof data.contact_number === 'string') {
         const phone = card.querySelector('[data-inquiry-phone]');
-        if (phone) phone.textContent = data.contact_number || '—';
+        if (phone instanceof HTMLInputElement) phone.value = data.contact_number;
+        else if (phone) phone.textContent = data.contact_number || '—';
       }
       if (typeof data.notes_after_conversation === 'string') {
         const sourceNotes = card.querySelector('[data-website-notes-compact]');
@@ -4755,7 +4757,11 @@ document.addEventListener('click', (event) => {
       const action = card?.querySelector('[data-website-deal-action]');
       if (action) renderWebsiteDealAction(action, savedStatus, data.deal_id || null);
 
-      if (websitePreDealStatuses.has(previous) && websiteDealStatuses.has(savedStatus)) {
+      const crossedWebsiteStageBoundary = (
+        (websitePreDealStatuses.has(previous) && websiteDealStatuses.has(savedStatus))
+        || (websiteDealStatuses.has(previous) && websitePreDealStatuses.has(savedStatus))
+      );
+      if (crossedWebsiteStageBoundary) {
         window.location.reload();
         return;
       }
