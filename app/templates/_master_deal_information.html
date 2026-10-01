@@ -1,5 +1,12 @@
 {% set dom_key = deal_dom_key if deal_dom_key is defined else ('deal-' ~ deal['id']) %}
 {% set form_id = deal_form_id if deal_form_id is defined else ('deal-form-' ~ deal['id']) %}
+{% set deal_show_email = deal_show_email if deal_show_email is defined else true %}
+{% set deal_show_contact_number = deal_show_contact_number if deal_show_contact_number is defined else true %}
+{% set deal_show_location = deal_show_location if deal_show_location is defined else true %}
+{% set deal_show_notes = deal_show_notes if deal_show_notes is defined else true %}
+{% set deal_show_email_conversation = deal_show_email_conversation if deal_show_email_conversation is defined else true %}
+{% set deal_external_email = deal_external_email if deal_external_email is defined else false %}
+{% set deal_external_contact_number = deal_external_contact_number if deal_external_contact_number is defined else false %}
 <section class="master-deal-information" data-master-deal-information>
   {% if show_deal_section_heading %}
   <div class="master-card-section-head">
@@ -22,18 +29,27 @@
         <span>Follow-up Date</span>
         <input type="date" name="followup_date" value="{{ deal['followup_date'] }}">
       </label>
+      {% if deal_show_email %}
       <label>
         <span>Email</span>
         <input type="email" name="email" maxlength="320" value="{{ deal_client_email }}">
       </label>
+      {% elif not deal_external_email %}
+      <input type="hidden" name="email" value="{{ deal_client_email }}">
+      {% endif %}
       <label>
         <span>Price</span>
         <input type="text" name="price" maxlength="200" value="{{ deal['price'] }}">
       </label>
+      {% if deal_show_contact_number %}
       <label>
         <span>Contact Number</span>
         <input type="text" name="contact_number" maxlength="120" value="{{ deal_client_phone }}">
       </label>
+      {% elif not deal_external_contact_number %}
+      <input type="hidden" name="contact_number" value="{{ deal_client_phone }}">
+      {% endif %}
+      {% if deal_show_location %}
       <label class="deal-field-wide deal-location-field">
         <span>Location</span>
         <small class="deal-location-format">City, State/Province, Country</small>
@@ -45,6 +61,9 @@
           placeholder="e.g. Toronto, Ontario, Canada"
         >
       </label>
+      {% else %}
+      <input type="hidden" name="location" value="{{ deal_client_location }}">
+      {% endif %}
       <div class="deal-field-wide deal-demo-schedule-field">
         <span>Demo Date &amp; Time</span>
         <div class="deal-demo-schedule-box">
@@ -119,6 +138,7 @@
         <span>Next Step</span>
         <textarea name="next_step" maxlength="500" rows="1" data-deal-next-step>{{ deal['next_step'] }}</textarea>
       </label>
+      {% if deal_show_notes %}
       <label class="deal-field-wide deal-notes-field conversation-notes-field">
         <span>Notes After Conversation</span>
         <div class="deal-notes-compact conversation-notes-compact">
@@ -138,6 +158,9 @@
           </button>
         </div>
       </label>
+      {% else %}
+      <textarea name="notes_after_conversation" data-deal-notes-compact hidden>{{ deal['notes_after_conversation'] }}</textarea>
+      {% endif %}
       <div class="deal-calendar-meet-field" data-deal-calendar-meet-field>
         <span>Google Meet</span>
         {% if deal_workflow_status not in ['DEAL','DEMO','PROPOSAL','DECISION','WON','LOST'] %}
@@ -154,6 +177,7 @@
         {% endif %}
         <small data-deal-meet-error {% if not deal['google_calendar_sync_error'] %}hidden{% endif %}>{{ deal['google_calendar_sync_error'] }}</small>
       </div>
+      {% if deal_show_email_conversation %}
       <button
         class="deal-email-conversation-field conversation-email-card-field"
         type="button"
@@ -163,6 +187,7 @@
         <span>Email Conversation</span>
         <strong data-email-conversation-label>Checking…</strong>
       </button>
+      {% endif %}
     </div>
   </form>
 
