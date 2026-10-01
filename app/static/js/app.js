@@ -3275,7 +3275,7 @@ document.addEventListener('click', (event) => {
       sourceBody.hidden = !opening;
       sourceToggle.setAttribute('aria-expanded', opening ? 'true' : 'false');
       const sectionName = sourceToggle.closest('.deal-source-research')
-        ? 'Outbound Details'
+        ? 'Other Fields'
         : 'Inbound Details';
       sourceToggle.setAttribute('aria-label', opening ? `Hide ${sectionName}` : `Show ${sectionName}`);
       return;

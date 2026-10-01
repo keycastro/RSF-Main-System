@@ -74,7 +74,7 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         master = self.read("app/templates/_master_deal_information.html")
         deals = self.read("app/templates/deals.html")
         inquiries = self.read("app/templates/inquiries.html")
-        self.assertIn("{% set deal_section_heading = 'OTHER FIELD' %}", prospect)
+        self.assertIn("{% set deal_section_heading = 'OTHER FIELDS' %}", prospect)
         self.assertIn("{% set deal_section_heading = deal_section_heading if deal_section_heading is defined else 'Deal Information' %}", master)
         self.assertIn("<h3>{{ deal_section_heading }}</h3>", master)
         self.assertIn("{{ 'Hide' if deal_section_open else 'Show' }} {{ deal_section_heading }}", master)
@@ -84,8 +84,8 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         copy_at = prospect.index("data-prospect-copy", footer_at)
         self.assertLess(footer_at, view_at)
         self.assertLess(view_at, copy_at)
-        self.assertNotIn("deal_section_heading = 'OTHER FIELD'", deals)
-        self.assertNotIn("deal_section_heading = 'OTHER FIELD'", inquiries)
+        self.assertNotIn("deal_section_heading = 'OTHER FIELDS'", deals)
+        self.assertNotIn("deal_section_heading = 'OTHER FIELDS'", inquiries)
 
     def test_outbound_documents_live_inside_collapsed_deal_information_only(self):
         prospect = self.read("app/templates/_prospect_row.html")
@@ -240,7 +240,7 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         self.assertIn('name="contact_number" form="{{ deal_form_id }}"', deals)
         self.assertIn('type="hidden" name="email"', master)
         self.assertIn('type="hidden" name="contact_number"', master)
-        outbound_at = deals.index("Outbound Details")
+        outbound_at = deals.index("OTHER FIELDS")
         email_at = deals.index('name="email" form="{{ deal_form_id }}"')
         phone_at = deals.index('name="contact_number" form="{{ deal_form_id }}"')
         self.assertLess(outbound_at, email_at)
@@ -249,9 +249,12 @@ class StagePriorityCardFieldTests(unittest.TestCase):
     def test_deals_page_remains_deal_first(self):
         deals = self.read("app/templates/deals.html")
         master_at = deals.index("{% include '_master_deal_information.html' %}")
-        outbound_at = deals.index("Outbound Details")
+        outbound_at = deals.index("OTHER FIELDS")
         self.assertLess(master_at, outbound_at)
-        self.assertIn('<h3 id="deal-research-details-{{ deal[\'id\'] }}">Outbound Details</h3>', deals)
+        self.assertIn('<h3 id="deal-research-details-{{ deal[\'id\'] }}">OTHER FIELDS</h3>', deals)
+        self.assertIn('aria-label="Show Other Fields"', deals)
+        js = self.read("app/static/js/app.js")
+        self.assertIn("? 'Other Fields'", js)
 
     def test_website_cards_reload_when_crossing_stage_boundary_either_way(self):
         js = self.read("app/static/js/app.js")
