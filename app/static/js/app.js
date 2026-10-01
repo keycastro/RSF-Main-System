@@ -4038,6 +4038,58 @@ document.addEventListener('click', (event) => {
     }
   };
 
+  const syncEmbeddedSourceFromDeal = (form, data = {}) => {
+    if (form?.dataset.masterDealEmbedded !== '1') return;
+    const card = form.closest('[data-deal-card]');
+    if (!card) return;
+
+    if (card.hasAttribute('data-prospect-row')) {
+      const values = {
+        contact: data.contact_person,
+        location: data.location,
+        email: data.email,
+        phone: data.contact_number
+      };
+      Object.entries(values).forEach(([fieldName, value]) => {
+        if (typeof value !== 'string') return;
+        const wrap = card.querySelector(`[data-prospect-edit-field][data-prospect-field="${fieldName}"]`);
+        if (!wrap) return;
+        wrap.dataset.prospectValue = value;
+        const trigger = wrap.querySelector('[data-prospect-edit-trigger]');
+        if (trigger) trigger.textContent = value || '—';
+      });
+      if (typeof data.notes_after_conversation === 'string') {
+        const sourceNotes = card.querySelector('[data-prospect-notes-compact]');
+        if (sourceNotes instanceof HTMLTextAreaElement) {
+          sourceNotes.value = data.notes_after_conversation;
+          sourceNotes.dataset.prospectNotesStartValue = data.notes_after_conversation;
+        }
+      }
+    }
+
+    if (card.hasAttribute('data-website-inquiry-card')) {
+      if (typeof data.contact_person === 'string') {
+        const name = card.querySelector('[data-inquiry-client-name]');
+        if (name) name.textContent = data.contact_person || '—';
+      }
+      if (typeof data.email === 'string') {
+        const email = card.querySelector('[data-inquiry-email]');
+        if (email) email.textContent = data.email || '—';
+      }
+      if (typeof data.contact_number === 'string') {
+        const phone = card.querySelector('[data-inquiry-phone]');
+        if (phone) phone.textContent = data.contact_number || '—';
+      }
+      if (typeof data.notes_after_conversation === 'string') {
+        const sourceNotes = card.querySelector('[data-website-notes-compact]');
+        if (sourceNotes instanceof HTMLTextAreaElement) {
+          sourceNotes.value = data.notes_after_conversation;
+          sourceNotes.dataset.websiteNotesStartValue = data.notes_after_conversation;
+        }
+      }
+    }
+  };
+
   const saveDealFormInBackground = async (form) => {
     if (!(form instanceof HTMLFormElement)) return;
     const state = autosaveStateFor(form);
@@ -4082,6 +4134,7 @@ document.addEventListener('click', (event) => {
           applyDealFilter();
         }
         updateDealMeetState(form, data);
+        syncEmbeddedSourceFromDeal(form, data);
       } while (state.pending);
     } catch (error) {
       state.pending = false;
