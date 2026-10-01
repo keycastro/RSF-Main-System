@@ -11,6 +11,7 @@ class MasterLifecycleCardTests(unittest.TestCase):
 
     def test_master_deal_section_contains_full_deal_workspace_fields(self):
         template = self.read("app/templates/_master_deal_information.html")
+        documents = self.read("app/templates/_master_deal_documents.html")
         for field in (
             'name="followup_date"',
             'name="email"',
@@ -25,10 +26,10 @@ class MasterLifecycleCardTests(unittest.TestCase):
             'name="notes_after_conversation"',
             "Google Meet",
             "Email Conversation",
-            "Documents / Files",
         ):
             with self.subTest(field=field):
                 self.assertIn(field, template)
+        self.assertIn("Documents / Files", documents)
 
     def test_outbound_card_puts_outbound_information_before_deal_information(self):
         template = self.read("app/templates/_prospect_row.html")
@@ -36,11 +37,13 @@ class MasterLifecycleCardTests(unittest.TestCase):
         deal_position = template.index("{% include '_master_deal_information.html' %}")
         self.assertLess(source_position, deal_position)
 
-    def test_inbound_card_puts_inbound_information_before_deal_information(self):
+    def test_inbound_card_preserves_stage_specific_deal_placement(self):
         template = self.read("app/templates/inquiries.html")
-        source_position = template.index("website-inquiry-field-grid")
-        deal_position = template.index("{% include '_master_deal_information.html' %}")
-        self.assertLess(source_position, deal_position)
+        active_deal_position = template.index("{% if is_active_deal_stage and deal %}")
+        source_position = template.index("website-inquiry-card-body")
+        predeal_deal_position = template.index("{% if (not is_active_deal_stage) and deal %}")
+        self.assertLess(active_deal_position, source_position)
+        self.assertLess(source_position, predeal_deal_position)
 
     def test_deals_page_keeps_deal_information_before_source_details(self):
         template = self.read("app/templates/deals.html")
