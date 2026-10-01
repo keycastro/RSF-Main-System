@@ -40,6 +40,17 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         self.assertIn("{% set deal_show_email = is_active_deal_stage %}", prospect)
         self.assertIn("{% set deal_show_location = is_active_deal_stage %}", prospect)
 
+    def test_outbound_page_collapses_deal_information_but_keeps_deals_page_open(self):
+        prospect = self.read("app/templates/_prospect_row.html")
+        master = self.read("app/templates/_master_deal_information.html")
+        deals = self.read("app/templates/deals.html")
+        self.assertIn("{% set deal_section_collapsible = true %}", prospect)
+        self.assertIn("{% set deal_section_open = false %}", prospect)
+        self.assertIn("data-master-deal-toggle", master)
+        self.assertIn("master-deal-body-{{ dom_key }}", master)
+        self.assertIn("deal_section_collapsible and not deal_section_open", master)
+        self.assertNotIn("deal_section_collapsible = true", deals)
+
     def test_inquiry_card_uses_one_editable_email_phone_instance_predeal(self):
         inquiry = self.read("app/templates/inquiries.html")
         self.assertIn('name="email"', inquiry)
