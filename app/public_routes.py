@@ -39,8 +39,8 @@ SERVICES = [
     {
         "kind": "existing-system",
         "title": "Buy an existing system",
-        "text": "Choose a working Realty Systems Foundry system. Changes are priced separately.",
-        "example": "Changes are priced separately as upgrades.",
+        "text": "Choose a working Realty Systems Foundry system. Optional managed care can include minor workflow adjustments; larger changes are priced by agreement.",
+        "example": "Large changes are scoped and priced by agreement.",
     },
     {
         "kind": "custom-build",
@@ -88,7 +88,7 @@ PAGE_SEO = {
     },
     "system_templates": {
         "title": "Real Estate Systems | Realty Systems Foundry",
-        "description": "See working Realty Systems Foundry systems for property operations, property listings, and housing workflows. Existing systems have a clear one-time price; changes are priced separately.",
+        "description": "See working Realty Systems Foundry systems for property operations, property listings, and housing workflows. Existing systems have a clear one-time price; optional managed care can include minor workflow adjustments, while larger changes are priced by agreement.",
     },
 }
 
