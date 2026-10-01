@@ -1720,11 +1720,9 @@ def prospect_update(prospect_id: int):
         and prospect["recorded_date"] != selected_str
         and prospect["status"] not in PROSPECT_UNFINISHED_STATUSES
     )
-    linked_deal = (
-        db.execute("SELECT id FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
-        if prospect["status"] in DEAL_ACTIVE_STATUSES
-        else None
-    )
+    deal_row = db.execute("SELECT * FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
+    linked_deal = deal_row if prospect["status"] in DEAL_ACTIVE_STATUSES else None
+    deal_support = _deal_card_support(db, [deal_row] if deal_row else [])
     row_html = render_template(
         "_prospect_row.html",
         prospect=prospect,
@@ -1732,6 +1730,8 @@ def prospect_update(prospect_id: int):
         selected_date=selected_str,
         prospect_status_labels=PROSPECT_STATUS_LABELS,
         prospect_deal_ids={prospect_id: int(linked_deal["id"])} if linked_deal else {},
+        prospect_deals={prospect_id: deal_row} if deal_row else {},
+        **deal_support,
     )
     return jsonify(
         {
