@@ -433,7 +433,7 @@ def _reconcile_deal_sources_on_activation(db, deal_id: int, now: str) -> int:
     return deal_id
 
 
-def _ensure_deal_for_prospect(db, prospect_id: int, created_by_user_id: int, now: str) -> tuple[int, bool]:
+def _ensure_deal_for_prospect(db, prospect_id: int, created_by_user_id: int, now: str, *, allow_merge: bool = True) -> tuple[int, bool]:
     existing = db.execute("SELECT id FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
     if existing:
         return int(existing["id"]), False
@@ -446,17 +446,19 @@ def _ensure_deal_for_prospect(db, prospect_id: int, created_by_user_id: int, now
     if not prospect:
         raise ValueError("Prospect not found.")
 
-    matched_inquiry = find_matching_website_inquiry(
-        db,
-        {
-            "company": prospect["name"],
-            "contact_name": prospect["contact"],
-            "email": prospect["email"],
-            "phone": prospect["phone"],
-        },
-    )
-    if matched_inquiry and not _shared_opportunity_status(matched_inquiry["workflow_status"]):
-        matched_inquiry = None
+    matched_inquiry = None
+    if allow_merge:
+        matched_inquiry = find_matching_website_inquiry(
+            db,
+            {
+                "company": prospect["name"],
+                "contact_name": prospect["contact"],
+                "email": prospect["email"],
+                "phone": prospect["phone"],
+            },
+        )
+        if matched_inquiry and not _shared_opportunity_status(matched_inquiry["workflow_status"]):
+            matched_inquiry = None
 
     if matched_inquiry:
         inquiry_deal = db.execute(
@@ -529,7 +531,7 @@ def _ensure_deal_for_prospect(db, prospect_id: int, created_by_user_id: int, now
         )
     return deal_id, True
 
-def _ensure_deal_for_website_inquiry(db, inquiry_id: int, created_by_user_id: int, now: str) -> tuple[int, bool]:
+def _ensure_deal_for_website_inquiry(db, inquiry_id: int, created_by_user_id: int, now: str, *, allow_merge: bool = True) -> tuple[int, bool]:
     existing = db.execute("SELECT id FROM deals WHERE website_inquiry_id=? LIMIT 1", (inquiry_id,)).fetchone()
     if existing:
         return int(existing["id"]), False
@@ -542,17 +544,19 @@ def _ensure_deal_for_website_inquiry(db, inquiry_id: int, created_by_user_id: in
     if not inquiry:
         raise ValueError("Website Inquiry not found.")
 
-    matched_prospect = find_matching_prospect(
-        db,
-        {
-            "company": inquiry["company"],
-            "contact_name": inquiry["name"],
-            "email": inquiry["email"],
-            "phone": inquiry["phone"],
-        },
-    )
-    if matched_prospect and not _shared_opportunity_status(matched_prospect["status"]):
-        matched_prospect = None
+    matched_prospect = None
+    if allow_merge:
+        matched_prospect = find_matching_prospect(
+            db,
+            {
+                "company": inquiry["company"],
+                "contact_name": inquiry["name"],
+                "email": inquiry["email"],
+                "phone": inquiry["phone"],
+            },
+        )
+        if matched_prospect and not _shared_opportunity_status(matched_prospect["status"]):
+            matched_prospect = None
 
     if matched_prospect:
         prospect_deal = db.execute(
