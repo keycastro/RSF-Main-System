@@ -25,6 +25,7 @@
   <title>{{ seo_title }}</title>
   <link rel="icon" href="{{ url_for('static', filename='images/brand/REALTY_SYSTEMS_FOUNDRY.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/public_site.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/public_refinement.css') }}">
   <script src="{{ url_for('static', filename='js/public_site.js') }}" defer></script>
   {% for item in structured_data %}<script type="application/ld+json">{{ item|tojson }}</script>{% endfor %}
 </head>
