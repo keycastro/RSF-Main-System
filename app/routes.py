@@ -5606,28 +5606,54 @@ def inquiries_list():
         partners = db.execute(
             "SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND u.active=1 AND p.account_deleted_at IS NULL ORDER BY u.full_name"
         ).fetchall()
-    inquiry_deal_rows = db.execute(
-        """SELECT d.id,d.website_inquiry_id
-           FROM deals d
-           JOIN website_inquiries i ON i.id=d.website_inquiry_id
-           WHERE i.workflow_status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','LOST')"""
-    ).fetchall()
-    inquiry_deal_ids = {
-        int(row["website_inquiry_id"]): int(row["id"])
-        for row in inquiry_deal_rows
+    now = utcnow_iso()
+    for inquiry in website_inquiries:
+        _ensure_deal_for_website_inquiry(
+            db,
+            int(inquiry["id"]),
+            int(g.user["id"]),
+            now,
+            allow_merge=False,
+        )
+    db.commit()
+
+    inquiry_ids = [int(row["id"]) for row in website_inquiries]
+    workspace_deal_rows = []
+    if inquiry_ids:
+        placeholders = ",".join("?" for _ in inquiry_ids)
+        workspace_deal_rows = db.execute(
+            f"""SELECT d.* FROM deals d
+                WHERE d.website_inquiry_id IN ({placeholders})
+                ORDER BY d.id""",
+            inquiry_ids,
+        ).fetchall()
+    inquiry_deals = {
+        int(row["website_inquiry_id"]): row
+        for row in workspace_deal_rows
         if row["website_inquiry_id"] is not None
     }
+    inquiry_status_by_id = {
+        int(row["id"]): (row["workflow_status"] or "").strip().upper()
+        for row in website_inquiries
+    }
+    inquiry_deal_ids = {
+        int(row["website_inquiry_id"]): int(row["id"])
+        for row in workspace_deal_rows
+        if row["website_inquiry_id"] is not None
+        and inquiry_status_by_id.get(int(row["website_inquiry_id"]), "") in DEAL_ACTIVE_STATUSES
+    }
+    deal_support = _deal_card_support(db, workspace_deal_rows)
 
     previous_date = (selected - timedelta(days=1)).isoformat()
     next_date = (selected + timedelta(days=1)).isoformat() if selected < today else None
 
-    now = utcnow_iso()
     overdue = [row for row in claimed if row["first_response_due_at"] and not row["first_responded_at"] and row["first_response_due_at"] < now]
     from .client_ops import email_receive_configured, email_send_configured
     return render_template(
         "inquiries.html", title="Website Inbox", unclaimed=unclaimed, claimed=claimed, website_inquiries=website_inquiries, partners=partners, overdue=overdue, current_time_iso=now,
         inquiry_workflow_status_labels=PROSPECT_STATUS_LABELS,
         inquiry_deal_ids=inquiry_deal_ids,
+        inquiry_deals=inquiry_deals,
         selected_date=selected_str,
         previous_date=previous_date,
         next_date=next_date,
@@ -5636,6 +5662,7 @@ def inquiries_list():
         email_send_ready=email_send_configured(), email_receive_ready=email_receive_configured(),
         auto_email_sync=bool(current_app.config.get("AUTO_EMAIL_SYNC")),
         response_sla_minutes=int(current_app.config.get("FIRST_RESPONSE_SLA_MINUTES", 60)),
+        **deal_support,
     )
 
 
