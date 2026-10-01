@@ -1,49 +1,21 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="prospects-page" data-prospect-selected-date="{{ selected_date }}" data-prospect-is-today="{{ '1' if is_today else '0' }}">
+<section class="prospects-page">
   <div class="page-head workspace-page-head prospects-head">
     <div class="prospects-head-main">
       <div class="prospects-title-row">
         <button class="menu-button prospect-mobile-menu" type="button" data-menu aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">☰</button>
         <h1>Prospects</h1>
-        <button class="prospect-add-plus" type="button" data-prospect-add-trigger data-prospect-today-url="{{ url_for('main.prospects', add='1') }}" aria-label="Add Prospect" title="Add Prospect">+</button>
+        <button class="prospect-add-plus" type="button" data-prospect-add-trigger aria-label="Add Prospect" title="Add Prospect">+</button>
       </div>
       <p>Potential clients found through research before any call, email, or message.</p>
 
-      <form class="prospect-date-form prospect-head-date" method="get" action="{{ url_for('main.prospects') }}">
-        <div class="prospect-date-nav" aria-label="Prospect date navigation">
-          <a class="prospect-date-step" href="{{ url_for('main.prospects', date=previous_date) }}" aria-label="Previous day" title="Previous day">‹</a>
-          <div class="prospect-date-picker-wrap">
-            <button class="prospect-date-picker" type="button" data-prospect-date-trigger aria-label="Choose prospect date">
-              <span class="prospect-date-display">{{ 'Today · ' if is_today else '' }}{{ selected_date|dateonly }}</span>
-              <span class="prospect-date-arrow" aria-hidden="true">▾</span>
-            </button>
-            <input class="prospect-date-native" id="prospect-date" type="date" name="date" value="{{ selected_date }}" max="{{ today }}" aria-label="Choose prospect date" data-prospect-date-input>
-          </div>
-          {% if next_date %}
-            <a class="prospect-date-step" href="{{ url_for('main.prospects', date=next_date) }}" aria-label="Next day" title="Next day">›</a>
-          {% else %}
-            <span class="prospect-date-step is-disabled" aria-hidden="true">›</span>
-          {% endif %}
-        </div>
-      </form>
     </div>
   </div>
 
   <section class="prospect-list-section">
-    {% if is_today %}
-      <div class="simple-section-head prospect-filter-head" data-prospect-filters>
-        <div class="prospect-status-filters" role="group" aria-label="Filter today's prospects by status">
-          <button class="prospect-filter-button is-active" type="button" data-prospect-filter="ALL" aria-pressed="true">All</button>
-          <button class="prospect-filter-button" type="button" data-prospect-filter="NOT_CONTACTED" aria-pressed="false">Not Contacted</button>
-          <button class="prospect-filter-button" type="button" data-prospect-filter="NO_ANSWER" aria-pressed="false">No Answer</button>
-        </div>
-      </div>
-    {% endif %}
-
     <div class="simple-list" data-prospect-list>
-      {% if is_today %}
-        <div class="prospect-quick-add" data-prospect-quick-add hidden>
+      <div class="prospect-quick-add" data-prospect-quick-add hidden>
           <form class="prospect-quick-form" method="post" action="{{ url_for('main.prospect_new') }}" data-prospect-quick-form>
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="prospect-quick-grid">
@@ -71,24 +43,17 @@
             </div>
           </form>
           <div class="prospect-quick-message" data-prospect-quick-message hidden aria-live="polite"></div>
-        </div>
-      {% endif %}
+      </div>
 
       {% for prospect in prospects %}
         {% include '_prospect_row.html' %}
       {% else %}
         <div class="workspace-empty-state" data-prospect-empty role="status">
-          <strong>No prospects for this date.</strong>
-          <span>Researched Prospects added for this date will appear here.</span>
+          <strong>No prospects yet.</strong>
+          <span>Researched Prospects you add will appear here.</span>
         </div>
       {% endfor %}
 
-      {% if is_today %}
-        <div class="workspace-empty-state workspace-empty-state--filter" data-prospect-filter-empty role="status" hidden>
-          <strong>No prospects in this status.</strong>
-          <span>Try another status filter.</span>
-        </div>
-      {% endif %}
     </div>
   </section>
 
