@@ -2261,32 +2261,6 @@ document.addEventListener('click', (event) => {
 
 
 (() => {
-  const input = document.querySelector('[data-prospect-date-input]');
-  const trigger = document.querySelector('[data-prospect-date-trigger]');
-  if (!input || !trigger) return;
-
-  const openPicker = () => {
-    try {
-      if (typeof input.showPicker === 'function') {
-        input.showPicker();
-        return;
-      }
-    } catch (_error) {
-      // Fall through to the native click fallback.
-    }
-    input.focus({ preventScroll: true });
-    input.click();
-  };
-
-  trigger.addEventListener('click', openPicker);
-  input.addEventListener('change', () => {
-    if (!input.value || !input.form) return;
-    input.form.submit();
-  });
-})();
-
-
-(() => {
   const page = document.querySelector('.prospects-page');
   if (!page) return;
 
@@ -2298,27 +2272,7 @@ document.addEventListener('click', (event) => {
   const companyInput = page.querySelector('[data-prospect-company-input]');
   const quickMessage = page.querySelector('[data-prospect-quick-message]');
   const toast = page.querySelector('[data-prospect-toast]');
-  const filterButtons = Array.from(page.querySelectorAll('[data-prospect-filter]'));
-  const filterEmpty = page.querySelector('[data-prospect-filter-empty]');
-  let activeFilter = 'ALL';
   let toastTimer = null;
-
-  const applyProspectFilter = () => {
-    if (!list || !filterButtons.length) return;
-    const rows = Array.from(list.querySelectorAll('[data-prospect-row]'));
-    rows.forEach((row) => {
-      row.hidden = activeFilter !== 'ALL' && row.dataset.prospectStatus !== activeFilter;
-    });
-    filterButtons.forEach((button) => {
-      const active = button.dataset.prospectFilter === activeFilter;
-      button.classList.toggle('is-active', active);
-      button.setAttribute('aria-pressed', active ? 'true' : 'false');
-    });
-    if (filterEmpty) {
-      const hasVisibleRows = rows.some((row) => !row.hidden);
-      filterEmpty.hidden = rows.length === 0 || activeFilter === 'ALL' || hasVisibleRows;
-    }
-  };
 
   const openTargetProspect = () => {
     if (!window.location.hash) return;
@@ -2387,8 +2341,8 @@ document.addEventListener('click', (event) => {
     empty.dataset.prospectEmpty = '';
     empty.setAttribute('role', 'status');
     empty.innerHTML = `
-      <strong>No prospects for this date.</strong>
-      <span>Researched Prospects added for this date will appear here.</span>
+      <strong>No prospects yet.</strong>
+      <span>Researched Prospects you add will appear here.</span>
     `;
     list.appendChild(empty);
   };
@@ -2418,7 +2372,7 @@ document.addEventListener('click', (event) => {
     trigger.addEventListener('click', () => {
       if (!quick) {
         quickTogglePointerActive = false;
-        window.location.assign(trigger.dataset.prospectTodayUrl || '/app/prospects?add=1');
+        window.location.assign('/app/prospects?add=1');
         return;
       }
       if (quickTogglePointerActive) {
@@ -2430,16 +2384,6 @@ document.addEventListener('click', (event) => {
       }
       quickTogglePointerActive = false;
     });
-  }
-
-  if (filterButtons.length && list) {
-    filterButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        activeFilter = button.dataset.prospectFilter || 'ALL';
-        applyProspectFilter();
-      });
-    });
-    applyProspectFilter();
   }
 
   if (quick && quickForm && primaryInput && companyInput && list) {
@@ -2510,7 +2454,6 @@ document.addEventListener('click', (event) => {
           quickForm.reset();
           autoGrowFields.forEach(resizeQuickTextarea);
           closeQuick();
-          applyProspectFilter();
           showToast(data.message || 'Prospect saved.');
           return;
         }
@@ -2547,8 +2490,6 @@ document.addEventListener('click', (event) => {
     });
   }
 
-  const selectedDate = page.dataset.prospectSelectedDate || '';
-
   const csrfForRow = (row) => (
     row.querySelector('input[name="csrf_token"]')?.value
     || quickForm?.querySelector('input[name="csrf_token"]')?.value
@@ -2564,7 +2505,6 @@ document.addEventListener('click', (event) => {
     row.replaceWith(replacement);
     const details = replacement.querySelector('details.prospect-card');
     if (details && keepOpen) details.open = true;
-    applyProspectFilter();
     return replacement;
   };
 
@@ -2599,8 +2539,7 @@ document.addEventListener('click', (event) => {
         const body = new URLSearchParams({
           csrf_token: csrfForRow(row),
           field: 'notes_after_conversation',
-          value: valueToSave,
-          date: selectedDate
+          value: valueToSave
         });
 
         const response = await fetch(row.dataset.prospectUpdateUrl, {
@@ -2771,8 +2710,7 @@ document.addEventListener('click', (event) => {
       const body = new URLSearchParams({
         csrf_token: csrfForRow(row),
         field: fieldName,
-        value,
-        date: selectedDate
+        value
       });
 
       try {
@@ -2990,8 +2928,7 @@ document.addEventListener('click', (event) => {
       const body = new URLSearchParams({
         csrf_token: csrfForRow(row),
         field: fieldName,
-        value: newValue,
-        date: selectedDate
+        value: newValue
       });
       if (field.dataset.prospectStatusConfirmed === '1') body.set('confirm_leave_deals', 'yes');
 
@@ -3020,13 +2957,7 @@ document.addEventListener('click', (event) => {
         }
 
         const keepOpen = Boolean(row.querySelector('details.prospect-card')?.open);
-        if (data.remove_from_view) {
-          row.remove();
-          ensureEmpty();
-          applyProspectFilter();
-        } else {
-          replaceProspectRow(row, data.row_html, keepOpen);
-        }
+        replaceProspectRow(row, data.row_html, keepOpen);
         showToast(data.message || 'Prospect updated.');
       } catch (_error) {
         restore();
@@ -3273,8 +3204,7 @@ document.addEventListener('click', (event) => {
 
       form.closest('[data-prospect-row]')?.remove();
       ensureEmpty();
-      applyProspectFilter();
-      showToast(data.message || 'Prospect deleted.');
+        showToast(data.message || 'Prospect deleted.');
     } catch (_error) {
       if (button) button.disabled = false;
       showToast('Prospect could not be deleted. Try again.', true);
