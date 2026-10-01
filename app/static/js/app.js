@@ -3594,7 +3594,14 @@ document.addEventListener('click', (event) => {
     return state;
   };
 
-  const timezoneFormForRoot = (root) => root?.closest?.('[data-deal-form]') || null;
+  const timezoneFormForRoot = (root) => {
+    const explicitFormId = String(root?.dataset?.dealFormId || '').trim();
+    if (explicitFormId) {
+      const explicitForm = document.getElementById(explicitFormId);
+      if (explicitForm instanceof HTMLFormElement) return explicitForm;
+    }
+    return root?.closest?.('[data-deal-form]') || null;
+  };
   const timezoneSplitFields = (root) => ({
     city: root?.querySelector?.('[data-timezone-city]') || null,
     country: root?.querySelector?.('[data-timezone-country]') || null,
@@ -3837,6 +3844,12 @@ document.addEventListener('click', (event) => {
   };
 
   dealTimezoneRoots.forEach((root) => {
+    const prospectSummary = root.closest('.prospect-card-summary');
+    if (prospectSummary) {
+      root.addEventListener('click', (event) => event.stopPropagation());
+      root.addEventListener('keydown', (event) => event.stopPropagation());
+    }
+
     const input = root.querySelector('[data-timezone-input]');
     const hidden = root.querySelector('[data-timezone-value]');
     const toggle = root.querySelector('[data-timezone-toggle]');
