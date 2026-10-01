@@ -878,14 +878,14 @@ textarea.prospect-inline-editor{resize:vertical}
 .prospect-card-details>.master-deal-information+.master-source-section-head{
   margin-top:18px
 }
-.prospect-active-documents{
+.prospect-deal-documents{
   margin-top:18px;
   overflow:hidden;
   border:1px solid #d7e1dd;
   border-radius:12px;
   background:#fbfdfc
 }
-.prospect-active-documents>.deal-documents{
+.prospect-deal-documents>.deal-documents{
   border-top:0
 }
 
