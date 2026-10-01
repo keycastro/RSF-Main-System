@@ -48,12 +48,51 @@ class CardLayoutReorderingTests(unittest.TestCase):
         js = self.read("app/static/js/app.js")
         routes = self.read("app/routes.py")
         self.assertIn("event.ctrlKey", js)
-        self.assertIn("applyAll()", js)
+        self.assertIn("applyAll({animate: true", js)
         self.assertIn("layout_json: JSON.stringify(state)", js)
         self.assertIn("MutationObserver", js)
         self.assertIn('@bp.post("/card-layout/<page_name>")', routes)
         self.assertIn("CARD_LAYOUT_SPECS", routes)
         self.assertIn('return f"card_layout_{page_name}_v1"', routes)
+
+    def test_smooth_engine_is_pointer_driven_not_native_html_drag(self):
+        js = self.read("app/static/js/app.js")
+        smooth = js[js.index("/* v1.18.151 — smooth pointer-driven"):]
+        self.assertIn("window.addEventListener('pointermove'", smooth)
+        self.assertIn("window.addEventListener('pointerup'", smooth)
+        self.assertIn("requestAnimationFrame", smooth)
+        self.assertIn("createGhost", smooth)
+        self.assertIn("createPlaceholder", smooth)
+        self.assertIn("animateReflow", smooth)
+        self.assertIn("zoneAtPoint", smooth)
+        self.assertIn("autoScrollSpeed", smooth)
+        self.assertIn("distance < 6", smooth)
+        self.assertNotIn("field.draggable = true", smooth)
+        self.assertNotIn("root.addEventListener('dragover'", smooth)
+        self.assertNotIn("root.addEventListener('drop'", smooth)
+
+    def test_smooth_engine_prevents_accidental_activation_and_supports_cancel(self):
+        js = self.read("app/static/js/app.js")
+        smooth = js[js.index("/* v1.18.151 — smooth pointer-driven"):]
+        self.assertIn("event.pointerType !== 'mouse'", smooth)
+        self.assertIn("event.preventDefault()", smooth)
+        self.assertIn("event.stopPropagation()", smooth)
+        self.assertIn("window.getSelection?.()?.removeAllRanges?.()", smooth)
+        self.assertIn("event.key === 'Escape'", smooth)
+        self.assertIn("window.addEventListener('blur'", smooth)
+        self.assertIn("card-layout-dragging-global", smooth)
+
+    def test_smooth_engine_has_stable_insertion_feedback_and_reflow_animation(self):
+        js = self.read("app/static/js/app.js")
+        css = self.read("app/static/css/workspace_v20.css")
+        smooth = js[js.index("/* v1.18.151 — smooth pointer-driven"):]
+        self.assertIn("placementSignature", smooth)
+        self.assertIn("rectDistance", smooth)
+        self.assertIn("visibleZonesForCard", smooth)
+        self.assertIn("is-card-layout-drop-zone", smooth)
+        self.assertIn("card-layout-placeholder", css)
+        self.assertIn("card-layout-drag-ghost", css)
+        self.assertIn("will-change:transform", css)
 
     def test_visual_moves_preserve_existing_save_ownership(self):
         js = self.read("app/static/js/app.js")
