@@ -2897,3 +2897,29 @@ body{font-size:17px;line-height:1.68}
 .brand-copy strong{letter-spacing:.075em}
 @media(min-width:901px){.brand-copy strong{font-size:10.75px}}
 @media(max-width:430px){.brand-copy strong{font-size:10.5px;letter-spacing:.055em}}
+
+
+/* v1.18.160 — Limited Free Custom System Build program.
+   Scoped additions only; existing public design, existing-system pricing, and management layout remain unchanged. */
+.free-program-bar{background:var(--navy-deep);color:#fff;border-bottom:1px solid rgba(255,255,255,.14)}
+.free-program-bar-inner{min-height:42px;display:flex;align-items:center;justify-content:center;gap:9px 14px;flex-wrap:wrap;padding:8px 0;text-align:center;font-size:12.5px;line-height:1.35}
+.free-program-bar strong{color:#fff;font-size:12.5px}.free-program-bar span{color:#d6e1e4}.free-program-bar a{color:#fff;font-weight:800;text-underline-offset:3px}
+.free-program-inline{max-width:720px;margin-top:22px;padding:14px 16px;border:1px solid #c9d6d1;border-left:4px solid var(--sage-deep);border-radius:11px;background:rgba(239,242,238,.82)}
+.free-program-inline strong{display:block;color:var(--navy-deep);font-size:14px;line-height:1.35}.free-program-inline>span{display:block;margin-top:4px;color:var(--ink-2);font-size:13.5px;line-height:1.5}.free-program-inline .text-link{margin-top:8px}
+.free-program-price{border-color:#bed3c8!important;background:#f2f7f3!important}
+.free-build-program-detail{margin-top:24px;padding:24px;border:1px solid #bed3c8;border-radius:14px;background:#f3f7f4}
+.free-build-program-intro{max-width:850px}.free-build-program-intro h3{margin:0 0 8px;font-size:28px;line-height:1.16}.free-build-program-intro>p{margin:8px 0 0;color:var(--ink-2);font-size:14px;line-height:1.55}.free-build-program-intro>p strong{color:var(--ink)}
+.free-build-scope-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px}
+.free-build-program-detail .management-detail-block{margin:0;padding:18px;border:1px solid rgba(21,41,52,.11);border-radius:11px;background:rgba(255,255,255,.78)}
+.free-build-program-detail .management-detail-list{display:grid;gap:7px;margin:0;padding:0;list-style:none}
+.free-build-program-detail .management-detail-list li{position:relative;padding-left:17px;color:var(--ink-2);font-size:14px;line-height:1.48}
+.free-build-program-detail .management-detail-list li::before{content:"";position:absolute;left:1px;top:.66em;width:6px;height:6px;border-radius:50%;background:var(--sage)}
+.free-build-not-included .management-detail-list li::before{background:var(--bronze)}
+.free-build-program-boundary{margin-top:18px;padding-top:16px;border-top:1px solid rgba(21,41,52,.12)}
+.free-build-program-boundary p{margin:7px 0 0;color:var(--ink-2);font-size:13.5px;line-height:1.5}.free-build-program-boundary strong{color:var(--ink)}
+.free-program-management-note{max-width:850px;margin:10px 0 0;padding:11px 13px;border-left:3px solid var(--sage-deep);background:rgba(239,242,238,.70);color:var(--ink-2);font-size:13.5px;line-height:1.5}.free-program-management-note strong{color:var(--ink)}
+.free-build-contact-note{margin:0 0 20px;padding:14px 16px;border:1px solid #c9d6d1;border-left:4px solid var(--sage-deep);border-radius:11px;background:#f3f7f4}
+.free-build-contact-note strong{display:block;color:var(--navy-deep);font-size:15px}.free-build-contact-note p{margin:5px 0 0;color:var(--ink-2);font-size:13.5px;line-height:1.5}
+.program-alternative-note{margin-top:9px!important;font-size:13.5px!important;line-height:1.5!important}
+@media(max-width:900px){.free-build-scope-grid{grid-template-columns:1fr}}
+@media(max-width:680px){.free-program-bar-inner{justify-content:flex-start;text-align:left;padding:9px 0}.free-program-bar-inner strong,.free-program-bar-inner span,.free-program-bar-inner a{width:100%}.free-program-inline{padding:13px 14px}.free-build-program-detail{padding:18px}.free-build-program-intro h3{font-size:25px}.free-build-program-intro>p,.free-build-program-detail .management-detail-list li,.free-build-program-boundary p,.free-program-management-note,.free-build-contact-note p{font-size:14px}}
