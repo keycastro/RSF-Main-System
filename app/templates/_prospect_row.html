@@ -121,19 +121,18 @@
 
     </div>
 
+    {% set linked_deal_id = prospect_deal_ids.get(prospect['id']) if prospect_deal_ids is defined else none %}
     {% if deal %}
+      {% set deal_section_action_url = (url_for('main.deals') ~ '#deal-' ~ linked_deal_id) if linked_deal_id else '' %}
     <div class="prospect-secondary-deal-panel">
       {% include '_master_deal_information.html' %}
     </div>
     {% endif %}
 
     <div class="prospect-card-footer">
-      {% set linked_deal_id = prospect_deal_ids.get(prospect['id']) if prospect_deal_ids is defined else none %}
       <div class="prospect-deal-action">
         <button class="prospect-copy-button" type="button" data-prospect-copy aria-label="Copy Prospect" title="Copy Prospect">📋</button>
-        {% if linked_deal_id %}
-          <a class="button secondary" href="{{ url_for('main.deals') }}#deal-{{ linked_deal_id }}">View Deal</a>
-        {% else %}
+        {% if not linked_deal_id %}
           <form method="post" action="{{ url_for('main.deal_create_from_prospect', prospect_id=prospect['id']) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button class="button primary" type="submit">Create Deal</button>
