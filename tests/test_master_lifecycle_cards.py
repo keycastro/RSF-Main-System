@@ -32,7 +32,7 @@ class MasterLifecycleCardTests(unittest.TestCase):
 
     def test_outbound_card_puts_outbound_information_before_deal_information(self):
         template = self.read("app/templates/_prospect_row.html")
-        source_position = template.index("prospect-fields")
+        source_position = template.index("Outbound Details")
         deal_position = template.index("{% include '_master_deal_information.html' %}")
         self.assertLess(source_position, deal_position)
 
