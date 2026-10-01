@@ -79,7 +79,6 @@ def partner_scope_id() -> int | None:
     return g.partner["id"] if g.user and g.user["role"] == "partner" and g.partner else None
 
 
-PROSPECT_UNFINISHED_STATUSES = ("NOT_CONTACTED", "NO_ANSWER")
 PROSPECT_STATUS_LABELS = {
     "NOT_CONTACTED": "Not Contacted",
     "NO_ANSWER": "No Answer",
@@ -280,17 +279,6 @@ def _deal_document_html_preview(row, *, deal_id: int, document_id: int) -> Respo
 
 def _normalize_prospect_name(value: str) -> str:
     return " ".join((value or "").split()).casefold()
-
-
-def _selected_prospect_date(raw: str | None) -> date:
-    today = date.today()
-    if not raw:
-        return today
-    try:
-        selected = date.fromisoformat(raw)
-    except ValueError:
-        return today
-    return min(selected, today)
 
 
 def _selected_inquiry_date(raw: str | None) -> date:
@@ -1294,25 +1282,9 @@ def workspace_root():
 @login_required
 def prospects():
     db = get_db()
-    selected = _selected_prospect_date(request.args.get("date"))
-    selected_str = selected.isoformat()
-    today = date.today()
-    is_today = selected == today
-
-    if is_today:
-        rows = db.execute(
-            """SELECT p.* FROM prospects p
-               WHERE p.recorded_date=?
-                  OR (p.recorded_date<? AND p.status IN ('NOT_CONTACTED','NO_ANSWER'))
-               ORDER BY CASE WHEN p.recorded_date=? THEN 0 ELSE 1 END,
-                        p.recorded_date ASC,p.id ASC""",
-            (selected_str, selected_str, selected_str),
-        ).fetchall()
-    else:
-        rows = db.execute(
-            "SELECT p.* FROM prospects p WHERE p.recorded_date=? ORDER BY p.id ASC",
-            (selected_str,),
-        ).fetchall()
+    rows = db.execute(
+        "SELECT p.* FROM prospects p ORDER BY p.id DESC"
+    ).fetchall()
 
     now = utcnow_iso()
     for prospect in rows:
@@ -1355,18 +1327,10 @@ def prospects():
     }
     deal_support = _deal_card_support(db, workspace_deal_rows)
 
-    previous_date = (selected - timedelta(days=1)).isoformat()
-    next_date = (selected + timedelta(days=1)).isoformat() if selected < today else None
-
     return render_template(
         "prospects.html",
         title="Prospects",
         prospects=rows,
-        selected_date=selected_str,
-        previous_date=previous_date,
-        next_date=next_date,
-        today=today.isoformat(),
-        is_today=is_today,
         prospect_status_labels=PROSPECT_STATUS_LABELS,
         prospect_deal_ids=prospect_deal_ids,
         prospect_deals=prospect_deals,
@@ -1423,7 +1387,7 @@ def prospect_new():
     name_norm = _normalize_prospect_name(submitted_company)
 
     def duplicate_response(duplicate):
-        view_url = url_for("main.prospects", date=duplicate["recorded_date"]) + f"#prospect-{duplicate['id']}"
+        view_url = url_for("main.prospects") + f"#prospect-{duplicate['id']}"
         if wants_json:
             return jsonify(
                 {
@@ -1563,8 +1527,6 @@ def prospect_new():
         row_html = render_template(
             "_prospect_row.html",
             prospect=prospect,
-            is_today=True,
-            selected_date=recorded_date,
             prospect_status_labels=PROSPECT_STATUS_LABELS,
             prospect_deal_ids={prospect_id: linked_deal_id} if linked_deal_id else {},
             prospect_deals={prospect_id: deal_row} if deal_row else {},
@@ -1628,7 +1590,7 @@ def prospect_update(prospect_id: int):
             (name_norm, prospect_id),
         ).fetchone()
         if duplicate:
-            view_url = url_for("main.prospects", date=duplicate["recorded_date"]) + f"#prospect-{duplicate['id']}"
+            view_url = url_for("main.prospects") + f"#prospect-{duplicate['id']}"
             return jsonify(
                 {
                     "ok": False,
@@ -1789,22 +1751,12 @@ def prospect_update(prospect_id: int):
     if field_name == "status" and status in DEAL_ACTIVE_STATUSES and current_status not in DEAL_ACTIVE_STATUSES and deal_id is not None:
         _sync_calendar_for_activated_deal(db, deal_id)
     prospect = db.execute("SELECT * FROM prospects WHERE id=?", (prospect_id,)).fetchone()
-    selected = _selected_prospect_date(request.form.get("date"))
-    selected_str = selected.isoformat()
-    is_today = selected == date.today()
-    remove_from_view = bool(
-        is_today
-        and prospect["recorded_date"] != selected_str
-        and prospect["status"] not in PROSPECT_UNFINISHED_STATUSES
-    )
     deal_row = db.execute("SELECT * FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
     linked_deal = deal_row if prospect["status"] in DEAL_ACTIVE_STATUSES else None
     deal_support = _deal_card_support(db, [deal_row] if deal_row else [])
     row_html = render_template(
         "_prospect_row.html",
         prospect=prospect,
-        is_today=is_today,
-        selected_date=selected_str,
         prospect_status_labels=PROSPECT_STATUS_LABELS,
         prospect_deal_ids={prospect_id: int(linked_deal["id"])} if linked_deal else {},
         prospect_deals={prospect_id: deal_row} if deal_row else {},
@@ -1815,7 +1767,6 @@ def prospect_update(prospect_id: int):
             "ok": True,
             "message": "Prospect updated. Deal created." if deal_created else "Prospect updated.",
             "status": prospect["status"],
-            "remove_from_view": remove_from_view,
             "row_html": row_html,
         }
     )
@@ -1854,12 +1805,12 @@ def prospect_conversation_open(prospect_id: int):
     except ValueError as exc:
         flash(str(exc), "warning")
         prospect = get_db().execute(
-            "SELECT recorded_date FROM prospects WHERE id=?",
+            "SELECT id FROM prospects WHERE id=?",
             (prospect_id,),
         ).fetchone()
         if not prospect:
             abort(404)
-        return redirect(url_for("main.prospects", date=prospect["recorded_date"]) + f"#prospect-{prospect_id}")
+        return redirect(url_for("main.prospects") + f"#prospect-{prospect_id}")
     return redirect(url_for("main.client_conversation", conversation_id=conversation_id))
 
 
@@ -1914,9 +1865,8 @@ def prospect_delete(prospect_id: int):
     if wants_json:
         return jsonify({"ok": True, "message": "Prospect deleted."})
 
-    selected = _selected_prospect_date(request.form.get("date"))
     flash("Prospect deleted.", "success")
-    return redirect(url_for("main.prospects", date=selected.isoformat()))
+    return redirect(url_for("main.prospects"))
 
 
 @bp.get("/deals")
