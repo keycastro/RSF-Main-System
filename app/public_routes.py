@@ -82,7 +82,7 @@ PAGE_SEO = {
         "description": "Tell Realty Systems Foundry what your real estate business needs and get a reply by email.",
     },
     "system_templates": {
-        "title": "Real Estate Systems | Realty Systems Foundry",
+        "title": "Systems We Built | Realty Systems Foundry",
         "description": "See examples of systems Realty Systems Foundry has built for property operations, property listings, and housing work.",
     },
 }
