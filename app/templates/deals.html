@@ -44,7 +44,7 @@
             <span class="deal-linked-label deal-linked-merged">
               LINKED IN
               <a
-                href="{{ url_for('main.prospects', date=deal['prospect_recorded_date']) }}#prospect-{{ deal['prospect_id'] }}"
+                href="{{ url_for('main.prospects') }}#prospect-{{ deal['prospect_id'] }}"
                 aria-label="Open linked Research Prospect {{ deal['prospect_name'] }}"
                 title="Open linked Research Prospect"
               >RESEARCHED</a>
@@ -65,7 +65,7 @@
             {% else %}
             <a
               class="deal-linked-label"
-              href="{{ url_for('main.prospects', date=deal['prospect_recorded_date']) }}#prospect-{{ deal['prospect_id'] }}"
+              href="{{ url_for('main.prospects') }}#prospect-{{ deal['prospect_id'] }}"
               aria-label="Open linked Prospect {{ deal['prospect_name'] }}"
               title="Open linked Prospect"
             >LINKED IN PROSPECT</a>
