@@ -14,7 +14,6 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         for flag in (
             "deal_show_email",
             "deal_show_contact_number",
-            "deal_show_location",
             "deal_show_notes",
             "deal_show_email_conversation",
         ):
@@ -150,18 +149,20 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         inquiries = self.read("app/templates/inquiries.html")
         master = self.read("app/templates/_master_deal_information.html")
         for page in (deals, prospect, inquiries):
+            self.assertIn("{% include '_master_deal_information.html' %}", page)
         self.assertIn("<small>City</small>", master)
         self.assertIn("<small>Country</small>", master)
         self.assertIn("data-timezone-city", master)
         self.assertIn("data-timezone-country", master)
 
-    def test_prospect_source_contact_and_location_stay_in_outbound_when_deal_exists(self):
+    def test_prospect_source_contact_stays_in_outbound_without_legacy_location(self):
         prospect = self.read("app/templates/_prospect_row.html")
         self.assertIn("{% set deal_show_email = false %}", prospect)
         self.assertIn("{% set deal_show_contact_number = false %}", prospect)
         self.assertIn('data-prospect-field="email"', prospect)
         self.assertIn('data-prospect-field="phone"', prospect)
-        self.assertIn('data-prospect-field="location"', prospect)
+        self.assertIn("<span>Contact Number</span>", prospect)
+        self.assertNotIn("<span>Phone</span>", prospect)
         self.assertNotIn("{% if not is_active_deal_stage %}\n        <div class=\"prospect-detail prospect-editable-field\" data-prospect-edit-field data-prospect-field=\"email\"", prospect)
         self.assertNotIn('data-prospect-field="location"', prospect)
 
