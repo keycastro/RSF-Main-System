@@ -3,8 +3,9 @@ from __future__ import annotations
 import hmac
 import re
 import secrets
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from flask import (
     Blueprint,
@@ -93,6 +94,31 @@ PAGE_SEO = {
 }
 
 
+FREE_BUILD_PROGRAM_START = date(2026, 11, 1)
+FREE_BUILD_PROGRAM_END = date(2027, 3, 31)
+FREE_BUILD_PROGRAM_TIMEZONE = ZoneInfo("Asia/Manila")
+
+
+def _free_build_program() -> dict:
+    today = datetime.now(FREE_BUILD_PROGRAM_TIMEZONE).date()
+    if today < FREE_BUILD_PROGRAM_START:
+        phase = "upcoming"
+    elif today <= FREE_BUILD_PROGRAM_END:
+        phase = "active"
+    else:
+        phase = "ended"
+
+    return {
+        "phase": phase,
+        "visible": phase in {"upcoming", "active"},
+        "is_upcoming": phase == "upcoming",
+        "is_active": phase == "active",
+        "start_date": "November 1, 2026",
+        "end_date": "March 31, 2027",
+        "period": "November 1, 2026 – March 31, 2027",
+    }
+
+
 def _common_context(
     page_key: str = "home",
     *,
@@ -124,6 +150,7 @@ def _common_context(
         "published_system_templates": published_templates(),
         "template_library_enabled": template_library_enabled(),
         "existing_system_pricing": EXISTING_SYSTEM_PRICING,
+        "free_build_program": _free_build_program(),
         "contact_email": current_app.config.get("CONTACT_EMAIL"),
         "socials": socials,
         "environment_label": current_app.config.get("ENVIRONMENT_LABEL", ""),
