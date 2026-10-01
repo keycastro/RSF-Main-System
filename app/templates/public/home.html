@@ -47,7 +47,7 @@
         <p class="choice-label choice-label-pill">CUSTOM SYSTEM — LIMITED PROGRAM</p>
         <strong>Build around your real business workflow.</strong>
         <div class="system-choice-price system-choice-price--quote free-program-price" aria-label="Limited free custom system development">
-          <b>Free Initial Development</b>
+          <b>Free Custom System Build</b>
           <span>{% if free_build_program.is_upcoming %}Starts {{ free_build_program.start_date }}{% else %}Available now{% endif %} · Ends {{ free_build_program.end_date }}</span>
         </div>
         <p class="human-option-explanation">If your project is accepted, RSF builds the system and features we agree on with no development fee. Extra changes, hosting, costs from other apps or services, future big changes, and paid RSF support after the system is finished are separate.</p>
@@ -57,9 +57,9 @@
         <strong>Build around your real business workflow.</strong>
         <div class="system-choice-price system-choice-price--quote" aria-label="Custom system pricing">
           <b>Price by Agreement</b>
-          <span>Scope and price are agreed before development</span>
+          <span>We agree on the work and price before we start</span>
         </div>
-        <p class="human-option-explanation">We first understand the records, people, rules, screens, automation, and connections your business needs. Then we agree on the scope and price before we build.</p>
+        <p class="human-option-explanation">We first understand what your business needs. Then we agree on what we will build and the price before we start.</p>
         <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Build a Custom System</a>
         {% endif %}
       </article>
@@ -108,7 +108,7 @@
     <div class="section-head simple-section-head reveal">
       <div>
         <h2>See what is real before you buy.</h2>
-        <p>We use the website to show the systems, scope, pricing model, and project context clearly.</p>
+        <p>We use the website to clearly show the systems, what is included, the prices, and the project details.</p>
       </div>
     </div>
     <div class="management-upgrade-grid reveal">
