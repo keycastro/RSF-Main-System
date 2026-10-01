@@ -1478,13 +1478,26 @@ def prospect_new():
         "Prospect added.",
         {"recorded_date": recorded_date},
     )
+    workspace_deal_id, _ = _ensure_deal_for_prospect(
+        db,
+        prospect_id,
+        g.user["id"],
+        now,
+        allow_merge=submitted_status in DEAL_ACTIVE_STATUSES,
+    )
     linked_deal_id = None
     if submitted_status in DEAL_ACTIVE_STATUSES:
-        linked_deal_id, _ = _ensure_deal_for_prospect(db, prospect_id, g.user["id"], now)
-        db.execute("UPDATE deals SET status=?,updated_at=? WHERE id=?", (submitted_status, now, linked_deal_id))
+        _mark_deal_became(db, workspace_deal_id, now)
+        db.execute("UPDATE deals SET status=?,updated_at=? WHERE id=?", (submitted_status, now, workspace_deal_id))
+        workspace_deal_id = _reconcile_deal_sources_on_activation(db, workspace_deal_id, now)
+        _mark_deal_became(db, workspace_deal_id, now)
+        _sync_deal_source_statuses(db, workspace_deal_id, submitted_status, now)
+        linked_deal_id = workspace_deal_id
     db.commit()
 
     prospect = db.execute("SELECT * FROM prospects WHERE id=?", (prospect_id,)).fetchone()
+    deal_row = db.execute("SELECT * FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
+    deal_support = _deal_card_support(db, [deal_row] if deal_row else [])
 
     if wants_json:
         row_html = render_template(
@@ -1494,6 +1507,8 @@ def prospect_new():
             selected_date=recorded_date,
             prospect_status_labels=PROSPECT_STATUS_LABELS,
             prospect_deal_ids={prospect_id: linked_deal_id} if linked_deal_id else {},
+            prospect_deals={prospect_id: deal_row} if deal_row else {},
+            **deal_support,
         )
         return jsonify(
             {
@@ -1975,14 +1990,20 @@ def deal_create_from_inquiry(inquiry_id: int):
     ).fetchone()
     if existing:
         deal_id = int(existing["id"])
+        _mark_deal_became(db, deal_id, now)
         db.execute("UPDATE deals SET status='DEAL',updated_at=? WHERE id=?", (now, deal_id))
+        deal_id = _reconcile_deal_sources_on_activation(db, deal_id, now)
+        _mark_deal_became(db, deal_id, now)
         _sync_deal_source_statuses(db, deal_id, "DEAL", now)
         db.commit()
         flash("Deal opened.", "success")
         return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
     deal_id, _ = _ensure_deal_for_website_inquiry(db, inquiry_id, g.user["id"], now)
+    _mark_deal_became(db, deal_id, now)
     db.execute("UPDATE deals SET status='DEAL',updated_at=? WHERE id=?", (now, deal_id))
+    deal_id = _reconcile_deal_sources_on_activation(db, deal_id, now)
+    _mark_deal_became(db, deal_id, now)
     _sync_deal_source_statuses(db, deal_id, "DEAL", now)
     db.commit()
     flash("Deal created.", "success")
@@ -1994,6 +2015,8 @@ def deal_create_from_inquiry(inquiry_id: int):
 def deal_document_upload(deal_id: int):
     validate_csrf()
     db = get_db()
+    return_to = safe_next(request.form.get("return_to")) or ""
+    return_target = return_to or (url_for("main.deals") + f"#deal-{deal_id}")
     deal = db.execute("SELECT id FROM deals WHERE id=?", (deal_id,)).fetchone()
     if not deal:
         abort(404)
@@ -2002,21 +2025,21 @@ def deal_document_upload(deal_id: int):
     display_name = " ".join((request.form.get("display_name", "") or "").split())[:180]
     if not document_type:
         flash("Document Type is required.", "error")
-        return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+        return redirect(return_target)
     if not display_name:
         flash("File Name is required.", "error")
-        return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+        return redirect(return_target)
 
     try:
         info = _deal_document_file_info(request.files.get("file"))
     except ValueError as exc:
         flash(str(exc), "error")
-        return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+        return redirect(return_target)
 
     data = info["storage"].read()
     if not data or len(data) != info["size_bytes"]:
         flash("The Deal file could not be read. Try again.", "error")
-        return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+        return redirect(return_target)
 
     now = utcnow_iso()
     cur = db.execute(
@@ -2046,7 +2069,7 @@ def deal_document_upload(deal_id: int):
     )
     db.commit()
     flash("Deal file uploaded.", "success")
-    return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+    return redirect(return_target)
 
 
 @bp.get("/deals/<int:deal_id>/documents/<int:document_id>")
@@ -2180,6 +2203,8 @@ def deal_document_preview_pdf_page(deal_id: int, document_id: int, page_number: 
 def deal_document_delete(deal_id: int, document_id: int):
     validate_csrf()
     db = get_db()
+    return_to = safe_next(request.form.get("return_to")) or ""
+    return_target = return_to or (url_for("main.deals") + f"#deal-{deal_id}")
     row = db.execute(
         """SELECT id,document_type,display_name FROM deal_documents WHERE id=? AND deal_id=?""",
         (document_id, deal_id),
@@ -2196,7 +2221,7 @@ def deal_document_delete(deal_id: int, document_id: int):
     )
     db.commit()
     flash("Deal file deleted.", "success")
-    return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+    return redirect(return_target)
 
 
 @bp.post("/deals/<int:deal_id>/update")
@@ -6141,13 +6166,22 @@ def inquiry_delete(inquiry_id: int):
     inquiry = _authorized_inquiry(inquiry_id)
     db = get_db()
     linked_deal = db.execute(
-        "SELECT id FROM deals WHERE website_inquiry_id=? LIMIT 1",
+        "SELECT id,prospect_id,became_deal_at FROM deals WHERE website_inquiry_id=? LIMIT 1",
         (inquiry_id,),
     ).fetchone()
-    if inquiry["status"] == "CLAIMED" or inquiry["client_conversation_id"] or linked_deal:
+    workflow_status = (inquiry["workflow_status"] or "").strip().upper()
+    linked_shared_source = bool(linked_deal and linked_deal["prospect_id"] is not None)
+    if (
+        inquiry["status"] == "CLAIMED"
+        or inquiry["client_conversation_id"]
+        or workflow_status in DEAL_ACTIVE_STATUSES
+        or linked_shared_source
+    ):
         flash("This Website Inquiry has linked Deal or client history and cannot be permanently deleted.", "warning")
         return redirect(url_for("main.inquiries_list"))
 
+    if linked_deal:
+        db.execute("DELETE FROM deals WHERE id=?", (linked_deal["id"],))
     db.execute(
         "DELETE FROM client_notifications WHERE entity_type='inquiry' AND entity_id=?",
         (inquiry_id,),
