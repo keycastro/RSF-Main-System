@@ -6,6 +6,13 @@
       <h1>We Build Custom Systems for Real Estate Businesses.</h1>
       <p class="hero-lead">We design and build purpose-built technology for real estate teams, brokerages, property companies, and property managers.</p>
       <p class="hero-support">Start with a working system we already built, or have us build a new system around your own workflow.</p>
+      {% if free_build_program.visible %}
+      <div class="free-program-inline">
+        <strong>Limited Beginning-Stage Program</strong>
+        <span>Free initial custom system development {% if free_build_program.is_upcoming %}starts {{ free_build_program.start_date }}{% else %}is available now{% endif %} and runs through {{ free_build_program.end_date }} for selected qualifying custom projects.</span>
+        <a class="text-link" href="{{ url_for('site.services') }}#free-custom-build-program">View Program Details</a>
+      </div>
+      {% endif %}
       <div class="hero-actions">
         <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">Build a Custom System</a>
         <a class="button secondary" href="{{ url_for('site.system_templates') }}">View Existing Systems</a>
@@ -36,6 +43,16 @@
       </article>
 
       <article class="human-option-card">
+        {% if free_build_program.visible %}
+        <p class="choice-label choice-label-pill">CUSTOM SYSTEM — LIMITED PROGRAM</p>
+        <strong>Build around your real business workflow.</strong>
+        <div class="system-choice-price system-choice-price--quote free-program-price" aria-label="Limited free custom system development">
+          <b>Free Initial Development</b>
+          <span>{% if free_build_program.is_upcoming %}Starts {{ free_build_program.start_date }}{% else %}Available now{% endif %} · Ends {{ free_build_program.end_date }}</span>
+        </div>
+        <p class="human-option-explanation">Selected qualifying projects can receive an agreed initial custom system build with no RSF development fee. The free offer applies only to the agreed initial scope. Existing systems, hosting, third-party costs, optional RSF management, and future major changes remain separate.</p>
+        <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Request a Free Custom Build</a>
+        {% else %}
         <p class="choice-label choice-label-pill">CUSTOM SYSTEM</p>
         <strong>Build around your real business workflow.</strong>
         <div class="system-choice-price system-choice-price--quote" aria-label="Custom system pricing">
@@ -44,6 +61,7 @@
         </div>
         <p class="human-option-explanation">We first understand the records, people, rules, screens, automation, and connections your business needs. Then we agree on the scope and price before we build.</p>
         <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Build a Custom System</a>
+        {% endif %}
       </article>
     </div>
   </div>
