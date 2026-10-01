@@ -50,7 +50,7 @@
               >RESEARCHED</a>
               &amp;
               <a
-                href="{{ url_for('main.inquiries_list', date=(deal['inquiry_created_at'] or '')[:10]) }}#website-inquiry-{{ deal['website_inquiry_id'] }}"
+                href="{{ url_for('main.inquiries_list') }}#website-inquiry-{{ deal['website_inquiry_id'] }}"
                 aria-label="Open linked Website Inquiry {{ deal['inquiry_name'] }}"
                 title="Open linked Website Inquiry"
               >WEBSITE</a>
@@ -58,7 +58,7 @@
             {% elif deal['source_kind'] == 'website_inquiry' %}
             <a
               class="deal-linked-label"
-              href="{{ url_for('main.inquiries_list', date=(deal['inquiry_created_at'] or '')[:10]) }}#website-inquiry-{{ deal['website_inquiry_id'] }}"
+              href="{{ url_for('main.inquiries_list') }}#website-inquiry-{{ deal['website_inquiry_id'] }}"
               aria-label="Open linked Website Inquiry {{ deal['inquiry_name'] }}"
               title="Open linked Website Inquiry"
             >LINKED IN WEBSITE INBOX</a>
