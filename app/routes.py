@@ -1254,12 +1254,46 @@ def prospects():
             (selected_str,),
         ).fetchall()
 
-    deal_rows = db.execute(
-        """SELECT d.id,d.prospect_id FROM deals d
-           JOIN prospects p ON p.id=d.prospect_id
-           WHERE p.status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','LOST')"""
-    ).fetchall()
-    prospect_deal_ids = {int(row["prospect_id"]): int(row["id"]) for row in deal_rows}
+    now = utcnow_iso()
+    for prospect in rows:
+        _ensure_deal_for_prospect(
+            db,
+            int(prospect["id"]),
+            int(g.user["id"]),
+            now,
+            allow_merge=False,
+        )
+    db.commit()
+
+    prospect_ids = [int(row["id"]) for row in rows]
+    workspace_deal_rows = []
+    if prospect_ids:
+        placeholders = ",".join("?" for _ in prospect_ids)
+        workspace_deal_rows = db.execute(
+            f"""SELECT d.* FROM deals d
+                WHERE d.prospect_id IN ({placeholders})
+                ORDER BY d.id""",
+            prospect_ids,
+        ).fetchall()
+    prospect_deals = {
+        int(row["prospect_id"]): row
+        for row in workspace_deal_rows
+        if row["prospect_id"] is not None
+    }
+    prospect_deal_ids = {
+        int(row["prospect_id"]): int(row["id"])
+        for row in workspace_deal_rows
+        if row["prospect_id"] is not None
+        and next(
+            (
+                (prospect["status"] or "").strip().upper()
+                for prospect in rows
+                if int(prospect["id"]) == int(row["prospect_id"])
+            ),
+            "",
+        ) in DEAL_ACTIVE_STATUSES
+    }
+    deal_support = _deal_card_support(db, workspace_deal_rows)
 
     previous_date = (selected - timedelta(days=1)).isoformat()
     next_date = (selected + timedelta(days=1)).isoformat() if selected < today else None
@@ -1275,6 +1309,8 @@ def prospects():
         is_today=is_today,
         prospect_status_labels=PROSPECT_STATUS_LABELS,
         prospect_deal_ids=prospect_deal_ids,
+        prospect_deals=prospect_deals,
+        **deal_support,
     )
 
 
