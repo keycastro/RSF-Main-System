@@ -2616,6 +2616,11 @@ document.addEventListener('click', (event) => {
         }
 
         source.dataset.prospectNotesStartValue = valueToSave;
+        const linkedDealNotes = row.querySelector('[data-deal-notes-compact]');
+        if (linkedDealNotes instanceof HTMLTextAreaElement) {
+          linkedDealNotes.value = valueToSave;
+          linkedDealNotes.dataset.dealStartValue = valueToSave;
+        }
         if (source.value !== valueToSave) source.dataset.prospectNotesPending = '1';
       } while (source.dataset.prospectNotesPending === '1');
     } catch (error) {
@@ -2666,6 +2671,12 @@ document.addEventListener('click', (event) => {
         if (!prospectNotesSource) return;
         prospectNotesSource.value = value;
         prospectNotesSource.dataset.prospectNotesStartValue = value;
+        const row = prospectNotesSource.closest('[data-prospect-row]');
+        const linkedDealNotes = row?.querySelector('[data-deal-notes-compact]');
+        if (linkedDealNotes instanceof HTMLTextAreaElement) {
+          linkedDealNotes.value = value;
+          linkedDealNotes.dataset.dealStartValue = value;
+        }
       }
     };
     RSFConversationTimeline.load(
@@ -4119,8 +4130,19 @@ document.addEventListener('click', (event) => {
     dealNotesTimelineUrl = trigger.dataset.timelineUrl || '';
     if (dealMeetAction) {
       const scheduledMeetUrl = trigger.dataset.googleMeetUrl || '';
-      dealMeetAction.href = scheduledMeetUrl || 'https://meet.google.com/';
-      dealMeetAction.title = scheduledMeetUrl ? 'Join scheduled Google Meet' : 'Open Google Meet';
+      const cardStatus = notesSource.closest('[data-deal-card]')?.dataset.dealStatus || '';
+      const dealSide = ['DEAL', 'DEMO', 'PROPOSAL', 'DECISION', 'WON', 'LOST'].includes(cardStatus);
+      if (dealSide) {
+        dealMeetAction.href = scheduledMeetUrl || 'https://meet.google.com/';
+        dealMeetAction.removeAttribute('aria-disabled');
+        delete dealMeetAction.dataset.actionLocked;
+        dealMeetAction.title = scheduledMeetUrl ? 'Join scheduled Google Meet' : 'Open Google Meet';
+      } else {
+        dealMeetAction.removeAttribute('href');
+        dealMeetAction.setAttribute('aria-disabled', 'true');
+        dealMeetAction.dataset.actionLocked = 'true';
+        dealMeetAction.title = 'Google Meet — available when this record becomes a Deal';
+      }
       dealMeetAction.setAttribute('aria-label', dealMeetAction.title);
     }
     if (notesViewerInput) notesViewerInput.value = '';
@@ -4458,6 +4480,12 @@ document.addEventListener('click', (event) => {
     const form = event.target.closest('[data-deal-form]');
     if (!form) return;
 
+    if (form.dataset.masterDealEmbedded === '1') {
+      event.preventDefault();
+      saveDealFormInBackground(form);
+      return;
+    }
+
     if (form.dataset.dealBackwardConfirmed === '1') {
       delete form.dataset.dealBackwardConfirmed;
       return;
@@ -4658,6 +4686,12 @@ document.addEventListener('click', (event) => {
         }
 
         source.dataset.websiteNotesStartValue = valueToSave;
+        const card = source.closest('[data-website-inquiry-card]');
+        const linkedDealNotes = card?.querySelector('[data-deal-notes-compact]');
+        if (linkedDealNotes instanceof HTMLTextAreaElement) {
+          linkedDealNotes.value = valueToSave;
+          linkedDealNotes.dataset.dealStartValue = valueToSave;
+        }
         if (source.value !== valueToSave) source.dataset.websiteNotesPending = '1';
       } while (source.dataset.websiteNotesPending === '1');
     } catch (error) {
@@ -4733,6 +4767,12 @@ document.addEventListener('click', (event) => {
         if (!notesSource) return;
         notesSource.value = value;
         notesSource.dataset.websiteNotesStartValue = value;
+        const card = notesSource.closest('[data-website-inquiry-card]');
+        const linkedDealNotes = card?.querySelector('[data-deal-notes-compact]');
+        if (linkedDealNotes instanceof HTMLTextAreaElement) {
+          linkedDealNotes.value = value;
+          linkedDealNotes.dataset.dealStartValue = value;
+        }
       }
     };
     RSFConversationTimeline.load(
@@ -4780,9 +4820,21 @@ document.addEventListener('click', (event) => {
       field.dataset.websiteInquiryStartStatus = savedStatus;
       field.dataset.websiteInquiryCurrentStatus = savedStatus;
       const card = field.closest('[data-website-inquiry-card]');
-      if (card) card.dataset.websiteInquiryWorkflowStatus = savedStatus;
+      if (card) {
+        card.dataset.websiteInquiryWorkflowStatus = savedStatus;
+        card.dataset.dealStatus = savedStatus;
+        const embeddedForm = card.querySelector('[data-deal-form]');
+        const hiddenStatus = embeddedForm?.querySelector('[data-master-deal-status-hidden]');
+        if (hiddenStatus) hiddenStatus.value = savedStatus;
+        if (embeddedForm) embeddedForm.dataset.dealCurrentStatus = savedStatus;
+      }
       const action = card?.querySelector('[data-website-deal-action]');
       if (action) renderWebsiteDealAction(action, savedStatus, data.deal_id || null);
+
+      if (websitePreDealStatuses.has(previous) && websiteDealStatuses.has(savedStatus)) {
+        window.location.reload();
+        return;
+      }
 
       const receivedDate = card?.dataset.websiteInquiryReceivedDate || '';
       const removeCarriedForward = Boolean(
