@@ -11,9 +11,9 @@
       <h1>{{ system_template.name }}</h1>
       <p class="page-lead">{{ system_template.full_description }}</p>
       <div class="system-detail-purchase" aria-label="Existing system purchase price">
-        <strong>{{ existing_system_pricing.price_label }}</strong>
+        <strong>{{ existing_system_pricing.price_label }} USD</strong>
         <span>One-time system price</span>
-        <p>This price is for the existing system shown here. Changes are priced separately.</p>
+        <p>This price is for the existing system shown here with its current core features. Custom changes, future upgrades, and ongoing technical management are separate.</p>
       </div>
       <div class="hero-actions template-primary-actions">
         <a class="button primary" href="{{ url_for('site.contact', template=system_template.slug, intent='existing-system') }}">Get This System</a>
@@ -25,6 +25,37 @@
       <span>Open image</span>
     </button>
     {% endif %}
+  </div>
+</section>
+
+<section class="section section-soft compact-detail-section">
+  <div class="container">
+    <div class="section-head compact-head reveal">
+      <div>
+        <h2>What the {{ existing_system_pricing.price_label }} USD price means.</h2>
+        <p>Know the scope before you contact us.</p>
+      </div>
+    </div>
+    <div class="management-choice-grid management-clarity-grid">
+      <section class="management-choice management-clarity-card reveal">
+        <p class="choice-label choice-label-pill">INCLUDED IN THE EXISTING SYSTEM PRICE</p>
+        <h3>The current system shown here.</h3>
+        <ul class="management-detail-list">
+          <li>The existing working system and its current core features</li>
+          <li>The screens, workflow, and functions described on this page</li>
+          <li>The option to manage the finished system yourself with no monthly RSF management fee</li>
+        </ul>
+      </section>
+      <section class="management-choice management-clarity-card reveal delay-1">
+        <p class="choice-label choice-label-pill">SEPARATE FROM THE BASE PRICE</p>
+        <h3>Changes and ongoing technical work.</h3>
+        <ul class="management-detail-list">
+          <li>Custom features or workflow changes</li>
+          <li>Future upgrades and larger expansions</li>
+          <li>Optional hosting, deployment, maintenance, backups, and technical management by RSF</li>
+        </ul>
+      </section>
+    </div>
   </div>
 </section>
 
@@ -102,7 +133,7 @@
   <div class="container human-detail-next-inner reveal">
     <div>
       <h2>Want this system for your business?</h2>
-      <p>The {{ existing_system_pricing.price_label }} price is for the existing system shown here. Changes are priced separately.</p>
+      <p>The {{ existing_system_pricing.price_label }} USD price is for the existing system shown here. Changes and optional technical management are separate.</p>
     </div>
     <div class="human-detail-next-actions">
       <a class="button primary" href="{{ url_for('site.contact', template=system_template.slug, intent='existing-system') }}">Get This System</a>

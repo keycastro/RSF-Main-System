@@ -5,11 +5,46 @@
     <div class="hero-copy reveal">
       <h1>We Build Custom Systems for Real Estate Businesses.</h1>
       <p class="hero-lead">We design and build purpose-built technology for real estate teams, brokerages, property companies, and property managers.</p>
-      <p class="hero-support">Choose one of our existing systems or ask us to build a new system for your business.</p>
+      <p class="hero-support">Start with a working system we already built, or have us build a new system around your own workflow.</p>
       <div class="hero-actions">
-        <a class="button primary" href="{{ url_for('site.system_templates') }}">View Systems</a>
-        <a class="button secondary" href="{{ url_for('site.contact') }}">Create a New System</a>
+        <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">Build a Custom System</a>
+        <a class="button secondary" href="{{ url_for('site.system_templates') }}">View Existing Systems</a>
       </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-soft">
+  <div class="container">
+    <div class="section-head simple-section-head reveal">
+      <div>
+        <h2>Two ways to work with us.</h2>
+        <p>Choose the path that matches what your business actually needs.</p>
+      </div>
+    </div>
+
+    <div class="human-simple-options reveal">
+      <article class="human-option-card">
+        <p class="choice-label choice-label-pill">EXISTING SYSTEM</p>
+        <strong>Start with a system that is already built.</strong>
+        <div class="system-choice-price" aria-label="Existing system price">
+          <b>{{ existing_system_pricing.price_label }} USD</b>
+          <span>One-time system price</span>
+        </div>
+        <p class="human-option-explanation">You get the existing system shown on this website with its current core features. Custom changes, future upgrades, and ongoing technical management are separate.</p>
+        <a class="button secondary human-option-button" href="{{ url_for('site.system_templates') }}">View Existing Systems</a>
+      </article>
+
+      <article class="human-option-card">
+        <p class="choice-label choice-label-pill">CUSTOM SYSTEM</p>
+        <strong>Build around your real business workflow.</strong>
+        <div class="system-choice-price system-choice-price--quote" aria-label="Custom system pricing">
+          <b>Price by Agreement</b>
+          <span>Scope and price are agreed before development</span>
+        </div>
+        <p class="human-option-explanation">We first understand the records, people, rules, screens, automation, and connections your business needs. Then we agree on the scope and price before we build.</p>
+        <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Build a Custom System</a>
+      </article>
     </div>
   </div>
 </section>
@@ -19,7 +54,7 @@
     <div class="section-head simple-section-head reveal">
       <div>
         <h2>Systems We Already Built.</h2>
-        <p class="system-choice-helper">Choose the one that is closest to what your business needs.</p>
+        <p class="system-choice-helper">These are working portfolio systems you can inspect before contacting us.</p>
       </div>
     </div>
 
@@ -30,7 +65,7 @@
           <h3>{{ item.name }}</h3>
           <p>{{ item.short_description }}</p>
           <div class="existing-system-card-price" aria-label="One-time system price">
-            <strong>{{ existing_system_pricing.price_label }}</strong>
+            <strong>{{ existing_system_pricing.price_label }} USD</strong>
             <span>One-time system price</span>
           </div>
         </div>
@@ -50,6 +85,31 @@
   </div>
 </section>
 
+<section class="section section-soft">
+  <div class="container">
+    <div class="section-head simple-section-head reveal">
+      <div>
+        <h2>See what is real before you buy.</h2>
+        <p>We use the website to show the systems, scope, pricing model, and project context clearly.</p>
+      </div>
+    </div>
+    <div class="management-upgrade-grid reveal">
+      <article class="management-upgrade-card">
+        <strong>Actual system previews</strong>
+        <p>Published system pages use screenshots from systems we built. Sample or synthetic data is identified where it is used.</p>
+      </article>
+      <article class="management-upgrade-card">
+        <strong>Clear project context</strong>
+        <p>Portfolio projects are described as portfolio projects. We do not present them as client commissions when they are not.</p>
+      </article>
+      <article class="management-upgrade-card">
+        <strong>Clear scope before work</strong>
+        <p>Existing systems, custom changes, upgrades, and optional technical management are treated as separate scopes.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
 <section class="home-featured-actions-section" aria-label="More ways to continue">
   <div class="home-featured-actions-shell">
     <div class="home-featured-edge home-featured-edge--left" aria-hidden="true">
@@ -60,16 +120,16 @@
 
     <div class="container home-featured-actions">
       <div class="home-featured-action home-featured-action--primary reveal">
-        <span class="home-featured-action-kicker">READY TO SEE MORE?</span>
-        <a class="home-featured-action-link home-featured-action-link--primary" href="{{ url_for('site.system_templates') }}">
-          <span>Explore All Systems</span><span class="home-featured-action-arrow" aria-hidden="true">→</span>
+        <span class="home-featured-action-kicker">HAVE A SPECIFIC WORKFLOW?</span>
+        <a class="home-featured-action-link home-featured-action-link--primary" href="{{ url_for('site.contact', intent='custom-build') }}">
+          <span>Build a Custom System</span><span class="home-featured-action-arrow" aria-hidden="true">→</span>
         </a>
       </div>
 
       <span class="home-featured-action-divider" aria-hidden="true"></span>
 
       <div class="home-featured-action home-featured-action--secondary reveal">
-        <span class="home-featured-action-kicker home-featured-action-kicker--secondary">NEED DETAILS?</span>
+        <span class="home-featured-action-kicker home-featured-action-kicker--secondary">WANT THE FULL PRICING MODEL?</span>
         <a class="home-featured-action-link home-featured-action-link--secondary" href="{{ url_for('site.services') }}">
           <span>See Services & Pricing</span><span class="home-featured-action-arrow" aria-hidden="true">→</span>
         </a>

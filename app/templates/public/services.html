@@ -3,7 +3,7 @@
 <section class="page-hero page-hero-simple how-page-hero">
   <div class="container simple-page-hero reveal">
     <h1>Services & Pricing</h1>
-    <p>Tell us what you need. We build the system. Then you choose who manages it.</p>
+    <p>Choose an existing system or build a custom one. Then choose who manages the technical side.</p>
   </div>
 </section>
 
@@ -12,30 +12,72 @@
     <article class="human-step reveal">
       <div class="human-step-number">1</div>
       <div class="human-step-body">
-        <h2>Tell us what you need.</h2>
-        <p>Tell us about your business and what you want the system to help with.</p>
+        <h2>Choose how you want to start.</h2>
+        <p>The existing-system price and custom-development price are different because they are different scopes of work.</p>
+
         <div class="human-simple-options" aria-label="Ways we can build your system">
           <article class="human-option-card">
             <p class="choice-label choice-label-pill">USE AN EXISTING SYSTEM</p>
             <strong>Use one of our existing systems</strong>
             <div class="system-choice-price" aria-label="Existing system price">
-              <b>{{ existing_system_pricing.price_label }}</b>
-              <span>One-time payment</span>
+              <b>{{ existing_system_pricing.price_label }} USD</b>
+              <span>One-time system price</span>
             </div>
-            <p class="human-option-explanation">Choose one of the systems we already built. The price is for the existing system. If you want changes later, upgrades are priced separately.</p>
-            <a class="button primary human-option-button" href="{{ url_for('site.system_templates') }}">View Systems</a>
+            <p class="human-option-explanation">This price is for the existing working system shown on this website with its current core features.</p>
+            <div class="management-detail-block">
+              <strong class="management-detail-title">Included in the base price:</strong>
+              <ul class="management-detail-list">
+                <li>The existing system as shown</li>
+                <li>Its current core screens, workflow, and features</li>
+                <li>The option to manage the finished system yourself with no monthly RSF management fee</li>
+              </ul>
+            </div>
+            <div class="management-detail-block">
+              <strong class="management-detail-title">Separate from the base price:</strong>
+              <ul class="management-detail-list">
+                <li>Custom features or workflow changes</li>
+                <li>Future upgrades or large expansions</li>
+                <li>Optional ongoing hosting and technical management by RSF</li>
+              </ul>
+            </div>
+            <a class="button secondary human-option-button" href="{{ url_for('site.system_templates') }}">View Existing Systems</a>
           </article>
+
           <article class="human-option-card">
-            <p class="choice-label choice-label-pill">BUILD A NEW SYSTEM</p>
-            <strong>Build a new system</strong>
+            <p class="choice-label choice-label-pill">BUILD A CUSTOM SYSTEM</p>
+            <strong>Build around your own workflow</strong>
             <div class="system-choice-price system-choice-price--quote" aria-label="New custom system price">
               <b>Price by Agreement</b>
-              <span>Based on the work needed</span>
+              <span>Scope and price are agreed before development</span>
             </div>
-            <p class="human-option-explanation">If none of the existing systems fit what your business needs, we can build a new system for you.</p>
-            <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Request a System</a>
+            <p class="human-option-explanation">A custom build starts with your actual business process. We review what needs to be tracked, automated, connected, and controlled before agreeing on the work.</p>
+            <div class="management-detail-block">
+              <strong class="management-detail-title">Custom pricing depends on:</strong>
+              <ul class="management-detail-list">
+                <li>Number of screens, records, and workflows</li>
+                <li>User roles, permissions, and approvals</li>
+                <li>Automation, reports, reminders, and business rules</li>
+                <li>Connections to other tools or services</li>
+                <li>Deployment and ongoing technical-management needs</li>
+              </ul>
+            </div>
+            <p class="management-billing-note">We do not start custom development until the scope and price are agreed.</p>
+            <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Build a Custom System</a>
           </article>
         </div>
+
+        <section class="management-upgrades" aria-labelledby="process-title">
+          <div class="management-upgrades-intro">
+            <p class="choice-label choice-label-pill">HOW CUSTOM WORK MOVES FORWARD</p>
+            <h3 id="process-title">From business problem to finished system.</h3>
+          </div>
+          <ol class="template-steps compact-steps">
+            <li><span>1</span><p><strong>Explain the problem.</strong> Tell us what is hard to track, repetitive, scattered, delayed, or missing.</p></li>
+            <li><span>2</span><p><strong>Define the scope.</strong> We identify the records, users, rules, screens, automation, and technical work required.</p></li>
+            <li><span>3</span><p><strong>Agree on the work and price.</strong> The scope and price are confirmed before development begins.</p></li>
+            <li><span>4</span><p><strong>Build and test.</strong> We create the agreed system and verify the workflow before delivery.</p></li>
+          </ol>
+        </section>
       </div>
     </article>
 
@@ -54,7 +96,7 @@
             <div class="management-price-panel management-price-panel--single" aria-label="Self-managed pricing">
               <div class="management-price-column">
                 <strong>$0/month</strong>
-                <span>No management fee</span>
+                <span>No RSF management fee</span>
               </div>
             </div>
 
@@ -121,12 +163,12 @@
           <div class="management-upgrade-grid">
             <article class="management-upgrade-card">
               <strong>Minor System Upgrade</strong>
-              <span class="management-upgrade-price">$79</span>
+              <span class="management-upgrade-price">$79 USD</span>
               <p>For a focused feature, automation, report, or workflow improvement.</p>
             </article>
             <article class="management-upgrade-card">
               <strong>Major System Upgrade</strong>
-              <span class="management-upgrade-price">$149</span>
+              <span class="management-upgrade-price">$149 USD</span>
               <p>For a larger feature, workflow change, automation, or system improvement.</p>
             </article>
             <article class="management-upgrade-card">
@@ -138,7 +180,49 @@
         </section>
       </div>
     </article>
+  </div>
+</section>
 
+<section class="section section-soft" id="faq">
+  <div class="container">
+    <div class="section-head simple-section-head reveal">
+      <div>
+        <h2>Common questions.</h2>
+        <p>Clear answers about the system price, custom work, upgrades, and management.</p>
+      </div>
+    </div>
+
+    <div class="reveal">
+      <details class="detail-disclosure human-disclosure">
+        <summary>Is the $199 USD system a fully custom build?</summary>
+        <p>No. The $199 USD price is for an existing system already built and shown on this website. If you want changes to its screens, workflow, features, automation, or other parts, those changes are priced separately.</p>
+      </details>
+
+      <details class="detail-disclosure human-disclosure">
+        <summary>Is hosting and ongoing technical management included in the $199 USD price?</summary>
+        <p>No ongoing RSF management fee is included in that base price. You can manage the finished system yourself, or ask RSF to handle hosting and technical care under a separate price agreement.</p>
+      </details>
+
+      <details class="detail-disclosure human-disclosure">
+        <summary>How is a custom system priced?</summary>
+        <p>We first review the work required. Pricing depends on the system scope, including screens, data, users, permissions, workflow rules, automation, integrations, deployment, and ongoing technical needs. The scope and price are agreed before development begins.</p>
+      </details>
+
+      <details class="detail-disclosure human-disclosure">
+        <summary>Can an existing system be changed for my business?</summary>
+        <p>Yes. Existing systems can be customized. Smaller focused changes can fall under the published upgrade prices; larger changes or expansions are priced by agreement.</p>
+      </details>
+
+      <details class="detail-disclosure human-disclosure">
+        <summary>Can I request improvements later?</summary>
+        <p>Yes. Upgrades are separate from maintenance, so you can request new features or workflow improvements later whether you manage the system yourself or use RSF managed care.</p>
+      </details>
+    </div>
+
+    <div class="catalog-next-step reveal human-next-step">
+      <div><strong>Have a workflow that does not fit an existing system?</strong><span>Tell us the problem and we will scope a custom system first.</span></div>
+      <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">Build a Custom System</a>
+    </div>
   </div>
 </section>
 {% endblock %}
