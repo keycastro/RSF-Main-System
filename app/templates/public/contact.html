@@ -8,27 +8,29 @@
   </div>
 </section>
 
+{% if not source_intent %}
 <section class="section section-soft contact-path-section">
   <div class="container">
     <div class="contact-path-grid reveal">
-      <article class="management-upgrade-card contact-path-card primary-contact-path {{ 'is-selected' if source_intent == 'custom-build' else '' }}">
+      <article class="management-upgrade-card contact-path-card primary-contact-path">
         <p class="choice-label choice-label-pill">MAIN SERVICE</p>
-        <strong>{% if free_build_program.visible %}Custom System — Limited Free Build Program{% else %}Custom System Build{% endif %}</strong>
-        <p>{% if free_build_program.visible %}Need a system made for your business? Selected projects can get a free custom system build during RSF’s {{ free_build_program.period }} program.{% else %}Need a system made for your business? Tell us what you need and we will review it first.{% endif %}</p>
+        <strong>Custom System Build</strong>
+        <p>Need a system made for your business? Tell us what you need and we will review it first.</p>
         <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">{% if free_build_program.visible %}Request a Free Custom Build{% else %}Build a Custom System{% endif %}</a>
       </article>
 
-      <article class="management-upgrade-card contact-path-card {{ 'is-selected' if source_intent == 'customize' else '' }}">
+      <article class="management-upgrade-card contact-path-card">
         <p class="choice-label choice-label-pill">ALREADY HAVE A SYSTEM?</p>
         <strong>Upgrade or Customization</strong>
-        <p>Already have a system and need a focused feature, process change, automation, or expansion?</p>
+        <p>Need a focused feature, process change, automation, or expansion for a system you already have?</p>
         <a class="text-link" href="{{ url_for('site.contact', intent='customize') }}">Request an Upgrade</a>
       </article>
     </div>
   </div>
 </section>
+{% endif %}
 
-<section class="section human-contact-section">
+<section class="section human-contact-section {{ 'contact-intent-selected' if source_intent else '' }}">
   <div class="container human-contact-wrap">
     <form class="contact-form human-contact-form reveal" method="post" novalidate>
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
@@ -49,31 +51,33 @@
 
       {% if source_intent == 'custom-build' and free_build_program.visible %}
       <div class="free-build-contact-note" role="note">
-        <strong>Free Custom Build Program</strong>
-        <p>You are asking to join RSF’s limited free build program, {{ free_build_program.period }}. RSF reviews every request first, and not every request is accepted. If accepted, the development fee is $0 for the system and features we agree on before work starts. Extra changes, hosting, costs from other apps or services, and paid RSF support after the system is finished are separate.</p>
+        <strong>Limited Free Build Program · {{ free_build_program.period }}</strong>
+        <p>RSF reviews every request. If accepted, the development fee for the system and features we agree on is $0.</p>
+        <a class="text-link" href="{{ url_for('site.services') }}#free-custom-build-program">See full program details</a>
       </div>
       {% endif %}
 
       <div class="honeypot" aria-hidden="true"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+
       <div class="form-row">
         <label><span>Name</span><input required maxlength="100" name="name" value="{{ form_data.name if form_data else '' }}" placeholder="Your name"></label>
         <label><span>Email</span><input required maxlength="160" type="email" name="email" value="{{ form_data.email if form_data else '' }}" placeholder="you@company.com"></label>
       </div>
+
       <div class="form-row">
         <label><span>Phone Number</span><input required maxlength="40" type="tel" name="phone" value="{{ form_data.phone if form_data else '' }}" placeholder="Your phone number"></label>
         <label><span>Company <small>optional</small></span><input maxlength="140" name="company" value="{{ form_data.company if form_data else '' }}" placeholder="Company name"></label>
       </div>
+
       <label><span>What do you need help with?</span><textarea required minlength="20" maxlength="3000" name="message" rows="6" placeholder="What is hard to track, repeated, scattered, or missing in your business? What should the system help your team do?">{{ form_data.message if form_data else '' }}</textarea></label>
+
       <button class="button primary full-button" type="submit">Send System Request</button>
+
       <div class="human-contact-foot">
-        {% if source_intent == 'custom-build' and free_build_program.visible %}
-        <p>We review your request first. If your project is accepted, we agree on the system and features before work starts. The development fee for that agreed work is $0. Extra changes, hosting, costs from other apps or services, and paid RSF support after the system is finished are separate.</p>
-        {% else %}
-        <p>We review your request first. For custom work, we agree on what we will build and the price before we start.</p>
-        {% endif %}
-        <p>We will reply to the email you provide.</p>
+        <p>We review your request first and reply to the email you provide.</p>
         {% if contact_email %}<p>Or email us directly: <a class="text-link" href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>{% endif %}
       </div>
+
       <p class="form-privacy">Do not send passwords or private client data.</p>
       {% if environment_label == 'Local' %}<p class="local-form-note">Local preview: test messages stay on this computer.</p>{% endif %}
     </form>
