@@ -2,43 +2,14 @@
 <div
   class="website-inbox-page"
   data-website-inbox-page
-  data-website-selected-date="{{ selected_date }}"
-  data-website-is-today="{{ '1' if is_today else '0' }}"
 >
 <div class="page-head workspace-page-head client-inbox-head">
   <div class="website-inbox-head-main">
     <h1>Website Inbox</h1>
     <p>New inquiries and active client conversations.</p>
 
-    <form class="prospect-date-form prospect-head-date website-inbox-head-date" method="get" action="{{ url_for('main.inquiries_list') }}">
-      <div class="prospect-date-nav" aria-label="Website Inquiry date navigation">
-        <a class="prospect-date-step" href="{{ url_for('main.inquiries_list', date=previous_date) }}" aria-label="Previous day" title="Previous day">‹</a>
-        <div class="prospect-date-picker-wrap">
-          <button class="prospect-date-picker" type="button" data-website-date-trigger aria-label="Choose Website Inquiry date">
-            <span class="prospect-date-display">{{ 'Today · ' if is_today else '' }}{{ selected_date|dateonly }}</span>
-            <span class="prospect-date-arrow" aria-hidden="true">▾</span>
-          </button>
-          <input class="prospect-date-native" id="website-inquiry-date" type="date" name="date" value="{{ selected_date }}" max="{{ today }}" aria-label="Choose Website Inquiry date" data-website-date-input>
-        </div>
-        {% if next_date %}
-          <a class="prospect-date-step" href="{{ url_for('main.inquiries_list', date=next_date) }}" aria-label="Next day" title="Next day">›</a>
-        {% else %}
-          <span class="prospect-date-step is-disabled" aria-hidden="true">›</span>
-        {% endif %}
-      </div>
-    </form>
   </div>
 </div>
-
-{% if is_today %}
-<div class="simple-section-head prospect-filter-head website-inbox-filter-head" data-website-filters>
-  <div class="prospect-status-filters" role="group" aria-label="Filter today's Website Inquiries by status">
-    <button class="prospect-filter-button is-active" type="button" data-website-filter="ALL" aria-pressed="true">All</button>
-    <button class="prospect-filter-button" type="button" data-website-filter="NOT_CONTACTED" aria-pressed="false">Not Contacted</button>
-    <button class="prospect-filter-button" type="button" data-website-filter="NO_ANSWER" aria-pressed="false">No Answer</button>
-  </div>
-</div>
-{% endif %}
 
 <div class="website-inquiry-list" data-website-inquiry-list>
   {% for inquiry in website_inquiries %}
@@ -49,7 +20,6 @@
     data-deal-card
     data-deal-status="{{ inquiry.workflow_status }}"
     data-website-inquiry-workflow-status="{{ inquiry.workflow_status }}"
-    data-website-inquiry-received-date="{{ inquiry.created_at[:10] }}"
   >
     <header class="website-inquiry-card-head">
       <div class="website-inquiry-card-identity">
@@ -176,7 +146,7 @@
       {% set deal_client_email = inquiry.email %}
       {% set deal_client_phone = inquiry.phone %}
       {% set deal_client_location = deal['location'] %}
-      {% set deal_return_to = url_for('main.inquiries_list', date=selected_date) ~ '#website-inquiry-' ~ inquiry.id %}
+      {% set deal_return_to = url_for('main.inquiries_list') ~ '#website-inquiry-' ~ inquiry.id %}
       {% set show_deal_section_heading = true %}
       {% set deal_embed_identity = true %}
       {% include '_master_deal_information.html' %}
@@ -203,16 +173,9 @@
   {% endfor %}
 
   <div class="workspace-empty-state" data-website-list-empty role="status" {% if website_inquiries %}hidden{% endif %}>
-    <strong>{{ 'No Website Inquiries for today.' if is_today else 'No Website Inquiries for this date.' }}</strong>
-    <span>{{ 'New inquiries and unfinished Not Contacted / No Answer follow-ups will appear here.' if is_today else 'Choose another date to view received Website Inquiries.' }}</span>
+    <strong>No Website Inquiries yet.</strong>
+    <span>Website Inquiries you receive will appear here.</span>
   </div>
-
-  {% if is_today %}
-    <div class="workspace-empty-state workspace-empty-state--filter" data-website-filter-empty role="status" hidden>
-      <strong>No Website Inquiries in this status.</strong>
-      <span>Try another status filter.</span>
-    </div>
-  {% endif %}
 </div>
 
 <dialog class="deal-status-confirm" data-website-status-confirm aria-labelledby="website-status-confirm-title">
