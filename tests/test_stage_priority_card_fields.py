@@ -69,19 +69,23 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         self.assertIn("background:#f4fbf7", css)
         self.assertIn(".prospect-secondary-deal-panel>.master-deal-information", css)
 
-    def test_linked_outbound_view_deal_replaces_visible_deal_heading(self):
+    def test_linked_outbound_other_field_heading_and_footer_view_deal(self):
         prospect = self.read("app/templates/_prospect_row.html")
         master = self.read("app/templates/_master_deal_information.html")
         deals = self.read("app/templates/deals.html")
         inquiries = self.read("app/templates/inquiries.html")
-        self.assertIn("deal_section_action_url", prospect)
-        self.assertIn("master-deal-section-action", master)
-        self.assertIn(">View Deal</a>", master)
-        self.assertIn("{% if deal_section_action_url %}", master)
-        self.assertIn("<h3>Deal Information</h3>", master)
-        self.assertNotIn('href="{{ url_for(\'main.deals\') }}#deal-{{ linked_deal_id }}">View Deal</a>', prospect)
-        self.assertNotIn("deal_section_action_url", deals)
-        self.assertNotIn("deal_section_action_url", inquiries)
+        self.assertIn("{% set deal_section_heading = 'OTHER FIELD' %}", prospect)
+        self.assertIn("{% set deal_section_heading = deal_section_heading if deal_section_heading is defined else 'Deal Information' %}", master)
+        self.assertIn("<h3>{{ deal_section_heading }}</h3>", master)
+        self.assertIn("{{ 'Hide' if deal_section_open else 'Show' }} {{ deal_section_heading }}", master)
+        self.assertNotIn("deal_section_action_url", prospect)
+        footer_at = prospect.index('<div class="prospect-card-footer">')
+        view_at = prospect.index('href="{{ url_for(\'main.deals\') }}#deal-{{ linked_deal_id }}">View Deal</a>')
+        copy_at = prospect.index("data-prospect-copy", footer_at)
+        self.assertLess(footer_at, view_at)
+        self.assertLess(view_at, copy_at)
+        self.assertNotIn("deal_section_heading = 'OTHER FIELD'", deals)
+        self.assertNotIn("deal_section_heading = 'OTHER FIELD'", inquiries)
 
     def test_outbound_documents_live_inside_collapsed_deal_information_only(self):
         prospect = self.read("app/templates/_prospect_row.html")

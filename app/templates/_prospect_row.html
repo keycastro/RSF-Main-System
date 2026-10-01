@@ -19,6 +19,7 @@
 {% set deal_documents_inside_body = true %}
 {% set deal_section_collapsible = true %}
 {% set deal_section_open = false %}
+{% set deal_section_heading = 'OTHER FIELD' %}
 <article class="prospect-card-shell" id="prospect-{{ prospect['id'] }}" data-prospect-row data-prospect-status="{{ prospect['status'] }}" data-deal-card data-deal-status="{{ prospect['status'] }}" data-prospect-update-url="{{ url_for('main.prospect_update', prospect_id=prospect['id']) }}" data-prospect-attempt-url="{{ url_for('main.prospect_contact_attempt', prospect_id=prospect['id']) }}">
   <details class="prospect-card">
     <summary class="prospect-card-summary">
@@ -125,7 +126,6 @@
 
     {% set linked_deal_id = prospect_deal_ids.get(prospect['id']) if prospect_deal_ids is defined else none %}
     {% if deal %}
-      {% set deal_section_action_url = (url_for('main.deals') ~ '#deal-' ~ linked_deal_id) if linked_deal_id else '' %}
     <div class="prospect-secondary-deal-panel">
       {% include '_master_deal_information.html' %}
     </div>
@@ -133,6 +133,9 @@
 
     <div class="prospect-card-footer">
       <div class="prospect-deal-action">
+        {% if linked_deal_id %}
+          <a class="button secondary" href="{{ url_for('main.deals') }}#deal-{{ linked_deal_id }}">View Deal</a>
+        {% endif %}
         <button class="prospect-copy-button" type="button" data-prospect-copy aria-label="Copy Prospect" title="Copy Prospect">📋</button>
         {% if not linked_deal_id %}
           <form method="post" action="{{ url_for('main.deal_create_from_prospect', prospect_id=prospect['id']) }}">
