@@ -1068,6 +1068,22 @@ textarea.prospect-inline-editor{resize:vertical}
 .deal-timezone-combobox>input{
   padding-right:38px
 }
+.deal-timezone-split-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:10px
+}
+.deal-timezone-country-wrap{
+  position:relative;
+  min-width:0
+}
+.deal-timezone-country-wrap>input{
+  width:100%;
+  padding-right:38px
+}
+.deal-timezone-split>.deal-timezone-dropdown{
+  top:calc(100% + 5px)
+}
 .deal-timezone-toggle{
   position:absolute;
   top:50%;
@@ -1191,7 +1207,8 @@ textarea.prospect-inline-editor{resize:vertical}
   overflow-wrap:anywhere
 }
 @media(max-width:460px){
-  .deal-demo-date-time-row{grid-template-columns:1fr}
+  .deal-demo-date-time-row,
+  .deal-timezone-split-grid{grid-template-columns:1fr}
 }
 .prospect-notes-field{
   display:grid;
