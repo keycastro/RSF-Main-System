@@ -629,6 +629,45 @@ def _ensure_deal_for_website_inquiry(db, inquiry_id: int, created_by_user_id: in
 
 
 
+def _deal_card_support(db, deal_rows) -> dict:
+    rows = list(deal_rows or [])
+    deal_ids = [int(row["id"]) for row in rows]
+    deal_documents: dict[int, list] = {}
+    if deal_ids:
+        placeholders = ",".join("?" for _ in deal_ids)
+        document_rows = db.execute(
+            f"""SELECT id,deal_id,document_type,display_name,original_name,mime_type,size_bytes,created_at
+                FROM deal_documents
+                WHERE deal_id IN ({placeholders})
+                ORDER BY deal_id,created_at DESC,id DESC""",
+            deal_ids,
+        ).fetchall()
+        for document in document_rows:
+            deal_documents.setdefault(int(document["deal_id"]), []).append(document)
+
+    from .calendar_ops import connection_status as calendar_connection_status, demo_time_display
+    from .timezone_location import timezone_display_location
+    return {
+        "deal_documents": deal_documents,
+        "calendar_status": calendar_connection_status(),
+        "deal_demo_time_displays": {
+            int(row["id"]): demo_time_display(
+                row["demo_date"],
+                row["demo_time"],
+                row["demo_timezone"],
+            )
+            for row in rows
+        },
+        "deal_timezone_location_displays": {
+            int(row["id"]): (
+                (row["demo_timezone_location"] or "").strip()
+                or timezone_display_location((row["demo_timezone"] or "").strip())
+            )
+            for row in rows
+        },
+    }
+
+
 def _clean_account_name(value: str) -> str:
     return (value or "").strip()[:160]
 
