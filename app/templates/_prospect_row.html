@@ -12,6 +12,7 @@
 {% set deal_embed_identity = true %}
 {% set deal_show_email = false %}
 {% set deal_show_contact_number = false %}
+{% set deal_show_city_country = false %}
 {% set deal_show_notes = is_active_deal_stage %}
 {% set deal_show_email_conversation = is_active_deal_stage %}
 {% set deal_show_documents = true %}
@@ -43,6 +44,11 @@
           <span>Post Date</span>
           <button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Post Date">{{ prospect['post_date']|dateonly if prospect['post_date'] else '—' }}</button>
         </div>
+        {% if deal %}
+          {% set deal_city_country_extra_class = 'prospect-card-city-country' %}
+          {% include '_master_deal_city_country.html' %}
+          {% set deal_city_country_extra_class = '' %}
+        {% endif %}
         <div class="prospect-card-meta-item prospect-card-platform prospect-editable-field" data-prospect-edit-field data-prospect-field="platform_wanted" data-prospect-editor="text" data-prospect-value="{{ prospect['platform_wanted'] }}">
           <span>Platform They Want</span>
           <button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Platform They Want">{{ prospect['platform_wanted'] or '—' }}</button>
