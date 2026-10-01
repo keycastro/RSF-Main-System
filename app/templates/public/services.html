@@ -48,7 +48,7 @@
             <p class="choice-label choice-label-pill">BUILD A CUSTOM SYSTEM — LIMITED PROGRAM</p>
             <strong>Build around your own workflow</strong>
             <div class="system-choice-price system-choice-price--quote free-program-price" aria-label="Limited free custom system development">
-              <b>$0 Initial Development Fee</b>
+              <b>$0 Development Fee</b>
               <span>{% if free_build_program.is_upcoming %}Starts {{ free_build_program.start_date }}{% else %}Available now{% endif %} · Ends {{ free_build_program.end_date }}</span>
             </div>
             <p class="human-option-explanation">If your project is accepted, RSF builds the custom system and features we agree on with no development fee during the program. We review every request first. Not every request is accepted.</p>
@@ -67,7 +67,7 @@
             <strong>Build around your own workflow</strong>
             <div class="system-choice-price system-choice-price--quote" aria-label="New custom system price">
               <b>Price by Agreement</b>
-              <span>Scope and price are agreed before development</span>
+              <span>We agree on the work and price before we start</span>
             </div>
             <p class="human-option-explanation">A custom build starts with your actual business process. We review what needs to be tracked, automated, connected, and controlled before agreeing on the work.</p>
             <div class="management-detail-block">
@@ -77,10 +77,10 @@
                 <li>User roles, permissions, and approvals</li>
                 <li>Automation, reports, reminders, and business rules</li>
                 <li>Connections to other tools or services</li>
-                <li>Deployment and ongoing technical-management needs</li>
+                <li>Hosting, putting the system online, and support after it is finished</li>
               </ul>
             </div>
-            <p class="management-billing-note">We do not start custom development until the scope and price are agreed.</p>
+            <p class="management-billing-note">We do not start building until we agree on the work and price.</p>
             <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Build a Custom System</a>
             {% endif %}
           </article>
@@ -140,7 +140,7 @@
             {% if free_build_program.visible %}
             <li><span>3</span><p><strong>Confirm the free build.</strong> If your project is accepted, the development fee for the system and features we agreed on is $0.</p></li>
             {% else %}
-            <li><span>3</span><p><strong>Agree on the work and price.</strong> The scope and price are confirmed before development begins.</p></li>
+            <li><span>3</span><p><strong>Agree on the work and price.</strong> We agree on what we will build and the price before we start.</p></li>
             {% endif %}
             <li><span>4</span><p><strong>Build and test.</strong> We build the system, test it, and make sure the agreed features work.</p></li>
           </ol>
@@ -173,10 +173,10 @@
             <div class="management-detail-block">
               <strong class="management-detail-title">You handle:</strong>
               <ul class="management-detail-list management-handle-list">
-                <li class="management-item-hosting"><span class="management-item-icon" aria-hidden="true">▦</span><span>Hosting and deployment</span></li>
+                <li class="management-item-hosting"><span class="management-item-icon" aria-hidden="true">▦</span><span>Hosting and putting the system online</span></li>
                 <li class="management-item-security"><span class="management-item-icon" aria-hidden="true">🛡</span><span>Security and updates</span></li>
                 <li class="management-item-backups"><span class="management-item-icon" aria-hidden="true">☁</span><span>Backups</span></li>
-                <li class="management-item-technical"><span class="management-item-icon" aria-hidden="true">⚙</span><span>Technical fixes</span></li>
+                <li class="management-item-technical"><span class="management-item-icon" aria-hidden="true">⚙</span><span>Fixing system problems</span></li>
               </ul>
             </div>
           </section>
@@ -189,10 +189,10 @@
             <div class="management-price-panel management-price-panel--single" aria-label="Maintenance pricing">
               <div class="management-price-column">
                 <strong>Price by Agreement</strong>
-                <span>Based on the system and technical work required</span>
+                <span>Based on the system and the support it needs</span>
               </div>
             </div>
-            <p class="management-billing-note">Optional managed care. Pricing is agreed based on the system and the technical work required.</p>
+            <p class="management-billing-note">Optional paid RSF support. The price depends on the system and the support it needs.</p>
 
             <div class="management-detail-block management-maintenance-block">
               <h4 class="management-maintenance-heading">What RSF handles</h4>
@@ -201,10 +201,10 @@
                 <div class="management-maintenance-column management-maintenance-included">
                   <strong class="management-detail-title">We handle:</strong>
                   <ul class="management-detail-list">
-                    <li>Hosting and deployment</li>
-                    <li>Routine technical checks</li>
+                    <li>Hosting and putting the system online</li>
+                    <li>Regular system checks</li>
                     <li>Backups when used</li>
-                    <li>Technical fixes for the current system</li>
+                    <li>Fixing problems in the current system</li>
                     <li>Small changes to the current system</li>
                   </ul>
                 </div>
@@ -223,7 +223,7 @@
           </section>
         </div>
 
-        <p class="management-responsibility-note"><strong>You always manage your business.</strong> Your staff, customers, records, and daily operations stay with you. This choice only decides who handles the technical care of the system.</p>
+        <p class="management-responsibility-note"><strong>You always manage your business.</strong> Your staff, customers, records, and daily operations stay with you. This choice only decides who keeps the system online and working.</p>
 
         <section class="management-upgrades" aria-labelledby="changes-later-title">
           <div class="management-upgrades-intro">
@@ -287,7 +287,7 @@
       </details>
 
       <details class="detail-disclosure human-disclosure">
-        <summary>Is hosting and ongoing technical management included in the $199 USD price?</summary>
+        <summary>Is hosting and ongoing RSF support included in the $199 USD price?</summary>
         <p>No ongoing RSF support is included in that base price. You can manage the finished system yourself, or pay RSF separately to help keep it online and working.</p>
       </details>
 
@@ -296,7 +296,7 @@
         {% if free_build_program.visible %}
         <p>During the limited program, accepted projects have a $0 development fee for the system and features we agree to build. Extra work, paid RSF support, costs from other apps or services, and future big changes are separate. After the program ends, RSF will start moving toward paid custom system development.</p>
         {% else %}
-        <p>We first review the work required. Pricing depends on the system scope, including screens, data, users, permissions, workflow rules, automation, integrations, deployment, and ongoing technical needs. The scope and price are agreed before development begins.</p>
+        <p>We first review what you need. The price depends on the system, features, users, rules, connections to other apps or services, hosting, and support. We agree on the work and price before we start.</p>
         {% endif %}
       </details>
 
@@ -312,7 +312,7 @@
     </div>
 
     <div class="catalog-next-step reveal human-next-step">
-      <div><strong>Have a workflow that does not fit an existing system?</strong><span>{% if free_build_program.visible %}Selected qualifying custom projects can use the limited free-build program through {{ free_build_program.end_date }}.{% else %}Tell us the problem and we will scope a custom system first.{% endif %}</span></div>
+      <div><strong>Have a workflow that does not fit an existing system?</strong><span>{% if free_build_program.visible %}Selected projects can use the limited free build program through {{ free_build_program.end_date }}.{% else %}Tell us the problem and we will review the custom system you need first.{% endif %}</span></div>
       <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">{% if free_build_program.visible %}Request a Free Custom Build{% else %}Build a Custom System{% endif %}</a>
     </div>
   </div>
