@@ -633,6 +633,66 @@ def _ensure_deal_for_website_inquiry(db, inquiry_id: int, created_by_user_id: in
 
 
 
+def _sync_calendar_for_activated_deal(db, deal_id: int) -> None:
+    row = db.execute(
+        """SELECT id,contact_person,email,demo_date,demo_time,demo_timezone,
+                  google_calendar_event_id
+           FROM deals WHERE id=?""",
+        (deal_id,),
+    ).fetchone()
+    if not row or not row["demo_date"] or not row["demo_time"] or not row["demo_timezone"]:
+        return
+
+    from .calendar_ops import calendar_connected, create_or_update_deal_meeting
+    if not calendar_connected():
+        return
+
+    try:
+        result = create_or_update_deal_meeting(
+            event_id=(row["google_calendar_event_id"] or "").strip(),
+            client_name=(row["contact_person"] or "").strip(),
+            client_email=(row["email"] or "").strip(),
+            demo_date=(row["demo_date"] or "").strip(),
+            demo_time=(row["demo_time"] or "").strip(),
+            demo_timezone=(row["demo_timezone"] or "").strip(),
+        )
+        now = utcnow_iso()
+        db.execute(
+            """UPDATE deals
+               SET google_calendar_event_id=?,google_calendar_html_url=?,google_meet_url=?,
+                   google_calendar_sync_error='',google_calendar_synced_at=?,updated_at=?
+               WHERE id=?""",
+            (
+                result["event_id"],
+                result["html_link"],
+                result["meet_url"],
+                now,
+                now,
+                deal_id,
+            ),
+        )
+        log_activity(
+            "DEMO_MEETING_SYNCED",
+            "deal",
+            deal_id,
+            "Deal demo synchronized to Google Calendar with Google Meet.",
+            {
+                "demo_date": row["demo_date"],
+                "demo_time": row["demo_time"],
+                "demo_timezone": row["demo_timezone"],
+            },
+        )
+        db.commit()
+    except Exception as exc:
+        current_app.logger.exception("Google Calendar Deal activation sync failed")
+        message = str(exc)[:500] or "Google Calendar sync failed."
+        db.execute(
+            "UPDATE deals SET google_calendar_sync_error=?,updated_at=? WHERE id=?",
+            (message, utcnow_iso(), deal_id),
+        )
+        db.commit()
+
+
 def _deal_card_support(db, deal_rows) -> dict:
     rows = list(deal_rows or [])
     deal_ids = [int(row["id"]) for row in rows]
@@ -1726,6 +1786,8 @@ def prospect_update(prospect_id: int):
             )
 
     db.commit()
+    if field_name == "status" and status in DEAL_ACTIVE_STATUSES and current_status not in DEAL_ACTIVE_STATUSES and deal_id is not None:
+        _sync_calendar_for_activated_deal(db, deal_id)
     prospect = db.execute("SELECT * FROM prospects WHERE id=?", (prospect_id,)).fetchone()
     selected = _selected_prospect_date(request.form.get("date"))
     selected_str = selected.isoformat()
@@ -1962,6 +2024,7 @@ def deal_create_from_prospect(prospect_id: int):
         _mark_deal_became(db, deal_id, now)
         _sync_deal_source_statuses(db, deal_id, "DEAL", now)
         db.commit()
+        _sync_calendar_for_activated_deal(db, deal_id)
         flash("Deal opened.", "success")
         return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
@@ -1972,6 +2035,7 @@ def deal_create_from_prospect(prospect_id: int):
     _mark_deal_became(db, deal_id, now)
     _sync_deal_source_statuses(db, deal_id, "DEAL", now)
     db.commit()
+    _sync_calendar_for_activated_deal(db, deal_id)
     flash("Deal created.", "success")
     return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
@@ -1996,6 +2060,7 @@ def deal_create_from_inquiry(inquiry_id: int):
         _mark_deal_became(db, deal_id, now)
         _sync_deal_source_statuses(db, deal_id, "DEAL", now)
         db.commit()
+        _sync_calendar_for_activated_deal(db, deal_id)
         flash("Deal opened.", "success")
         return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
@@ -2006,6 +2071,7 @@ def deal_create_from_inquiry(inquiry_id: int):
     _mark_deal_became(db, deal_id, now)
     _sync_deal_source_statuses(db, deal_id, "DEAL", now)
     db.commit()
+    _sync_calendar_for_activated_deal(db, deal_id)
     flash("Deal created.", "success")
     return redirect(url_for("main.deals") + f"#deal-{deal_id}")
 
@@ -2453,7 +2519,7 @@ def deal_update(deal_id: int):
         email != (deal["email"] or ""),
         contact_person != (deal["contact_person"] or ""),
     ])
-    if demo_date and demo_time and demo_timezone and scheduling_changed:
+    if status in DEAL_ACTIVE_STATUSES and demo_date and demo_time and demo_timezone and scheduling_changed:
         from .calendar_ops import calendar_connected, create_or_update_deal_meeting
         if calendar_connected():
             try:
@@ -2502,9 +2568,12 @@ def deal_update(deal_id: int):
         else:
             calendar_state = "not_connected"
             calendar_message = "Connect Google Calendar in Settings to create the Meet link."
-    elif demo_date and demo_time and not demo_timezone and scheduling_changed:
+    elif status in DEAL_ACTIVE_STATUSES and demo_date and demo_time and not demo_timezone and scheduling_changed:
         calendar_state = "timezone_required"
         calendar_message = "Add a more specific client location before creating the Meet link."
+    elif status in DEAL_PRE_STATUS_STATUSES:
+        calendar_state = "pre_deal"
+        calendar_message = "Google Meet becomes available when this record becomes a Deal."
 
     display = demo_time_display(demo_date, demo_time, demo_timezone)
 
@@ -6121,6 +6190,8 @@ def inquiry_workflow_status_update(inquiry_id: int):
             _mark_deal_became(db, deal_id, now)
         _sync_deal_source_statuses(db, deal_id, status, now)
     db.commit()
+    if status in DEAL_ACTIVE_STATUSES and current_status not in DEAL_ACTIVE_STATUSES and deal_id is not None:
+        _sync_calendar_for_activated_deal(db, deal_id)
     return jsonify({
         "ok": True,
         "status": status,
