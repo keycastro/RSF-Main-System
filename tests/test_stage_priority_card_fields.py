@@ -114,6 +114,24 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         self.assertIn("{% if is_active_deal_stage and deal %}", inquiry)
         self.assertIn("{% if (not is_active_deal_stage) and deal %}", inquiry)
 
+    def test_deals_client_location_replaces_visible_shared_location(self):
+        deals = self.read("app/templates/deals.html")
+        master = self.read("app/templates/_master_deal_information.html")
+        prospect = self.read("app/templates/_prospect_row.html")
+        inquiries = self.read("app/templates/inquiries.html")
+        self.assertIn("{% set deal_show_location = false %}", deals)
+        self.assertIn("{% set deal_timezone_location_in_location_slot = true %}", deals)
+        self.assertIn("{% set deal_timezone_location_in_location_slot = deal_timezone_location_in_location_slot if deal_timezone_location_in_location_slot is defined else false %}", master)
+        self.assertIn("{% if deal_timezone_location_in_location_slot %}", master)
+        self.assertIn("{% if not deal_timezone_location_in_location_slot %}", master)
+        self.assertIn('<input type="hidden" name="location" value="{{ deal_client_location }}">', master)
+        self.assertIn('name="demo_timezone_location"', master)
+        self.assertIn('class="deal-demo-date-time-row"', master)
+        self.assertIn('data-client-time-display', master)
+        self.assertIn('data-philippines-time-display', master)
+        self.assertNotIn("deal_timezone_location_in_location_slot = true", prospect)
+        self.assertNotIn("deal_timezone_location_in_location_slot = true", inquiries)
+
     def test_deals_outbound_contact_fields_move_without_duplicates(self):
         deals = self.read("app/templates/deals.html")
         master = self.read("app/templates/_master_deal_information.html")
