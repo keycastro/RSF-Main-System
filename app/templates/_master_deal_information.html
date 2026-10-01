@@ -11,10 +11,15 @@
 {% set deal_section_open = deal_section_open if deal_section_open is defined else true %}
 {% set deal_external_email = deal_external_email if deal_external_email is defined else false %}
 {% set deal_external_contact_number = deal_external_contact_number if deal_external_contact_number is defined else false %}
+{% set deal_section_action_url = deal_section_action_url if deal_section_action_url is defined else '' %}
 <section class="master-deal-information" data-master-deal-information>
   {% if show_deal_section_heading %}
   <div class="master-card-section-head">
-    <h3>Deal Information</h3>
+    {% if deal_section_action_url %}
+      <a class="button secondary master-deal-section-action" href="{{ deal_section_action_url }}">View Deal</a>
+    {% else %}
+      <h3>Deal Information</h3>
+    {% endif %}
     <div class="master-card-section-side">
       {% if deal['became_deal_at'] %}
         <span>Became Deal: {{ deal['became_deal_at']|dt }}</span>
