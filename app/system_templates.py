@@ -235,8 +235,8 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         ),
         seo_title="Property Operations Command Center | Realty Systems Foundry",
         meta_description=(
-            "Explore Property Operations Command Center by Realty Systems Foundry: a customizable property-operations system "
-            "for work, deadlines, approvals, guest readiness, tenant placement, SOPs, and automation."
+            "See Property Operations Command Center, an RSF portfolio example for organizing property work, deadlines, "
+            "approvals, rentals, tenant placement, checklists, and reminders."
         ),
         og_image="images/templates/property-operations-command-center/dashboard.png",
         published_date="2026-09-19",
@@ -320,8 +320,8 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         ),
         seo_title="Property Inventory Hub | Realty Systems Foundry",
         meta_description=(
-            "Explore Property Inventory Hub by Realty Systems Foundry: a customizable private real-estate inventory system "
-            "with search, listing ownership, reconfirmation, expiry, history, and configurable branding."
+            "See Property Inventory Hub, an RSF portfolio example for keeping property listings organized, searchable, "
+            "current, and easy for a real estate team to manage."
         ),
         og_image="images/templates/property-inventory-hub/dashboard.png",
         published_date="2026-09-19",
@@ -412,8 +412,8 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         ),
         seo_title="Student Housing Matching & Placement System | Realty Systems Foundry",
         meta_description=(
-            "Explore Realty Systems Foundry's Student Housing Matching and Placement System for housing requests, availability, "
-            "matching, viewings, follow-ups, reservations, and placements."
+            "See RSF's Student Housing Matching and Placement System, a portfolio example for housing requests, available units, "
+            "viewings, follow-ups, reservations, and placements."
         ),
         og_image="images/templates/student-housing-matching-and-placement-system/dashboard.png",
         published_date="2026-09-19",
