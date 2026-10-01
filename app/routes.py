@@ -93,6 +93,80 @@ PROSPECT_STATUS_LABELS = {
 DEAL_ACTIVE_STATUSES = ("DEAL", "DEMO", "PROPOSAL", "DECISION", "WON", "LOST")
 DEAL_PRE_STATUS_STATUSES = ("NOT_CONTACTED", "NO_ANSWER", "REJECTED")
 
+CARD_LAYOUT_SPECS = {
+    "prospects": {
+        "zones": ("header", "summary", "source", "other"),
+        "fields": {
+            "business_type", "status", "budget", "post_date", "city_country",
+            "platform_wanted", "problem", "system_wanted", "notes_after_conversation",
+            "post_link", "website", "company", "client_name", "email",
+            "contact_number", "email_conversation", "contact_attempt", "followup_date",
+            "price", "demo_schedule", "next_step", "google_meet",
+        },
+    },
+    "inquiries": {
+        "zones": ("header", "source", "deal"),
+        "fields": {
+            "client_name", "status", "email", "contact_number", "company", "request",
+            "message", "notes_after_conversation", "email_conversation", "followup_date",
+            "price", "city_country", "demo_schedule", "next_step", "google_meet",
+        },
+    },
+    "deals": {
+        "zones": ("header", "deal", "outbound", "inbound"),
+        "fields": {
+            "client_name", "status", "followup_date", "email", "price",
+            "contact_number", "city_country", "demo_schedule", "next_step",
+            "notes_after_conversation", "google_meet", "email_conversation",
+            "outbound_business_type", "outbound_budget", "outbound_post_date",
+            "outbound_platform_wanted", "outbound_problem", "outbound_system_wanted",
+            "outbound_post_link", "outbound_website", "outbound_company",
+            "outbound_contact_attempt", "outbound_added_date", "inbound_company",
+            "inbound_request", "inbound_message", "inbound_received_date",
+        },
+    },
+}
+
+
+def _card_layout_setting_key(page_name: str) -> str:
+    return f"card_layout_{page_name}_v1"
+
+
+def _card_layout_preference(db, page_name: str) -> dict[str, list[str]]:
+    spec = CARD_LAYOUT_SPECS.get(page_name)
+    if not spec:
+        return {}
+    row = db.execute(
+        "SELECT value FROM settings WHERE key=? LIMIT 1",
+        (_card_layout_setting_key(page_name),),
+    ).fetchone()
+    if not row:
+        return {}
+    try:
+        payload = json.loads(row["value"] or "{}")
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return {}
+    if not isinstance(payload, dict):
+        return {}
+
+    allowed_fields = set(spec["fields"])
+    cleaned: dict[str, list[str]] = {}
+    seen: set[str] = set()
+    for zone in spec["zones"]:
+        values = payload.get(zone, [])
+        if not isinstance(values, list):
+            continue
+        items: list[str] = []
+        for value in values:
+            key = str(value or "").strip()
+            if key in allowed_fields and key not in seen:
+                items.append(key)
+                seen.add(key)
+        if items:
+            cleaned[zone] = items
+    return cleaned
+
+
 DEAL_DOCUMENT_MAX_FILE_BYTES = 30 * 1024 * 1024
 DEAL_DOCUMENT_FILE_TYPES = {
     ".pdf": "application/pdf",
@@ -1267,6 +1341,71 @@ def logout():
 def workspace_root():
     return redirect(url_for("main.prospects"))
 
+
+@bp.post("/card-layout/<page_name>")
+@admin_required
+def card_layout_update(page_name: str):
+    validate_csrf()
+    spec = CARD_LAYOUT_SPECS.get(page_name)
+    if not spec:
+        return jsonify({"ok": False, "message": "Unknown card layout page."}), 404
+
+    raw = request.form.get("layout_json", "") or ""
+    if len(raw) > 12000:
+        return jsonify({"ok": False, "message": "Card layout is too large."}), 400
+    try:
+        payload = json.loads(raw)
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return jsonify({"ok": False, "message": "Card layout is invalid."}), 400
+    if not isinstance(payload, dict):
+        return jsonify({"ok": False, "message": "Card layout is invalid."}), 400
+
+    allowed_fields = set(spec["fields"])
+    cleaned: dict[str, list[str]] = {}
+    seen: set[str] = set()
+    for zone in spec["zones"]:
+        values = payload.get(zone, [])
+        if not isinstance(values, list):
+            return jsonify({"ok": False, "message": "Card layout zone is invalid."}), 400
+        items: list[str] = []
+        for value in values:
+            key = str(value or "").strip()
+            if key not in allowed_fields:
+                return jsonify({"ok": False, "message": "Card layout contains an unknown field."}), 400
+            if key in seen:
+                return jsonify({"ok": False, "message": "Card layout contains a duplicate field."}), 400
+            seen.add(key)
+            items.append(key)
+        if items:
+            cleaned[zone] = items
+
+    db = get_db()
+    now = utcnow_iso()
+    db.execute(
+        """INSERT INTO settings(key,value,updated_at,updated_by_user_id)
+           VALUES (?,?,?,?)
+           ON CONFLICT(key) DO UPDATE SET
+             value=excluded.value,
+             updated_at=excluded.updated_at,
+             updated_by_user_id=excluded.updated_by_user_id""",
+        (
+            _card_layout_setting_key(page_name),
+            json.dumps(cleaned, separators=(",", ":")),
+            now,
+            g.user["id"],
+        ),
+    )
+    log_activity(
+        "CARD_LAYOUT_UPDATED",
+        "settings",
+        None,
+        f"{page_name.title()} card field layout updated.",
+        {"page": page_name},
+    )
+    db.commit()
+    return jsonify({"ok": True, "layout": cleaned})
+
+
 @bp.get("/prospects")
 @login_required
 def prospects():
@@ -1323,6 +1462,7 @@ def prospects():
         prospect_status_labels=PROSPECT_STATUS_LABELS,
         prospect_deal_ids=prospect_deal_ids,
         prospect_deals=prospect_deals,
+        card_layout=_card_layout_preference(db, "prospects"),
         **deal_support,
     )
 
@@ -1938,6 +2078,7 @@ def deals():
         calendar_status=calendar_connection_status(),
         deal_demo_time_displays=deal_demo_time_displays,
         deal_timezone_location_displays=deal_timezone_location_displays,
+        card_layout=_card_layout_preference(db, "deals"),
     )
 
 
@@ -5661,6 +5802,7 @@ def inquiries_list():
         email_send_ready=email_send_configured(), email_receive_ready=email_receive_configured(),
         auto_email_sync=bool(current_app.config.get("AUTO_EMAIL_SYNC")),
         response_sla_minutes=int(current_app.config.get("FIRST_RESPONSE_SLA_MINUTES", 60)),
+        card_layout=_card_layout_preference(db, "inquiries"),
         **deal_support,
     )
 
