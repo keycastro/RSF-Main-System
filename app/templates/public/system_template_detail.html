@@ -1,18 +1,17 @@
 {% extends 'public/base.html' %}
 {% block content %}
-<section class="case-hero template-hero detail-hero-simple detail-hero-refined human-detail-hero portfolio-detail-hero">
+<section class="case-hero template-hero detail-hero-simple detail-hero-refined human-detail-hero">
   <div class="container">
     <nav class="breadcrumb reveal" aria-label="Breadcrumb">
-      <a href="{{ url_for('site.system_templates') }}">Systems</a><span aria-hidden="true">›</span><strong aria-current="page">{{ system_template.name }}</strong>
+      <a href="{{ url_for('site.system_templates') }}">Systems</a><span aria-hidden="true">/</span><strong aria-current="page">{{ system_template.name }}</strong>
     </nav>
   </div>
 
   <div class="container template-hero-grid">
     <div class="case-intro reveal">
-      <p class="page-kicker">SYSTEM EXAMPLE</p>
       <h1>{{ system_template.name }}</h1>
       <p class="page-lead">{{ system_template.full_description }}</p>
-      <p class="portfolio-context-line">This is an example of a system RSF has built. Client systems are built around each business’s own needs.</p>
+      <p class="template-project-note">This is an example of a system RSF has built. Client systems are built around each business’s own needs.</p>
     </div>
 
     {% if system_template.screenshots %}
@@ -46,7 +45,6 @@
 <section class="section compact-detail-section detail-overview-refined human-detail-overview" id="overview">
   <div class="container detail-overview-refined-grid">
     <div class="detail-problem reveal">
-      <p class="page-kicker">THE PROBLEM</p>
       <h2>What this helps with.</h2>
       <p class="large-copy">{{ system_template.business_problem }}</p>
       <div class="detail-best-for">
@@ -56,8 +54,7 @@
     </div>
 
     <div class="detail-workflow reveal delay-1">
-      <p class="page-kicker">HOW IT WORKS</p>
-      <h2>How the system works.</h2>
+      <h2>How it works.</h2>
       <ol class="template-steps compact-steps">{% for step in system_template.workflow %}<li><span>{{ loop.index }}</span><p>{{ step }}</p></li>{% endfor %}</ol>
     </div>
   </div>
@@ -66,7 +63,6 @@
 <section class="section section-soft compact-detail-section detail-evidence-section human-detail-features">
   <div class="container detail-evidence-grid">
     <div class="detail-features reveal">
-      <p class="page-kicker">FEATURES</p>
       <h2>What the team can do.</h2>
       <ul class="template-list compact-list feature-list-refined">{% for feature in system_template.features %}<li>{{ feature }}</li>{% endfor %}</ul>
     </div>
@@ -94,9 +90,8 @@
 <section class="section human-detail-next">
   <div class="container human-detail-next-inner reveal">
     <div>
-      <p class="page-kicker">YOUR BUSINESS</p>
-      <h2>Need a custom system?</h2>
-      <p>Tell us what your business needs. We will review the request and agree on what to build before work starts.</p>
+      <h2>Need a custom system for your business?</h2>
+      <p>Tell us what you need. RSF will review the request and agree on what to build before work starts.</p>
     </div>
     <div class="human-detail-next-actions">
       <a class="button primary" href="{{ url_for('site.contact', template=system_template.slug, intent='custom-build') }}">{% if free_build_program.visible %}Request a Free Custom Build{% else %}Build a Custom System{% endif %}</a>
