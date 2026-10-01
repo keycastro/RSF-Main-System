@@ -15,22 +15,16 @@
 {% set deal_show_location = is_active_deal_stage %}
 {% set deal_show_notes = is_active_deal_stage %}
 {% set deal_show_email_conversation = is_active_deal_stage %}
+{% set deal_show_documents = not is_active_deal_stage %}
 <article class="prospect-card-shell" id="prospect-{{ prospect['id'] }}" data-prospect-row data-prospect-status="{{ prospect['status'] }}" data-deal-card data-deal-status="{{ prospect['status'] }}" data-prospect-update-url="{{ url_for('main.prospect_update', prospect_id=prospect['id']) }}" data-prospect-attempt-url="{{ url_for('main.prospect_contact_attempt', prospect_id=prospect['id']) }}">
   <details class="prospect-card">
     <summary class="prospect-card-summary">
       <div class="prospect-card-top">
         <div class="prospect-card-identifiers">
-          {% if is_active_deal_stage %}
-          <div class="prospect-card-title prospect-editable-field" data-prospect-edit-field data-prospect-field="contact" data-prospect-editor="text" data-prospect-value="{{ prospect['contact'] }}">
-            <span>Client Name:</span>
-            <button class="prospect-edit-value prospect-uppercase-value" type="button" data-prospect-edit-trigger aria-label="Edit Client Name">{{ prospect['contact']|upper if prospect['contact'] else '—' }}</button>
-          </div>
-          {% else %}
           <div class="prospect-card-title prospect-editable-field" data-prospect-edit-field data-prospect-field="business_type" data-prospect-editor="text" data-prospect-value="{{ prospect['business_type'] }}">
             <span>Business Type:</span>
             <button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Business Type">{{ prospect['business_type'] or '—' }}</button>
           </div>
-          {% endif %}
           <div class="prospect-card-header-status prospect-editable-field" data-prospect-edit-field data-prospect-field="status" data-prospect-editor="status" data-prospect-value="{{ prospect['status'] }}">
             <span>Status:</span>
             <button class="prospect-edit-value prospect-status" type="button" data-prospect-edit-trigger aria-label="Edit Status">{{ prospect_status_labels.get(prospect['status'], prospect['status']|human_status) }}</button>
@@ -38,7 +32,6 @@
         </div>
       </div>
 
-      {% if not is_active_deal_stage %}
       <div class="prospect-card-meta">
         <div class="prospect-card-meta-item prospect-editable-field" data-prospect-edit-field data-prospect-field="budget" data-prospect-editor="text" data-prospect-value="{{ prospect['budget'] }}">
           <span>Budget</span>
@@ -53,7 +46,6 @@
           <button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Platform They Want">{{ prospect['platform_wanted'] or '—' }}</button>
         </div>
       </div>
-      {% endif %}
 
       <span class="prospect-card-chevron" aria-hidden="true">⌄</span>
     </summary>
@@ -65,12 +57,6 @@
 
       <div class="master-source-section-head"><h3>Outbound Details</h3></div>
       <div class="prospect-detail-grid">
-        {% if is_active_deal_stage %}
-        <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="business_type" data-prospect-editor="text" data-prospect-value="{{ prospect['business_type'] }}"><span>Business Type</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Business Type">{{ prospect['business_type'] or '—' }}</button></div>
-        <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="budget" data-prospect-editor="text" data-prospect-value="{{ prospect['budget'] }}"><span>Budget</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Budget">{{ prospect['budget'] or '—' }}</button></div>
-        <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="post_date" data-prospect-editor="date" data-prospect-value="{{ prospect['post_date'] }}"><span>Post Date</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Post Date">{{ prospect['post_date']|dateonly if prospect['post_date'] else '—' }}</button></div>
-        <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="platform_wanted" data-prospect-editor="text" data-prospect-value="{{ prospect['platform_wanted'] }}"><span>Platform They Want</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Platform They Want">{{ prospect['platform_wanted'] or '—' }}</button></div>
-        {% endif %}
         <div class="prospect-longtext-field prospect-detail-full conversation-notes-field prospect-editable-field" data-prospect-edit-field data-prospect-field="problem" data-prospect-editor="textarea" data-prospect-value="{{ prospect['problem'] }}">
           <span>Problem</span>
           <div class="prospect-longtext-compact conversation-notes-compact">
@@ -111,8 +97,8 @@
         <div class="prospect-detail prospect-detail-compact prospect-editable-field" data-prospect-edit-field data-prospect-field="location" data-prospect-editor="text" data-prospect-value="{{ prospect['location'] }}"><span>Location</span><button class="prospect-edit-value prospect-uppercase-value" type="button" data-prospect-edit-trigger aria-label="Edit Location">{{ prospect['location']|upper if prospect['location'] else '—' }}</button></div>
         {% endif %}
         <div class="prospect-detail prospect-detail-compact prospect-editable-field" data-prospect-edit-field data-prospect-field="company" data-prospect-editor="text" data-prospect-value="{{ prospect['name'] }}"><span>Company</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Company">{{ prospect['name'] }}</button></div>
-        {% if not is_active_deal_stage %}
         <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="contact" data-prospect-editor="text" data-prospect-value="{{ prospect['contact'] }}"><span>Client Name</span><button class="prospect-edit-value prospect-uppercase-value" type="button" data-prospect-edit-trigger aria-label="Edit Client Name">{{ prospect['contact']|upper if prospect['contact'] else '—' }}</button></div>
+        {% if not is_active_deal_stage %}
         <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="email" data-prospect-editor="email" data-prospect-value="{{ prospect['email'] }}"><span>Email</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Email">{{ prospect['email'] or '—' }}</button></div>
         <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="phone" data-prospect-editor="tel" data-prospect-value="{{ prospect['phone'] }}"><span>Phone</span><button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit Phone">{{ prospect['phone'] or '—' }}</button></div>
         <button
@@ -137,6 +123,12 @@
 
       {% if (not is_active_deal_stage) and deal %}
         {% include '_master_deal_information.html' %}
+      {% endif %}
+
+      {% if is_active_deal_stage and deal %}
+      <div class="prospect-active-documents">
+        {% include '_master_deal_documents.html' %}
+      </div>
       {% endif %}
 
       {% set linked_deal_id = prospect_deal_ids.get(prospect['id']) if prospect_deal_ids is defined else none %}
