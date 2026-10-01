@@ -44,6 +44,25 @@
           </article>
 
           <article class="human-option-card">
+            {% if free_build_program.visible %}
+            <p class="choice-label choice-label-pill">BUILD A CUSTOM SYSTEM — LIMITED PROGRAM</p>
+            <strong>Build around your own workflow</strong>
+            <div class="system-choice-price system-choice-price--quote free-program-price" aria-label="Limited free custom system development">
+              <b>$0 Initial Development Fee</b>
+              <span>{% if free_build_program.is_upcoming %}Starts {{ free_build_program.start_date }}{% else %}Available now{% endif %} · Ends {{ free_build_program.end_date }}</span>
+            </div>
+            <p class="human-option-explanation">Selected qualifying businesses can receive an agreed initial custom system build with no RSF development fee during the limited beginning-stage program.</p>
+            <div class="management-detail-block">
+              <strong class="management-detail-title">The free offer applies to:</strong>
+              <ul class="management-detail-list">
+                <li>The agreed initial custom system scope</li>
+                <li>Core V1 development for that agreed scope</li>
+                <li>Testing and reasonable fixes related to that initial scope</li>
+              </ul>
+            </div>
+            <p class="management-billing-note">Existing systems remain separately priced. Optional RSF management and work outside the agreed initial scope are separate.</p>
+            <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Request a Free Custom Build</a>
+            {% else %}
             <p class="choice-label choice-label-pill">BUILD A CUSTOM SYSTEM</p>
             <strong>Build around your own workflow</strong>
             <div class="system-choice-price system-choice-price--quote" aria-label="New custom system price">
@@ -63,8 +82,49 @@
             </div>
             <p class="management-billing-note">We do not start custom development until the scope and price are agreed.</p>
             <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Build a Custom System</a>
+            {% endif %}
           </article>
         </div>
+
+        {% if free_build_program.visible %}
+        <section class="free-build-program-detail" id="free-custom-build-program" aria-labelledby="free-build-program-title">
+          <div class="free-build-program-intro">
+            <p class="choice-label choice-label-pill">LIMITED 5-MONTH BEGINNING-STAGE PROGRAM</p>
+            <h3 id="free-build-program-title">Free Custom System Builds</h3>
+            <p><strong>{{ free_build_program.period }}</strong></p>
+            <p>RSF is temporarily offering selected qualifying businesses a free initial custom system build so we can gain real client experience, build real systems for actual businesses, collect honest testimonials, and create real case studies.</p>
+            <p><strong>This is a temporary beginning-stage offer, not a permanent free development service.</strong></p>
+          </div>
+
+          <div class="free-build-scope-grid">
+            <div class="management-detail-block">
+              <strong class="management-detail-title">Included in the free initial development:</strong>
+              <ul class="management-detail-list">
+                <li>The agreed initial custom system scope</li>
+                <li>Core V1 development for that agreed scope</li>
+                <li>Testing of the agreed initial workflow</li>
+                <li>Reasonable fixes related to the agreed initial scope</li>
+              </ul>
+            </div>
+            <div class="management-detail-block free-build-not-included">
+              <strong class="management-detail-title">Not included as unlimited free work:</strong>
+              <ul class="management-detail-list">
+                <li>Unlimited feature requests or lifetime development</li>
+                <li>Lifetime technical support or hosting costs</li>
+                <li>Third-party software, services, API, or vendor costs</li>
+                <li>Future major features, modules, expansions, or significant integrations</li>
+                <li>Optional ongoing RSF technical management</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="free-build-program-boundary">
+            <p><strong>Existing systems stay separate.</strong> The existing systems shown on this website keep their current {{ existing_system_pricing.price_label }} USD one-time pricing.</p>
+            <p><strong>Management stays separate.</strong> The free-build program covers initial custom development only. Optional paid RSF technical management after delivery remains a separate service.</p>
+            <p><strong>After {{ free_build_program.end_date }}.</strong> Beginning April 1, 2027, RSF will transition toward charging for custom system development.</p>
+          </div>
+        </section>
+        {% endif %}
 
         <section class="management-upgrades" aria-labelledby="process-title">
           <div class="management-upgrades-intro">
@@ -74,7 +134,11 @@
           <ol class="template-steps compact-steps">
             <li><span>1</span><p><strong>Explain the problem.</strong> Tell us what is hard to track, repetitive, scattered, delayed, or missing.</p></li>
             <li><span>2</span><p><strong>Define the scope.</strong> We identify the records, users, rules, screens, automation, and technical work required.</p></li>
+            {% if free_build_program.visible %}
+            <li><span>3</span><p><strong>Confirm the program scope.</strong> We agree on the initial scope before development. For selected qualifying projects during the limited program, the RSF development fee for that agreed initial scope is $0.</p></li>
+            {% else %}
             <li><span>3</span><p><strong>Agree on the work and price.</strong> The scope and price are confirmed before development begins.</p></li>
+            {% endif %}
             <li><span>4</span><p><strong>Build and test.</strong> We create the agreed system and verify the workflow before delivery.</p></li>
           </ol>
         </section>
@@ -86,6 +150,9 @@
       <div class="human-step-body management-clarity">
         <h2>Choose who manages it.</h2>
         <p class="management-optional-intro"><strong>Management is optional.</strong> After buying your system, choose who handles the technical side. Managing it yourself has no monthly management fee.</p>
+        {% if free_build_program.visible %}
+        <p class="free-program-management-note"><strong>The free-build program covers initial custom development only.</strong> Optional RSF technical management after delivery remains separate and paid.</p>
+        {% endif %}
 
         <div class="management-choice-grid management-clarity-grid">
           <section class="management-choice management-clarity-card">
@@ -184,6 +251,33 @@
     </div>
 
     <div class="reveal">
+      {% if free_build_program.visible %}
+      <details class="detail-disclosure human-disclosure">
+        <summary>Is the custom system really free during the limited program?</summary>
+        <p>For selected qualifying projects, yes. The RSF development fee is $0 for the agreed initial custom system scope during the {{ free_build_program.start_date }} to {{ free_build_program.end_date }} beginning-stage program. Work outside that agreed initial scope is separate.</p>
+      </details>
+      <details class="detail-disclosure human-disclosure">
+        <summary>How long is the free custom-build program available?</summary>
+        <p>The program runs from {{ free_build_program.start_date }} through {{ free_build_program.end_date }}. {% if free_build_program.is_upcoming %}It has not started yet.{% else %}It is currently active.{% endif %} This is a temporary beginning-stage program, not permanent RSF pricing.</p>
+      </details>
+      <details class="detail-disclosure human-disclosure">
+        <summary>Does free initial development include unlimited changes, hosting, or lifetime support?</summary>
+        <p>No. The free offer applies only to the agreed initial custom system scope. Unlimited development, lifetime support, hosting, third-party costs, future major features, large expansions, and significant integrations are not included as free work.</p>
+      </details>
+      <details class="detail-disclosure human-disclosure">
+        <summary>Is optional RSF management included in the free build?</summary>
+        <p>No. Optional RSF technical management after delivery is a separate paid service. The free-build program covers only the agreed initial custom development scope.</p>
+      </details>
+      <details class="detail-disclosure human-disclosure">
+        <summary>Are the existing $199 USD systems free during this program?</summary>
+        <p>No. Existing systems remain separate products at their current {{ existing_system_pricing.price_label }} USD one-time price. The limited program applies only to selected qualifying new custom system builds.</p>
+      </details>
+      <details class="detail-disclosure human-disclosure">
+        <summary>What happens after March 31, 2027?</summary>
+        <p>The limited free-build program ends on March 31, 2027. Beginning April 1, 2027, RSF will transition toward charging for custom system development.</p>
+      </details>
+      {% endif %}
+
       <details class="detail-disclosure human-disclosure">
         <summary>Is the $199 USD system a fully custom build?</summary>
         <p>No. The $199 USD price is for an existing system already built and shown on this website. If you want changes to its screens, workflow, features, automation, or other parts, those changes are priced separately.</p>
@@ -196,7 +290,11 @@
 
       <details class="detail-disclosure human-disclosure">
         <summary>How is a custom system priced?</summary>
+        {% if free_build_program.visible %}
+        <p>During the limited beginning-stage program, selected qualifying projects have a $0 RSF development fee for the agreed initial custom system scope. Work outside that initial scope, optional technical management, third-party costs, and later major changes remain separate. After the program ends, RSF will transition toward charging for custom system development.</p>
+        {% else %}
         <p>We first review the work required. Pricing depends on the system scope, including screens, data, users, permissions, workflow rules, automation, integrations, deployment, and ongoing technical needs. The scope and price are agreed before development begins.</p>
+        {% endif %}
       </details>
 
       <details class="detail-disclosure human-disclosure">
@@ -211,8 +309,8 @@
     </div>
 
     <div class="catalog-next-step reveal human-next-step">
-      <div><strong>Have a workflow that does not fit an existing system?</strong><span>Tell us the problem and we will scope a custom system first.</span></div>
-      <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">Build a Custom System</a>
+      <div><strong>Have a workflow that does not fit an existing system?</strong><span>{% if free_build_program.visible %}Selected qualifying custom projects can use the limited free-build program through {{ free_build_program.end_date }}.{% else %}Tell us the problem and we will scope a custom system first.{% endif %}</span></div>
+      <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">{% if free_build_program.visible %}Request a Free Custom Build{% else %}Build a Custom System{% endif %}</a>
     </div>
   </div>
 </section>
