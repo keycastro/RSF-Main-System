@@ -4206,6 +4206,7 @@ document.addEventListener('click', (event) => {
         if (!notesSource) return;
         notesSource.value = value;
         notesSource.dataset.dealStartValue = value;
+        syncEmbeddedSourceFromDeal(dealNotesForm, {notes_after_conversation:value});
       }
     };
     RSFConversationTimeline.load(
