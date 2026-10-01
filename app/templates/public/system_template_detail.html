@@ -134,6 +134,9 @@
     <div>
       <h2>Want this system for your business?</h2>
       <p>The {{ existing_system_pricing.price_label }} USD price is for the existing system shown here. Changes and optional technical management are separate.</p>
+      {% if free_build_program.visible %}
+      <p class="program-alternative-note">Need a completely different workflow instead? <a class="text-link" href="{{ url_for('site.services') }}#free-custom-build-program">See the limited Free Custom System Build program.</a></p>
+      {% endif %}
     </div>
     <div class="human-detail-next-actions">
       <a class="button primary" href="{{ url_for('site.contact', template=system_template.slug, intent='existing-system') }}">Get This System</a>
