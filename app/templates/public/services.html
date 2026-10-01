@@ -3,7 +3,7 @@
 <section class="page-hero page-hero-simple how-page-hero">
   <div class="container simple-page-hero reveal">
     <h1>Services & Pricing</h1>
-    <p>Choose an existing system or build a custom one. Then choose who manages the technical side.</p>
+    <p>Choose an existing system or ask us to build a custom one. Then choose who takes care of the system after it is finished.</p>
   </div>
 </section>
 
@@ -13,7 +13,7 @@
       <div class="human-step-number">1</div>
       <div class="human-step-body">
         <h2>Choose how you want to start.</h2>
-        <p>The existing-system price and custom-development price are different because they are different scopes of work.</p>
+        <p>Existing systems and custom systems are different offers, so their prices are separate.</p>
 
         <div class="human-simple-options" aria-label="Ways we can build your system">
           <article class="human-option-card">
@@ -28,16 +28,16 @@
               <strong class="management-detail-title">Included in the base price:</strong>
               <ul class="management-detail-list">
                 <li>The existing system as shown</li>
-                <li>Its current core screens, workflow, and features</li>
+                <li>Its current screens, steps, and features</li>
                 <li>The option to manage the finished system yourself with no monthly RSF management fee</li>
               </ul>
             </div>
             <div class="management-detail-block">
               <strong class="management-detail-title">Separate from the base price:</strong>
               <ul class="management-detail-list">
-                <li>Custom features or workflow changes</li>
-                <li>Future upgrades or large expansions</li>
-                <li>Optional ongoing hosting and technical management by RSF</li>
+                <li>Custom features or changes to how the system works</li>
+                <li>Future upgrades or big expansions</li>
+                <li>Optional paid RSF support after the system is finished</li>
               </ul>
             </div>
             <a class="button secondary human-option-button" href="{{ url_for('site.system_templates') }}">View Existing Systems</a>
@@ -51,16 +51,16 @@
               <b>$0 Initial Development Fee</b>
               <span>{% if free_build_program.is_upcoming %}Starts {{ free_build_program.start_date }}{% else %}Available now{% endif %} · Ends {{ free_build_program.end_date }}</span>
             </div>
-            <p class="human-option-explanation">Selected qualifying businesses can receive an agreed initial custom system build with no RSF development fee during the limited beginning-stage program.</p>
+            <p class="human-option-explanation">If your project is accepted, RSF builds the custom system and features we agree on with no development fee during the program. We review every request first. Not every request is accepted.</p>
             <div class="management-detail-block">
-              <strong class="management-detail-title">The free offer applies to:</strong>
+              <strong class="management-detail-title">What the free build includes:</strong>
               <ul class="management-detail-list">
-                <li>The agreed initial custom system scope</li>
-                <li>Core V1 development for that agreed scope</li>
-                <li>Testing and reasonable fixes related to that initial scope</li>
+                <li>We build the complete working system we agreed on</li>
+                <li>We test the system to make sure the agreed features work</li>
+                <li>We fix bugs or problems in the features we agreed to build</li>
               </ul>
             </div>
-            <p class="management-billing-note">Existing systems remain separately priced. Optional RSF management and work outside the agreed initial scope are separate.</p>
+            <p class="management-billing-note">Existing systems keep their current price. Extra work and paid RSF support after the system is finished are separate.</p>
             <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Request a Free Custom Build</a>
             {% else %}
             <p class="choice-label choice-label-pill">BUILD A CUSTOM SYSTEM</p>
@@ -92,36 +92,39 @@
             <p class="choice-label choice-label-pill">LIMITED 5-MONTH BEGINNING-STAGE PROGRAM</p>
             <h3 id="free-build-program-title">Free Custom System Builds</h3>
             <p><strong>{{ free_build_program.period }}</strong></p>
-            <p>RSF is temporarily offering selected qualifying businesses a free initial custom system build so we can gain real client experience, build real systems for actual businesses, collect honest testimonials, and create real case studies.</p>
-            <p><strong>This is a temporary beginning-stage offer, not a permanent free development service.</strong></p>
+            <p>During this 5-month program, RSF can build a custom system for selected businesses with no development fee. We are doing this to gain real client experience, build real systems for real businesses, collect honest testimonials, and create real case studies.</p>
+            <p><strong>RSF reviews every business and project first. Not every request is accepted.</strong></p>
+            <p><strong>This is temporary. It is not a permanent free service.</strong></p>
           </div>
 
           <div class="free-build-scope-grid">
             <div class="management-detail-block">
-              <strong class="management-detail-title">Included in the free initial development:</strong>
+              <strong class="management-detail-title">What the free build includes:</strong>
               <ul class="management-detail-list">
-                <li>The agreed initial custom system scope</li>
-                <li>Core V1 development for that agreed scope</li>
-                <li>Testing of the agreed initial workflow</li>
-                <li>Reasonable fixes related to the agreed initial scope</li>
+                <li>We build the system and features we agree on before work starts</li>
+                <li>We build a complete working system based on that agreement</li>
+                <li>We test the system to make sure the agreed features work</li>
+                <li>We fix bugs or problems in the features we agreed to build</li>
               </ul>
             </div>
             <div class="management-detail-block free-build-not-included">
-              <strong class="management-detail-title">Not included as unlimited free work:</strong>
+              <strong class="management-detail-title">What the free build does not include:</strong>
               <ul class="management-detail-list">
-                <li>Unlimited feature requests or lifetime development</li>
-                <li>Lifetime technical support or hosting costs</li>
-                <li>Third-party software, services, API, or vendor costs</li>
-                <li>Future major features, modules, expansions, or significant integrations</li>
-                <li>Optional ongoing RSF technical management</li>
+                <li>Unlimited free changes or extra features</li>
+                <li>Lifetime support</li>
+                <li>Hosting costs</li>
+                <li>Costs from other apps, services, APIs, or providers</li>
+                <li>Future big features, big changes, or major system expansion</li>
+                <li>Future big connections to other apps or services</li>
+                <li>Optional paid RSF support after the system is finished</li>
               </ul>
             </div>
           </div>
 
           <div class="free-build-program-boundary">
             <p><strong>Existing systems stay separate.</strong> The existing systems shown on this website keep their current {{ existing_system_pricing.price_label }} USD one-time pricing.</p>
-            <p><strong>Management stays separate.</strong> The free-build program covers initial custom development only. Optional paid RSF technical management after delivery remains a separate service.</p>
-            <p><strong>After {{ free_build_program.end_date }}.</strong> Beginning April 1, 2027, RSF will transition toward charging for custom system development.</p>
+            <p><strong>Paid RSF support is separate.</strong> The free program covers the system and features we agree to build. If you want RSF to keep supporting the system after it is finished, that is a separate paid service.</p>
+            <p><strong>After {{ free_build_program.end_date }}.</strong> Starting April 1, 2027, RSF will start moving toward paid custom system development.</p>
           </div>
         </section>
         {% endif %}
@@ -133,13 +136,13 @@
           </div>
           <ol class="template-steps compact-steps">
             <li><span>1</span><p><strong>Explain the problem.</strong> Tell us what is hard to track, repetitive, scattered, delayed, or missing.</p></li>
-            <li><span>2</span><p><strong>Define the scope.</strong> We identify the records, users, rules, screens, automation, and technical work required.</p></li>
+            <li><span>2</span><p><strong>Agree on what we will build.</strong> We list the system, features, people who will use it, and important rules before work starts.</p></li>
             {% if free_build_program.visible %}
-            <li><span>3</span><p><strong>Confirm the program scope.</strong> We agree on the initial scope before development. For selected qualifying projects during the limited program, the RSF development fee for that agreed initial scope is $0.</p></li>
+            <li><span>3</span><p><strong>Confirm the free build.</strong> If your project is accepted, the development fee for the system and features we agreed on is $0.</p></li>
             {% else %}
             <li><span>3</span><p><strong>Agree on the work and price.</strong> The scope and price are confirmed before development begins.</p></li>
             {% endif %}
-            <li><span>4</span><p><strong>Build and test.</strong> We create the agreed system and verify the workflow before delivery.</p></li>
+            <li><span>4</span><p><strong>Build and test.</strong> We build the system, test it, and make sure the agreed features work.</p></li>
           </ol>
         </section>
       </div>
@@ -149,16 +152,16 @@
       <div class="human-step-number">2</div>
       <div class="human-step-body management-clarity">
         <h2>Choose who manages it.</h2>
-        <p class="management-optional-intro"><strong>Management is optional.</strong> After buying your system, choose who handles the technical side. Managing it yourself has no monthly management fee.</p>
+        <p class="management-optional-intro"><strong>Management is optional.</strong> After the system is finished, choose who takes care of keeping it online and working. Managing it yourself has no monthly RSF management fee.</p>
         {% if free_build_program.visible %}
-        <p class="free-program-management-note"><strong>The free-build program covers initial custom development only.</strong> Optional RSF technical management after delivery remains separate and paid.</p>
+        <p class="free-program-management-note"><strong>The free program only covers the custom system we agreed to build.</strong> Paid RSF support after the system is finished is separate.</p>
         {% endif %}
 
         <div class="management-choice-grid management-clarity-grid">
           <section class="management-choice management-clarity-card">
             <p class="choice-label choice-label-pill">YOU MANAGE IT</p>
             <h3>We build it. You manage it.</h3>
-            <p>We give the finished system to you. You or someone you hire takes care of the technical side.</p>
+            <p>We give the finished system to you. You or someone you hire handles hosting, updates, backups, and fixes.</p>
 
             <div class="management-price-panel management-price-panel--single" aria-label="Self-managed pricing">
               <div class="management-price-column">
@@ -181,7 +184,7 @@
           <section class="management-choice managed-choice management-clarity-card">
             <p class="choice-label choice-label-pill">WE MANAGE IT — OPTIONAL</p>
             <h3>We build it. We manage it.</h3>
-            <p>You use the system for your business. We handle the technical side and keep your current system online and working properly.</p>
+            <p>You use the system for your business. RSF keeps the current system online, checks it, handles backups, fixes problems, and can make small changes.</p>
 
             <div class="management-price-panel management-price-panel--single" aria-label="Maintenance pricing">
               <div class="management-price-column">
@@ -192,8 +195,8 @@
             <p class="management-billing-note">Optional managed care. Pricing is agreed based on the system and the technical work required.</p>
 
             <div class="management-detail-block management-maintenance-block">
-              <h4 class="management-maintenance-heading">What we manage</h4>
-              <p class="management-maintenance-copy">Managed care keeps your current system running and includes minor workflow adjustments to the current system. Large changes are priced separately by agreement.</p>
+              <h4 class="management-maintenance-heading">What RSF handles</h4>
+              <p class="management-maintenance-copy">Paid RSF support keeps your current system running and includes small changes to the current system. Big changes are priced separately.</p>
               <div class="management-maintenance-grid">
                 <div class="management-maintenance-column management-maintenance-included">
                   <strong class="management-detail-title">We handle:</strong>
@@ -202,18 +205,18 @@
                     <li>Routine technical checks</li>
                     <li>Backups when used</li>
                     <li>Technical fixes for the current system</li>
-                    <li>Minor workflow adjustments to the current system</li>
+                    <li>Small changes to the current system</li>
                   </ul>
                 </div>
                 <div class="management-maintenance-column management-not-included">
                   <strong class="management-detail-title">Large changes are separate:</strong>
                   <ul class="management-detail-list">
-                    <li>Major workflow changes</li>
-                    <li>New modules or major features</li>
-                    <li>Large system expansions</li>
-                    <li>Significant new integrations</li>
+                    <li>Big changes to how the system works</li>
+                    <li>New sections or big features</li>
+                    <li>Big system expansion</li>
+                    <li>Big new connections to other apps or services</li>
                   </ul>
-                  <p class="management-billing-note">Large changes are scoped and priced by agreement before work begins.</p>
+                  <p class="management-billing-note">We agree on the price before we start big changes.</p>
                 </div>
               </div>
             </div>
@@ -226,13 +229,13 @@
           <div class="management-upgrades-intro">
             <p class="choice-label choice-label-pill">LARGE CHANGES</p>
             <h3 id="changes-later-title">Large changes are priced by agreement.</h3>
-            <p class="management-upgrades-note">Paid RSF management includes minor workflow adjustments to the current system. Larger changes are separate and scoped before work begins.</p>
+            <p class="management-upgrades-note">Paid RSF support includes small changes to the current system. Big changes are separate, and we agree on the price before work starts.</p>
           </div>
           <div class="management-upgrade-grid">
             <article class="management-upgrade-card">
               <strong>Large Adjustment / Major Expansion</strong>
               <span class="management-upgrade-price">Price by Agreement</span>
-              <p>For major workflow changes, new modules, major features, large expansions, or significant new integrations.</p>
+              <p>For big changes to how the system works, new sections, big features, large expansions, or big new connections to other apps or services.</p>
             </article>
           </div>
         </section>
@@ -254,19 +257,19 @@
       {% if free_build_program.visible %}
       <details class="detail-disclosure human-disclosure">
         <summary>Is the custom system really free during the limited program?</summary>
-        <p>For selected qualifying projects, yes. The RSF development fee is $0 for the agreed initial custom system scope during the {{ free_build_program.start_date }} to {{ free_build_program.end_date }} beginning-stage program. Work outside that agreed initial scope is separate.</p>
+        <p>If your project is accepted, yes. The development fee is $0 for the system and features we agree to build during the {{ free_build_program.start_date }} to {{ free_build_program.end_date }} program. Extra work is separate.</p>
       </details>
       <details class="detail-disclosure human-disclosure">
         <summary>How long is the free custom-build program available?</summary>
-        <p>The program runs from {{ free_build_program.start_date }} through {{ free_build_program.end_date }}. {% if free_build_program.is_upcoming %}It has not started yet.{% else %}It is currently active.{% endif %} This is a temporary beginning-stage program, not permanent RSF pricing.</p>
+        <p>The program runs from {{ free_build_program.start_date }} through {{ free_build_program.end_date }}. {% if free_build_program.is_upcoming %}It has not started yet.{% else %}It is active now.{% endif %} This is temporary. It is not permanent free pricing.</p>
       </details>
       <details class="detail-disclosure human-disclosure">
         <summary>Does free initial development include unlimited changes, hosting, or lifetime support?</summary>
-        <p>No. The free offer applies only to the agreed initial custom system scope. Unlimited development, lifetime support, hosting, third-party costs, future major features, large expansions, and significant integrations are not included as free work.</p>
+        <p>No. The free offer only covers the system and features we agree on before work starts. It does not include unlimited changes, lifetime support, hosting costs, costs from other apps or services, future big features, big system expansion, or big new connections to other apps or services.</p>
       </details>
       <details class="detail-disclosure human-disclosure">
         <summary>Is optional RSF management included in the free build?</summary>
-        <p>No. Optional RSF technical management after delivery is a separate paid service. The free-build program covers only the agreed initial custom development scope.</p>
+        <p>No. Paid RSF support after the system is finished is separate. The free program only covers the system and features we agree to build.</p>
       </details>
       <details class="detail-disclosure human-disclosure">
         <summary>Are the existing $199 USD systems free during this program?</summary>
@@ -285,13 +288,13 @@
 
       <details class="detail-disclosure human-disclosure">
         <summary>Is hosting and ongoing technical management included in the $199 USD price?</summary>
-        <p>No ongoing RSF management fee is included in that base price. You can manage the finished system yourself, or ask RSF to handle hosting and technical care under a separate price agreement.</p>
+        <p>No ongoing RSF support is included in that base price. You can manage the finished system yourself, or pay RSF separately to help keep it online and working.</p>
       </details>
 
       <details class="detail-disclosure human-disclosure">
         <summary>How is a custom system priced?</summary>
         {% if free_build_program.visible %}
-        <p>During the limited beginning-stage program, selected qualifying projects have a $0 RSF development fee for the agreed initial custom system scope. Work outside that initial scope, optional technical management, third-party costs, and later major changes remain separate. After the program ends, RSF will transition toward charging for custom system development.</p>
+        <p>During the limited program, accepted projects have a $0 development fee for the system and features we agree to build. Extra work, paid RSF support, costs from other apps or services, and future big changes are separate. After the program ends, RSF will start moving toward paid custom system development.</p>
         {% else %}
         <p>We first review the work required. Pricing depends on the system scope, including screens, data, users, permissions, workflow rules, automation, integrations, deployment, and ongoing technical needs. The scope and price are agreed before development begins.</p>
         {% endif %}
@@ -299,12 +302,12 @@
 
       <details class="detail-disclosure human-disclosure">
         <summary>Can an existing system be changed for my business?</summary>
-        <p>Yes. Existing systems can be customized. If RSF manages your system, minor workflow adjustments to the current system are included in managed care. Large changes are priced by agreement.</p>
+        <p>Yes. Existing systems can be changed for your business. If RSF manages your system, small changes to the current system are included. Big changes are priced separately.</p>
       </details>
 
       <details class="detail-disclosure human-disclosure">
         <summary>Can I request improvements later?</summary>
-        <p>Yes. Paid RSF management includes minor workflow adjustments to the current system. Major workflow changes, new modules, major features, large expansions, and significant new integrations are priced by agreement.</p>
+        <p>Yes. Paid RSF support includes small changes to the current system. Big changes, new sections, big features, large expansions, and big new connections to other apps or services are priced separately.</p>
       </details>
     </div>
 
