@@ -101,7 +101,7 @@ CARD_LAYOUT_SPECS = {
             "platform_wanted", "problem", "system_wanted", "notes_after_conversation",
             "post_link", "website", "company", "client_name", "email",
             "contact_number", "email_conversation", "contact_attempt", "followup_date",
-            "price", "demo_schedule", "next_step", "google_meet",
+            "price", "developer", "demo_schedule", "next_step", "google_meet",
         },
     },
     "inquiries": {
@@ -109,13 +109,13 @@ CARD_LAYOUT_SPECS = {
         "fields": {
             "client_name", "status", "email", "contact_number", "company", "request",
             "message", "notes_after_conversation", "email_conversation", "followup_date",
-            "price", "city_country", "demo_schedule", "next_step", "google_meet",
+            "price", "developer", "city_country", "demo_schedule", "next_step", "google_meet",
         },
     },
     "deals": {
         "zones": ("header", "deal", "outbound", "inbound"),
         "fields": {
-            "client_name", "status", "followup_date", "email", "price",
+            "client_name", "status", "followup_date", "email", "price", "developer",
             "contact_number", "city_country", "demo_schedule", "next_step",
             "notes_after_conversation", "google_meet", "email_conversation",
             "outbound_business_type", "outbound_budget", "outbound_post_date",
@@ -402,7 +402,7 @@ def _merge_provisional_deal_into(db, source_deal_id: int, target_deal_id: int, n
     fill_fields = [
         "contact_person","location","demo_date","demo_time","demo_timezone","demo_timezone_location",
         "google_calendar_event_id","google_calendar_html_url","google_meet_url","google_calendar_sync_error",
-        "google_calendar_synced_at","followup_date","next_step","price","contact_number","email",
+        "google_calendar_synced_at","followup_date","next_step","price","developer","contact_number","email",
         "notes_after_conversation","became_deal_at",
     ]
     updates = []
@@ -2378,7 +2378,7 @@ def deal_update(deal_id: int):
     db = get_db()
     deal = db.execute(
         """SELECT id,prospect_id,website_inquiry_id,demo_date,demo_time,demo_timezone,demo_timezone_location,email,contact_person,
-                  google_calendar_event_id,google_meet_url
+                  developer,google_calendar_event_id,google_meet_url
            FROM deals WHERE id=?""",
         (deal_id,),
     ).fetchone()
@@ -2474,6 +2474,7 @@ def deal_update(deal_id: int):
 
     next_step = (request.form.get("next_step", "") or "").strip()[:500]
     price = (request.form.get("price", "") or "").strip()[:200]
+    developer = (request.form.get("developer", deal["developer"] or "") or "").strip()[:200]
     contact_number = (request.form.get("contact_number", "") or "").strip()[:120]
     email = (request.form.get("email", "") or "").strip()[:320]
     contact_person = (request.form.get("contact_person", "") or "").strip()[:200].upper()
@@ -2486,7 +2487,7 @@ def deal_update(deal_id: int):
             _mark_deal_became(db, deal_id, now)
         db.execute(
             """UPDATE deals
-               SET status=?,demo_date=?,demo_time=?,demo_timezone=?,demo_timezone_location=?,followup_date=?,next_step=?,price=?,
+               SET status=?,demo_date=?,demo_time=?,demo_timezone=?,demo_timezone_location=?,followup_date=?,next_step=?,price=?,developer=?,
                    contact_number=?,email=?,notes_after_conversation=?,updated_at=?
                WHERE id=?""",
             (
@@ -2498,6 +2499,7 @@ def deal_update(deal_id: int):
                 followup_date,
                 next_step,
                 price,
+                developer,
                 contact_number,
                 email,
                 notes_after_conversation,
@@ -2510,7 +2512,7 @@ def deal_update(deal_id: int):
         # The legacy deals.status column only accepts deal-side statuses.
         db.execute(
             """UPDATE deals
-               SET demo_date=?,demo_time=?,demo_timezone=?,demo_timezone_location=?,followup_date=?,next_step=?,price=?,
+               SET demo_date=?,demo_time=?,demo_timezone=?,demo_timezone_location=?,followup_date=?,next_step=?,price=?,developer=?,
                    contact_number=?,email=?,notes_after_conversation=?,updated_at=?
                WHERE id=?""",
             (
@@ -2521,6 +2523,7 @@ def deal_update(deal_id: int):
                 followup_date,
                 next_step,
                 price,
+                developer,
                 contact_number,
                 email,
                 notes_after_conversation,
@@ -2669,6 +2672,7 @@ def deal_update(deal_id: int):
             "demo_timezone_location": demo_timezone_location,
             "contact_person": contact_person,
             "location": location,
+            "developer": developer,
             "email": email,
             "contact_number": contact_number,
             "notes_after_conversation": notes_after_conversation,
