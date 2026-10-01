@@ -35,10 +35,22 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         self.assertIn("{% if is_active_deal_stage and deal %}", prospect)
         self.assertIn("{% if (not is_active_deal_stage) and deal %}", prospect)
         self.assertIn("{% set deal_show_documents = not is_active_deal_stage %}", prospect)
-        self.assertIn("prospect-active-documents", prospect)
+        self.assertIn("prospect-deal-documents", prospect)
         self.assertIn("{% include '_master_deal_documents.html' %}", prospect)
         self.assertIn("{% set deal_show_email = is_active_deal_stage %}", prospect)
         self.assertIn("{% set deal_show_location = is_active_deal_stage %}", prospect)
+
+    def test_outbound_page_section_order_is_source_first(self):
+        prospect = self.read("app/templates/_prospect_row.html")
+        outbound_at = prospect.index('<div class="master-source-section-head"><h3>Outbound Details</h3></div>')
+        documents_at = prospect.index('<div class="prospect-deal-documents">')
+        deal_at = prospect.rindex("{% include '_master_deal_information.html' %}")
+        footer_at = prospect.index('<div class="prospect-deal-action">')
+        self.assertLess(outbound_at, documents_at)
+        self.assertLess(documents_at, deal_at)
+        self.assertLess(deal_at, footer_at)
+        self.assertIn("{% set deal_show_documents = false %}", prospect)
+        self.assertNotIn("{% if is_active_deal_stage and deal %}\n        {% include '_master_deal_information.html' %}", prospect)
 
     def test_outbound_page_collapses_deal_information_but_keeps_deals_page_open(self):
         prospect = self.read("app/templates/_prospect_row.html")
