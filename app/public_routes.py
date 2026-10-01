@@ -38,16 +38,10 @@ site = Blueprint("site", __name__)
 
 SERVICES = [
     {
-        "kind": "existing-system",
-        "title": "Buy an existing system",
-        "text": "Choose a working Realty Systems Foundry system. Optional paid RSF support can include small changes to the current system; big changes are priced separately.",
-        "example": "We agree on the price before we start big changes.",
-    },
-    {
         "kind": "custom-build",
         "title": "Build a custom system",
-        "text": "If none of the existing systems fits, we can build around your workflow and requirements.",
-        "example": "We agree on the work and price before we start.",
+        "text": "Tell us what your business needs. RSF builds a custom system around your business.",
+        "example": "We agree on what we will build before work starts.",
     },
 ]
 
@@ -65,7 +59,7 @@ TECHNOLOGIES = [
 PAGE_SEO = {
     "home": {
         "title": "Custom Real Estate Systems | Realty Systems Foundry",
-        "description": "Realty Systems Foundry builds custom software systems for real estate businesses. Choose an existing system or request a purpose-built system for your operation.",
+        "description": "Realty Systems Foundry builds custom software systems around the needs of real estate businesses.",
     },
     "about": {
         "title": "About Realty Systems Foundry | Real Estate Technology",
@@ -73,7 +67,7 @@ PAGE_SEO = {
     },
     "services": {
         "title": "Services & Pricing | Realty Systems Foundry",
-        "description": "See Realty Systems Foundry services and pricing: choose an existing system or ask for a custom build, then choose who keeps the system online and working.",
+        "description": "See how Realty Systems Foundry builds custom systems, the limited free build program, and optional paid support after the system is finished.",
     },
     "skills": {
         "title": "Technology Capabilities | Realty Systems Foundry",
@@ -89,7 +83,7 @@ PAGE_SEO = {
     },
     "system_templates": {
         "title": "Real Estate Systems | Realty Systems Foundry",
-        "description": "See working Realty Systems Foundry systems for property operations, property listings, and housing work. Existing systems have a clear one-time price; optional paid RSF support can include small changes, while big changes are priced separately.",
+        "description": "See examples of systems Realty Systems Foundry has built for property operations, property listings, and housing work.",
     },
 }
 
@@ -270,8 +264,9 @@ def _valid_email(value: str) -> bool:
 
 
 _TEMPLATE_INTENTS = {
-    "existing-system": ("existing-system", "Existing System Purchase"),
-    "customize": ("customize", "Customize Existing System"),
+    # Old public purchase links now lead into the custom-build request flow.
+    "existing-system": ("custom-build", "Custom System Build"),
+    "customize": ("customize", "System Upgrade / Customization"),
     "custom-build": ("custom-build", "Custom System Build"),
     "handover": ("handover", "Full Handover"),
     "managed": ("managed", "Managed by Realty Systems Foundry"),
@@ -293,8 +288,8 @@ def _requested_intent(template_interest) -> tuple[str, str, str]:
     canonical_intent, label = _TEMPLATE_INTENTS.get(raw, ("", ""))
     if not canonical_intent:
         return "", "", ""
-    # System purchase/customization may point to a selected system. Keep legacy
-    # customization links readable, but never trust browser-supplied titles or prices.
+    # A request may point to a selected portfolio example. Keep old public links
+    # readable, but never trust browser-supplied titles, labels, or prices.
     return canonical_intent, label, label
 
 
