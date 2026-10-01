@@ -53,7 +53,7 @@
   >
     <header class="website-inquiry-card-head">
       <div class="website-inquiry-card-identity">
-        <div><span>Client Name:</span> <strong>{{ inquiry.name }}</strong></div>
+        <div><span>Client Name:</span> <strong data-inquiry-client-name>{{ inquiry.name }}</strong></div>
         <label class="website-inquiry-header-status">
           <span>Status:</span>
           <select
@@ -88,11 +88,11 @@
     <div class="website-inquiry-field-grid">
       <div class="website-inquiry-field">
         <span>Email</span>
-        <strong>{{ inquiry.email }}</strong>
+        <strong data-inquiry-email>{{ inquiry.email }}</strong>
       </div>
       <div class="website-inquiry-field">
         <span>Phone Number</span>
-        <strong>{{ inquiry.phone or '—' }}</strong>
+        <strong data-inquiry-phone>{{ inquiry.phone or '—' }}</strong>
       </div>
       <div class="website-inquiry-field">
         <span>Company</span>
