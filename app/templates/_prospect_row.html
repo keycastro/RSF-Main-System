@@ -15,7 +15,8 @@
 {% set deal_show_location = is_active_deal_stage %}
 {% set deal_show_notes = is_active_deal_stage %}
 {% set deal_show_email_conversation = is_active_deal_stage %}
-{% set deal_show_documents = false %}
+{% set deal_show_documents = true %}
+{% set deal_documents_inside_body = true %}
 {% set deal_section_collapsible = true %}
 {% set deal_section_open = false %}
 <article class="prospect-card-shell" id="prospect-{{ prospect['id'] }}" data-prospect-row data-prospect-status="{{ prospect['status'] }}" data-deal-card data-deal-status="{{ prospect['status'] }}" data-prospect-update-url="{{ url_for('main.prospect_update', prospect_id=prospect['id']) }}" data-prospect-attempt-url="{{ url_for('main.prospect_contact_attempt', prospect_id=prospect['id']) }}">
@@ -118,11 +119,6 @@
         </div>
       </div>
 
-      {% if deal %}
-      <div class="prospect-deal-documents">
-        {% include '_master_deal_documents.html' %}
-      </div>
-      {% endif %}
     </div>
 
     {% if deal %}
