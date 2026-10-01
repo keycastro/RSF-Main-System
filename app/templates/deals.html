@@ -88,9 +88,6 @@
         {% set deal_show_contact_number = not deal['prospect_id'] %}
         {% set deal_external_email = deal['prospect_id'] %}
         {% set deal_external_contact_number = deal['prospect_id'] %}
-        {% set deal_show_location = false %}
-        {% set deal_timezone_location_in_location_slot = true %}
-        {% set deal_timezone_split_city_country = true %}
         {% include '_master_deal_information.html' %}
 
         {% if deal['prospect_id'] %}
