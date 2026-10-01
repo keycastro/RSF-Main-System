@@ -281,17 +281,6 @@ def _normalize_prospect_name(value: str) -> str:
     return " ".join((value or "").split()).casefold()
 
 
-def _selected_inquiry_date(raw: str | None) -> date:
-    today = date.today()
-    if not raw:
-        return today
-    try:
-        selected = date.fromisoformat(raw)
-    except ValueError:
-        return today
-    return min(selected, today)
-
-
 def _shared_opportunity_status(status: str) -> bool:
     return (status or "").strip().upper() not in ("REJECTED", "WON", "LOST")
 
@@ -1430,7 +1419,7 @@ def prospect_new():
     )
     if website_duplicate:
         received_date = (website_duplicate["created_at"] or "")[:10] or today_str()
-        view_url = url_for("main.inquiries_list", date=received_date) + f"#website-inquiry-{website_duplicate['id']}"
+        view_url = url_for("main.inquiries_list") + f"#website-inquiry-{website_duplicate['id']}"
         if wants_json:
             return jsonify(
                 {
@@ -5583,10 +5572,6 @@ def communication_timeline():
 @login_required
 def inquiries_list():
     db = get_db()
-    selected = _selected_inquiry_date(request.args.get("date"))
-    selected_str = selected.isoformat()
-    today = date.today()
-    is_today = selected == today
 
     claimed_select = """SELECT c.id AS client_conversation_id,c.lead_id,c.owner_partner_id,c.client_name AS name,
                c.client_email AS email,c.company,c.subject,c.status,c.created_at,c.updated_at,
@@ -5602,26 +5587,11 @@ def inquiries_list():
             "SELECT * FROM website_inquiries WHERE status='UNCLAIMED' ORDER BY created_at ASC"
         ).fetchall()
         claimed = db.execute(claimed_select + " ORDER BY c.updated_at DESC LIMIT 200").fetchall()
-        if is_today:
-            website_inquiries = db.execute(
-                """SELECT * FROM website_inquiries
-                   WHERE status NOT IN ('ARCHIVED','SPAM')
-                     AND (
-                       substr(created_at,1,10)=?
-                       OR (substr(created_at,1,10)<? AND workflow_status IN ('NOT_CONTACTED','NO_ANSWER'))
-                     )
-                   ORDER BY CASE WHEN substr(created_at,1,10)=? THEN 0 ELSE 1 END,
-                            created_at ASC,id ASC""",
-                (selected_str, selected_str, selected_str),
-            ).fetchall()
-        else:
-            website_inquiries = db.execute(
-                """SELECT * FROM website_inquiries
-                   WHERE status NOT IN ('ARCHIVED','SPAM')
-                     AND substr(created_at,1,10)=?
-                   ORDER BY created_at ASC,id ASC""",
-                (selected_str,),
-            ).fetchall()
+        website_inquiries = db.execute(
+            """SELECT * FROM website_inquiries
+               WHERE status NOT IN ('ARCHIVED','SPAM')
+               ORDER BY created_at DESC,id DESC"""
+        ).fetchall()
     else:
         pid = g.partner["id"]
         unclaimed = db.execute(
@@ -5630,31 +5600,19 @@ def inquiries_list():
         claimed = db.execute(
             claimed_select + " AND c.owner_partner_id=? ORDER BY c.updated_at DESC LIMIT 200", (pid,)
         ).fetchall()
-        if is_today:
-            website_inquiries = db.execute(
-                """SELECT * FROM website_inquiries
-                   WHERE (status='UNCLAIMED' OR (status='CLAIMED' AND claimed_by_partner_id=?))
-                     AND (
-                       substr(created_at,1,10)=?
-                       OR (substr(created_at,1,10)<? AND workflow_status IN ('NOT_CONTACTED','NO_ANSWER'))
-                     )
-                   ORDER BY CASE WHEN substr(created_at,1,10)=? THEN 0 ELSE 1 END,
-                            created_at ASC,id ASC""",
-                (pid, selected_str, selected_str, selected_str),
-            ).fetchall()
-        else:
-            website_inquiries = db.execute(
-                """SELECT * FROM website_inquiries
-                   WHERE (status='UNCLAIMED' OR (status='CLAIMED' AND claimed_by_partner_id=?))
-                     AND substr(created_at,1,10)=?
-                   ORDER BY created_at ASC,id ASC""",
-                (pid, selected_str),
-            ).fetchall()
+        website_inquiries = db.execute(
+            """SELECT * FROM website_inquiries
+               WHERE (status='UNCLAIMED' OR (status='CLAIMED' AND claimed_by_partner_id=?))
+               ORDER BY created_at DESC,id DESC""",
+            (pid,),
+        ).fetchall()
+
     partners = []
     if g.user["role"] == "admin":
         partners = db.execute(
             "SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND u.active=1 AND p.account_deleted_at IS NULL ORDER BY u.full_name"
         ).fetchall()
+
     now = utcnow_iso()
     for inquiry in website_inquiries:
         _ensure_deal_for_website_inquiry(
@@ -5693,9 +5651,6 @@ def inquiries_list():
     }
     deal_support = _deal_card_support(db, workspace_deal_rows)
 
-    previous_date = (selected - timedelta(days=1)).isoformat()
-    next_date = (selected + timedelta(days=1)).isoformat() if selected < today else None
-
     overdue = [row for row in claimed if row["first_response_due_at"] and not row["first_responded_at"] and row["first_response_due_at"] < now]
     from .client_ops import email_receive_configured, email_send_configured
     return render_template(
@@ -5703,169 +5658,11 @@ def inquiries_list():
         inquiry_workflow_status_labels=PROSPECT_STATUS_LABELS,
         inquiry_deal_ids=inquiry_deal_ids,
         inquiry_deals=inquiry_deals,
-        selected_date=selected_str,
-        previous_date=previous_date,
-        next_date=next_date,
-        today=today.isoformat(),
-        is_today=is_today,
         email_send_ready=email_send_configured(), email_receive_ready=email_receive_configured(),
         auto_email_sync=bool(current_app.config.get("AUTO_EMAIL_SYNC")),
         response_sla_minutes=int(current_app.config.get("FIRST_RESPONSE_SLA_MINUTES", 60)),
         **deal_support,
     )
-
-
-def _delete_inbound_record_tree(db, inquiry_id: int) -> dict:
-    inquiry = db.execute(
-        "SELECT id,workflow_status,client_conversation_id FROM website_inquiries WHERE id=?",
-        (inquiry_id,),
-    ).fetchone()
-    if not inquiry:
-        return {"deleted": False, "missing": True, "protected": False, "shared_history_kept": 0}
-
-    workflow_status = (inquiry["workflow_status"] or "").strip().upper()
-    if workflow_status in RECORD_DELETE_PROTECTED_STATUSES:
-        return {"deleted": False, "missing": False, "protected": True, "shared_history_kept": 0}
-
-    deal_rows = db.execute(
-        "SELECT id,prospect_id FROM deals WHERE website_inquiry_id=?",
-        (inquiry_id,),
-    ).fetchall()
-    deal_ids = [int(row["id"]) for row in deal_rows]
-
-    conversation_ids = set()
-    if inquiry["client_conversation_id"]:
-        conversation_ids.add(int(inquiry["client_conversation_id"]))
-    conversation_rows = db.execute(
-        "SELECT id FROM client_conversations WHERE inquiry_id=?",
-        (inquiry_id,),
-    ).fetchall()
-    conversation_ids.update(int(row["id"]) for row in conversation_rows)
-
-    shared_history_kept = 0
-    for conversation_id in sorted(conversation_ids):
-        other_refs = db.execute(
-            """SELECT COUNT(*) AS total
-               FROM website_inquiries
-               WHERE id<>? AND client_conversation_id=?""",
-            (inquiry_id, conversation_id),
-        ).fetchone()
-        conversation = db.execute(
-            "SELECT prospect_id FROM client_conversations WHERE id=?",
-            (conversation_id,),
-        ).fetchone()
-        is_shared = bool(
-            (other_refs and int(other_refs["total"] or 0) > 0)
-            or (conversation and conversation["prospect_id"] is not None)
-        )
-        if is_shared:
-            db.execute(
-                "UPDATE client_conversations SET inquiry_id=NULL WHERE id=? AND inquiry_id=?",
-                (conversation_id, inquiry_id),
-            )
-            shared_history_kept += 1
-            continue
-
-        db.execute(
-            "DELETE FROM client_notifications WHERE entity_type='conversation' AND entity_id=?",
-            (conversation_id,),
-        )
-        db.execute("DELETE FROM client_conversations WHERE id=?", (conversation_id,))
-
-    for deal_row in deal_rows:
-        deal_id = int(deal_row["id"])
-        if deal_row["prospect_id"] is not None:
-            db.execute(
-                "UPDATE deals SET website_inquiry_id=NULL,updated_at=? WHERE id=?",
-                (utcnow_iso(), deal_id),
-            )
-            continue
-        db.execute(
-            "DELETE FROM activity_log WHERE entity_type='deal' AND entity_id=?",
-            (deal_id,),
-        )
-        db.execute("DELETE FROM deals WHERE id=?", (deal_id,))
-
-    db.execute(
-        "DELETE FROM client_notifications WHERE entity_type='inquiry' AND entity_id=?",
-        (inquiry_id,),
-    )
-    db.execute(
-        "DELETE FROM activity_log WHERE entity_type='inquiry' AND entity_id=?",
-        (inquiry_id,),
-    )
-    db.execute("DELETE FROM website_inquiries WHERE id=?", (inquiry_id,))
-
-    return {
-        "deleted": True,
-        "missing": False,
-        "protected": False,
-        "shared_history_kept": shared_history_kept,
-    }
-
-
-def _delete_prospect_record_tree(db, prospect_id: int) -> dict:
-    prospect = db.execute(
-        "SELECT id,status FROM prospects WHERE id=?",
-        (prospect_id,),
-    ).fetchone()
-    if not prospect:
-        return {"deleted": False, "missing": True, "protected": False}
-
-    status = (prospect["status"] or "").strip().upper()
-    if status in RECORD_DELETE_PROTECTED_STATUSES:
-        return {"deleted": False, "missing": False, "protected": True}
-
-    deal_rows = db.execute(
-        "SELECT id,website_inquiry_id FROM deals WHERE prospect_id=?",
-        (prospect_id,),
-    ).fetchall()
-    for row in deal_rows:
-        deal_id = int(row["id"])
-        if row["website_inquiry_id"] is not None:
-            db.execute(
-                "UPDATE deals SET prospect_id=NULL,updated_at=? WHERE id=?",
-                (utcnow_iso(), deal_id),
-            )
-            continue
-        db.execute(
-            "DELETE FROM activity_log WHERE entity_type='deal' AND entity_id=?",
-            (deal_id,),
-        )
-
-    conversation_rows = db.execute(
-        "SELECT id,inquiry_id FROM client_conversations WHERE prospect_id=?",
-        (prospect_id,),
-    ).fetchall()
-    for conversation in conversation_rows:
-        is_shared = conversation["inquiry_id"] is not None or db.execute(
-            "SELECT 1 FROM website_inquiries WHERE client_conversation_id=? LIMIT 1",
-            (conversation["id"],),
-        ).fetchone()
-        if is_shared:
-            db.execute(
-                "UPDATE client_conversations SET prospect_id=NULL WHERE id=?",
-                (conversation["id"],),
-            )
-        else:
-            db.execute(
-                "DELETE FROM client_notifications WHERE entity_type='conversation' AND entity_id=?",
-                (conversation["id"],),
-            )
-            db.execute("DELETE FROM client_conversations WHERE id=?", (conversation["id"],))
-
-    db.execute(
-        "DELETE FROM activity_log WHERE entity_type='prospect' AND entity_id=?",
-        (prospect_id,),
-    )
-    # Prospect-only Deals still cascade; merged Deals were detached above.
-    db.execute("DELETE FROM prospects WHERE id=?", (prospect_id,))
-    return {"deleted": True, "missing": False, "protected": False}
-
-
-def _records_for_current_user(db):
-    partner_id = partner_scope_id() if g.user["role"] == "partner" else None
-    return build_master_records(db, partner_id=partner_id)
 
 
 @bp.get("/records")
