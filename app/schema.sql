@@ -101,6 +101,7 @@ CREATE TABLE IF NOT EXISTS deals (
     contact_number TEXT NOT NULL DEFAULT '',
     email TEXT NOT NULL DEFAULT '',
     notes_after_conversation TEXT NOT NULL DEFAULT '',
+    became_deal_at TEXT NOT NULL DEFAULT '',
     created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
