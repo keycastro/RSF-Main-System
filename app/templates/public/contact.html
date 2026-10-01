@@ -16,9 +16,9 @@
         <a class="text-link" href="{{ url_for('site.system_templates') }}">View Existing Systems</a>
       </article>
       <article class="management-upgrade-card">
-        <strong>Custom System</strong>
-        <p>Need a different workflow? Tell us what your business needs and we will scope it first.</p>
-        <a class="text-link" href="{{ url_for('site.contact', intent='custom-build') }}">Build a Custom System</a>
+        <strong>{% if free_build_program.visible %}Custom System — Limited Free Build Program{% else %}Custom System{% endif %}</strong>
+        <p>{% if free_build_program.visible %}Need a different workflow? Selected qualifying projects can receive free initial development during RSF’s {{ free_build_program.period }} beginning-stage program.{% else %}Need a different workflow? Tell us what your business needs and we will scope it first.{% endif %}</p>
+        <a class="text-link" href="{{ url_for('site.contact', intent='custom-build') }}">{% if free_build_program.visible %}Request a Free Custom Build{% else %}Build a Custom System{% endif %}</a>
       </article>
       <article class="management-upgrade-card">
         <strong>Upgrade or Customization</strong>
@@ -48,6 +48,13 @@
       </div>
       {% endif %}
 
+      {% if source_intent == 'custom-build' and free_build_program.visible %}
+      <div class="free-build-contact-note" role="note">
+        <strong>Free Custom Build Program</strong>
+        <p>You are requesting consideration for RSF’s limited beginning-stage program, {{ free_build_program.period }}. Free development applies only to the agreed initial custom system scope. Additional work, third-party costs, and optional RSF technical management are separate.</p>
+      </div>
+      {% endif %}
+
       <div class="honeypot" aria-hidden="true"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
       <div class="form-row">
         <label><span>Name</span><input required maxlength="100" name="name" value="{{ form_data.name if form_data else '' }}" placeholder="Your name"></label>
@@ -60,7 +67,11 @@
       <label><span>What do you need help with?</span><textarea required minlength="20" maxlength="3000" name="message" rows="6" placeholder="What is hard to track, repetitive, scattered, or missing in your current workflow? What should the system help your team do?">{{ form_data.message if form_data else '' }}</textarea></label>
       <button class="button primary full-button" type="submit">Send System Request</button>
       <div class="human-contact-foot">
+        {% if source_intent == 'custom-build' and free_build_program.visible %}
+        <p>We review your request first. If the project is selected for the limited program, the initial scope is agreed before development and the RSF development fee for that agreed scope is $0. Optional management, third-party costs, and later major changes remain separate.</p>
+        {% else %}
         <p>We review your request first. For custom work, scope and price are agreed before development begins.</p>
+        {% endif %}
         <p>We will reply to the email you provide.</p>
         {% if contact_email %}<p>Or email us directly: <a class="text-link" href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>{% endif %}
       </div>
