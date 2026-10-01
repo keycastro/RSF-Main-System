@@ -37,8 +37,14 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         self.assertIn("{% set deal_documents_inside_body = true %}", prospect)
         self.assertNotIn("prospect-deal-documents", prospect)
         self.assertNotIn("{% include '_master_deal_documents.html' %}", prospect)
-        self.assertIn("{% set deal_show_email = is_active_deal_stage %}", prospect)
-        self.assertIn("{% set deal_show_location = is_active_deal_stage %}", prospect)
+        self.assertIn("{% set deal_show_email = false %}", prospect)
+        self.assertIn("{% set deal_show_contact_number = false %}", prospect)
+        self.assertIn("{% set deal_show_location = false %}", prospect)
+        self.assertIn("{% set deal_timezone_location_in_location_slot = true %}", prospect)
+        self.assertIn("{% set deal_timezone_split_city_country = true %}", prospect)
+        self.assertIn('data-prospect-field="email"', prospect)
+        self.assertIn('data-prospect-field="phone"', prospect)
+        self.assertIn('data-prospect-field="location"', prospect)
 
     def test_outbound_page_section_order_is_source_first(self):
         prospect = self.read("app/templates/_prospect_row.html")
@@ -146,8 +152,36 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         self.assertIn('class="deal-demo-date-time-row"', master)
         self.assertIn('data-client-time-display', master)
         self.assertIn('data-philippines-time-display', master)
-        self.assertNotIn("deal_timezone_location_in_location_slot = true", prospect)
-        self.assertNotIn("deal_timezone_location_in_location_slot = true", inquiries)
+        self.assertIn("{% set deal_timezone_location_in_location_slot = true %}", prospect)
+        self.assertIn("{% set deal_timezone_split_city_country = true %}", prospect)
+        self.assertIn("{% set deal_show_location = false %}", prospect)
+        self.assertIn("{% set deal_timezone_location_in_location_slot = true %}", inquiries)
+        self.assertIn("{% set deal_timezone_split_city_country = true %}", inquiries)
+        self.assertIn("{% set deal_show_location = false %}", inquiries)
+
+    def test_latest_shared_deal_scheduling_fields_are_consistent_across_lifecycle_pages(self):
+        deals = self.read("app/templates/deals.html")
+        prospect = self.read("app/templates/_prospect_row.html")
+        inquiries = self.read("app/templates/inquiries.html")
+        master = self.read("app/templates/_master_deal_information.html")
+        for page in (deals, prospect, inquiries):
+            self.assertIn("{% set deal_show_location = false %}", page)
+            self.assertIn("{% set deal_timezone_location_in_location_slot = true %}", page)
+            self.assertIn("{% set deal_timezone_split_city_country = true %}", page)
+        self.assertIn("<small>City</small>", master)
+        self.assertIn("<small>Country</small>", master)
+        self.assertIn("data-timezone-city", master)
+        self.assertIn("data-timezone-country", master)
+
+    def test_prospect_source_contact_and_location_stay_in_outbound_when_deal_exists(self):
+        prospect = self.read("app/templates/_prospect_row.html")
+        self.assertIn("{% set deal_show_email = false %}", prospect)
+        self.assertIn("{% set deal_show_contact_number = false %}", prospect)
+        self.assertIn('data-prospect-field="email"', prospect)
+        self.assertIn('data-prospect-field="phone"', prospect)
+        self.assertIn('data-prospect-field="location"', prospect)
+        self.assertNotIn("{% if not is_active_deal_stage %}\n        <div class=\"prospect-detail prospect-editable-field\" data-prospect-edit-field data-prospect-field=\"email\"", prospect)
+        self.assertNotIn("{% if not is_active_deal_stage %}\n        <div class=\"prospect-detail prospect-detail-compact prospect-editable-field\" data-prospect-edit-field data-prospect-field=\"location\"", prospect)
 
     def test_deals_outbound_contact_fields_move_without_duplicates(self):
         deals = self.read("app/templates/deals.html")
