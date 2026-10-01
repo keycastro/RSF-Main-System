@@ -5367,6 +5367,19 @@ document.addEventListener('click', (event) => {
     return field.dataset.cardLayoutOriginZone || '';
   };
 
+  const syncAdaptiveFieldZones = (card) => {
+    if (!card) return;
+    fieldsForCard(card).forEach((field) => {
+      const currentZone = zoneNameForField(field);
+      if (!currentZone) return;
+      if (!field.dataset.cardLayoutOriginZone) field.dataset.cardLayoutOriginZone = currentZone;
+      field.dataset.cardLayoutCurrentZone = currentZone;
+      field.classList.toggle('card-layout-field-relocated', field.dataset.cardLayoutOriginZone !== currentZone);
+    });
+  };
+
+  cards().forEach((card) => syncAdaptiveFieldZones(card));
+
   const discovered = {};
   zones.forEach((zone) => { discovered[zone] = []; });
   const discoveredKeys = new Set();
@@ -5462,6 +5475,7 @@ document.addEventListener('click', (event) => {
         if (field) zone.appendChild(field);
       });
     });
+    syncAdaptiveFieldZones(card);
     if (before) animateReflow(card, before);
   };
 
@@ -5857,6 +5871,7 @@ document.addEventListener('click', (event) => {
 
     updateStateFromDrop(completed.card, completed.key, targetZoneName);
     customized = true;
+    syncAdaptiveFieldZones(completed.card);
     animateReflow(completed.card, before);
     applyAll({animate: true, skipCard: completed.card});
     persist(completed.previous);

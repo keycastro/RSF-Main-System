@@ -94,6 +94,30 @@ class CardLayoutReorderingTests(unittest.TestCase):
         self.assertIn("card-layout-drag-ghost", css)
         self.assertIn("will-change:transform", css)
 
+    def test_reordered_fields_track_origin_and_destination_zones(self):
+        js = self.read("app/static/js/app.js")
+        self.assertIn("const syncAdaptiveFieldZones", js)
+        self.assertIn("field.dataset.cardLayoutOriginZone", js)
+        self.assertIn("field.dataset.cardLayoutCurrentZone", js)
+        self.assertIn("card-layout-field-relocated", js)
+        self.assertIn("syncAdaptiveFieldZones(completed.card)", js)
+
+    def test_header_destination_has_adaptive_formatting_on_all_three_pages(self):
+        css = self.read("app/static/css/workspace_v20.css")
+        self.assertIn('[data-card-layout-current-zone="header"]>input', css)
+        self.assertIn('.deals-page [data-card-layout-zone="header"]', css)
+        self.assertIn('.prospects-page [data-card-layout-zone="header"]', css)
+        self.assertIn('.website-inbox-page [data-card-layout-zone="header"]', css)
+        self.assertIn('font-size:12.5px!important', css)
+        self.assertIn('background:transparent!important', css)
+
+    def test_reverse_adaptation_restores_body_field_format(self):
+        css = self.read("app/static/css/workspace_v20.css")
+        self.assertIn('label[data-card-layout-current-zone]:not([data-card-layout-current-zone="header"])>input', css)
+        self.assertIn('border:1px solid #d7e1dd!important', css)
+        self.assertIn('border-radius:8px!important', css)
+        self.assertIn('background:#fff!important', css)
+
     def test_visual_moves_preserve_existing_save_ownership(self):
         js = self.read("app/static/js/app.js")
         self.assertIn("const researchSectionFor", js)

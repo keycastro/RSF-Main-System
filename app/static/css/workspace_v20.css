@@ -6344,3 +6344,206 @@ body.card-layout-dragging-global *{cursor:grabbing!important;user-select:none!im
   [data-card-layout-zone]>[data-card-layout-field]{grid-column:1/-1}
 }
 
+
+
+/* v1.18.156 — destination-aware field formatting for page-specific reordering
+   The field keeps its original data/control. Only presentation follows the zone
+   where the Founder places it. */
+
+/* Shared compact header behavior. */
+[data-card-layout-page] [data-card-layout-current-zone="header"]{
+  min-width:0;
+  max-width:100%;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  grid-column:auto!important
+}
+[data-card-layout-page] [data-card-layout-current-zone="header"]>span{
+  flex:0 0 auto;
+  margin:0!important;
+  color:var(--ux-section-ink)!important;
+  font-size:8.5px!important;
+  font-weight:700!important;
+  letter-spacing:.075em!important;
+  line-height:1.25!important;
+  text-transform:uppercase!important;
+  white-space:nowrap
+}
+[data-card-layout-page] label[data-card-layout-current-zone="header"],
+[data-card-layout-page] div[data-card-layout-current-zone="header"]{
+  display:flex!important;
+  align-items:center!important;
+  gap:5px!important
+}
+[data-card-layout-page] [data-card-layout-current-zone="header"]>input,
+[data-card-layout-page] [data-card-layout-current-zone="header"]>select,
+[data-card-layout-page] [data-card-layout-current-zone="header"]>textarea{
+  flex:1 1 auto!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:280px;
+  min-height:20px!important;
+  height:20px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:var(--ux-section-ink)!important;
+  font:inherit!important;
+  font-size:12.5px!important;
+  font-weight:700!important;
+  letter-spacing:0!important;
+  line-height:1.35!important;
+  outline:none!important;
+  resize:none!important
+}
+[data-card-layout-page] [data-card-layout-current-zone="header"]>input:focus,
+[data-card-layout-page] [data-card-layout-current-zone="header"]>select:focus,
+[data-card-layout-page] [data-card-layout-current-zone="header"]>textarea:focus{
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important
+}
+[data-card-layout-page] [data-card-layout-current-zone="header"]>.prospect-edit-value,
+[data-card-layout-page] [data-card-layout-current-zone="header"]>strong{
+  min-width:0!important;
+  min-height:20px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:var(--ux-section-ink)!important;
+  font-size:12.5px!important;
+  font-weight:700!important;
+  line-height:1.35!important;
+  text-align:left!important
+}
+
+/* A moved simple action field also adopts the compact header treatment. */
+[data-card-layout-page] button[data-card-layout-current-zone="header"]{
+  display:flex!important;
+  align-items:center!important;
+  gap:5px!important;
+  width:auto!important;
+  min-height:20px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  text-align:left!important
+}
+[data-card-layout-page] button[data-card-layout-current-zone="header"]>strong{
+  color:var(--ux-section-ink)!important;
+  font-size:12.5px!important;
+  line-height:1.35!important
+}
+
+/* Deals: every field placed in the header follows Client Name / Status format. */
+.deals-page [data-card-layout-zone="header"]{
+  display:grid;
+  gap:7px
+}
+.deals-page [data-card-layout-current-zone="header"]>input,
+.deals-page [data-card-layout-current-zone="header"]>select,
+.deals-page [data-card-layout-current-zone="header"]>textarea{
+  flex:0 1 280px!important;
+  width:280px!important
+}
+
+/* Prospects: fields moved beside Business Type / Status use the same compact header language. */
+.prospects-page [data-card-layout-zone="header"]{
+  display:grid;
+  gap:7px
+}
+.prospects-page [data-card-layout-current-zone="header"]>input,
+.prospects-page [data-card-layout-current-zone="header"]>select,
+.prospects-page [data-card-layout-current-zone="header"]>textarea{
+  width:130px!important;
+  max-width:130px!important
+}
+
+/* Website Inquiries: preserve the existing identity-stack rhythm for moved fields. */
+.website-inbox-page [data-card-layout-zone="header"]{
+  display:grid;
+  gap:7px
+}
+.website-inbox-page [data-card-layout-current-zone="header"]>input,
+.website-inbox-page [data-card-layout-current-zone="header"]>select,
+.website-inbox-page [data-card-layout-current-zone="header"]>textarea{
+  max-width:220px
+}
+
+/* Reverse adaptation: header-origin fields moved into a normal grid become
+   normal boxed body fields instead of keeping transparent header controls. */
+[data-card-layout-page] label[data-card-layout-current-zone]:not([data-card-layout-current-zone="header"]){
+  display:grid!important;
+  gap:5px!important;
+  min-width:0
+}
+[data-card-layout-page] label[data-card-layout-current-zone]:not([data-card-layout-current-zone="header"])>span{
+  display:block!important;
+  margin:0!important;
+  color:#6f7f79!important;
+  font-size:9px!important;
+  font-weight:650!important;
+  letter-spacing:.055em!important;
+  line-height:1.35!important;
+  text-transform:uppercase!important
+}
+[data-card-layout-page] label[data-card-layout-current-zone]:not([data-card-layout-current-zone="header"])>input,
+[data-card-layout-page] label[data-card-layout-current-zone]:not([data-card-layout-current-zone="header"])>select,
+[data-card-layout-page] label[data-card-layout-current-zone]:not([data-card-layout-current-zone="header"])>textarea{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  min-height:39px!important;
+  height:auto;
+  padding:9px 10px!important;
+  border:1px solid #d7e1dd!important;
+  border-radius:8px!important;
+  background:#fff!important;
+  color:var(--ux-section-ink)!important;
+  box-shadow:none;
+  font:inherit!important;
+  font-size:12.5px!important;
+  font-weight:400!important;
+  line-height:1.4!important;
+  outline:none!important
+}
+
+/* Simple non-label identity fields get the same body-card treatment when moved
+   out of their original header. */
+[data-card-layout-page] div.card-layout-field-relocated:not([data-card-layout-current-zone="header"])[data-card-layout-field="client_name"],
+[data-card-layout-page] div.card-layout-field-relocated:not([data-card-layout-current-zone="header"])[data-card-layout-field="business_type"],
+[data-card-layout-page] div.card-layout-field-relocated:not([data-card-layout-current-zone="header"])[data-card-layout-field="status"]{
+  min-height:58px!important;
+  padding:9px 11px!important;
+  border:1px solid #d7e1dd!important;
+  border-radius:10px!important;
+  background:#fff!important
+}
+
+@media(max-width:620px){
+  .deals-page [data-card-layout-current-zone="header"]>input,
+  .deals-page [data-card-layout-current-zone="header"]>select,
+  .deals-page [data-card-layout-current-zone="header"]>textarea,
+  .prospects-page [data-card-layout-current-zone="header"]>input,
+  .prospects-page [data-card-layout-current-zone="header"]>select,
+  .prospects-page [data-card-layout-current-zone="header"]>textarea,
+  .website-inbox-page [data-card-layout-current-zone="header"]>input,
+  .website-inbox-page [data-card-layout-current-zone="header"]>select,
+  .website-inbox-page [data-card-layout-current-zone="header"]>textarea{
+    flex:1 1 auto!important;
+    width:auto!important;
+    max-width:100%!important
+  }
+}
