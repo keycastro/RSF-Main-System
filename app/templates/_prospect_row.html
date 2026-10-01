@@ -92,6 +92,21 @@
         </div>
       </div>
 
+      {% set deal = prospect_deals.get(prospect['id']) if prospect_deals is defined else none %}
+      {% if deal %}
+        {% set deal_dom_key = 'prospect-' ~ prospect['id'] ~ '-deal' %}
+        {% set deal_form_id = 'prospect-deal-form-' ~ prospect['id'] %}
+        {% set deal_workflow_status = prospect['status'] %}
+        {% set deal_client_name = prospect['contact'] %}
+        {% set deal_client_email = prospect['email'] %}
+        {% set deal_client_phone = prospect['phone'] %}
+        {% set deal_client_location = prospect['location'] %}
+        {% set deal_return_to = url_for('main.prospects', date=selected_date) ~ '#prospect-' ~ prospect['id'] %}
+        {% set show_deal_section_heading = true %}
+        {% set deal_embed_identity = true %}
+        {% include '_master_deal_information.html' %}
+      {% endif %}
+
       {% set linked_deal_id = prospect_deal_ids.get(prospect['id']) if prospect_deal_ids is defined else none %}
       <div class="prospect-deal-action">
         <button class="prospect-copy-button" type="button" data-prospect-copy aria-label="Copy Prospect" title="Copy Prospect">📋</button>
