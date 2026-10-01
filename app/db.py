@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 34
-SCHEMA_NAME = "rsf-main-system-v1.18.129-location-timezone-resolver"
+SCHEMA_VERSION = 35
+SCHEMA_NAME = "rsf-main-system-v1.18.131-master-lifecycle-cards"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents","communication_notes","ai_sales_calls"}
 
 
@@ -1293,6 +1293,33 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
         db.execute(
             "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
             (34, "rsf-v1.18.129-location-timezone-resolver"),
+        )
+
+    # V35 separates Deal workspace creation from the moment a source actually
+    # enters the Deal pipeline. This lets source cards carry Deal fields/files
+    # before Deal status without corrupting the historical Became Deal date.
+    if 35 not in applied:
+        deal_columns = {row["name"] for row in db.execute("PRAGMA table_info(deals)").fetchall()}
+        if "became_deal_at" not in deal_columns:
+            db.execute("ALTER TABLE deals ADD COLUMN became_deal_at TEXT NOT NULL DEFAULT ''")
+        db.execute(
+            """UPDATE deals
+               SET became_deal_at=created_at
+               WHERE trim(COALESCE(became_deal_at,''))=''
+                 AND (
+                   prospect_id IN (
+                     SELECT id FROM prospects
+                     WHERE status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','LOST')
+                   )
+                   OR website_inquiry_id IN (
+                     SELECT id FROM website_inquiries
+                     WHERE workflow_status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','LOST')
+                   )
+                 )"""
+        )
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (35, "rsf-v1.18.131-master-lifecycle-cards"),
         )
 
 
