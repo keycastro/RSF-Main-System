@@ -911,6 +911,17 @@ textarea.prospect-inline-editor{resize:vertical}
   background:#f6faf8;
   box-shadow:0 3px 12px rgba(25,55,46,.035)
 }
+.deal-card>.master-deal-information{
+  margin-top:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none
+}
+.deal-card>.master-deal-information .deal-documents{
+  border-radius:0
+}
+
 .master-card-section-head{
   display:flex;
   align-items:center;
