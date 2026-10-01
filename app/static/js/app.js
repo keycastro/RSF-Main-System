@@ -4585,6 +4585,7 @@ document.addEventListener('click', (event) => {
     'followup_date',
     'email',
     'price',
+    'developer',
     'contact_number',
     'contact_person',
     'location',
