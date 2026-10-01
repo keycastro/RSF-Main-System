@@ -98,6 +98,7 @@ CREATE TABLE IF NOT EXISTS deals (
     followup_date TEXT NOT NULL DEFAULT '',
     next_step TEXT NOT NULL DEFAULT '',
     price TEXT NOT NULL DEFAULT '',
+    developer TEXT NOT NULL DEFAULT '',
     contact_number TEXT NOT NULL DEFAULT '',
     email TEXT NOT NULL DEFAULT '',
     notes_after_conversation TEXT NOT NULL DEFAULT '',
