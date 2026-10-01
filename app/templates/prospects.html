@@ -1,6 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="prospects-page">
+<section
+  class="prospects-page"
+  data-card-layout-page="prospects"
+  data-card-layout-zones='["header","summary","source","other"]'
+  data-card-layout-state="{{ card_layout|tojson|forceescape }}"
+  data-card-layout-save-url="{{ url_for('main.card_layout_update', page_name='prospects') }}"
+  data-card-layout-csrf="{{ csrf_token() }}"
+  data-card-layout-editable="{{ '1' if g.user and g.user['role'] == 'admin' else '0' }}"
+>
   <div class="page-head workspace-page-head prospects-head">
     <div class="prospects-head-main">
       <div class="prospects-title-row">
