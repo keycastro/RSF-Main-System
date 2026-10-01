@@ -3352,9 +3352,13 @@ document.addEventListener('click', (event) => {
     window.open(href, '_blank', 'noopener,noreferrer');
   });
 
+  const researchSectionFor = (node) => node?.closest?.('[data-deal-research-section]')
+    || node?.closest?.('[data-deal-card]')?.querySelector?.('[data-deal-research-section]')
+    || null;
+
   const saveResearchField = async (field) => {
     if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) return;
-    const section = field.closest('[data-deal-research-section]');
+    const section = researchSectionFor(field);
     if (!section) return;
 
     const previous = field.dataset.dealResearchStartValue ?? field.value;
@@ -3421,7 +3425,7 @@ document.addEventListener('click', (event) => {
     if (!dealResearchLongTextSource || !dealResearchLongTextViewerInput) return true;
     if (dealResearchLongTextSavePromise) return dealResearchLongTextSavePromise;
 
-    const section = dealResearchLongTextSource.closest('[data-deal-research-section]');
+    const section = researchSectionFor(dealResearchLongTextSource);
     if (!section) return false;
 
     const fieldName = dealResearchLongTextSource.dataset.dealResearchFieldName || '';
@@ -3518,7 +3522,7 @@ document.addEventListener('click', (event) => {
   page.addEventListener('click', async (event) => {
     const button = event.target.closest?.('[data-deal-research-attempt-delta]');
     if (!(button instanceof HTMLButtonElement)) return;
-    const section = button.closest('[data-deal-research-section]');
+    const section = researchSectionFor(button);
     const control = button.closest('[data-deal-research-attempt-control]');
     const number = control?.querySelector('[data-deal-research-attempt-number]');
     if (!section || !control || !number) return;
@@ -4284,7 +4288,7 @@ document.addEventListener('click', (event) => {
     const previous = notesSource.dataset.dealStartValue ?? notesSource.value;
     if (notesSource.value === previous) return;
     notesSource.dataset.dealStartValue = notesSource.value;
-    const form = notesSource.closest('[data-deal-form]');
+    const form = dealFormForField(notesSource);
     if (form) saveDealFormInBackground(form);
   };
 
@@ -4323,7 +4327,7 @@ document.addEventListener('click', (event) => {
       dealMeetAction.setAttribute('aria-label', dealMeetAction.title);
     }
     if (notesViewerInput) notesViewerInput.value = '';
-    const dealNotesForm = notesSource.closest('[data-deal-form]');
+    const dealNotesForm = dealFormForField(notesSource);
     const dealTimelineOptions = {
       csrfToken: dealNotesForm?.querySelector('input[name="csrf_token"]')?.value || '',
       onLegacyChanged: (value) => {
@@ -4354,7 +4358,7 @@ document.addEventListener('click', (event) => {
     if (!notesViewerInput || !notesSource) return;
     dealNotesSave.disabled = true;
     try {
-      const form = notesSource.closest('[data-deal-form]');
+      const form = dealFormForField(notesSource);
       const csrfToken = form?.querySelector('input[name="csrf_token"]')?.value || '';
       await RSFConversationTimeline.saveManualNote(
         dealNotesTimelineUrl,
@@ -5316,4 +5320,329 @@ document.addEventListener('click', (event) => {
   });
 
   applyFilters();
+})();
+
+
+/* v1.18.150 — Founder-controlled page-specific Ctrl+drag field organization. */
+(() => {
+  const root = document.querySelector('[data-card-layout-page]');
+  if (!root) return;
+
+  const pageName = root.dataset.cardLayoutPage || '';
+  const editable = root.dataset.cardLayoutEditable === '1';
+  const saveUrl = root.dataset.cardLayoutSaveUrl || '';
+  const csrfToken = root.dataset.cardLayoutCsrf || '';
+  const cardSelector = pageName === 'prospects'
+    ? '[data-prospect-row]'
+    : (pageName === 'inquiries' ? '[data-website-inquiry-card]' : '[data-deal-card]');
+
+  let zones = [];
+  try {
+    const parsedZones = JSON.parse(root.dataset.cardLayoutZones || '[]');
+    if (Array.isArray(parsedZones)) zones = parsedZones.filter((value) => typeof value === 'string' && value);
+  } catch (_error) {
+    zones = [];
+  }
+  if (!zones.length) return;
+
+  let savedLayout = {};
+  try {
+    const parsed = JSON.parse(root.dataset.cardLayoutState || '{}');
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) savedLayout = parsed;
+  } catch (_error) {
+    savedLayout = {};
+  }
+
+  const cards = () => Array.from(root.querySelectorAll(cardSelector));
+  const fieldsForCard = (card) => Array.from(card.querySelectorAll('[data-card-layout-field]'));
+  const zoneNameForField = (field) => {
+    const card = field.closest(cardSelector);
+    const zone = field.closest('[data-card-layout-zone]');
+    if (zone && zone.closest(cardSelector) === card) return zone.dataset.cardLayoutZone || '';
+    return field.dataset.cardLayoutOriginZone || '';
+  };
+
+  const discovered = {};
+  zones.forEach((zone) => { discovered[zone] = []; });
+  const discoveredKeys = new Set();
+  cards().forEach((card) => {
+    fieldsForCard(card).forEach((field) => {
+      const key = field.dataset.cardLayoutField || '';
+      const zone = zoneNameForField(field);
+      if (!key || !zones.includes(zone) || discoveredKeys.has(key)) return;
+      discovered[zone].push(key);
+      discoveredKeys.add(key);
+    });
+  });
+
+  const state = {};
+  const used = new Set();
+  zones.forEach((zone) => {
+    state[zone] = [];
+    const saved = Array.isArray(savedLayout[zone]) ? savedLayout[zone] : [];
+    saved.forEach((key) => {
+      if (typeof key !== 'string' || !discoveredKeys.has(key) || used.has(key)) return;
+      state[zone].push(key);
+      used.add(key);
+    });
+  });
+  zones.forEach((zone) => {
+    (discovered[zone] || []).forEach((key) => {
+      if (used.has(key)) return;
+      state[zone].push(key);
+      used.add(key);
+    });
+  });
+
+  const hasSavedLayout = zones.some((zone) => Array.isArray(savedLayout[zone]) && savedLayout[zone].length);
+  let customized = hasSavedLayout;
+  let applying = false;
+  let activeDrag = null;
+  let suppressClickUntil = 0;
+
+  const zoneForCard = (card, zoneName) => card.querySelector('[data-card-layout-zone="' + zoneName + '"]');
+
+  const applyToCard = (card) => {
+    if (!card) return;
+    const map = new Map();
+    fieldsForCard(card).forEach((field) => {
+      const key = field.dataset.cardLayoutField || '';
+      if (key && !map.has(key)) map.set(key, field);
+    });
+    zones.forEach((zoneName) => {
+      const zone = zoneForCard(card, zoneName);
+      if (!zone) return;
+      (state[zoneName] || []).forEach((key) => {
+        const field = map.get(key);
+        if (field) zone.appendChild(field);
+      });
+    });
+  };
+
+  const applyAll = () => {
+    applying = true;
+    cards().forEach(applyToCard);
+    applying = false;
+  };
+
+  if (customized) applyAll();
+
+  const cloneState = () => {
+    const copy = {};
+    zones.forEach((zone) => { copy[zone] = Array.from(state[zone] || []); });
+    return copy;
+  };
+
+  const restoreState = (previous) => {
+    zones.forEach((zone) => { state[zone] = Array.from(previous[zone] || []); });
+    applyAll();
+  };
+
+  const updateStateFromDrop = (card, movedKey, targetZoneName) => {
+    zones.forEach((zone) => {
+      state[zone] = (state[zone] || []).filter((key) => key !== movedKey);
+    });
+
+    const zone = zoneForCard(card, targetZoneName);
+    const visibleOrder = zone
+      ? Array.from(zone.children)
+          .filter((node) => node instanceof HTMLElement && node.hasAttribute('data-card-layout-field'))
+          .map((node) => node.dataset.cardLayoutField || '')
+          .filter(Boolean)
+      : [];
+
+    const existing = state[targetZoneName] || [];
+    const merged = [];
+    const seen = new Set();
+    visibleOrder.forEach((key) => {
+      if (!seen.has(key)) {
+        merged.push(key);
+        seen.add(key);
+      }
+    });
+    existing.forEach((key) => {
+      if (!seen.has(key)) {
+        merged.push(key);
+        seen.add(key);
+      }
+    });
+    if (!seen.has(movedKey)) merged.push(movedKey);
+    state[targetZoneName] = merged;
+  };
+
+  const persist = async (previous) => {
+    if (!saveUrl || !csrfToken) return;
+    try {
+      const body = new URLSearchParams({
+        csrf_token: csrfToken,
+        layout_json: JSON.stringify(state)
+      });
+      const response = await fetch(saveUrl, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        body: body.toString(),
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) throw new Error(data.message || 'Card field order could not be saved.');
+      root.dataset.cardLayoutState = JSON.stringify(data.layout || state);
+      customized = true;
+    } catch (error) {
+      restoreState(previous);
+      window.alert(error.message || 'Card field order could not be saved. Try again.');
+    }
+  };
+
+  const clearDropHighlight = () => {
+    root.querySelectorAll('.is-card-layout-drop-zone').forEach((zone) => zone.classList.remove('is-card-layout-drop-zone'));
+  };
+
+  const setControlMode = (enabled) => {
+    if (!editable) return;
+    root.classList.toggle('card-layout-reorder-mode', Boolean(enabled));
+  };
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'Control') setControlMode(true);
+  });
+  window.addEventListener('keyup', (event) => {
+    if (event.key === 'Control') setControlMode(false);
+  });
+  window.addEventListener('blur', () => setControlMode(false));
+
+  root.addEventListener('pointerdown', (event) => {
+    if (!editable || !event.ctrlKey) return;
+    const field = event.target.closest?.('[data-card-layout-field]');
+    const card = field?.closest?.(cardSelector);
+    if (!(field instanceof HTMLElement) || !card) return;
+
+    if (!customized) applyToCard(card);
+
+    field.draggable = true;
+    field.dataset.cardLayoutDragArmed = '1';
+    const directTarget = event.target instanceof HTMLElement ? event.target : null;
+    if (directTarget && directTarget !== field) {
+      directTarget.draggable = true;
+      field._cardLayoutDragSource = directTarget;
+    }
+  }, true);
+
+  root.addEventListener('pointerup', (event) => {
+    const field = event.target.closest?.('[data-card-layout-field]');
+    if (!(field instanceof HTMLElement) || activeDrag) return;
+    window.setTimeout(() => {
+      field.draggable = false;
+      delete field.dataset.cardLayoutDragArmed;
+      if (field._cardLayoutDragSource instanceof HTMLElement) field._cardLayoutDragSource.draggable = false;
+      delete field._cardLayoutDragSource;
+    }, 0);
+  }, true);
+
+  root.addEventListener('dragstart', (event) => {
+    if (!editable || !event.ctrlKey) {
+      event.preventDefault();
+      return;
+    }
+    const field = event.target.closest?.('[data-card-layout-field]');
+    const card = field?.closest?.(cardSelector);
+    if (!(field instanceof HTMLElement) || !card || field.dataset.cardLayoutDragArmed !== '1') {
+      event.preventDefault();
+      return;
+    }
+
+    const key = field.dataset.cardLayoutField || '';
+    if (!key) {
+      event.preventDefault();
+      return;
+    }
+    activeDrag = {field, card, key, previous: cloneState(), dropped: false};
+    field.classList.add('is-card-layout-dragging');
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', key);
+    }
+  }, true);
+
+  root.addEventListener('dragover', (event) => {
+    if (!activeDrag) return;
+    const zone = event.target.closest?.('[data-card-layout-zone]');
+    const card = zone?.closest?.(cardSelector);
+    if (!(zone instanceof HTMLElement) || card !== activeDrag.card) return;
+
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+    clearDropHighlight();
+    zone.classList.add('is-card-layout-drop-zone');
+
+    const target = event.target.closest?.('[data-card-layout-field]');
+    if (!(target instanceof HTMLElement) || target === activeDrag.field || target.closest('[data-card-layout-zone]') !== zone) {
+      zone.appendChild(activeDrag.field);
+      return;
+    }
+
+    const rect = target.getBoundingClientRect();
+    const verticalDistance = Math.abs(event.clientY - (rect.top + rect.height / 2));
+    const before = verticalDistance > rect.height * 0.24
+      ? event.clientY < rect.top + rect.height / 2
+      : event.clientX < rect.left + rect.width / 2;
+    zone.insertBefore(activeDrag.field, before ? target : target.nextSibling);
+  });
+
+  root.addEventListener('drop', (event) => {
+    if (!activeDrag) return;
+    const zone = event.target.closest?.('[data-card-layout-zone]');
+    const card = zone?.closest?.(cardSelector);
+    if (!(zone instanceof HTMLElement) || card !== activeDrag.card) return;
+
+    event.preventDefault();
+    activeDrag.dropped = true;
+    const previous = activeDrag.previous;
+    const targetZoneName = zone.dataset.cardLayoutZone || '';
+    updateStateFromDrop(card, activeDrag.key, targetZoneName);
+    customized = true;
+    applyAll();
+    persist(previous);
+    suppressClickUntil = Date.now() + 350;
+    clearDropHighlight();
+  });
+
+  root.addEventListener('dragend', () => {
+    if (!activeDrag) return;
+    const {field, dropped} = activeDrag;
+    field.classList.remove('is-card-layout-dragging');
+    field.draggable = false;
+    delete field.dataset.cardLayoutDragArmed;
+    if (field._cardLayoutDragSource instanceof HTMLElement) field._cardLayoutDragSource.draggable = false;
+    delete field._cardLayoutDragSource;
+    if (!dropped) applyAll();
+    activeDrag = null;
+    clearDropHighlight();
+  }, true);
+
+  root.addEventListener('click', (event) => {
+    const field = event.target.closest?.('[data-card-layout-field]');
+    if (!field) return;
+    if ((editable && event.ctrlKey) || Date.now() < suppressClickUntil) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }, true);
+
+  const observer = new MutationObserver((mutations) => {
+    if (!customized || applying) return;
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (!(node instanceof HTMLElement)) return;
+        if (node.matches(cardSelector)) {
+          applyToCard(node);
+          return;
+        }
+        node.querySelectorAll?.(cardSelector).forEach(applyToCard);
+      });
+    });
+  });
+  observer.observe(root, {childList: true, subtree: true});
 })();
