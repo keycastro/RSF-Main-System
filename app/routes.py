@@ -488,12 +488,13 @@ def _ensure_deal_for_prospect(db, prospect_id: int, created_by_user_id: int, now
             )
             return int(inquiry_deal["id"]), False
 
+    source_is_deal = (prospect["status"] or "").strip().upper() in DEAL_ACTIVE_STATUSES
     db.execute(
         """INSERT OR IGNORE INTO deals(
                prospect_id,website_inquiry_id,status,demo_date,followup_date,next_step,price,
-               contact_number,email,notes_after_conversation,
+               contact_number,email,notes_after_conversation,became_deal_at,
                created_by_user_id,created_at,updated_at
-           ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+           ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (
             prospect_id,
             int(matched_inquiry["id"]) if matched_inquiry else None,
@@ -505,6 +506,7 @@ def _ensure_deal_for_prospect(db, prospect_id: int, created_by_user_id: int, now
             (prospect["phone"] or "").strip()[:120],
             (prospect["email"] or "").strip()[:320],
             (prospect["notes_after_conversation"] or "").strip()[:3000],
+            now if source_is_deal else "",
             created_by_user_id,
             now,
             now,
@@ -514,16 +516,17 @@ def _ensure_deal_for_prospect(db, prospect_id: int, created_by_user_id: int, now
     if not deal:
         raise RuntimeError("Deal could not be created.")
     deal_id = int(deal["id"])
-    log_activity(
-        "DEAL_CREATED",
-        "deal",
-        deal_id,
-        "Deal created automatically from Prospect Status.",
-        {
-            "prospect_id": prospect_id,
-            "website_inquiry_id": int(matched_inquiry["id"]) if matched_inquiry else None,
-        },
-    )
+    if source_is_deal:
+        log_activity(
+            "DEAL_CREATED",
+            "deal",
+            deal_id,
+            "Deal created automatically from Prospect Status.",
+            {
+                "prospect_id": prospect_id,
+                "website_inquiry_id": int(matched_inquiry["id"]) if matched_inquiry else None,
+            },
+        )
     return deal_id, True
 
 def _ensure_deal_for_website_inquiry(db, inquiry_id: int, created_by_user_id: int, now: str) -> tuple[int, bool]:
@@ -581,12 +584,13 @@ def _ensure_deal_for_website_inquiry(db, inquiry_id: int, created_by_user_id: in
             )
             return int(prospect_deal["id"]), False
 
+    source_is_deal = (inquiry["workflow_status"] or "").strip().upper() in DEAL_ACTIVE_STATUSES
     db.execute(
         """INSERT OR IGNORE INTO deals(
                prospect_id,website_inquiry_id,contact_person,location,status,demo_date,followup_date,next_step,price,
-               contact_number,email,notes_after_conversation,
+               contact_number,email,notes_after_conversation,became_deal_at,
                created_by_user_id,created_at,updated_at
-           ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+           ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (
             int(matched_prospect["id"]) if matched_prospect else None,
             inquiry_id,
@@ -600,6 +604,7 @@ def _ensure_deal_for_website_inquiry(db, inquiry_id: int, created_by_user_id: in
             (inquiry["phone"] or "").strip()[:120],
             (inquiry["email"] or "").strip()[:320],
             (inquiry["notes_after_conversation"] or "").strip()[:3000],
+            now if source_is_deal else "",
             created_by_user_id,
             now,
             now,
@@ -609,16 +614,17 @@ def _ensure_deal_for_website_inquiry(db, inquiry_id: int, created_by_user_id: in
     if not deal:
         raise RuntimeError("Deal could not be created.")
     deal_id = int(deal["id"])
-    log_activity(
-        "DEAL_CREATED",
-        "deal",
-        deal_id,
-        "Deal created automatically from Website Inquiry Status.",
-        {
-            "website_inquiry_id": inquiry_id,
-            "prospect_id": int(matched_prospect["id"]) if matched_prospect else None,
-        },
-    )
+    if source_is_deal:
+        log_activity(
+            "DEAL_CREATED",
+            "deal",
+            deal_id,
+            "Deal created automatically from Website Inquiry Status.",
+            {
+                "website_inquiry_id": inquiry_id,
+                "prospect_id": int(matched_prospect["id"]) if matched_prospect else None,
+            },
+        )
     return deal_id, True
 
 
