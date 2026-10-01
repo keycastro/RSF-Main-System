@@ -4,6 +4,7 @@
 {% set deal_show_contact_number = deal_show_contact_number if deal_show_contact_number is defined else true %}
 {% set deal_show_location = deal_show_location if deal_show_location is defined else true %}
 {% set deal_timezone_location_in_location_slot = deal_timezone_location_in_location_slot if deal_timezone_location_in_location_slot is defined else false %}
+{% set deal_timezone_split_city_country = deal_timezone_split_city_country if deal_timezone_split_city_country is defined else false %}
 {% set deal_show_notes = deal_show_notes if deal_show_notes is defined else true %}
 {% set deal_show_email_conversation = deal_show_email_conversation if deal_show_email_conversation is defined else true %}
 {% set deal_show_documents = deal_show_documents if deal_show_documents is defined else true %}
@@ -94,6 +95,85 @@
 
       {% if deal_timezone_location_in_location_slot %}
       <div class="deal-field-wide deal-demo-control deal-demo-timezone-control deal-client-location-field">
+        {% if deal_timezone_split_city_country %}
+          {% set deal_timezone_location_value = deal_timezone_location_displays[deal['id']] %}
+          {% set deal_timezone_location_parts = deal_timezone_location_value.split(',') %}
+          {% set deal_timezone_city_value = deal_timezone_location_parts[0].strip() if deal_timezone_location_value else '' %}
+          {% set deal_timezone_country_value = deal_timezone_location_parts[-1].strip() if deal_timezone_location_parts|length > 1 else '' %}
+        <div
+          class="deal-timezone-combobox deal-timezone-split"
+          data-timezone-combobox
+          data-timezone-split
+          data-timezone-search-url="{{ url_for('main.timezone_location_search') }}"
+          data-selected-timezone="{{ deal['demo_timezone'] }}"
+          data-selected-location="{{ deal_timezone_location_value }}"
+        >
+          <input type="hidden" name="demo_timezone" value="{{ deal['demo_timezone'] }}" data-timezone-value>
+          <input type="hidden" name="demo_timezone_location" value="{{ deal_timezone_location_value }}" data-timezone-location-value>
+          <div class="deal-timezone-split-grid">
+            <label class="deal-demo-control">
+              <small>City</small>
+              <input
+                type="text"
+                value="{{ deal_timezone_city_value }}"
+                placeholder="e.g. New York"
+                autocomplete="off"
+                spellcheck="false"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded="false"
+                aria-controls="deal-timezone-options-{{ dom_key }}"
+                aria-label="Client city"
+                data-timezone-input
+                data-timezone-city
+              >
+            </label>
+            <label class="deal-demo-control">
+              <small>Country</small>
+              <div class="deal-timezone-country-wrap">
+                <input
+                  type="text"
+                  value="{{ deal_timezone_country_value }}"
+                  placeholder="e.g. United States"
+                  autocomplete="off"
+                  spellcheck="false"
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-expanded="false"
+                  aria-controls="deal-timezone-options-{{ dom_key }}"
+                  aria-label="Client country"
+                  data-timezone-country
+                >
+                <button
+                  type="button"
+                  class="deal-timezone-toggle"
+                  aria-label="Open location time zone options"
+                  tabindex="-1"
+                  data-timezone-toggle
+                >
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <path d="M5.5 7.5 10 12l4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            </label>
+          </div>
+          <div
+            class="deal-timezone-dropdown"
+            id="deal-timezone-options-{{ dom_key }}"
+            role="listbox"
+            data-timezone-dropdown
+            hidden
+          ></div>
+        </div>
+        <div class="deal-timezone-resolution" data-timezone-resolution>
+          {% if deal['demo_timezone'] %}
+            Time Zone: <strong>{{ deal['demo_timezone'] }}</strong>
+          {% else %}
+            Enter both City and Country to identify the time zone.
+          {% endif %}
+        </div>
+        {% else %}
         <small>Client Location / Country</small>
         <div
           class="deal-timezone-combobox"
@@ -143,6 +223,7 @@
             Type a client location to identify the time zone.
           {% endif %}
         </div>
+        {% endif %}
       </div>
       {% endif %}
 
