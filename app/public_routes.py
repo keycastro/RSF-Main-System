@@ -40,14 +40,14 @@ SERVICES = [
     {
         "kind": "existing-system",
         "title": "Buy an existing system",
-        "text": "Choose a working Realty Systems Foundry system. Optional managed care can include minor workflow adjustments; larger changes are priced by agreement.",
-        "example": "Large changes are scoped and priced by agreement.",
+        "text": "Choose a working Realty Systems Foundry system. Optional paid RSF support can include small changes to the current system; big changes are priced separately.",
+        "example": "We agree on the price before we start big changes.",
     },
     {
         "kind": "custom-build",
         "title": "Build a custom system",
         "text": "If none of the existing systems fits, we can build around your workflow and requirements.",
-        "example": "Development and customization are quoted separately based on scope.",
+        "example": "We agree on the work and price before we start.",
     },
 ]
 
@@ -73,7 +73,7 @@ PAGE_SEO = {
     },
     "services": {
         "title": "Services & Pricing | Realty Systems Foundry",
-        "description": "See Realty Systems Foundry services and pricing: choose an existing system or request a custom build, then choose who manages the technical side.",
+        "description": "See Realty Systems Foundry services and pricing: choose an existing system or ask for a custom build, then choose who keeps the system online and working.",
     },
     "skills": {
         "title": "Technology Capabilities | Realty Systems Foundry",
@@ -89,7 +89,7 @@ PAGE_SEO = {
     },
     "system_templates": {
         "title": "Real Estate Systems | Realty Systems Foundry",
-        "description": "See working Realty Systems Foundry systems for property operations, property listings, and housing workflows. Existing systems have a clear one-time price; optional managed care can include minor workflow adjustments, while larger changes are priced by agreement.",
+        "description": "See working Realty Systems Foundry systems for property operations, property listings, and housing work. Existing systems have a clear one-time price; optional paid RSF support can include small changes, while big changes are priced separately.",
     },
 }
 
