@@ -59,8 +59,13 @@
     {% endif %}
 
     <div class="catalog-next-step reveal human-next-step">
+      {% if free_build_program.visible %}
+      <div><strong>None of these fit?</strong><span>A limited free custom-build program is available for selected qualifying custom projects through {{ free_build_program.end_date }}. The existing systems above remain {{ existing_system_pricing.price_label }} USD one-time.</span></div>
+      <a class="button primary" href="{{ url_for('site.services') }}#free-custom-build-program">Learn About Custom Builds</a>
+      {% else %}
       <div><strong>None of these fit?</strong><span>We can build a new system around your business workflow.</span></div>
       <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">Build a Custom System</a>
+      {% endif %}
     </div>
   </div>
 </section>
