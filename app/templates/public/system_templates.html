@@ -1,9 +1,10 @@
 {% extends 'public/base.html' %}
 {% block content %}
-<section class="page-hero page-hero-simple">
+<section class="page-hero page-hero-simple portfolio-page-hero">
   <div class="container simple-page-hero reveal">
-    <h1>Systems We Already Built.</h1>
-    <p>Choose the one closest to what your business needs. Each existing system is {{ existing_system_pricing.price_label }} USD one-time for the current system shown here. Custom changes and paid RSF support after delivery are separate.</p>
+    <p class="page-kicker">PORTFOLIO</p>
+    <h1>Systems We Built.</h1>
+    <p>These are examples of systems RSF has built. They show what we can create for real business needs.</p>
   </div>
 </section>
 
@@ -25,13 +26,10 @@
       <article class="template-library-card compact-template-card system-catalog-card simple-catalog-card system-choice-card system-choice-card--{{ item.slug }} reveal delay-{{ loop.index0 % 2 }}"
                data-system-card data-search="{{ item.search_text|e }}">
         <div class="template-card-copy">
+          <p class="portfolio-label">PORTFOLIO SYSTEM</p>
           <h2>{{ item.name }}</h2>
           <p>{{ item.short_description }}</p>
-          <div class="existing-system-card-price" aria-label="One-time system price">
-            <strong>{{ existing_system_pricing.price_label }} USD</strong>
-            <span>One-time system price</span>
-          </div>
-          <p class="system-audience"><strong>Best for:</strong> {{ item.card_audience }}</p>
+          <p class="system-audience"><strong>Could help:</strong> {{ item.card_audience }}</p>
           <ul class="template-list compact-list">
             {% for feature in item.features[:3] %}<li>{{ feature }}</li>{% endfor %}
           </ul>
@@ -43,8 +41,8 @@
         </a>
         {% endif %}
         <div class="template-card-actions system-card-footer">
-          <p class="system-audience"><strong>Price includes:</strong> The existing system as shown. Changes are separate.</p>
-          <a class="button primary" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">View System</a>
+          <span class="portfolio-card-note">Example of a system RSF has built.</span>
+          <a class="button secondary" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">View System</a>
         </div>
       </article>
       {% endfor %}
@@ -53,19 +51,17 @@
     {% if templates|length > 6 %}
     <div class="system-search-empty" data-system-search-empty hidden>
       <h2>No matching system.</h2>
-      <p>We can build a new system around your business workflow.</p>
+      <p>Tell us what your business needs. RSF can build a custom system around it.</p>
       <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">Build a Custom System</a>
     </div>
     {% endif %}
 
-    <div class="catalog-next-step reveal human-next-step">
-      {% if free_build_program.visible %}
-      <div><strong>None of these fit?</strong><span>RSF has a limited free custom system build program for selected projects through {{ free_build_program.end_date }}. The existing systems above stay {{ existing_system_pricing.price_label }} USD one-time.</span></div>
-      <a class="button primary" href="{{ url_for('site.services') }}#free-custom-build-program">Learn About Custom Builds</a>
-      {% else %}
-      <div><strong>None of these fit?</strong><span>We can build a new system around your business workflow.</span></div>
-      <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">Build a Custom System</a>
-      {% endif %}
+    <div class="catalog-next-step reveal human-next-step portfolio-next-step">
+      <div>
+        <strong>Need a system for your business?</strong>
+        <span>These portfolio systems are examples of our work. RSF builds a custom system around each client’s business needs.</span>
+      </div>
+      <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">{% if free_build_program.visible %}Request a Free Custom Build{% else %}Build a Custom System{% endif %}</a>
     </div>
   </div>
 </section>
