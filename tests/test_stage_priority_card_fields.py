@@ -87,6 +87,18 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         self.assertNotIn("deal_section_heading = 'OTHER FIELDS'", deals)
         self.assertNotIn("deal_section_heading = 'OTHER FIELDS'", inquiries)
 
+    def test_prospect_post_date_typography_stays_consistent_when_reordered(self):
+        prospect = self.read("app/templates/_prospect_row.html")
+        css = self.read("app/static/css/workspace_v20.css")
+        self.assertIn('data-card-layout-field="post_date"', prospect)
+        self.assertIn('<span>Post Date</span>', prospect)
+        self.assertIn('.prospects-page [data-card-layout-field="post_date"]>span', css)
+        self.assertIn('font-size:9px', css)
+        self.assertIn('text-transform:uppercase', css)
+        self.assertIn('.prospects-page [data-card-layout-field="post_date"]>.prospect-edit-value', css)
+        self.assertIn('font-size:12px', css)
+        self.assertIn('font-weight:600', css)
+
     def test_deals_linked_prospect_has_final_view_prospect_footer(self):
         deals = self.read("app/templates/deals.html")
         css = self.read("app/static/css/workspace_v20.css")
