@@ -70,7 +70,7 @@
               title="Open linked Prospect"
             >LINKED IN PROSPECT</a>
             {% endif %}
-            <span class="deal-became-log">Became Deal: {{ deal['created_at']|dt }}</span>
+            <span class="deal-became-log">Became Deal: {{ (deal['became_deal_at'] or deal['created_at'])|dt }}</span>
           </div>
         </header>
 
