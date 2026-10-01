@@ -10,6 +10,10 @@
   <form id="{{ form_id }}" class="deal-form master-deal-form" method="post" action="{{ url_for('main.deal_update', deal_id=deal['id']) }}" data-deal-form data-deal-current-status="{{ deal_workflow_status }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="confirm_leave_deals" value="" data-deal-confirm-field>
+    {% if deal_embed_identity %}
+      <input type="hidden" name="status" value="{{ deal_workflow_status }}" data-master-deal-status-hidden>
+      <input type="hidden" name="contact_person" value="{{ deal_client_name }}" data-master-deal-contact-hidden>
+    {% endif %}
     <div class="deal-form-grid">
       <label>
         <span>Follow-up Date</span>
