@@ -13,6 +13,25 @@
 
 <div class="website-inquiry-list" data-website-inquiry-list>
   {% for inquiry in website_inquiries %}
+  {% set is_active_deal_stage = inquiry.workflow_status in ['DEAL','DEMO','PROPOSAL','DECISION','WON','LOST'] %}
+  {% set deal = inquiry_deals.get(inquiry.id) if inquiry_deals is defined else none %}
+  {% set deal_dom_key = 'inquiry-' ~ inquiry.id ~ '-deal' %}
+  {% set deal_form_id = 'inquiry-deal-form-' ~ inquiry.id %}
+  {% set deal_workflow_status = inquiry.workflow_status %}
+  {% set deal_client_name = inquiry.name %}
+  {% set deal_client_email = inquiry.email %}
+  {% set deal_client_phone = inquiry.phone %}
+  {% set deal_client_location = deal['location'] if deal else '' %}
+  {% set deal_return_to = url_for('main.inquiries_list') ~ '#website-inquiry-' ~ inquiry.id %}
+  {% set show_deal_section_heading = true %}
+  {% set deal_embed_identity = true %}
+  {% set deal_show_email = is_active_deal_stage %}
+  {% set deal_show_contact_number = is_active_deal_stage %}
+  {% set deal_show_location = true %}
+  {% set deal_show_notes = is_active_deal_stage %}
+  {% set deal_show_email_conversation = is_active_deal_stage %}
+  {% set deal_external_email = not is_active_deal_stage %}
+  {% set deal_external_contact_number = not is_active_deal_stage %}
   <article
     class="website-inquiry-card"
     id="website-inquiry-{{ inquiry.id }}"
@@ -53,17 +72,31 @@
       </div>
     </header>
 
+    {% if is_active_deal_stage and deal %}
+      {% include '_master_deal_information.html' %}
+    {% endif %}
+
     <div class="website-inquiry-card-body">
     <div class="master-source-section-head"><h3>Inbound Details</h3></div>
     <div class="website-inquiry-field-grid">
-      <div class="website-inquiry-field">
+      {% if not is_active_deal_stage %}
+      <label class="website-inquiry-field">
         <span>Email</span>
+        {% if deal %}
+        <input class="website-inquiry-shared-input" type="email" name="email" maxlength="320" value="{{ inquiry.email }}" form="{{ deal_form_id }}" data-inquiry-email>
+        {% else %}
         <strong data-inquiry-email>{{ inquiry.email }}</strong>
-      </div>
-      <div class="website-inquiry-field">
+        {% endif %}
+      </label>
+      <label class="website-inquiry-field">
         <span>Phone Number</span>
+        {% if deal %}
+        <input class="website-inquiry-shared-input" type="text" name="contact_number" maxlength="120" value="{{ inquiry.phone }}" form="{{ deal_form_id }}" data-inquiry-phone>
+        {% else %}
         <strong data-inquiry-phone>{{ inquiry.phone or '—' }}</strong>
-      </div>
+        {% endif %}
+      </label>
+      {% endif %}
       <div class="website-inquiry-field">
         <span>Company</span>
         <strong>{{ inquiry.company or '—' }}</strong>
@@ -101,6 +134,7 @@
       </div>
     </div>
 
+    {% if not is_active_deal_stage %}
     <div class="website-inquiry-notes-field conversation-notes-field">
       <span>Notes After Conversation</span>
       <div class="deal-notes-compact conversation-notes-compact">
@@ -137,18 +171,7 @@
     </button>
     </div>
 
-    {% set deal = inquiry_deals.get(inquiry.id) if inquiry_deals is defined else none %}
-    {% if deal %}
-      {% set deal_dom_key = 'inquiry-' ~ inquiry.id ~ '-deal' %}
-      {% set deal_form_id = 'inquiry-deal-form-' ~ inquiry.id %}
-      {% set deal_workflow_status = inquiry.workflow_status %}
-      {% set deal_client_name = inquiry.name %}
-      {% set deal_client_email = inquiry.email %}
-      {% set deal_client_phone = inquiry.phone %}
-      {% set deal_client_location = deal['location'] %}
-      {% set deal_return_to = url_for('main.inquiries_list') ~ '#website-inquiry-' ~ inquiry.id %}
-      {% set show_deal_section_heading = true %}
-      {% set deal_embed_identity = true %}
+    {% if (not is_active_deal_stage) and deal %}
       {% include '_master_deal_information.html' %}
     {% endif %}
 
@@ -230,6 +253,7 @@
           <button class="button primary conversation-manual-note-save" type="button" data-website-notes-save>Save note</button>
         </div>
       </div>
+    {% endif %}
     </div>
 
       <section class="conversation-email-panel" data-email-panel hidden data-csrf-token="{{ csrf_token() }}" aria-label="Email Conversation">
