@@ -6217,3 +6217,18 @@ textarea.prospect-inline-editor{resize:vertical}
     grid-template-columns:minmax(0,1fr) minmax(0,1fr)
   }
 }
+
+/* v1.18.147 — Prospect-only placement of shared Deal City/Country above Platform */
+.prospects-page .prospect-card-meta>.prospect-card-city-country{
+  grid-column:1/-1;
+  min-width:0;
+}
+.prospects-page .prospect-card-meta>.prospect-card-city-country .deal-timezone-resolution{
+  margin-top:1px;
+}
+@media(max-width:620px){
+  .prospects-page .prospect-card-meta>.prospect-card-city-country{
+    grid-column:auto;
+  }
+}
+
