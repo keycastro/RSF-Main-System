@@ -16,6 +16,7 @@ class MasterLifecycleCardTests(unittest.TestCase):
             'name="followup_date"',
             'name="email"',
             'name="price"',
+            'name="developer"',
             'name="contact_number"',
             'name="location"',
             'name="demo_date"',
@@ -65,7 +66,7 @@ class MasterLifecycleCardTests(unittest.TestCase):
         db = self.read("app/db.py")
         deals = self.read("app/templates/deals.html")
         self.assertIn("became_deal_at TEXT NOT NULL DEFAULT ''", schema)
-        self.assertIn("SCHEMA_VERSION = 35", db)
+        self.assertIn("SCHEMA_VERSION = 36", db)
         self.assertIn("rsf-v1.18.131-master-lifecycle-cards", db)
         self.assertIn("deal['became_deal_at']", deals)
 
