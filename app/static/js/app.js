@@ -3595,6 +3595,37 @@ document.addEventListener('click', (event) => {
   };
 
   const timezoneFormForRoot = (root) => root?.closest?.('[data-deal-form]') || null;
+  const timezoneSplitFields = (root) => ({
+    city: root?.querySelector?.('[data-timezone-city]') || null,
+    country: root?.querySelector?.('[data-timezone-country]') || null,
+    location: root?.querySelector?.('[data-timezone-location-value]') || null
+  });
+  const timezoneSplitQuery = (root) => {
+    const {city, country} = timezoneSplitFields(root);
+    const cityValue = String(city?.value || '').trim();
+    const countryValue = String(country?.value || '').trim();
+    return cityValue && countryValue ? `${cityValue}, ${countryValue}` : '';
+  };
+  const timezoneSplitDisplayFromLocation = (root, location = '', countryName = '') => {
+    if (!root?.hasAttribute?.('data-timezone-split')) return;
+    const {city, country, location: locationField} = timezoneSplitFields(root);
+    const canonical = String(location || '').trim();
+    const parts = canonical.split(',').map((part) => part.trim()).filter(Boolean);
+    const nextCity = parts[0] || '';
+    const nextCountry = String(countryName || '').trim() || (parts.length > 1 ? parts[parts.length - 1] : '');
+    if (city) {
+      city.value = nextCity;
+      city.dataset.dealStartValue = nextCity;
+    }
+    if (country) {
+      country.value = nextCountry;
+      country.dataset.dealStartValue = nextCountry;
+    }
+    if (locationField) {
+      locationField.value = canonical;
+      locationField.dataset.dealStartValue = canonical;
+    }
+  };
 
   const setTimezoneResolution = (root, message, tone = '') => {
     const resolution = root?.parentElement?.querySelector?.('[data-timezone-resolution]');
@@ -3714,15 +3745,25 @@ document.addEventListener('click', (event) => {
     const input = root?.querySelector('[data-timezone-input]');
     const hidden = root?.querySelector('[data-timezone-value]');
     if (!input || !hidden || !result?.timezone) return;
-    const nextLocation = result.location || input.value || '';
+    const split = root.hasAttribute('data-timezone-split');
+    const splitFields = timezoneSplitFields(root);
+    const nextLocation = result.location || (split ? timezoneSplitQuery(root) : input.value) || '';
     const nextTimezone = result.timezone;
     const changed = nextLocation !== (root.dataset.selectedLocation || '') || nextTimezone !== (root.dataset.selectedTimezone || '');
 
-    input.value = nextLocation;
+    if (split) {
+      timezoneSplitDisplayFromLocation(root, nextLocation, result.country || '');
+    } else {
+      input.value = nextLocation;
+      input.dataset.dealStartValue = nextLocation;
+    }
+    if (splitFields.location) {
+      splitFields.location.value = nextLocation;
+      splitFields.location.dataset.dealStartValue = nextLocation;
+    }
     hidden.value = nextTimezone;
     root.dataset.selectedLocation = nextLocation;
     root.dataset.selectedTimezone = nextTimezone;
-    input.dataset.dealStartValue = nextLocation;
     hidden.dataset.dealStartValue = nextTimezone;
     showResolvedTimezone(root, nextTimezone);
     closeTimezoneDropdown(root);
@@ -3801,6 +3842,123 @@ document.addEventListener('click', (event) => {
     const toggle = root.querySelector('[data-timezone-toggle]');
     const dropdown = root.querySelector('[data-timezone-dropdown]');
     if (!(input instanceof HTMLInputElement) || !(hidden instanceof HTMLInputElement) || !dropdown) return;
+
+    if (root.hasAttribute('data-timezone-split')) {
+      const {city, country, location} = timezoneSplitFields(root);
+      if (!(city instanceof HTMLInputElement) || !(country instanceof HTMLInputElement) || !(location instanceof HTMLInputElement)) return;
+
+      const currentQuery = () => timezoneSplitQuery(root);
+      const markTimezonePending = () => {
+        const query = currentQuery();
+        location.value = query;
+        hidden.value = '';
+        root.dataset.selectedTimezone = '';
+        const card = root.closest('[data-deal-card]');
+        const clientTime = card?.querySelector('[data-client-time-display]');
+        const philippinesTime = card?.querySelector('[data-philippines-time-display]');
+        if (clientTime) clientTime.textContent = query ? 'Resolving client time zone…' : 'Enter City and Country.';
+        if (philippinesTime) philippinesTime.textContent = '—';
+        if (query) {
+          setTimezoneResolution(root, 'Finding the correct time zone…');
+          queueTimezoneLocationSearch(root, query);
+        } else {
+          closeTimezoneDropdown(root);
+          setTimezoneResolution(root, 'Enter both City and Country to identify the time zone.');
+        }
+      };
+
+      const handleFocus = () => {
+        const query = currentQuery();
+        if (query) searchTimezoneLocations(root, query, {persistUnresolved:false});
+      };
+      city.addEventListener('focus', handleFocus);
+      country.addEventListener('focus', handleFocus);
+      city.addEventListener('input', markTimezonePending);
+      country.addEventListener('input', markTimezonePending);
+
+      const saveSplitOnBlur = () => {
+        window.setTimeout(() => {
+          if (root.contains(document.activeElement)) return;
+          closeTimezoneDropdown(root);
+          const query = currentQuery();
+          location.value = query || location.value || '';
+          const changed = (location.value || '') !== (root.dataset.selectedLocation || '')
+            || (hidden.value || '') !== (root.dataset.selectedTimezone || '');
+          if (!changed) return;
+          const form = timezoneFormForRoot(root);
+          if (form) saveDealFormInBackground(form);
+        }, 0);
+      };
+      city.addEventListener('blur', saveSplitOnBlur);
+      country.addEventListener('blur', saveSplitOnBlur);
+
+      const handleSplitKeydown = (event) => {
+        const state = timezoneStateFor(root);
+        const isOpen = input.getAttribute('aria-expanded') === 'true';
+        if (event.key === 'Escape') {
+          if (isOpen) {
+            event.preventDefault();
+            event.stopPropagation();
+            closeTimezoneDropdown(root);
+          }
+          return;
+        }
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault();
+          event.stopPropagation();
+          const query = currentQuery();
+          if (!query) return;
+          if (!isOpen) {
+            searchTimezoneLocations(root, query, {persistUnresolved:false});
+            return;
+          }
+          const delta = event.key === 'ArrowDown' ? 1 : -1;
+          const current = state.activeIndex;
+          const next = current < 0 ? (delta > 0 ? 0 : state.matches.length - 1) : current + delta;
+          setActiveTimezoneOption(root, next);
+          return;
+        }
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          event.stopPropagation();
+          if (isOpen && state.activeIndex >= 0 && state.matches[state.activeIndex]) {
+            applyTimezoneLocation(root, state.matches[state.activeIndex], true);
+          } else {
+            const query = currentQuery();
+            if (query) searchTimezoneLocations(root, query, {persistUnresolved:false});
+          }
+        }
+      };
+      city.addEventListener('keydown', handleSplitKeydown);
+      country.addEventListener('keydown', handleSplitKeydown);
+
+      toggle?.addEventListener('click', () => {
+        const isOpen = input.getAttribute('aria-expanded') === 'true';
+        if (isOpen) {
+          closeTimezoneDropdown(root);
+        } else {
+          const query = currentQuery();
+          if (!query) {
+            setTimezoneResolution(root, 'Enter both City and Country to identify the time zone.');
+            return;
+          }
+          searchTimezoneLocations(root, query, {persistUnresolved:false});
+        }
+      });
+
+      dropdown.addEventListener('pointerdown', (event) => {
+        if (event.target.closest('[data-timezone-option]')) event.preventDefault();
+      });
+      dropdown.addEventListener('click', (event) => {
+        const option = event.target.closest('[data-timezone-option]');
+        if (!option) return;
+        const state = timezoneStateFor(root);
+        const index = Array.from(dropdown.querySelectorAll('[data-timezone-option]')).indexOf(option);
+        const result = index >= 0 ? state.matches[index] : null;
+        if (result) applyTimezoneLocation(root, result, true);
+      });
+      return;
+    }
 
     input.addEventListener('focus', () => {
       if ((input.value || '').trim()) searchTimezoneLocations(root, input.value, {persistUnresolved:false});
@@ -3931,6 +4089,9 @@ document.addEventListener('click', (event) => {
           timezoneLocationField.value = data.demo_timezone_location;
           timezoneLocationField.dataset.dealStartValue = data.demo_timezone_location;
           timezoneRoot.dataset.selectedLocation = data.demo_timezone_location;
+          if (timezoneRoot.hasAttribute('data-timezone-split')) {
+            timezoneSplitDisplayFromLocation(timezoneRoot, data.demo_timezone_location);
+          }
         }
         if (data.demo_timezone) {
           showResolvedTimezone(timezoneRoot, data.demo_timezone);
@@ -3939,9 +4100,11 @@ document.addEventListener('click', (event) => {
           if (!resolution?.classList.contains('is-warning') && !resolution?.classList.contains('is-error')) {
             setTimezoneResolution(
               timezoneRoot,
-              data.demo_timezone_location
-                ? 'Add a city or state/province to identify the exact time zone.'
-                : 'Type a client location to identify the time zone.',
+              timezoneRoot.hasAttribute('data-timezone-split')
+                ? 'Enter both City and Country to identify the time zone.'
+                : (data.demo_timezone_location
+                    ? 'Add a city or state/province to identify the exact time zone.'
+                    : 'Type a client location to identify the time zone.'),
               data.demo_timezone_location ? 'is-warning' : ''
             );
           }
