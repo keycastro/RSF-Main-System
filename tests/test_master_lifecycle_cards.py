@@ -44,7 +44,7 @@ class MasterLifecycleCardTests(unittest.TestCase):
 
     def test_deals_page_keeps_deal_information_before_source_details(self):
         template = self.read("app/templates/deals.html")
-        deal_position = template.index('<form id="deal-form-')
+        deal_position = template.index("{% include '_master_deal_information.html' %}")
         outbound_position = template.index("Outbound Details")
         inbound_position = template.index("Inbound Details")
         self.assertLess(deal_position, outbound_position)
