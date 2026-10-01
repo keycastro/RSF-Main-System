@@ -114,6 +114,23 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         self.assertIn("{% if is_active_deal_stage and deal %}", inquiry)
         self.assertIn("{% if (not is_active_deal_stage) and deal %}", inquiry)
 
+    def test_deals_timezone_location_uses_separate_city_and_country_fields(self):
+        deals = self.read("app/templates/deals.html")
+        master = self.read("app/templates/_master_deal_information.html")
+        js = self.read("app/static/js/app.js")
+        css = self.read("app/static/css/workspace_v20.css")
+        self.assertIn("{% set deal_timezone_split_city_country = true %}", deals)
+        self.assertIn("{% set deal_timezone_split_city_country = deal_timezone_split_city_country if deal_timezone_split_city_country is defined else false %}", master)
+        self.assertIn("<small>City</small>", master)
+        self.assertIn("<small>Country</small>", master)
+        self.assertIn("data-timezone-city", master)
+        self.assertIn("data-timezone-country", master)
+        self.assertIn('name="demo_timezone_location"', master)
+        self.assertIn("data-timezone-location-value", master)
+        self.assertIn("timezoneSplitQuery", js)
+        self.assertIn("Enter both City and Country to identify the time zone.", js)
+        self.assertIn(".deal-timezone-split-grid", css)
+
     def test_deals_client_location_replaces_visible_shared_location(self):
         deals = self.read("app/templates/deals.html")
         master = self.read("app/templates/_master_deal_information.html")
