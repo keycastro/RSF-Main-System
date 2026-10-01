@@ -6,6 +6,7 @@
 {% set deal_timezone_country_value = deal_timezone_location_parts[-1].strip() if deal_timezone_location_parts|length > 1 else '' %}
 <div
   class="deal-field-wide deal-demo-control deal-demo-timezone-control deal-client-location-field{% if deal_city_country_extra_class is defined and deal_city_country_extra_class %} {{ deal_city_country_extra_class }}{% endif %}"
+  data-card-layout-field="city_country"
 >
   <div
     class="deal-timezone-combobox deal-timezone-split"
