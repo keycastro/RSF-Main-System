@@ -24,12 +24,19 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         self.assertIn('type="hidden" name="location"', master)
         self.assertIn('name="notes_after_conversation" data-deal-notes-compact hidden', master)
 
-    def test_prospect_card_changes_priority_by_stage_without_duplicate_shared_fields(self):
+    def test_prospect_card_keeps_original_shell_and_stage_priority_without_duplicates(self):
         prospect = self.read("app/templates/_prospect_row.html")
         self.assertIn("is_active_deal_stage", prospect)
+        self.assertIn("<span>Business Type:</span>", prospect)
+        self.assertIn('<span>Budget</span>', prospect)
+        self.assertIn('<span>Post Date</span>', prospect)
+        self.assertIn('<span>Platform They Want</span>', prospect)
+        self.assertNotIn('{% if is_active_deal_stage %}\n        <div class="prospect-detail prospect-editable-field" data-prospect-edit-field data-prospect-field="business_type"', prospect)
         self.assertIn("{% if is_active_deal_stage and deal %}", prospect)
         self.assertIn("{% if (not is_active_deal_stage) and deal %}", prospect)
-        self.assertIn("{% if not is_active_deal_stage %}", prospect)
+        self.assertIn("{% set deal_show_documents = not is_active_deal_stage %}", prospect)
+        self.assertIn("prospect-active-documents", prospect)
+        self.assertIn("{% include '_master_deal_documents.html' %}", prospect)
         self.assertIn("{% set deal_show_email = is_active_deal_stage %}", prospect)
         self.assertIn("{% set deal_show_location = is_active_deal_stage %}", prospect)
 
