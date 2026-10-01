@@ -44,7 +44,7 @@ class StagePriorityCardFieldTests(unittest.TestCase):
 
     def test_outbound_page_section_order_is_source_first(self):
         prospect = self.read("app/templates/_prospect_row.html")
-        outbound_fields_at = prospect.index('<div class="prospect-detail-grid">')
+        outbound_fields_at = prospect.index('<div class="prospect-detail-grid" data-card-layout-zone="source">')
         deal_at = prospect.rindex("{% include '_master_deal_information.html' %}")
         footer_at = prospect.index('<div class="prospect-deal-action">')
         self.assertLess(outbound_fields_at, deal_at)
