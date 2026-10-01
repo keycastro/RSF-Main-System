@@ -32,7 +32,7 @@ class MasterLifecycleCardTests(unittest.TestCase):
 
     def test_outbound_card_puts_outbound_information_before_deal_information(self):
         template = self.read("app/templates/_prospect_row.html")
-        source_position = template.index("Outbound Details")
+        source_position = template.index('<div class="prospect-detail-grid" data-card-layout-zone="source">')
         deal_position = template.index("{% include '_master_deal_information.html' %}")
         self.assertLess(source_position, deal_position)
 
@@ -45,7 +45,7 @@ class MasterLifecycleCardTests(unittest.TestCase):
     def test_deals_page_keeps_deal_information_before_source_details(self):
         template = self.read("app/templates/deals.html")
         deal_position = template.index("{% include '_master_deal_information.html' %}")
-        outbound_position = template.index("Outbound Details")
+        outbound_position = template.index("OTHER FIELDS")
         inbound_position = template.index("Inbound Details")
         self.assertLess(deal_position, outbound_position)
         self.assertLess(deal_position, inbound_position)
