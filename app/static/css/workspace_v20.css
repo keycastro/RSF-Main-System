@@ -924,21 +924,21 @@ textarea.prospect-inline-editor{resize:vertical}
   padding-top:14px
 }
 
-/* v1.18.152 — linked Prospect navigation footer on Deal cards */
+/* v1.18.153 — compact linked Prospect navigation footer on Deal cards */
 .deal-card-footer{
-  padding:0 16px 16px;
+  padding:0 12px 8px;
   background:#fcfdfc
 }
 .deal-card-footer .deal-footer-action{
   display:flex;
   justify-content:flex-end;
   margin-top:0;
-  padding-top:14px;
+  padding-top:8px;
   border-top:1px solid #edf2ef
 }
 .deal-card-footer .deal-footer-action .button{
-  min-height:34px;
-  padding:7px 11px;
+  min-height:30px;
+  padding:5px 10px;
   font-size:11.5px
 }
 
@@ -948,7 +948,7 @@ textarea.prospect-inline-editor{resize:vertical}
     padding:13px 14px
   }
   .prospect-card-footer{padding:0 13px 13px}
-  .deal-card-footer{padding:0 13px 13px}
+  .deal-card-footer{padding:0 10px 7px}
 }
 
 .master-deal-information{

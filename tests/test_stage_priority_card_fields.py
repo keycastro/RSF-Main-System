@@ -101,6 +101,10 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         self.assertIn(">View Prospect</a>", deals)
         self.assertIn(".deal-card-footer", css)
         self.assertIn(".deal-card-footer .deal-footer-action", css)
+        self.assertIn("padding:0 12px 8px", css)
+        self.assertIn("padding-top:8px", css)
+        self.assertIn("min-height:30px", css)
+        self.assertIn("padding:5px 10px", css)
         self.assertNotIn("View Prospect", self.read("app/templates/inquiries.html"))
 
     def test_outbound_documents_live_inside_collapsed_deal_information_only(self):
