@@ -1,6 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="deals-page">
+<section
+  class="deals-page"
+  data-card-layout-page="deals"
+  data-card-layout-zones='["header","deal","outbound","inbound"]'
+  data-card-layout-state="{{ card_layout|tojson|forceescape }}"
+  data-card-layout-save-url="{{ url_for('main.card_layout_update', page_name='deals') }}"
+  data-card-layout-csrf="{{ csrf_token() }}"
+  data-card-layout-editable="{{ '1' if g.user and g.user['role'] == 'admin' else '0' }}"
+>
   <div class="page-head workspace-page-head deals-head">
     <div class="deals-title-row">
       <button class="menu-button deal-mobile-menu" type="button" data-menu aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">☰</button>
@@ -25,12 +33,12 @@
     {% for deal in deals %}
       <article class="deal-card" id="deal-{{ deal['id'] }}" data-deal-card data-deal-status="{{ deal['workflow_status'] }}">
         <header class="deal-card-head">
-          <div class="deal-card-identifiers">
-            <label>
+          <div class="deal-card-identifiers" data-card-layout-zone="header">
+            <label data-card-layout-field="client_name">
               <span>Client Name:</span>
               <input class="deal-identifier-input" form="deal-form-{{ deal['id'] }}" type="text" name="contact_person" maxlength="200" value="{{ deal['prospect_contact'] }}">
             </label>
-            <label>
+            <label data-card-layout-field="status">
               <span>Status:</span>
               <select class="deal-header-status-select" form="deal-form-{{ deal['id'] }}" name="status" aria-label="Deal Status">
                 {% for code, label in deal_status_labels.items() %}
@@ -88,6 +96,7 @@
         {% set deal_show_contact_number = not deal['prospect_id'] %}
         {% set deal_external_email = deal['prospect_id'] %}
         {% set deal_external_contact_number = deal['prospect_id'] %}
+        {% set deal_layout_zone = 'deal' %}
         {% include '_master_deal_information.html' %}
 
         {% if deal['prospect_id'] %}
@@ -110,24 +119,25 @@
               data-deal-source-toggle
             ><span aria-hidden="true">⌄</span></button>
           </div>
-          <div class="deal-source-grid" id="deal-research-details-body-{{ deal['id'] }}" hidden>
-            <label>
+          <div class="deal-source-grid" id="deal-research-details-body-{{ deal['id'] }}" data-card-layout-zone="outbound" hidden>
+            <label data-card-layout-field="outbound_business_type">
               <span>Business Type</span>
               <input type="text" maxlength="160" value="{{ deal['research_business_type'] }}" data-deal-research-field="business_type">
             </label>
-            <label>
+            <label data-card-layout-field="outbound_budget">
               <span>Budget</span>
               <input type="text" maxlength="200" value="{{ deal['research_budget'] }}" data-deal-research-field="budget">
             </label>
-            <label>
+            <label data-card-layout-field="outbound_post_date">
               <span>Post Date</span>
               <input type="date" value="{{ deal['research_post_date'] }}" data-deal-research-field="post_date">
             </label>
-            <label>
+            <label data-card-layout-field="outbound_platform_wanted">
               <span>Platform They Want</span>
               <input type="text" maxlength="200" value="{{ deal['research_platform_wanted'] }}" data-deal-research-field="platform_wanted">
             </label>
             <div class="deal-source-field-wide deal-research-longtext-field conversation-notes-field"
+                 data-card-layout-field="outbound_problem"
                  data-deal-research-longtext-field
                  data-deal-research-field-name="problem"
                  data-deal-research-value="{{ deal['research_problem'] }}">
@@ -138,6 +148,7 @@
               </div>
             </div>
             <div class="deal-source-field-wide deal-research-longtext-field conversation-notes-field"
+                 data-card-layout-field="outbound_system_wanted"
                  data-deal-research-longtext-field
                  data-deal-research-field-name="system_wanted"
                  data-deal-research-value="{{ deal['research_system_wanted'] }}">
@@ -147,25 +158,25 @@
                 <button class="deal-notes-expand-button" type="button" data-deal-research-longtext-expand data-deal-research-longtext-label="System They Want" aria-label="Open full System They Want" title="Open full System They Want"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 4h6v6h-2V7.4l-4.8 4.8-1.4-1.4L16.6 6H14V4ZM10 20H4v-6h2v2.6l4.8-4.8 1.4 1.4L7.4 18H10v2Z" fill="currentColor"/></svg></button>
               </div>
             </div>
-            <label class="deal-source-link-field">
+            <label class="deal-source-link-field" data-card-layout-field="outbound_post_link">
               <span>Post Link</span>
               <div class="deal-source-link-control">
                 <input type="url" maxlength="1000" value="{{ deal['research_post_link'] }}" data-deal-research-field="post_link">
                 <button class="deal-source-link-open" type="button" data-deal-research-open-link aria-label="Open Post Link in new tab" title="Open Post Link"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.35 2.5 3.5 5.5 3.5 9S14.35 18.5 12 21M12 3C9.65 5.5 8.5 8.5 8.5 12S9.65 18.5 12 21"></path></svg></button>
               </div>
             </label>
-            <label class="deal-source-link-field">
+            <label class="deal-source-link-field" data-card-layout-field="outbound_website">
               <span>Website</span>
               <div class="deal-source-link-control">
                 <input type="url" maxlength="1000" value="{{ deal['research_website'] }}" data-deal-research-field="website">
                 <button class="deal-source-link-open" type="button" data-deal-research-open-link aria-label="Open Website in new tab" title="Open Website"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.35 2.5 3.5 5.5 3.5 9S14.35 18.5 12 21M12 3C9.65 5.5 8.5 8.5 8.5 12S9.65 18.5 12 21"></path></svg></button>
               </div>
             </label>
-            <label>
+            <label data-card-layout-field="outbound_company">
               <span>Company</span>
               <input type="text" maxlength="200" value="{{ deal['prospect_name'] }}" data-deal-research-field="company">
             </label>
-            <div class="deal-source-contact-attempt">
+            <div class="deal-source-contact-attempt" data-card-layout-field="outbound_contact_attempt">
               <span>Contact Attempt</span>
               <div class="prospect-attempt-control" data-deal-research-attempt-control data-attempt-value="{{ deal['research_contact_attempt']|int }}">
                 <button type="button" class="prospect-attempt-step" data-deal-research-attempt-delta="-1" aria-label="Decrease Contact Attempt" {% if deal['research_contact_attempt']|int <= 0 %}disabled{% endif %}>‹</button>
@@ -173,15 +184,15 @@
                 <button type="button" class="prospect-attempt-step" data-deal-research-attempt-delta="1" aria-label="Increase Contact Attempt">›</button>
               </div>
             </div>
-            <label>
+            <label data-card-layout-field="email">
               <span>Email</span>
               <input type="email" name="email" form="{{ deal_form_id }}" maxlength="320" value="{{ deal_client_email }}">
             </label>
-            <label>
+            <label data-card-layout-field="contact_number">
               <span>Contact Number</span>
               <input type="text" name="contact_number" form="{{ deal_form_id }}" maxlength="120" value="{{ deal_client_phone }}">
             </label>
-            <div class="deal-source-readonly">
+            <div class="deal-source-readonly" data-card-layout-field="outbound_added_date">
               <span>Added Date</span>
               <strong>{{ deal['research_created_at']|dt }}</strong>
             </div>
@@ -202,12 +213,12 @@
               data-deal-source-toggle
             ><span aria-hidden="true">⌄</span></button>
           </div>
-          <div class="deal-source-grid" id="deal-website-details-body-{{ deal['id'] }}" hidden>
-            <div class="deal-source-readonly">
+          <div class="deal-source-grid" id="deal-website-details-body-{{ deal['id'] }}" data-card-layout-zone="inbound" hidden>
+            <div class="deal-source-readonly" data-card-layout-field="inbound_company">
               <span>Company</span>
               <strong>{{ deal['inquiry_company'] or '—' }}</strong>
             </div>
-            <div class="deal-source-readonly">
+            <div class="deal-source-readonly" data-card-layout-field="inbound_request">
               <span>Request</span>
               {% if deal['inquiry_source_action'] %}
                 {% if deal['inquiry_source_type'] == 'system_template' and deal['inquiry_source_slug'] %}
@@ -219,11 +230,11 @@
               <strong>—</strong>
               {% endif %}
             </div>
-            <div class="deal-source-readonly deal-source-field-wide">
+            <div class="deal-source-readonly deal-source-field-wide" data-card-layout-field="inbound_message">
               <span>Message</span>
               <div class="deal-source-message">{{ deal['inquiry_message'] or '—' }}</div>
             </div>
-            <div class="deal-source-readonly deal-source-field-wide">
+            <div class="deal-source-readonly deal-source-field-wide" data-card-layout-field="inbound_received_date">
               <span>Received Date</span>
               <strong>{{ deal['inquiry_created_at']|dt }}</strong>
             </div>
