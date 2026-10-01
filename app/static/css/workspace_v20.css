@@ -6232,3 +6232,41 @@ textarea.prospect-inline-editor{resize:vertical}
   }
 }
 
+
+
+/* v1.18.150 — page-specific Ctrl+drag card field organization */
+[data-card-layout-page] [data-card-layout-field]{min-width:0}
+[data-card-layout-page].card-layout-reorder-mode [data-card-layout-field]{cursor:grab;user-select:none}
+[data-card-layout-page].card-layout-reorder-mode [data-card-layout-zone]{outline:1px dashed rgba(47,86,73,.28);outline-offset:3px}
+[data-card-layout-field].is-card-layout-dragging{opacity:.46;cursor:grabbing!important}
+[data-card-layout-zone].is-card-layout-drop-zone{box-shadow:inset 0 0 0 2px rgba(47,86,73,.28)}
+[data-card-layout-zone]:not([data-card-layout-zone="header"])>label[data-card-layout-field]{display:grid;gap:5px;min-width:0}
+[data-card-layout-zone]:not([data-card-layout-zone="header"])>label[data-card-layout-field]>span{
+  color:#6f7f79;font-size:9px;font-weight:650;letter-spacing:.055em;text-transform:uppercase
+}
+[data-card-layout-zone]:not([data-card-layout-zone="header"])>label[data-card-layout-field]>input,
+[data-card-layout-zone]:not([data-card-layout-zone="header"])>label[data-card-layout-field]>select,
+[data-card-layout-zone]:not([data-card-layout-zone="header"])>label[data-card-layout-field]>textarea{
+  width:100%;min-width:0;min-height:39px;padding:9px 10px;border:1px solid #d7e1dd;border-radius:8px;
+  background:#fff;color:var(--ux-section-ink);font:inherit;font-size:12.5px;line-height:1.4;outline:none
+}
+[data-card-layout-zone]>[data-card-layout-field].deal-field-wide,
+[data-card-layout-zone]>[data-card-layout-field].deal-source-field-wide,
+[data-card-layout-zone]>[data-card-layout-field].prospect-detail-full,
+[data-card-layout-zone]>[data-card-layout-field].website-inquiry-message-field,
+[data-card-layout-zone]>[data-card-layout-field].website-inquiry-notes-field{grid-column:1/-1}
+.website-inquiry-card-body[data-card-layout-zone="source"]{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px
+}
+.website-inquiry-card-body[data-card-layout-zone="source"]>.master-source-section-head{grid-column:1/-1;margin:0}
+.website-inquiry-card-body[data-card-layout-zone="source"]>.website-inquiry-field-grid{display:contents}
+.website-inquiry-card-body[data-card-layout-zone="source"]>.website-inquiry-email-conversation{min-width:0}
+[data-card-layout-zone]:not([data-card-layout-zone="header"])>[data-card-layout-field="client_name"],
+[data-card-layout-zone]:not([data-card-layout-zone="header"])>[data-card-layout-field="status"],
+[data-card-layout-zone]:not([data-card-layout-zone="header"])>[data-card-layout-field="business_type"]{
+  min-height:58px;padding:9px 11px;border:1px solid #d7e1dd;border-radius:10px;background:#fff
+}
+@media(max-width:620px){
+  .website-inquiry-card-body[data-card-layout-zone="source"]{grid-template-columns:1fr}
+  [data-card-layout-zone]>[data-card-layout-field]{grid-column:1/-1}
+}
