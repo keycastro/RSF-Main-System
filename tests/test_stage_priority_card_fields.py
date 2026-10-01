@@ -114,6 +114,23 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         self.assertIn("{% if is_active_deal_stage and deal %}", inquiry)
         self.assertIn("{% if (not is_active_deal_stage) and deal %}", inquiry)
 
+    def test_deals_outbound_contact_fields_move_without_duplicates(self):
+        deals = self.read("app/templates/deals.html")
+        master = self.read("app/templates/_master_deal_information.html")
+        self.assertIn("{% set deal_show_email = not deal['prospect_id'] %}", deals)
+        self.assertIn("{% set deal_show_contact_number = not deal['prospect_id'] %}", deals)
+        self.assertIn("{% set deal_external_email = deal['prospect_id'] %}", deals)
+        self.assertIn("{% set deal_external_contact_number = deal['prospect_id'] %}", deals)
+        self.assertIn('name="email" form="{{ deal_form_id }}"', deals)
+        self.assertIn('name="contact_number" form="{{ deal_form_id }}"', deals)
+        self.assertIn('type="hidden" name="email"', master)
+        self.assertIn('type="hidden" name="contact_number"', master)
+        outbound_at = deals.index("Outbound Details")
+        email_at = deals.index('name="email" form="{{ deal_form_id }}"')
+        phone_at = deals.index('name="contact_number" form="{{ deal_form_id }}"')
+        self.assertLess(outbound_at, email_at)
+        self.assertLess(outbound_at, phone_at)
+
     def test_deals_page_remains_deal_first(self):
         deals = self.read("app/templates/deals.html")
         master_at = deals.index("{% include '_master_deal_information.html' %}")
