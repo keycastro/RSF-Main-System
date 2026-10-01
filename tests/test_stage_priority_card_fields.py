@@ -197,6 +197,27 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         self.assertIn("<span>Contact Number</span>", prospect)
         self.assertNotIn("<span>Phone</span>", prospect)
 
+    def test_prospect_moves_shared_city_country_above_platform_without_duplicate(self):
+        prospect = self.read("app/templates/_prospect_row.html")
+        master = self.read("app/templates/_master_deal_information.html")
+        shared_city_country = self.read("app/templates/_master_deal_city_country.html")
+        js = self.read("app/static/js/app.js")
+
+        self.assertIn("{% set deal_show_city_country = false %}", prospect)
+        self.assertIn("{% include '_master_deal_city_country.html' %}", prospect)
+        self.assertIn("{% include '_master_deal_city_country.html' %}", master)
+        self.assertEqual(shared_city_country.count("<small>City</small>"), 1)
+        self.assertEqual(shared_city_country.count("<small>Country</small>"), 1)
+        self.assertIn('form="{{ city_country_form_id }}"', shared_city_country)
+        self.assertIn('data-deal-form-id="{{ city_country_form_id }}"', shared_city_country)
+        self.assertIn("explicitFormId", js)
+
+        city_include = prospect.index("{% include '_master_deal_city_country.html' %}")
+        platform = prospect.index("<span>Platform They Want</span>")
+        master_include = prospect.index("{% include '_master_deal_information.html' %}")
+        self.assertLess(city_include, platform)
+        self.assertLess(platform, master_include)
+
     def test_deals_outbound_contact_fields_move_without_duplicates(self):
         deals = self.read("app/templates/deals.html")
         master = self.read("app/templates/_master_deal_information.html")
