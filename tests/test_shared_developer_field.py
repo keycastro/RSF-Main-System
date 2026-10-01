@@ -41,10 +41,18 @@ class SharedDeveloperFieldTests(unittest.TestCase):
         self.assertIn('data-card-layout-field="developer"', master)
         self.assertIn('<span>Developer</span>', master)
         self.assertIn('name="developer" form="{{ form_id }}"', master)
-        self.assertIn("value="{{ deal['developer'] }}"", master)
+        self.assertIn("value=\"{{ deal['developer'] }}\"", master)
+        self.assertNotIn('placeholder="e.g. John Cruz"', master)
 
         for template in (prospects, inquiries, deals):
             self.assertIn("{% include '_master_deal_information.html' %}", template)
+
+    def test_developer_header_colon_and_blank_placeholder(self):
+        master = self.read("app/templates/_master_deal_information.html")
+        css = self.read("app/static/css/workspace_v20.css")
+        self.assertNotIn('placeholder="e.g. John Cruz"', master)
+        self.assertIn('[data-card-layout-current-zone="header"][data-card-layout-field="developer"]>span::after', css)
+        self.assertIn('content:":"', css)
 
     def test_developer_participates_in_each_page_layout(self):
         routes = self.read("app/routes.py")

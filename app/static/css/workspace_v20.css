@@ -6547,3 +6547,9 @@ body.card-layout-dragging-global *{cursor:grabbing!important;user-select:none!im
     max-width:100%!important
   }
 }
+
+
+/* v1.18.157 — blank Developer placeholder and header colon */
+[data-card-layout-page] [data-card-layout-current-zone="header"][data-card-layout-field="developer"]>span::after{
+  content:":"
+}
