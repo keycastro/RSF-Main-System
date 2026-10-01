@@ -46,6 +46,8 @@
     class="website-inquiry-card"
     id="website-inquiry-{{ inquiry.id }}"
     data-website-inquiry-card
+    data-deal-card
+    data-deal-status="{{ inquiry.workflow_status }}"
     data-website-inquiry-workflow-status="{{ inquiry.workflow_status }}"
     data-website-inquiry-received-date="{{ inquiry.created_at[:10] }}"
   >
