@@ -2261,6 +2261,22 @@ document.addEventListener('click', (event) => {
 
 
 (() => {
+  document.addEventListener('click', (event) => {
+    const toggle = event.target.closest?.('[data-master-deal-toggle]');
+    if (!toggle) return;
+
+    const targetId = toggle.getAttribute('aria-controls') || '';
+    const body = targetId ? document.getElementById(targetId) : null;
+    if (!body) return;
+
+    const opening = body.hidden;
+    body.hidden = !opening;
+    toggle.setAttribute('aria-expanded', opening ? 'true' : 'false');
+    toggle.setAttribute('aria-label', opening ? 'Hide Deal Information' : 'Show Deal Information');
+  });
+})();
+
+(() => {
   const page = document.querySelector('.prospects-page');
   if (!page) return;
 
