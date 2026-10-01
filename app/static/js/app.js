@@ -3273,8 +3273,8 @@ document.addEventListener('click', (event) => {
 
 
 (() => {
-  const page = document.querySelector('.deals-page');
-  if (!page) return;
+  const page = document.querySelector('.deals-page, .prospects-page, [data-website-inbox-page]');
+  if (!page || !page.querySelector('[data-deal-form]')) return;
 
   const list = page.querySelector('.deals-list');
   const filterButtons = Array.from(page.querySelectorAll('[data-deal-filter]'));
@@ -4061,7 +4061,13 @@ document.addEventListener('click', (event) => {
         if (data.status) {
           form.dataset.dealCurrentStatus = data.status;
           const card = form.closest('[data-deal-card]');
-          if (card) card.dataset.dealStatus = data.status;
+          if (card) {
+            card.dataset.dealStatus = data.status;
+            if (card.hasAttribute('data-prospect-row')) card.dataset.prospectStatus = data.status;
+            if (card.hasAttribute('data-website-inquiry-card')) card.dataset.websiteInquiryWorkflowStatus = data.status;
+          }
+          const hiddenStatus = form.querySelector('[data-master-deal-status-hidden]');
+          if (hiddenStatus) hiddenStatus.value = data.status;
           applyDealFilter();
         }
         updateDealMeetState(form, data);
