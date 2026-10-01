@@ -6,6 +6,7 @@
 {% set deal_show_notes = deal_show_notes if deal_show_notes is defined else true %}
 {% set deal_show_email_conversation = deal_show_email_conversation if deal_show_email_conversation is defined else true %}
 {% set deal_show_documents = deal_show_documents if deal_show_documents is defined else true %}
+{% set deal_documents_inside_body = deal_documents_inside_body if deal_documents_inside_body is defined else false %}
 {% set deal_section_collapsible = deal_section_collapsible if deal_section_collapsible is defined else false %}
 {% set deal_section_open = deal_section_open if deal_section_open is defined else true %}
 {% set deal_external_email = deal_external_email if deal_external_email is defined else false %}
@@ -210,9 +211,13 @@
       {% endif %}
     </div>
   </form>
+
+  {% if deal_show_documents and deal_documents_inside_body %}
+  {% include '_master_deal_documents.html' %}
+  {% endif %}
   </div>
 
-  {% if deal_show_documents %}
+  {% if deal_show_documents and not deal_documents_inside_body %}
   {% include '_master_deal_documents.html' %}
   {% endif %}
 </section>
