@@ -134,7 +134,7 @@
               <span class="record-source-type">Research</span>
               <h3>{{ prospect.name }}</h3>
             </div>
-            <a href="{{ url_for('main.prospects', date=prospect.recorded_date) }}#prospect-{{ prospect.id }}">Open Prospect</a>
+            <a href="{{ url_for('main.prospects') }}#prospect-{{ prospect.id }}">Open Prospect</a>
           </header>
           <dl class="record-detail-list record-detail-list-compact">
             <div><dt>Status</dt><dd>{{ workflow_status_labels.get(prospect.status, prospect.status) }}</dd></div>
