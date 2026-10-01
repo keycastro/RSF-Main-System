@@ -15,7 +15,7 @@
 {% set deal_show_location = is_active_deal_stage %}
 {% set deal_show_notes = is_active_deal_stage %}
 {% set deal_show_email_conversation = is_active_deal_stage %}
-{% set deal_show_documents = not is_active_deal_stage %}
+{% set deal_show_documents = false %}
 {% set deal_section_collapsible = true %}
 {% set deal_section_open = false %}
 <article class="prospect-card-shell" id="prospect-{{ prospect['id'] }}" data-prospect-row data-prospect-status="{{ prospect['status'] }}" data-deal-card data-deal-status="{{ prospect['status'] }}" data-prospect-update-url="{{ url_for('main.prospect_update', prospect_id=prospect['id']) }}" data-prospect-attempt-url="{{ url_for('main.prospect_contact_attempt', prospect_id=prospect['id']) }}">
@@ -53,10 +53,6 @@
     </summary>
 
     <div class="prospect-card-details">
-      {% if is_active_deal_stage and deal %}
-        {% include '_master_deal_information.html' %}
-      {% endif %}
-
       <div class="master-source-section-head"><h3>Outbound Details</h3></div>
       <div class="prospect-detail-grid">
         <div class="prospect-longtext-field prospect-detail-full conversation-notes-field prospect-editable-field" data-prospect-edit-field data-prospect-field="problem" data-prospect-editor="textarea" data-prospect-value="{{ prospect['problem'] }}">
@@ -123,14 +119,12 @@
         </div>
       </div>
 
-      {% if (not is_active_deal_stage) and deal %}
-        {% include '_master_deal_information.html' %}
-      {% endif %}
-
-      {% if is_active_deal_stage and deal %}
-      <div class="prospect-active-documents">
+      {% if deal %}
+      <div class="prospect-deal-documents">
         {% include '_master_deal_documents.html' %}
       </div>
+
+      {% include '_master_deal_information.html' %}
       {% endif %}
 
       {% set linked_deal_id = prospect_deal_ids.get(prospect['id']) if prospect_deal_ids is defined else none %}
