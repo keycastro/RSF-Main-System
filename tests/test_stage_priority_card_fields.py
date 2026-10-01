@@ -41,14 +41,15 @@ class StagePriorityCardFieldTests(unittest.TestCase):
 
     def test_outbound_page_section_order_is_source_first(self):
         prospect = self.read("app/templates/_prospect_row.html")
-        outbound_at = prospect.index('<div class="master-source-section-head"><h3>Outbound Details</h3></div>')
+        outbound_fields_at = prospect.index('<div class="prospect-detail-grid">')
         documents_at = prospect.index('<div class="prospect-deal-documents">')
         deal_at = prospect.rindex("{% include '_master_deal_information.html' %}")
         footer_at = prospect.index('<div class="prospect-deal-action">')
-        self.assertLess(outbound_at, documents_at)
+        self.assertLess(outbound_fields_at, documents_at)
         self.assertLess(documents_at, deal_at)
         self.assertLess(deal_at, footer_at)
         self.assertIn("{% set deal_show_documents = false %}", prospect)
+        self.assertNotIn('<div class="master-source-section-head"><h3>Outbound Details</h3></div>', prospect)
         self.assertNotIn("{% if is_active_deal_stage and deal %}\n        {% include '_master_deal_information.html' %}", prospect)
 
     def test_outbound_deal_information_is_full_width_secondary_panel(self):
@@ -90,6 +91,7 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         master_at = deals.index("{% include '_master_deal_information.html' %}")
         outbound_at = deals.index("Outbound Details")
         self.assertLess(master_at, outbound_at)
+        self.assertIn('<h3 id="deal-research-details-{{ deal[\'id\'] }}">Outbound Details</h3>', deals)
 
     def test_website_cards_reload_when_crossing_stage_boundary_either_way(self):
         js = self.read("app/static/js/app.js")
