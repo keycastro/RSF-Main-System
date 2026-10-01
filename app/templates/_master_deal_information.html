@@ -6,18 +6,37 @@
 {% set deal_show_notes = deal_show_notes if deal_show_notes is defined else true %}
 {% set deal_show_email_conversation = deal_show_email_conversation if deal_show_email_conversation is defined else true %}
 {% set deal_show_documents = deal_show_documents if deal_show_documents is defined else true %}
+{% set deal_section_collapsible = deal_section_collapsible if deal_section_collapsible is defined else false %}
+{% set deal_section_open = deal_section_open if deal_section_open is defined else true %}
 {% set deal_external_email = deal_external_email if deal_external_email is defined else false %}
 {% set deal_external_contact_number = deal_external_contact_number if deal_external_contact_number is defined else false %}
 <section class="master-deal-information" data-master-deal-information>
   {% if show_deal_section_heading %}
   <div class="master-card-section-head">
     <h3>Deal Information</h3>
-    {% if deal['became_deal_at'] %}
-      <span>Became Deal: {{ deal['became_deal_at']|dt }}</span>
-    {% endif %}
+    <div class="master-card-section-side">
+      {% if deal['became_deal_at'] %}
+        <span>Became Deal: {{ deal['became_deal_at']|dt }}</span>
+      {% endif %}
+      {% if deal_section_collapsible %}
+      <button
+        class="deal-source-collapse-button master-deal-collapse-button"
+        type="button"
+        aria-label="{{ 'Hide' if deal_section_open else 'Show' }} Deal Information"
+        aria-expanded="{{ 'true' if deal_section_open else 'false' }}"
+        aria-controls="master-deal-body-{{ dom_key }}"
+        data-master-deal-toggle
+      ><span aria-hidden="true">⌄</span></button>
+      {% endif %}
+    </div>
   </div>
   {% endif %}
 
+  <div
+    class="master-deal-body"
+    id="master-deal-body-{{ dom_key }}"
+    {% if deal_section_collapsible and not deal_section_open %}hidden{% endif %}
+  >
   <form id="{{ form_id }}" class="deal-form master-deal-form" method="post" action="{{ url_for('main.deal_update', deal_id=deal['id']) }}" data-deal-form data-deal-current-status="{{ deal_workflow_status }}" {% if deal_embed_identity %}data-master-deal-embedded="1"{% endif %}>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="confirm_leave_deals" value="" data-deal-confirm-field>
@@ -191,6 +210,7 @@
       {% endif %}
     </div>
   </form>
+  </div>
 
   {% if deal_show_documents %}
   {% include '_master_deal_documents.html' %}
