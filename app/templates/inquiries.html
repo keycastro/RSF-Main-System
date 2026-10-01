@@ -164,6 +164,21 @@
     </button>
     </div>
 
+    {% set deal = inquiry_deals.get(inquiry.id) if inquiry_deals is defined else none %}
+    {% if deal %}
+      {% set deal_dom_key = 'inquiry-' ~ inquiry.id ~ '-deal' %}
+      {% set deal_form_id = 'inquiry-deal-form-' ~ inquiry.id %}
+      {% set deal_workflow_status = inquiry.workflow_status %}
+      {% set deal_client_name = inquiry.name %}
+      {% set deal_client_email = inquiry.email %}
+      {% set deal_client_phone = inquiry.phone %}
+      {% set deal_client_location = deal['location'] %}
+      {% set deal_return_to = url_for('main.inquiries_list', date=selected_date) ~ '#website-inquiry-' ~ inquiry.id %}
+      {% set show_deal_section_heading = true %}
+      {% set deal_embed_identity = true %}
+      {% include '_master_deal_information.html' %}
+    {% endif %}
+
     {% set linked_deal_id = inquiry_deal_ids.get(inquiry.id) if inquiry_deal_ids is defined else none %}
     <div
       class="website-inquiry-deal-action"
