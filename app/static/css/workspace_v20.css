@@ -923,12 +923,32 @@ textarea.prospect-inline-editor{resize:vertical}
   margin-top:0;
   padding-top:14px
 }
+
+/* v1.18.152 — linked Prospect navigation footer on Deal cards */
+.deal-card-footer{
+  padding:0 16px 16px;
+  background:#fcfdfc
+}
+.deal-card-footer .deal-footer-action{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:0;
+  padding-top:14px;
+  border-top:1px solid #edf2ef
+}
+.deal-card-footer .deal-footer-action .button{
+  min-height:34px;
+  padding:7px 11px;
+  font-size:11.5px
+}
+
 @media(max-width:620px){
   .prospect-secondary-deal-panel>.master-deal-information>.master-card-section-head{
     min-height:52px;
     padding:13px 14px
   }
   .prospect-card-footer{padding:0 13px 13px}
+  .deal-card-footer{padding:0 13px 13px}
 }
 
 .master-deal-information{

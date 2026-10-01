@@ -87,6 +87,22 @@ class StagePriorityCardFieldTests(unittest.TestCase):
         self.assertNotIn("deal_section_heading = 'OTHER FIELDS'", deals)
         self.assertNotIn("deal_section_heading = 'OTHER FIELDS'", inquiries)
 
+    def test_deals_linked_prospect_has_final_view_prospect_footer(self):
+        deals = self.read("app/templates/deals.html")
+        css = self.read("app/static/css/workspace_v20.css")
+        outbound_at = deals.index('<h3 id="deal-research-details-{{ deal[\'id\'] }}">OTHER FIELDS</h3>')
+        footer_at = deals.index('<div class="deal-card-footer">')
+        view_at = deals.index('href="{{ url_for(\'main.prospects\') }}#prospect-{{ deal[\'prospect_id\'] }}"', footer_at)
+        article_close = deals.index("</article>", footer_at)
+        self.assertLess(outbound_at, footer_at)
+        self.assertLess(footer_at, view_at)
+        self.assertLess(view_at, article_close)
+        self.assertIn("{% if deal['prospect_id'] %}\n        <div class=\"deal-card-footer\">", deals)
+        self.assertIn(">View Prospect</a>", deals)
+        self.assertIn(".deal-card-footer", css)
+        self.assertIn(".deal-card-footer .deal-footer-action", css)
+        self.assertNotIn("View Prospect", self.read("app/templates/inquiries.html"))
+
     def test_outbound_documents_live_inside_collapsed_deal_information_only(self):
         prospect = self.read("app/templates/_prospect_row.html")
         master = self.read("app/templates/_master_deal_information.html")

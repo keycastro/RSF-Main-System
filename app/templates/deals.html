@@ -242,6 +242,18 @@
         </section>
         {% endif %}
 
+        {% if deal['prospect_id'] %}
+        <div class="deal-card-footer">
+          <div class="deal-footer-action">
+            <a
+              class="button secondary"
+              href="{{ url_for('main.prospects') }}#prospect-{{ deal['prospect_id'] }}"
+              aria-label="View linked Prospect {{ deal['prospect_name'] }}"
+              title="View linked Prospect"
+            >View Prospect</a>
+          </div>
+        </div>
+        {% endif %}
 
       </article>
     {% else %}
