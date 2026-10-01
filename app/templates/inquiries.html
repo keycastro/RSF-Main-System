@@ -2,6 +2,12 @@
 <div
   class="website-inbox-page"
   data-website-inbox-page
+  data-card-layout-page="inquiries"
+  data-card-layout-zones='["header","source","deal"]'
+  data-card-layout-state="{{ card_layout|tojson|forceescape }}"
+  data-card-layout-save-url="{{ url_for('main.card_layout_update', page_name='inquiries') }}"
+  data-card-layout-csrf="{{ csrf_token() }}"
+  data-card-layout-editable="{{ '1' if g.user and g.user['role'] == 'admin' else '0' }}"
 >
 <div class="page-head workspace-page-head client-inbox-head">
   <div class="website-inbox-head-main">
@@ -31,6 +37,7 @@
   {% set deal_show_email_conversation = is_active_deal_stage %}
   {% set deal_external_email = not is_active_deal_stage %}
   {% set deal_external_contact_number = not is_active_deal_stage %}
+  {% set deal_layout_zone = 'deal' %}
   <article
     class="website-inquiry-card"
     id="website-inquiry-{{ inquiry.id }}"
@@ -40,9 +47,9 @@
     data-website-inquiry-workflow-status="{{ inquiry.workflow_status }}"
   >
     <header class="website-inquiry-card-head">
-      <div class="website-inquiry-card-identity">
-        <div><span>Client Name:</span> <strong data-inquiry-client-name>{{ inquiry.name }}</strong></div>
-        <label class="website-inquiry-header-status">
+      <div class="website-inquiry-card-identity" data-card-layout-zone="header">
+        <div data-card-layout-field="client_name"><span>Client Name:</span> <strong data-inquiry-client-name>{{ inquiry.name }}</strong></div>
+        <label class="website-inquiry-header-status" data-card-layout-field="status">
           <span>Status:</span>
           <select
             class="website-inquiry-status-select"
@@ -75,11 +82,11 @@
       {% include '_master_deal_information.html' %}
     {% endif %}
 
-    <div class="website-inquiry-card-body">
+    <div class="website-inquiry-card-body" data-card-layout-zone="source">
     <div class="master-source-section-head"><h3>Inbound Details</h3></div>
     <div class="website-inquiry-field-grid">
       {% if not is_active_deal_stage %}
-      <label class="website-inquiry-field">
+      <label class="website-inquiry-field" data-card-layout-field="email">
         <span>Email</span>
         {% if deal %}
         <input class="website-inquiry-shared-input" type="email" name="email" maxlength="320" value="{{ inquiry.email }}" form="{{ deal_form_id }}" data-inquiry-email>
@@ -87,7 +94,7 @@
         <strong data-inquiry-email>{{ inquiry.email }}</strong>
         {% endif %}
       </label>
-      <label class="website-inquiry-field">
+      <label class="website-inquiry-field" data-card-layout-field="contact_number">
         <span>Phone Number</span>
         {% if deal %}
         <input class="website-inquiry-shared-input" type="text" name="contact_number" maxlength="120" value="{{ inquiry.phone }}" form="{{ deal_form_id }}" data-inquiry-phone>
@@ -96,11 +103,11 @@
         {% endif %}
       </label>
       {% endif %}
-      <div class="website-inquiry-field">
+      <div class="website-inquiry-field" data-card-layout-field="company">
         <span>Company</span>
         <strong>{{ inquiry.company or '—' }}</strong>
       </div>
-      <div class="website-inquiry-field">
+      <div class="website-inquiry-field" data-card-layout-field="request">
         <span>Request</span>
         {% if inquiry.source_action %}
           {% if inquiry.source_type == 'system_template' and inquiry.source_slug %}
@@ -115,7 +122,7 @@
 
     </div>
 
-    <div class="website-inquiry-message-field conversation-notes-field">
+    <div class="website-inquiry-message-field conversation-notes-field" data-card-layout-field="message">
       <span>Message</span>
       <div class="deal-notes-compact website-message-compact conversation-notes-compact">
         <textarea class="website-message-compact-input" rows="1" readonly data-website-message-compact>{{ inquiry.message }}</textarea>
@@ -134,7 +141,7 @@
     </div>
 
     {% if not is_active_deal_stage %}
-    <div class="website-inquiry-notes-field conversation-notes-field">
+    <div class="website-inquiry-notes-field conversation-notes-field" data-card-layout-field="notes_after_conversation">
       <span>Notes After Conversation</span>
       <div class="deal-notes-compact conversation-notes-compact">
         <textarea
@@ -162,6 +169,7 @@
     <button
       class="website-inquiry-email-conversation conversation-email-card-field"
       type="button"
+      data-card-layout-field="email_conversation"
       data-email-conversation-open
       data-timeline-url="{{ url_for('main.communication_timeline', inquiry_id=inquiry.id) }}"
     >
