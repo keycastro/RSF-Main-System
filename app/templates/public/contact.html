@@ -2,27 +2,26 @@
 {% block content %}
 <section class="page-hero page-hero-simple contact-hero-simple">
   <div class="container simple-page-hero reveal">
-    <h1>Tell us what you need.</h1>
-    <p>Choose the closest path, then tell us about your business and the problem you want the system to solve.</p>
+    <p class="page-kicker">CONTACT RSF</p>
+    <h1>Tell us what your business needs.</h1>
+    <p>Tell us the problem you want the system to solve. We will review your request and reply by email.</p>
   </div>
 </section>
 
-<section class="section section-soft">
+<section class="section section-soft contact-path-section">
   <div class="container">
-    <div class="management-upgrade-grid reveal">
-      <article class="management-upgrade-card">
-        <strong>Existing System</strong>
-        <p>Start with one of the working systems already shown on this website.</p>
-        <a class="text-link" href="{{ url_for('site.system_templates') }}">View Existing Systems</a>
-      </article>
-      <article class="management-upgrade-card">
-        <strong>{% if free_build_program.visible %}Custom System — Limited Free Build Program{% else %}Custom System{% endif %}</strong>
+    <div class="contact-path-grid reveal">
+      <article class="management-upgrade-card contact-path-card primary-contact-path {{ 'is-selected' if source_intent == 'custom-build' else '' }}">
+        <p class="choice-label choice-label-pill">MAIN SERVICE</p>
+        <strong>{% if free_build_program.visible %}Custom System — Limited Free Build Program{% else %}Custom System Build{% endif %}</strong>
         <p>{% if free_build_program.visible %}Need a system made for your business? Selected projects can get a free custom system build during RSF’s {{ free_build_program.period }} program.{% else %}Need a system made for your business? Tell us what you need and we will review it first.{% endif %}</p>
-        <a class="text-link" href="{{ url_for('site.contact', intent='custom-build') }}">{% if free_build_program.visible %}Request a Free Custom Build{% else %}Build a Custom System{% endif %}</a>
+        <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">{% if free_build_program.visible %}Request a Free Custom Build{% else %}Build a Custom System{% endif %}</a>
       </article>
-      <article class="management-upgrade-card">
+
+      <article class="management-upgrade-card contact-path-card {{ 'is-selected' if source_intent == 'customize' else '' }}">
+        <p class="choice-label choice-label-pill">ALREADY HAVE A SYSTEM?</p>
         <strong>Upgrade or Customization</strong>
-        <p>Already have a system and need a focused feature, workflow change, automation, or expansion?</p>
+        <p>Already have a system and need a focused feature, process change, automation, or expansion?</p>
         <a class="text-link" href="{{ url_for('site.contact', intent='customize') }}">Request an Upgrade</a>
       </article>
     </div>
@@ -38,13 +37,13 @@
 
       {% if template_interest %}
       <div class="human-request-note" role="note">
-        <strong>You are asking about:</strong>
+        <strong>System example you viewed:</strong>
         <span>{{ template_interest.name }}</span>
       </div>
       {% elif source_intent %}
       <div class="human-request-note" role="note">
         <strong>You are asking about:</strong>
-        <span>{% if source_intent == 'custom-build' %}a custom system for your business{% elif source_intent == 'customize' %}an upgrade or customization to an existing system{% elif source_intent == 'handover' %}managing the system yourself after it is built{% elif source_intent == 'managed' %}having Realty Systems Foundry continue managing the system{% else %}a system for your business{% endif %}</span>
+        <span>{% if source_intent == 'custom-build' %}a custom system for your business{% elif source_intent == 'customize' %}an upgrade or change to a system you already have{% elif source_intent == 'handover' %}taking care of the system yourself after it is built{% elif source_intent == 'managed' %}paid RSF support after the system is finished{% else %}a system for your business{% endif %}</span>
       </div>
       {% endif %}
 
@@ -64,11 +63,11 @@
         <label><span>Phone Number</span><input required maxlength="40" type="tel" name="phone" value="{{ form_data.phone if form_data else '' }}" placeholder="Your phone number"></label>
         <label><span>Company <small>optional</small></span><input maxlength="140" name="company" value="{{ form_data.company if form_data else '' }}" placeholder="Company name"></label>
       </div>
-      <label><span>What do you need help with?</span><textarea required minlength="20" maxlength="3000" name="message" rows="6" placeholder="What is hard to track, repetitive, scattered, or missing in your current workflow? What should the system help your team do?">{{ form_data.message if form_data else '' }}</textarea></label>
+      <label><span>What do you need help with?</span><textarea required minlength="20" maxlength="3000" name="message" rows="6" placeholder="What is hard to track, repeated, scattered, or missing in your business? What should the system help your team do?">{{ form_data.message if form_data else '' }}</textarea></label>
       <button class="button primary full-button" type="submit">Send System Request</button>
       <div class="human-contact-foot">
         {% if source_intent == 'custom-build' and free_build_program.visible %}
-        <p>We review your request first. If your project is accepted, we agree on the system and features before work starts. The development fee for that agreed work is $0. Extra changes, hosting, costs from other apps or services, and paid RSF support after delivery are separate.</p>
+        <p>We review your request first. If your project is accepted, we agree on the system and features before work starts. The development fee for that agreed work is $0. Extra changes, hosting, costs from other apps or services, and paid RSF support after the system is finished are separate.</p>
         {% else %}
         <p>We review your request first. For custom work, we agree on what we will build and the price before we start.</p>
         {% endif %}
