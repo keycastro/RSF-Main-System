@@ -889,6 +889,48 @@ textarea.prospect-inline-editor{resize:vertical}
   border-top:0
 }
 
+/* OUTBOUND page: secondary Deal Information uses the same full-width
+   separated-panel treatment as source details on the Deals page. */
+.prospect-secondary-deal-panel{
+  margin:0;
+  background:#f4fbf7;
+  border-top:1px solid #dfe8e4;
+  border-bottom:1px solid #dfe8e4
+}
+.prospect-secondary-deal-panel>.master-deal-information{
+  margin:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none
+}
+.prospect-secondary-deal-panel>.master-deal-information>.master-card-section-head{
+  min-height:56px;
+  padding:14px 18px 14px
+}
+.prospect-secondary-deal-panel>.master-deal-information>.master-card-section-head h3{
+  font-size:11px;
+  letter-spacing:.02em
+}
+.prospect-secondary-deal-panel>.master-deal-information .master-deal-body{
+  padding-bottom:0
+}
+.prospect-card-footer{
+  padding:0 16px 16px;
+  background:#fcfdfc
+}
+.prospect-card-footer .prospect-deal-action{
+  margin-top:0;
+  padding-top:14px
+}
+@media(max-width:620px){
+  .prospect-secondary-deal-panel>.master-deal-information>.master-card-section-head{
+    min-height:52px;
+    padding:13px 14px
+  }
+  .prospect-card-footer{padding:0 13px 13px}
+}
+
 .master-deal-information{
   min-width:0;
   margin-top:18px;
