@@ -1,8 +1,7 @@
 {% extends 'public/base.html' %}
 {% block content %}
-<section class="page-hero page-hero-simple portfolio-page-hero">
+<section class="page-hero page-hero-simple">
   <div class="container simple-page-hero reveal">
-    <p class="page-kicker">PORTFOLIO</p>
     <h1>Systems We Built.</h1>
     <p>These are examples of systems RSF has built. They show the kind of work we can organize for a business.</p>
   </div>
@@ -37,15 +36,9 @@
         </a>
         {% endif %}
 
-        <div class="template-card-details">
-          <p class="system-audience"><strong>Could help:</strong> {{ item.card_audience }}</p>
-          <ul class="template-list compact-list">
-            {% for feature in item.features[:3] %}<li>{{ feature }}</li>{% endfor %}
-          </ul>
-        </div>
-
         <div class="template-card-actions system-card-footer">
-          <a class="button secondary" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">View System</a>
+          <p class="system-audience"><strong>Could help:</strong> {{ item.card_audience }}</p>
+          <a class="button primary" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">View System</a>
         </div>
       </article>
       {% endfor %}
@@ -59,12 +52,9 @@
     </div>
     {% endif %}
 
-    <div class="catalog-next-step reveal human-next-step portfolio-next-step">
-      <div>
-        <strong>Need a system for your business?</strong>
-        <span>Tell us what you need. RSF will review the request and build around your business.</span>
-      </div>
-      <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">{% if free_build_program.visible %}Request a Free Custom Build{% else %}Build a Custom System{% endif %}</a>
+    <div class="catalog-next-step reveal human-next-step">
+      <div><strong>Need a system for your business?</strong><span>Tell us what you need. RSF builds around your business.</span></div>
+      <a class="button secondary" href="{{ url_for('site.contact', intent='custom-build') }}">{% if free_build_program.visible %}Request a Free Custom Build{% else %}Build a Custom System{% endif %}</a>
     </div>
   </div>
 </section>
