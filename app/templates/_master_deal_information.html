@@ -4,6 +4,9 @@
   {% if show_deal_section_heading %}
   <div class="master-card-section-head">
     <h3>Deal Information</h3>
+    {% if deal['became_deal_at'] %}
+      <span>Became Deal: {{ deal['became_deal_at']|dt }}</span>
+    {% endif %}
   </div>
   {% endif %}
 
@@ -137,7 +140,9 @@
       </label>
       <div class="deal-calendar-meet-field" data-deal-calendar-meet-field>
         <span>Google Meet</span>
-        {% if deal['google_meet_url'] %}
+        {% if deal_workflow_status not in ['DEAL','DEMO','PROPOSAL','DECISION','WON','LOST'] %}
+          <strong data-deal-meet-status>Available when Deal</strong>
+        {% elif deal['google_meet_url'] %}
           <a href="{{ deal['google_meet_url'] }}" target="_blank" rel="noopener noreferrer" data-deal-scheduled-meet>Join Meeting</a>
         {% else %}
           <strong data-deal-meet-status>
