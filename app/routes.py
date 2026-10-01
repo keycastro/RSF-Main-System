@@ -327,6 +327,112 @@ def _sync_deal_source_statuses(db, deal_id: int, status: str, now: str) -> None:
         )
 
 
+def _mark_deal_became(db, deal_id: int, now: str) -> None:
+    db.execute(
+        """UPDATE deals
+           SET became_deal_at=CASE WHEN trim(COALESCE(became_deal_at,''))='' THEN ? ELSE became_deal_at END,
+               updated_at=?
+           WHERE id=?""",
+        (now, now, deal_id),
+    )
+
+
+def _merge_provisional_deal_into(db, source_deal_id: int, target_deal_id: int, now: str) -> int:
+    if source_deal_id == target_deal_id:
+        return target_deal_id
+    source = db.execute("SELECT * FROM deals WHERE id=?", (source_deal_id,)).fetchone()
+    target = db.execute("SELECT * FROM deals WHERE id=?", (target_deal_id,)).fetchone()
+    if not source or not target:
+        return target_deal_id
+
+    db.execute("UPDATE deal_documents SET deal_id=? WHERE deal_id=?", (target_deal_id, source_deal_id))
+    db.execute("UPDATE communication_notes SET deal_id=? WHERE deal_id=?", (target_deal_id, source_deal_id))
+
+    fill_fields = [
+        "contact_person","location","demo_date","demo_time","demo_timezone","demo_timezone_location",
+        "google_calendar_event_id","google_calendar_html_url","google_meet_url","google_calendar_sync_error",
+        "google_calendar_synced_at","followup_date","next_step","price","contact_number","email",
+        "notes_after_conversation","became_deal_at",
+    ]
+    updates = []
+    params = []
+    for field in fill_fields:
+        source_value = source[field] if field in source.keys() else ""
+        target_value = target[field] if field in target.keys() else ""
+        if (not str(target_value or "").strip()) and str(source_value or "").strip():
+            updates.append(f"{field}=?")
+            params.append(source_value)
+
+    prospect_id = target["prospect_id"] or source["prospect_id"]
+    inquiry_id = target["website_inquiry_id"] or source["website_inquiry_id"]
+    db.execute("DELETE FROM deals WHERE id=?", (source_deal_id,))
+    updates.extend(["prospect_id=?", "website_inquiry_id=?", "updated_at=?"])
+    params.extend([prospect_id, inquiry_id, now, target_deal_id])
+    db.execute(f"UPDATE deals SET {','.join(updates)} WHERE id=?", params)
+    return target_deal_id
+
+
+def _reconcile_deal_sources_on_activation(db, deal_id: int, now: str) -> int:
+    deal = db.execute("SELECT prospect_id,website_inquiry_id FROM deals WHERE id=?", (deal_id,)).fetchone()
+    if not deal:
+        return deal_id
+
+    if deal["prospect_id"] is not None and deal["website_inquiry_id"] is None:
+        prospect = db.execute(
+            "SELECT name,contact,email,phone FROM prospects WHERE id=?",
+            (deal["prospect_id"],),
+        ).fetchone()
+        if prospect:
+            match = find_matching_website_inquiry(
+                db,
+                {
+                    "company": prospect["name"],
+                    "contact_name": prospect["contact"],
+                    "email": prospect["email"],
+                    "phone": prospect["phone"],
+                },
+            )
+            if match and (match["workflow_status"] or "").strip().upper() in DEAL_ACTIVE_STATUSES:
+                other = db.execute(
+                    "SELECT id FROM deals WHERE website_inquiry_id=? LIMIT 1",
+                    (match["id"],),
+                ).fetchone()
+                if other and int(other["id"]) != deal_id:
+                    return _merge_provisional_deal_into(db, deal_id, int(other["id"]), now)
+                db.execute(
+                    "UPDATE deals SET website_inquiry_id=?,updated_at=? WHERE id=?",
+                    (match["id"], now, deal_id),
+                )
+
+    if deal["website_inquiry_id"] is not None and deal["prospect_id"] is None:
+        inquiry = db.execute(
+            "SELECT name,email,phone,company FROM website_inquiries WHERE id=?",
+            (deal["website_inquiry_id"],),
+        ).fetchone()
+        if inquiry:
+            match = find_matching_prospect(
+                db,
+                {
+                    "company": inquiry["company"],
+                    "contact_name": inquiry["name"],
+                    "email": inquiry["email"],
+                    "phone": inquiry["phone"],
+                },
+            )
+            if match and (match["status"] or "").strip().upper() in DEAL_ACTIVE_STATUSES:
+                other = db.execute(
+                    "SELECT id FROM deals WHERE prospect_id=? LIMIT 1",
+                    (match["id"],),
+                ).fetchone()
+                if other and int(other["id"]) != deal_id:
+                    return _merge_provisional_deal_into(db, deal_id, int(other["id"]), now)
+                db.execute(
+                    "UPDATE deals SET prospect_id=?,updated_at=? WHERE id=?",
+                    (match["id"], now, deal_id),
+                )
+    return deal_id
+
+
 def _ensure_deal_for_prospect(db, prospect_id: int, created_by_user_id: int, now: str) -> tuple[int, bool]:
     existing = db.execute("SELECT id FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
     if existing:
