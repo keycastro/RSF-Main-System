@@ -6,19 +6,15 @@
       <a href="{{ url_for('site.system_templates') }}">Systems</a><span aria-hidden="true">›</span><strong aria-current="page">{{ system_template.name }}</strong>
     </nav>
   </div>
+
   <div class="container template-hero-grid">
     <div class="case-intro reveal">
-      <p class="portfolio-label">PORTFOLIO SYSTEM</p>
+      <p class="page-kicker">SYSTEM EXAMPLE</p>
       <h1>{{ system_template.name }}</h1>
       <p class="page-lead">{{ system_template.full_description }}</p>
-      <div class="portfolio-context-note">
-        <strong>Example of a system RSF has built.</strong>
-        <p>This system is shown to explain what RSF can build. RSF does not sell ready-made systems. We build a custom system around each client’s business needs.</p>
-      </div>
-      <div class="hero-actions template-primary-actions">
-        <a class="button primary" href="{{ url_for('site.contact', template=system_template.slug, intent='custom-build') }}">{% if free_build_program.visible %}Request a Free Custom Build{% else %}Build a Custom System{% endif %}</a>
-      </div>
+      <p class="portfolio-context-line">This is an example of a system RSF has built. Client systems are built around each business’s own needs.</p>
     </div>
+
     {% if system_template.screenshots %}
     <button class="case-cover compact-case-cover reveal delay-1" type="button" data-lightbox="{{ url_for('static', filename=system_template.screenshots[0].src) }}" data-caption="{{ system_template.screenshots[0].caption }}">
       <img src="{{ url_for('static', filename=system_template.screenshots[0].src) }}" alt="{{ system_template.screenshots[0].alt }}" width="1600" height="1000" loading="eager" decoding="async">
@@ -85,12 +81,6 @@
       <p class="detail-media-caption">{{ screenshot.caption }}</p>
       {% endif %}
 
-      <details class="detail-disclosure human-disclosure">
-        <summary>Can RSF build something like this for my business?</summary>
-        <p>Yes. We can build a custom system around your business, the people using it, and the features you need.</p>
-        <ul class="template-list compact-list">{% for item in system_template.customization_opportunities %}<li>{{ item }}</li>{% endfor %}</ul>
-      </details>
-
       {% if system_template.project_note %}
       <details class="detail-disclosure project-note-disclosure human-disclosure">
         <summary>About this project</summary>
@@ -105,11 +95,8 @@
   <div class="container human-detail-next-inner reveal">
     <div>
       <p class="page-kicker">YOUR BUSINESS</p>
-      <h2>Need a custom system like this?</h2>
-      <p>Tell us what your business needs. We will build the system around your own process and agreed features.</p>
-      {% if free_build_program.visible %}
-      <p class="program-alternative-note">The limited Free Custom System Build program runs from {{ free_build_program.start_date }} to {{ free_build_program.end_date }}. RSF reviews every request first.</p>
-      {% endif %}
+      <h2>Need a custom system?</h2>
+      <p>Tell us what your business needs. We will review the request and agree on what to build before work starts.</p>
     </div>
     <div class="human-detail-next-actions">
       <a class="button primary" href="{{ url_for('site.contact', template=system_template.slug, intent='custom-build') }}">{% if free_build_program.visible %}Request a Free Custom Build{% else %}Build a Custom System{% endif %}</a>
