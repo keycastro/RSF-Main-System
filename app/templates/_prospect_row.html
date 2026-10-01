@@ -123,10 +123,16 @@
       <div class="prospect-deal-documents">
         {% include '_master_deal_documents.html' %}
       </div>
-
-      {% include '_master_deal_information.html' %}
       {% endif %}
+    </div>
 
+    {% if deal %}
+    <div class="prospect-secondary-deal-panel">
+      {% include '_master_deal_information.html' %}
+    </div>
+    {% endif %}
+
+    <div class="prospect-card-footer">
       {% set linked_deal_id = prospect_deal_ids.get(prospect['id']) if prospect_deal_ids is defined else none %}
       <div class="prospect-deal-action">
         <button class="prospect-copy-button" type="button" data-prospect-copy aria-label="Copy Prospect" title="Copy Prospect">📋</button>
