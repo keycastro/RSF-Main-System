@@ -94,6 +94,13 @@ class MasterLifecycleCardTests(unittest.TestCase):
         self.assertIn("card.dataset.prospectDealStage === '1'", js)
         self.assertIn("new MutationObserver(() => applyProspectFilter())", js)
 
+    def test_prospect_sourced_deal_card_hides_linked_in_prospect_label(self):
+        deals = self.read("app/templates/deals.html")
+        self.assertNotIn(">LINKED IN PROSPECT</a>", deals)
+        self.assertIn("deal['prospect_id']", deals)
+        self.assertIn("Became Deal:", deals)
+        self.assertIn(">LINKED IN WEBSITE INBOX</a>", deals)
+
     def test_deals_page_keeps_deal_information_before_source_details(self):
         template = self.read("app/templates/deals.html")
         deal_position = template.index("{% include '_master_deal_information.html' %}")
