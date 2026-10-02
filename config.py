@@ -116,3 +116,19 @@ class Config:
     RETELL_API_KEY = os.environ.get("RETELL_API_KEY", "").strip()
     RETELL_AGENT_ID = os.environ.get("RETELL_AGENT_ID", "").strip()
     RETELL_FROM_NUMBER = os.environ.get("RETELL_FROM_NUMBER", "").strip()
+
+    # Twilio manual international client calling. The feature stays dormant until
+    # these values are supplied; storing Contact Number alone never creates usage.
+    TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "").strip()
+    TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "").strip()
+    TWILIO_FROM_NUMBER = os.environ.get("TWILIO_FROM_NUMBER", "").strip()
+    TWILIO_AGENT_NUMBER = os.environ.get("TWILIO_AGENT_NUMBER", "").strip()
+    TWILIO_API_KEY = os.environ.get("TWILIO_API_KEY", "").strip()
+    TWILIO_API_SECRET = os.environ.get("TWILIO_API_SECRET", "").strip()
+    TWILIO_BATCH_TRANSCRIPTION_CONFIGURATION_ID = os.environ.get("TWILIO_BATCH_TRANSCRIPTION_CONFIGURATION_ID", "").strip()
+    TWILIO_TRANSCRIPTION_WEBHOOK_SECRET = os.environ.get("TWILIO_TRANSCRIPTION_WEBHOOK_SECRET", "").strip()
+    TWILIO_RECORDING_MAX_MB = max(1, min(100, int(os.environ.get("TWILIO_RECORDING_MAX_MB", "32"))))
+    TWILIO_RECORDING_NOTICE = os.environ.get(
+        "TWILIO_RECORDING_NOTICE",
+        "This call may be recorded for notes and quality purposes.",
+    ).strip()
