@@ -476,7 +476,6 @@ CREATE INDEX IF NOT EXISTS idx_manual_client_calls_prospect ON manual_client_cal
 CREATE INDEX IF NOT EXISTS idx_manual_client_calls_inquiry ON manual_client_calls(website_inquiry_id,created_at,id);
 CREATE INDEX IF NOT EXISTS idx_manual_client_calls_deal ON manual_client_calls(deal_id,created_at,id);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_manual_client_calls_provider_sid ON manual_client_calls(provider_call_sid) WHERE provider_call_sid <> '';
-CREATE UNIQUE INDEX IF NOT EXISTS uq_manual_client_calls_client_sid ON manual_client_calls(provider_client_call_sid) WHERE provider_client_call_sid <> '';
 CREATE UNIQUE INDEX IF NOT EXISTS uq_manual_client_calls_recording_sid ON manual_client_calls(recording_sid) WHERE recording_sid <> '';
 
 CREATE TABLE IF NOT EXISTS communication_notes (
