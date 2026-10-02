@@ -448,6 +448,10 @@ CREATE TABLE IF NOT EXISTS manual_client_calls (
     initiated_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     provider TEXT NOT NULL DEFAULT 'TWILIO',
     provider_call_sid TEXT NOT NULL DEFAULT '',
+    provider_client_call_sid TEXT NOT NULL DEFAULT '',
+    conference_sid TEXT NOT NULL DEFAULT '',
+    agent_muted INTEGER NOT NULL DEFAULT 0,
+    client_held INTEGER NOT NULL DEFAULT 0,
     webhook_token TEXT NOT NULL UNIQUE,
     phone TEXT NOT NULL DEFAULT '',
     status TEXT NOT NULL DEFAULT 'STARTING',
@@ -472,6 +476,7 @@ CREATE INDEX IF NOT EXISTS idx_manual_client_calls_prospect ON manual_client_cal
 CREATE INDEX IF NOT EXISTS idx_manual_client_calls_inquiry ON manual_client_calls(website_inquiry_id,created_at,id);
 CREATE INDEX IF NOT EXISTS idx_manual_client_calls_deal ON manual_client_calls(deal_id,created_at,id);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_manual_client_calls_provider_sid ON manual_client_calls(provider_call_sid) WHERE provider_call_sid <> '';
+CREATE UNIQUE INDEX IF NOT EXISTS uq_manual_client_calls_client_sid ON manual_client_calls(provider_client_call_sid) WHERE provider_client_call_sid <> '';
 CREATE UNIQUE INDEX IF NOT EXISTS uq_manual_client_calls_recording_sid ON manual_client_calls(recording_sid) WHERE recording_sid <> '';
 
 CREATE TABLE IF NOT EXISTS communication_notes (
