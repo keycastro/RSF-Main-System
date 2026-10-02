@@ -61,15 +61,18 @@ def create_manual_bridge_call(*, twiml_url: str, status_callback_url: str) -> st
         raise RuntimeError("Manual Call service is not connected yet.")
     sid = current_app.config["TWILIO_ACCOUNT_SID"]
     token = current_app.config["TWILIO_AUTH_TOKEN"]
-    payload = urlencode({
-        "To": current_app.config["TWILIO_AGENT_NUMBER"],
-        "From": current_app.config["TWILIO_FROM_NUMBER"],
-        "Url": twiml_url,
-        "Method": "POST",
-        "StatusCallback": status_callback_url,
-        "StatusCallbackMethod": "POST",
-        "StatusCallbackEvent": "initiated ringing answered completed",
-    }).encode("utf-8")
+    payload = urlencode([
+        ("To", current_app.config["TWILIO_AGENT_NUMBER"]),
+        ("From", current_app.config["TWILIO_FROM_NUMBER"]),
+        ("Url", twiml_url),
+        ("Method", "POST"),
+        ("StatusCallback", status_callback_url),
+        ("StatusCallbackMethod", "POST"),
+        ("StatusCallbackEvent", "initiated"),
+        ("StatusCallbackEvent", "ringing"),
+        ("StatusCallbackEvent", "answered"),
+        ("StatusCallbackEvent", "completed"),
+    ]).encode("utf-8")
     req = Request(
         f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Calls.json",
         data=payload,
