@@ -440,6 +440,40 @@ CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_inquiry ON whatsapp_messages(we
 CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_deal ON whatsapp_messages(deal_id,created_at,id);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_whatsapp_messages_external_id ON whatsapp_messages(external_message_id) WHERE external_message_id <> '';
 
+CREATE TABLE IF NOT EXISTS manual_client_calls (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    prospect_id INTEGER REFERENCES prospects(id) ON DELETE SET NULL,
+    website_inquiry_id INTEGER REFERENCES website_inquiries(id) ON DELETE SET NULL,
+    deal_id INTEGER REFERENCES deals(id) ON DELETE SET NULL,
+    initiated_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    provider TEXT NOT NULL DEFAULT 'TWILIO',
+    provider_call_sid TEXT NOT NULL DEFAULT '',
+    webhook_token TEXT NOT NULL UNIQUE,
+    phone TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'STARTING',
+    caption TEXT NOT NULL DEFAULT '',
+    transcript TEXT NOT NULL DEFAULT '',
+    transcript_status TEXT NOT NULL DEFAULT 'NOT_REQUESTED',
+    transcription_id TEXT NOT NULL DEFAULT '',
+    provider_error TEXT NOT NULL DEFAULT '',
+    recording_sid TEXT NOT NULL DEFAULT '',
+    recording_mime_type TEXT NOT NULL DEFAULT '',
+    recording_size_bytes INTEGER NOT NULL DEFAULT 0,
+    recording_bytes BLOB,
+    recording_duration_seconds INTEGER NOT NULL DEFAULT 0,
+    duration_seconds INTEGER NOT NULL DEFAULT 0,
+    started_at TEXT NOT NULL DEFAULT '',
+    answered_at TEXT NOT NULL DEFAULT '',
+    ended_at TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_manual_client_calls_prospect ON manual_client_calls(prospect_id,created_at,id);
+CREATE INDEX IF NOT EXISTS idx_manual_client_calls_inquiry ON manual_client_calls(website_inquiry_id,created_at,id);
+CREATE INDEX IF NOT EXISTS idx_manual_client_calls_deal ON manual_client_calls(deal_id,created_at,id);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_manual_client_calls_provider_sid ON manual_client_calls(provider_call_sid) WHERE provider_call_sid <> '';
+CREATE UNIQUE INDEX IF NOT EXISTS uq_manual_client_calls_recording_sid ON manual_client_calls(recording_sid) WHERE recording_sid <> '';
+
 CREATE TABLE IF NOT EXISTS communication_notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     prospect_id INTEGER REFERENCES prospects(id) ON DELETE SET NULL,
