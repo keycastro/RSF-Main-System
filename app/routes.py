@@ -5703,18 +5703,22 @@ def _manual_call_conditions(prospect_id: int | None, inquiry_id: int | None, dea
     return conditions, params
 
 
+def _manual_call_public_base() -> str:
+    configured = (current_app.config.get("PUBLIC_BASE_URL") or "").strip().rstrip("/")
+    if configured:
+        return configured
+    forwarded_proto = (request.headers.get("X-Forwarded-Proto") or request.scheme or "https").split(",", 1)[0].strip()
+    forwarded_host = (request.headers.get("X-Forwarded-Host") or request.host or "").split(",", 1)[0].strip()
+    return f"{forwarded_proto}://{forwarded_host}".rstrip("/")
+
+
 def _manual_call_public_url(endpoint: str, **values) -> str:
-    path = url_for(endpoint, **values)
-    base = (current_app.config.get("PUBLIC_BASE_URL") or "").strip().rstrip("/")
-    return f"{base}{path}" if base else url_for(endpoint, _external=True, **values)
+    return f"{_manual_call_public_base()}{url_for(endpoint, **values)}"
 
 
 def _twilio_request_url() -> str:
-    base = (current_app.config.get("PUBLIC_BASE_URL") or "").strip().rstrip("/")
-    if not base:
-        return request.url
     full_path = request.full_path[:-1] if request.full_path.endswith("?") else request.full_path
-    return f"{base}{full_path}"
+    return f"{_manual_call_public_base()}{full_path}"
 
 
 def _valid_twilio_form_webhook() -> bool:
