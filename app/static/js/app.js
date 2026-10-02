@@ -419,191 +419,138 @@ const RSFConversationTimeline = (() => {
 
 const RSFInlineManualCall = (() => {
   const pollers = new WeakMap();
-
-  const stopPolling = (panel) => {
-    const timer = pollers.get(panel);
-    if (timer) window.clearTimeout(timer);
-    pollers.delete(panel);
+  const timers = new WeakMap();
+  const stopPolling = (panel) => { const t=pollers.get(panel); if(t) clearTimeout(t); pollers.delete(panel); };
+  const stopTimer = (panel) => { const t=timers.get(panel); if(t) clearInterval(t); timers.delete(panel); };
+  const fmt = (s) => { s=Math.max(0,Math.floor(Number(s||0))); return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
+  const stateLabel = (s) => {
+    s=(s||'').toUpperCase();
+    if (['STARTING','QUEUED','CALLING','AGENT_RINGING','AGENT_CONNECTED','CLIENT_STARTING'].includes(s)) return 'Calling...';
+    if (s==='CLIENT_RINGING') return 'Ringing...';
+    if (s==='IN_PROGRESS') return 'Connected';
+    if (s==='ENDING') return 'Ending...';
+    if (s==='NO_ANSWER') return 'No answer';
+    if (s==='BUSY') return 'Busy';
+    if (s==='FAILED') return 'Call failed';
+    if (['CANCELED','CANCELLED'].includes(s)) return 'Call canceled';
+    if (s==='COMPLETED') return 'Call ended';
+    return 'Calling...';
   };
-
-  const statusLabel = (value) => {
-    const status = (value || '').replaceAll('_', ' ').toLowerCase();
-    return status ? status.replace(/\b\w/g, (letter) => letter.toUpperCase()) : '';
+  const setIdentity=(panel,name,phone)=>{
+    name=(name||'Client').trim()||'Client';
+    panel.querySelector('[data-manual-call-recipient]')?.replaceChildren(document.createTextNode(phone||''));
+    panel.querySelector('[data-manual-call-live-number]')?.replaceChildren(document.createTextNode(phone||''));
+    panel.querySelector('[data-manual-call-client-name]')?.replaceChildren(document.createTextNode(name));
+    const av=panel.querySelector('[data-manual-call-avatar]');
+    if(av) av.textContent=name.split(/\s+/).filter(Boolean).slice(0,2).map(p=>p[0]?.toUpperCase()||'').join('')||'C';
   };
-
-  const poll = async (panel, statusUrl) => {
-    if (!panel || !statusUrl || panel.hidden) return;
-    stopPolling(panel);
-    const pollCount = Number(panel.dataset.manualCallPollCount || 0) + 1;
-    panel.dataset.manualCallPollCount = String(pollCount);
-    try {
-      const response = await fetch(statusUrl, {
-        headers: { Accept: 'application/json' },
-        credentials: 'same-origin',
-        cache: 'no-store'
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || !data.ok) throw new Error(data.message || 'Manual Call status is unavailable.');
-      const status = panel.querySelector('[data-manual-call-status]');
-      if (status) {
-        const text = statusLabel(data.call?.status);
-        status.textContent = data.call?.error ? `${text} · ${data.call.error}` : text;
-      }
-      const callStatus = (data.call?.status || '').toUpperCase();
-      const waitingForRecording = (
-        callStatus === 'COMPLETED'
-        && !data.call?.recording_ready
-        && !data.call?.error
-      );
-      const waitingForTranscript = (data.call?.transcript_status || '').toUpperCase() === 'PENDING';
-      if (data.call?.terminal) {
-        const timeline = panel.closest('dialog')?.querySelector('.conversation-timeline');
-        if (timeline) await RSFConversationTimeline.refresh(timeline);
-        if (!waitingForRecording && !waitingForTranscript) return;
-        if (pollCount >= 60) {
-          if (status) status.textContent = 'Call finished. Recording/transcript processing is taking longer than expected; reopen Notes later to refresh it.';
-          return;
-        }
-      }
-      pollers.set(panel, window.setTimeout(() => poll(panel, statusUrl), 2000));
-    } catch (error) {
-      const status = panel.querySelector('[data-manual-call-status]');
-      if (status) status.textContent = error.message || 'Manual Call status is unavailable.';
-    }
-  };
-
-  const load = async (action) => {
-    if (!action || action.getAttribute('aria-disabled') === 'true' || !action.href || action.href.endsWith('#')) return null;
-    const dialog = action.closest('dialog');
-    const panel = dialog?.querySelector('[data-manual-call-panel]');
-    if (!dialog || !panel) return null;
-
-    const emailPanel = dialog.querySelector('[data-email-panel]');
-    const whatsappPanel = dialog.querySelector('[data-whatsapp-panel]');
-    if (emailPanel) emailPanel.hidden = true;
-    if (whatsappPanel) whatsappPanel.hidden = true;
-    dialog.classList.remove('conversation-email-open', 'conversation-whatsapp-open');
-    panel.hidden = false;
-    dialog.classList.add('conversation-manual-call-open');
-
-    const status = panel.querySelector('[data-manual-call-status]');
-    if (status) status.textContent = 'Loading…';
-    stopPolling(panel);
-    panel.dataset.manualCallPollCount = '0';
-
-    try {
-      const response = await fetch(action.href, {
-        headers: { Accept: 'application/json' },
-        credentials: 'same-origin',
-        cache: 'no-store'
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || !data.ok) throw new Error(data.message || 'Manual Call could not be loaded.');
-
-      panel.dataset.startUrl = data.start_url || '';
-      panel.dataset.prospectId = data.prospect_id ? String(data.prospect_id) : '';
-      panel.dataset.inquiryId = data.inquiry_id ? String(data.inquiry_id) : '';
-      panel.dataset.dealId = data.deal_id ? String(data.deal_id) : '';
-      const recipient = panel.querySelector('[data-manual-call-recipient]');
-      if (recipient) recipient.textContent = data.recipient || '';
-
-      const start = panel.querySelector('[data-manual-call-start]');
-      if (start) start.disabled = !data.start_ready;
-      if (status) status.textContent = data.connection_message || (
-        data.transcription_ready
-          ? 'Recording and automatic transcript are ready.'
-          : 'Recording is ready. Transcript requires Twilio Batch Transcription setup.'
-      );
-
-      const latest = data.latest_call;
-      if (latest && !latest.terminal && data.latest_status_url) {
-        poll(panel, data.latest_status_url);
-      }
-      return data;
-    } catch (error) {
-      if (status) status.textContent = error.message || 'Manual Call could not be loaded.';
-      return null;
-    }
-  };
-
-  const close = (panel) => {
-    if (!panel) return;
-    stopPolling(panel);
-    const dialog = panel.closest('dialog');
-    panel.hidden = true;
-    dialog?.classList.remove('conversation-manual-call-open');
-  };
-
-  document.addEventListener('click', (event) => {
-    const action = event.target.closest?.('.conversation-action--manual-call');
-    if (action) {
-      if (action.getAttribute('aria-disabled') === 'true') return;
-      event.preventDefault();
-      load(action);
+  const runTimer=(panel,call)=>{
+    stopTimer(panel);
+    const node=panel.querySelector('[data-manual-call-timer]'); if(!node) return;
+    if((call?.status||'').toUpperCase()!=='IN_PROGRESS'){
+      if(call?.terminal && Number(call?.duration_seconds||0)>0){node.hidden=false;node.textContent=fmt(call.duration_seconds);}
+      else {node.hidden=true;node.textContent='00:00';}
       return;
     }
-    const closeButton = event.target.closest?.('[data-manual-call-panel-close]');
-    if (closeButton) {
-      event.preventDefault();
-      close(closeButton.closest('[data-manual-call-panel]'));
-    }
+    node.hidden=false;
+    const answered=call?.answered_at?new Date(call.answered_at):null;
+    const base=answered&&!Number.isNaN(answered.getTime())?Math.max(0,Math.floor((Date.now()-answered.getTime())/1000)):Number(call?.duration_seconds||0);
+    const started=Date.now()-base*1000;
+    const update=()=>node.textContent=fmt((Date.now()-started)/1000);
+    update(); timers.set(panel,setInterval(update,1000));
+  };
+  const render=(panel,call)=>{
+    if(!panel||!call)return;
+    panel.querySelector('[data-manual-call-status]')?.replaceChildren(document.createTextNode(stateLabel(call.status)));
+    const err=panel.querySelector('[data-manual-call-error]'); if(err){err.hidden=!call.error;err.textContent=call.error||'';}
+    const rec=panel.querySelector('[data-manual-call-recording]'); if(rec) rec.hidden=!call.recording_active;
+    const mute=panel.querySelector('[data-manual-call-mute]');
+    const hold=panel.querySelector('[data-manual-call-hold]');
+    const end=panel.querySelector('[data-manual-call-end]');
+    const caps=call.controls||{};
+    if(mute){mute.hidden=!caps.mute;mute.classList.toggle('is-active',!!call.muted);mute.setAttribute('aria-pressed',call.muted?'true':'false');}
+    const ml=panel.querySelector('[data-manual-call-mute-label]'); if(ml) ml.textContent=call.muted?'Unmute':'Mute';
+    if(hold){hold.hidden=!caps.hold;hold.classList.toggle('is-active',!!call.held);hold.setAttribute('aria-pressed',call.held?'true':'false');}
+    const hl=panel.querySelector('[data-manual-call-hold-label]'); if(hl) hl.textContent=call.held?'Resume':'Hold';
+    if(end) end.hidden=!caps.end;
+    const wrap=panel.querySelector('[data-manual-call-controls]');
+    if(wrap){const count=[mute,hold].filter(b=>b&&!b.hidden).length;wrap.hidden=count===0;wrap.dataset.controlCount=String(count);}
+    runTimer(panel,call);
+  };
+  const fail=(panel,msg)=>{
+    panel.querySelector('[data-manual-call-status]')?.replaceChildren(document.createTextNode('Call unavailable'));
+    const err=panel.querySelector('[data-manual-call-error]'); if(err){err.hidden=false;err.textContent=msg||'Manual Call could not be started.';}
+    const wrap=panel.querySelector('[data-manual-call-controls]'); if(wrap)wrap.hidden=true;
+    const end=panel.querySelector('[data-manual-call-end]'); if(end)end.hidden=true;
+    const rec=panel.querySelector('[data-manual-call-recording]'); if(rec)rec.hidden=true;
+    stopTimer(panel);
+  };
+  const poll=async(panel,url)=>{
+    if(!panel||!url||panel.hidden)return;
+    stopPolling(panel);
+    const n=Number(panel.dataset.manualCallPollCount||0)+1; panel.dataset.manualCallPollCount=String(n);
+    try{
+      const r=await fetch(url,{headers:{Accept:'application/json'},credentials:'same-origin',cache:'no-store'});
+      const d=await r.json().catch(()=>({})); if(!r.ok||!d.ok) throw new Error(d.message||'Manual Call status is unavailable.');
+      render(panel,d.call);
+      const s=(d.call?.status||'').toUpperCase();
+      const waitRec=s==='COMPLETED'&&!d.call?.recording_ready&&!d.call?.error;
+      const waitTx=(d.call?.transcript_status||'').toUpperCase()==='PENDING';
+      if(d.call?.terminal){
+        const tl=panel.closest('dialog')?.querySelector('.conversation-timeline'); if(tl) await RSFConversationTimeline.refresh(tl);
+        if(!waitRec&&!waitTx||n>=60)return;
+      }
+      pollers.set(panel,setTimeout(()=>poll(panel,url),1500));
+    }catch(e){fail(panel,e.message);}
+  };
+  const start=async(panel)=>{
+    const p=new URLSearchParams({csrf_token:panel?.dataset.csrfToken||''});
+    if(panel?.dataset.prospectId)p.set('prospect_id',panel.dataset.prospectId);
+    if(panel?.dataset.inquiryId)p.set('inquiry_id',panel.dataset.inquiryId);
+    if(panel?.dataset.dealId)p.set('deal_id',panel.dataset.dealId);
+    const r=await fetch(panel.dataset.startUrl,{method:'POST',headers:{Accept:'application/json','Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},credentials:'same-origin',cache:'no-store',body:p.toString()});
+    const d=await r.json().catch(()=>({})); if(!r.ok||!d.ok)throw new Error(d.message||'Manual Call could not be started.');
+    panel.dataset.statusUrl=d.status_url||''; panel.dataset.controlUrl=d.control_url||''; panel.dataset.manualCallPollCount='0'; render(panel,d.call); if(d.status_url)poll(panel,d.status_url);
+  };
+  const load=async(action)=>{
+    if(!action||action.getAttribute('aria-disabled')==='true'||!action.href||action.href.endsWith('#'))return null;
+    const dialog=action.closest('dialog'),panel=dialog?.querySelector('[data-manual-call-panel]'); if(!dialog||!panel)return null;
+    const ep=dialog.querySelector('[data-email-panel]'),wp=dialog.querySelector('[data-whatsapp-panel]'); if(ep)ep.hidden=true;if(wp)wp.hidden=true;
+    dialog.classList.remove('conversation-email-open','conversation-whatsapp-open'); panel.hidden=false; dialog.classList.add('conversation-manual-call-open');
+    stopPolling(panel);stopTimer(panel);panel.dataset.manualCallPollCount='0';
+    panel.querySelector('[data-manual-call-status]')?.replaceChildren(document.createTextNode('Calling...'));
+    const er=panel.querySelector('[data-manual-call-error]');if(er){er.hidden=true;er.textContent='';}
+    const wrap=panel.querySelector('[data-manual-call-controls]');if(wrap)wrap.hidden=true;
+    const end=panel.querySelector('[data-manual-call-end]');if(end)end.hidden=true;
+    const rec=panel.querySelector('[data-manual-call-recording]');if(rec)rec.hidden=true;
+    try{
+      const r=await fetch(action.href,{headers:{Accept:'application/json'},credentials:'same-origin',cache:'no-store'});
+      const d=await r.json().catch(()=>({})); if(!r.ok||!d.ok)throw new Error(d.message||'Manual Call could not be loaded.');
+      panel.dataset.startUrl=d.start_url||'';panel.dataset.prospectId=d.prospect_id?String(d.prospect_id):'';panel.dataset.inquiryId=d.inquiry_id?String(d.inquiry_id):'';panel.dataset.dealId=d.deal_id?String(d.deal_id):'';
+      setIdentity(panel,d.client_name,d.recipient);
+      if(d.active_call&&d.active_status_url){panel.dataset.statusUrl=d.active_status_url;panel.dataset.controlUrl=d.active_control_url||'';render(panel,d.active_call);poll(panel,d.active_status_url);return d;}
+      if(!d.start_ready)throw new Error(d.connection_message||'Manual Call is not ready.');
+      await start(panel); return d;
+    }catch(e){fail(panel,e.message);return null;}
+  };
+  const control=async(button,action)=>{
+    const panel=button.closest('[data-manual-call-panel]');if(!panel?.dataset.controlUrl)return;
+    const p=new URLSearchParams({csrf_token:panel.dataset.csrfToken||'',action});button.disabled=true;
+    try{const r=await fetch(panel.dataset.controlUrl,{method:'POST',headers:{Accept:'application/json','Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},credentials:'same-origin',cache:'no-store',body:p.toString()});const d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.message||'Manual Call control failed.');render(panel,d.call);if(panel.dataset.statusUrl)poll(panel,panel.dataset.statusUrl);}
+    catch(e){const er=panel.querySelector('[data-manual-call-error]');if(er){er.hidden=false;er.textContent=e.message||'Manual Call control failed.';}}
+    finally{button.disabled=false;}
+  };
+  const close=(panel)=>{if(!panel)return;stopPolling(panel);stopTimer(panel);panel.hidden=true;panel.closest('dialog')?.classList.remove('conversation-manual-call-open');};
+  document.addEventListener('click',(event)=>{
+    const action=event.target.closest?.('.conversation-action--manual-call');if(action){if(action.getAttribute('aria-disabled')==='true')return;event.preventDefault();load(action);return;}
+    const x=event.target.closest?.('[data-manual-call-panel-close]');if(x){event.preventDefault();close(x.closest('[data-manual-call-panel]'));return;}
+    const mute=event.target.closest?.('[data-manual-call-mute]');if(mute){event.preventDefault();control(mute,mute.getAttribute('aria-pressed')==='true'?'unmute':'mute');return;}
+    const hold=event.target.closest?.('[data-manual-call-hold]');if(hold){event.preventDefault();control(hold,hold.getAttribute('aria-pressed')==='true'?'resume':'hold');return;}
+    const end=event.target.closest?.('[data-manual-call-end]');if(end){event.preventDefault();control(end,'end');}
   });
-
-  document.addEventListener('submit', async (event) => {
-    const form = event.target.closest?.('[data-manual-call-form]');
-    if (!form) return;
-    event.preventDefault();
-    const panel = form.closest('[data-manual-call-panel]');
-    const dialog = panel?.closest('dialog');
-    const action = dialog?.querySelector('.conversation-action--manual-call');
-    const status = panel?.querySelector('[data-manual-call-status]');
-    const start = panel?.querySelector('[data-manual-call-start]');
-    const consent = panel?.querySelector('[data-manual-call-consent]');
-    const caption = panel?.querySelector('[data-manual-call-caption]');
-
-    if (!consent?.checked) {
-      if (status) status.textContent = 'Confirm the call-recording consent reminder first.';
-      consent?.focus();
-      return;
-    }
-
-    const payload = new URLSearchParams({
-      csrf_token: panel?.dataset.csrfToken || '',
-      caption: caption?.value || '',
-      recording_consent: '1'
-    });
-    if (panel?.dataset.prospectId) payload.set('prospect_id', panel.dataset.prospectId);
-    if (panel?.dataset.inquiryId) payload.set('inquiry_id', panel.dataset.inquiryId);
-    if (panel?.dataset.dealId) payload.set('deal_id', panel.dataset.dealId);
-
-    if (start) start.disabled = true;
-    if (status) status.textContent = 'Starting Manual Call…';
-    try {
-      const response = await fetch(panel?.dataset.startUrl || '', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-        },
-        credentials: 'same-origin',
-        cache: 'no-store',
-        body: payload.toString()
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || !data.ok) throw new Error(data.message || 'Manual Call could not be started.');
-      if (status) status.textContent = data.message || 'Manual Call started.';
-      panel.dataset.manualCallPollCount = '0';
-      const timeline = dialog?.querySelector('.conversation-timeline');
-      if (timeline) await RSFConversationTimeline.refresh(timeline);
-      if (data.status_url) poll(panel, data.status_url);
-    } catch (error) {
-      if (status) status.textContent = error.message || 'Manual Call could not be started.';
-      if (start) start.disabled = false;
-    }
-  });
-
-  return { load, close };
+  return {load,close};
 })();
+
 
 const RSFInlineEmail = (() => {
   const formatWhen = (raw) => {
