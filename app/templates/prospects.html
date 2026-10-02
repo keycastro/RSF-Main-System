@@ -21,6 +21,14 @@
     </div>
   </div>
 
+  <div class="prospect-status-filters" role="group" aria-label="Filter Prospects by outbound status" data-prospect-filters>
+    <button class="prospect-filter-button is-active" type="button" data-prospect-filter="ALL" aria-pressed="true">All</button>
+    <button class="prospect-filter-button" type="button" data-prospect-filter="NOT_CONTACTED" aria-pressed="false">Not Contacted</button>
+    <button class="prospect-filter-button" type="button" data-prospect-filter="NO_ANSWER" aria-pressed="false">No Answer</button>
+    <button class="prospect-filter-button" type="button" data-prospect-filter="REJECTED" aria-pressed="false">Rejected</button>
+    <button class="prospect-filter-button" type="button" data-prospect-filter="DEAL_STAGES" aria-pressed="false">In Deal Stages</button>
+  </div>
+
   <section class="prospect-list-section">
     <div class="simple-list" data-prospect-list>
       <div class="prospect-quick-add" data-prospect-quick-add hidden>
@@ -62,6 +70,10 @@
         </div>
       {% endfor %}
 
+      <div class="workspace-empty-state prospect-filter-empty" data-prospect-filter-empty role="status" hidden>
+        <strong>No prospects in this filter.</strong>
+        <span>Choose another filter to view other outbound prospects.</span>
+      </div>
     </div>
   </section>
 

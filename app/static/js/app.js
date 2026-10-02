@@ -2822,6 +2822,45 @@ document.addEventListener('click', (event) => {
   const prospectDealStatuses = new Set(statusOptions.slice(prospectDealStartIndex).map(([value]) => value));
   const prospectPreDealStatuses = new Set(statusOptions.slice(0, prospectDealStartIndex).map(([value]) => value));
   const prospectStatusLabels = new Map(statusOptions);
+
+  const prospectFilterButtons = Array.from(page.querySelectorAll('[data-prospect-filter]'));
+  const prospectFilterEmpty = page.querySelector('[data-prospect-filter-empty]');
+  let activeProspectFilter = 'ALL';
+
+  const applyProspectFilter = () => {
+    if (!list || !prospectFilterButtons.length) return;
+    const cards = Array.from(list.querySelectorAll('[data-prospect-row]'));
+    cards.forEach((card) => {
+      const exactStatusMatch = card.dataset.prospectStatus === activeProspectFilter;
+      const dealStageMatch = activeProspectFilter === 'DEAL_STAGES'
+        && card.dataset.prospectDealStage === '1';
+      card.hidden = activeProspectFilter !== 'ALL' && !exactStatusMatch && !dealStageMatch;
+    });
+
+    prospectFilterButtons.forEach((button) => {
+      const active = button.dataset.prospectFilter === activeProspectFilter;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+
+    if (prospectFilterEmpty) {
+      const hasVisibleCards = cards.some((card) => !card.hidden);
+      prospectFilterEmpty.hidden = cards.length === 0 || activeProspectFilter === 'ALL' || hasVisibleCards;
+    }
+  };
+
+  if (prospectFilterButtons.length && list) {
+    prospectFilterButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        activeProspectFilter = button.dataset.prospectFilter || 'ALL';
+        applyProspectFilter();
+      });
+    });
+
+    new MutationObserver(() => applyProspectFilter()).observe(list, { childList: true });
+    applyProspectFilter();
+  }
+
   const prospectStatusConfirm = page.querySelector('[data-prospect-status-confirm]');
   const prospectStatusConfirmMessage = page.querySelector('[data-prospect-status-confirm-message]');
   const prospectStatusConfirmYes = page.querySelector('[data-prospect-status-confirm-yes]');

@@ -71,6 +71,29 @@ class MasterLifecycleCardTests(unittest.TestCase):
         self.assertIn('data-deal-filter="DEAL"', deals)
         self.assertIn(">Deal</button>", deals)
 
+    def test_prospect_outbound_filters_reuse_deal_stage_filter_design(self):
+        prospects = self.read("app/templates/prospects.html")
+        deals = self.read("app/templates/deals.html")
+        row = self.read("app/templates/_prospect_row.html")
+        js = self.read("app/static/js/app.js")
+
+        self.assertIn('class="prospect-status-filters"', prospects)
+        self.assertIn('class="prospect-status-filters"', deals)
+        for code, label in (
+            ("ALL", "All"),
+            ("NOT_CONTACTED", "Not Contacted"),
+            ("NO_ANSWER", "No Answer"),
+            ("REJECTED", "Rejected"),
+            ("DEAL_STAGES", "In Deal Stages"),
+        ):
+            with self.subTest(code=code):
+                self.assertIn(f'data-prospect-filter="{code}"', prospects)
+                self.assertIn(f'>{label}</button>', prospects)
+        self.assertIn("data-prospect-deal-stage=", row)
+        self.assertIn("if is_active_deal_stage else '0'", row)
+        self.assertIn("card.dataset.prospectDealStage === '1'", js)
+        self.assertIn("new MutationObserver(() => applyProspectFilter())", js)
+
     def test_deals_page_keeps_deal_information_before_source_details(self):
         template = self.read("app/templates/deals.html")
         deal_position = template.index("{% include '_master_deal_information.html' %}")
