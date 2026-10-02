@@ -70,6 +70,22 @@ class MasterLifecycleCardTests(unittest.TestCase):
         self.assertIn("rsf-v1.18.131-master-lifecycle-cards", db)
         self.assertIn("deal['became_deal_at']", deals)
 
+    def test_prospect_became_deal_is_footer_only_and_future_adaptive(self):
+        prospect = self.read("app/templates/_prospect_row.html")
+        master = self.read("app/templates/_master_deal_information.html")
+        routes = self.read("app/routes.py")
+        js = self.read("app/static/js/app.js")
+
+        self.assertIn("{% set is_active_deal_stage = prospect['status'] in deal_active_statuses %}", prospect)
+        self.assertIn("{% set deal_show_became_in_heading = false %}", prospect)
+        self.assertIn('class="prospect-became-deal-log"', prospect)
+        self.assertIn("{% if is_active_deal_stage and deal and deal['became_deal_at'] %}", prospect)
+        self.assertIn("deal_show_became_in_heading and deal['became_deal_at']", master)
+        self.assertIn("PROSPECT_STATUS_CODES = tuple(PROSPECT_STATUS_LABELS)", routes)
+        self.assertIn("DEAL_ACTIVE_STATUSES = PROSPECT_STATUS_CODES[DEAL_PIPELINE_START_INDEX:]", routes)
+        self.assertIn("const prospectDealStartIndex = statusOptions.findIndex", js)
+        self.assertIn("statusOptions.slice(prospectDealStartIndex)", js)
+
     def test_source_pages_include_shared_deal_dialogs(self):
         self.assertIn(
             "{% include '_master_deal_dialogs.html' %}",

@@ -90,8 +90,12 @@ PROSPECT_STATUS_LABELS = {
     "WON": "Won",
     "LOST": "Lost",
 }
-DEAL_ACTIVE_STATUSES = ("DEAL", "DEMO", "PROPOSAL", "DECISION", "WON", "LOST")
-DEAL_PRE_STATUS_STATUSES = ("NOT_CONTACTED", "NO_ANSWER", "REJECTED")
+# The ordered status map is canonical. Anything from DEAL onward is Deal-side,
+# so future stages inserted after DEAL inherit Deal lifecycle behavior automatically.
+PROSPECT_STATUS_CODES = tuple(PROSPECT_STATUS_LABELS)
+DEAL_PIPELINE_START_INDEX = PROSPECT_STATUS_CODES.index("DEAL")
+DEAL_PRE_STATUS_STATUSES = PROSPECT_STATUS_CODES[:DEAL_PIPELINE_START_INDEX]
+DEAL_ACTIVE_STATUSES = PROSPECT_STATUS_CODES[DEAL_PIPELINE_START_INDEX:]
 
 CARD_LAYOUT_SPECS = {
     "prospects": {
@@ -1462,6 +1466,7 @@ def prospects():
         prospect_status_labels=PROSPECT_STATUS_LABELS,
         prospect_deal_ids=prospect_deal_ids,
         prospect_deals=prospect_deals,
+        deal_active_statuses=DEAL_ACTIVE_STATUSES,
         card_layout=_card_layout_preference(db, "prospects"),
         **deal_support,
     )
@@ -1889,6 +1894,7 @@ def prospect_update(prospect_id: int):
         prospect_status_labels=PROSPECT_STATUS_LABELS,
         prospect_deal_ids={prospect_id: int(linked_deal["id"])} if linked_deal else {},
         prospect_deals={prospect_id: deal_row} if deal_row else {},
+        deal_active_statuses=DEAL_ACTIVE_STATUSES,
         **deal_support,
     )
     return jsonify(

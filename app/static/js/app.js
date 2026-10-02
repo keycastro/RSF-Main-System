@@ -2818,8 +2818,9 @@ document.addEventListener('click', (event) => {
     ['WON', 'Won'],
     ['LOST', 'Lost']
   ];
-  const prospectDealStatuses = new Set(['DEAL', 'DEMO', 'PROPOSAL', 'DECISION', 'WON', 'LOST']);
-  const prospectPreDealStatuses = new Set(['NOT_CONTACTED', 'NO_ANSWER', 'REJECTED']);
+  const prospectDealStartIndex = statusOptions.findIndex(([value]) => value === 'DEAL');
+  const prospectDealStatuses = new Set(statusOptions.slice(prospectDealStartIndex).map(([value]) => value));
+  const prospectPreDealStatuses = new Set(statusOptions.slice(0, prospectDealStartIndex).map(([value]) => value));
   const prospectStatusLabels = new Map(statusOptions);
   const prospectStatusConfirm = page.querySelector('[data-prospect-status-confirm]');
   const prospectStatusConfirmMessage = page.querySelector('[data-prospect-status-confirm-message]');

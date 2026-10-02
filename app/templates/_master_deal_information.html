@@ -14,6 +14,7 @@
 {% set deal_section_action_url = deal_section_action_url if deal_section_action_url is defined else '' %}
 {% set deal_section_heading = deal_section_heading if deal_section_heading is defined else 'Deal Information' %}
 {% set deal_layout_zone = deal_layout_zone if deal_layout_zone is defined else 'deal' %}
+{% set deal_show_became_in_heading = deal_show_became_in_heading if deal_show_became_in_heading is defined else true %}
 <section class="master-deal-information" data-master-deal-information>
   {% if show_deal_section_heading %}
   <div class="master-card-section-head">
@@ -23,7 +24,7 @@
       <h3>{{ deal_section_heading }}</h3>
     {% endif %}
     <div class="master-card-section-side">
-      {% if deal['became_deal_at'] %}
+      {% if deal_show_became_in_heading and deal['became_deal_at'] %}
         <span>Became Deal: {{ deal['became_deal_at']|dt }}</span>
       {% endif %}
       {% if deal_section_collapsible %}
