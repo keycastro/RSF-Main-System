@@ -84,6 +84,16 @@ class Config:
     GMAIL_OAUTH_CLIENT_SECRET = os.environ.get("GMAIL_OAUTH_CLIENT_SECRET", "").strip()
     GMAIL_OAUTH_REDIRECT_URI = os.environ.get("GMAIL_OAUTH_REDIRECT_URI", "").strip()
 
+    # WhatsApp Business Platform / Cloud API. These stay dormant until the Founder
+    # supplies Meta credentials in the environment; no paid message is sent without them.
+    WHATSAPP_GRAPH_API_VERSION = os.environ.get("WHATSAPP_GRAPH_API_VERSION", "").strip()
+    WHATSAPP_ACCESS_TOKEN = os.environ.get("WHATSAPP_ACCESS_TOKEN", "").strip()
+    WHATSAPP_PHONE_NUMBER_ID = os.environ.get("WHATSAPP_PHONE_NUMBER_ID", "").strip()
+    WHATSAPP_WABA_ID = os.environ.get("WHATSAPP_WABA_ID", "").strip()
+    WHATSAPP_VERIFY_TOKEN = os.environ.get("WHATSAPP_VERIFY_TOKEN", "").strip()
+    WHATSAPP_APP_SECRET = os.environ.get("WHATSAPP_APP_SECRET", "").strip()
+    WHATSAPP_MAX_MEDIA_MB = max(1, min(25, int(os.environ.get("WHATSAPP_MAX_MEDIA_MB", "16"))))
+
     # Google Calendar OAuth for Deal demo scheduling + automatic Google Meet links.
     GOOGLE_OAUTH_CLIENT_ID = os.environ.get("GOOGLE_OAUTH_CLIENT_ID", "").strip()
     GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET", "").strip()
