@@ -402,6 +402,7 @@ def _merge_provisional_deal_into(db, source_deal_id: int, target_deal_id: int, n
 
     db.execute("UPDATE deal_documents SET deal_id=? WHERE deal_id=?", (target_deal_id, source_deal_id))
     db.execute("UPDATE communication_notes SET deal_id=? WHERE deal_id=?", (target_deal_id, source_deal_id))
+    db.execute("UPDATE whatsapp_messages SET deal_id=? WHERE deal_id=?", (target_deal_id, source_deal_id))
 
     fill_fields = [
         "contact_person","location","demo_date","demo_time","demo_timezone","demo_timezone_location",
@@ -5189,6 +5190,454 @@ def communication_email_send():
     return jsonify({"ok": True, "message_id": message_id, "message": "Email sent."})
 
 
+def _whatsapp_context(*, prospect_id: int | None = None, inquiry_id: int | None = None, deal_id: int | None = None):
+    """Resolve the canonical Deal-owned WhatsApp # without depending on email."""
+    db = get_db()
+    prospect_id, inquiry_id, deal_id = _communication_context_ids(
+        prospect_id=prospect_id, inquiry_id=inquiry_id, deal_id=deal_id
+    )
+    deal = None
+    if deal_id:
+        deal = db.execute(
+            "SELECT id,prospect_id,website_inquiry_id,whatsapp_number FROM deals WHERE id=?",
+            (deal_id,),
+        ).fetchone()
+    elif prospect_id:
+        deal = db.execute(
+            """SELECT id,prospect_id,website_inquiry_id,whatsapp_number
+               FROM deals WHERE prospect_id=? ORDER BY id DESC LIMIT 1""",
+            (prospect_id,),
+        ).fetchone()
+    elif inquiry_id:
+        deal = db.execute(
+            """SELECT id,prospect_id,website_inquiry_id,whatsapp_number
+               FROM deals WHERE website_inquiry_id=? ORDER BY id DESC LIMIT 1""",
+            (inquiry_id,),
+        ).fetchone()
+
+    if deal:
+        deal_id = int(deal["id"])
+        prospect_id = int(deal["prospect_id"]) if deal["prospect_id"] is not None else prospect_id
+        inquiry_id = int(deal["website_inquiry_id"]) if deal["website_inquiry_id"] is not None else inquiry_id
+    return prospect_id, inquiry_id, deal_id, deal
+
+
+def _whatsapp_context_where(prospect_id: int | None, inquiry_id: int | None, deal_id: int | None):
+    conditions = []
+    params: list[int] = []
+    if prospect_id:
+        conditions.append("prospect_id=?")
+        params.append(prospect_id)
+    if inquiry_id:
+        conditions.append("website_inquiry_id=?")
+        params.append(inquiry_id)
+    if deal_id:
+        conditions.append("deal_id=?")
+        params.append(deal_id)
+    return conditions, params
+
+
+def _whatsapp_message_payload(row) -> dict:
+    has_media = bool(row["media_bytes"])
+    return {
+        "id": int(row["id"]),
+        "direction": row["direction"],
+        "type": row["message_type"] or "text",
+        "body": row["body"] or "",
+        "at": row["created_at"] or "",
+        "delivery_status": row["delivery_status"] or "",
+        "delivery_error": row["delivery_error"] or "",
+        "media_name": row["media_name"] or "",
+        "media_mime_type": row["media_mime_type"] or "",
+        "media_size_bytes": int(row["media_size_bytes"] or 0),
+        "media_url": url_for("main.communication_whatsapp_media", message_id=row["id"]) if has_media else "",
+    }
+
+
+@bp.get("/communications/whatsapp-thread")
+@login_required
+def communication_whatsapp_thread():
+    prospect_id, inquiry_id, deal_id, deal = _whatsapp_context(
+        prospect_id=request.args.get("prospect_id", type=int),
+        inquiry_id=request.args.get("inquiry_id", type=int),
+        deal_id=request.args.get("deal_id", type=int),
+    )
+    number = (deal["whatsapp_number"] or "").strip() if deal else ""
+    if not number:
+        return jsonify({"ok": False, "message": "Add WhatsApp # first."}), 400
+
+    from .whatsapp_ops import normalize_whatsapp_number, whatsapp_messaging_configured
+    normalized = normalize_whatsapp_number(number)
+    conditions, params = _whatsapp_context_where(prospect_id, inquiry_id, deal_id)
+    rows = []
+    if conditions:
+        rows = get_db().execute(
+            f"""SELECT * FROM whatsapp_messages
+                WHERE {" OR ".join(conditions)}
+                ORDER BY created_at ASC,id ASC""",
+            params,
+        ).fetchall()
+
+    configured = whatsapp_messaging_configured()
+    send_ready = bool(configured and normalized)
+    if not normalized:
+        connection_message = "Use an international WhatsApp number, for example +63..."
+    elif not configured:
+        connection_message = "RSF WhatsApp API is not connected yet."
+    else:
+        connection_message = ""
+
+    return jsonify({
+        "ok": True,
+        "recipient": number,
+        "normalized_recipient": normalized,
+        "prospect_id": prospect_id,
+        "inquiry_id": inquiry_id,
+        "deal_id": deal_id,
+        "messages": [_whatsapp_message_payload(row) for row in rows],
+        "send_url": url_for("main.communication_whatsapp_send"),
+        "send_ready": send_ready,
+        "api_configured": configured,
+        "connection_message": connection_message,
+        # WhatsApp Calling is a separate capability. The UI is intentionally
+        # present but stays disabled until that API is explicitly configured.
+        "call_ready": False,
+        "call_url": "",
+        "call_status": "WhatsApp Calling is not connected yet.",
+    })
+
+
+def _whatsapp_media_kind(mime_type: str) -> str:
+    mime = (mime_type or "").lower()
+    if mime.startswith("image/"):
+        return "image"
+    if mime.startswith("video/"):
+        return "video"
+    if mime.startswith("audio/"):
+        return "audio"
+    return "document"
+
+
+def _insert_whatsapp_message(
+    db,
+    *,
+    prospect_id: int | None,
+    inquiry_id: int | None,
+    deal_id: int | None,
+    direction: str,
+    message_type: str,
+    body: str,
+    sender_phone: str,
+    recipient_phone: str,
+    external_message_id: str = "",
+    delivery_status: str = "",
+    delivery_error: str = "",
+    media_id: str = "",
+    media_name: str = "",
+    media_mime_type: str = "",
+    media_bytes: bytes | None = None,
+    created_at: str | None = None,
+) -> int:
+    now = created_at or utcnow_iso()
+    media_data = media_bytes if media_bytes else None
+    cur = db.execute(
+        """INSERT INTO whatsapp_messages(
+               prospect_id,website_inquiry_id,deal_id,direction,message_type,body,
+               sender_phone,recipient_phone,external_message_id,delivery_status,delivery_error,
+               media_id,media_name,media_mime_type,media_size_bytes,media_bytes,created_at,updated_at
+           ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (
+            prospect_id, inquiry_id, deal_id, direction, message_type, body,
+            sender_phone, recipient_phone, external_message_id, delivery_status, delivery_error,
+            media_id, media_name, media_mime_type, len(media_data or b""), media_data, now, now,
+        ),
+    )
+    return int(cur.lastrowid)
+
+
+@bp.post("/communications/whatsapp-send")
+@login_required
+def communication_whatsapp_send():
+    validate_csrf()
+    prospect_id, inquiry_id, deal_id, deal = _whatsapp_context(
+        prospect_id=request.form.get("prospect_id", type=int),
+        inquiry_id=request.form.get("inquiry_id", type=int),
+        deal_id=request.form.get("deal_id", type=int),
+    )
+    number = (deal["whatsapp_number"] or "").strip() if deal else ""
+    if not number:
+        return jsonify({"ok": False, "message": "Add WhatsApp # first."}), 400
+
+    from .whatsapp_ops import (
+        message_id_from_response,
+        normalize_whatsapp_number,
+        send_media,
+        send_text,
+        upload_media,
+        whatsapp_messaging_configured,
+    )
+    normalized = normalize_whatsapp_number(number)
+    if not normalized:
+        return jsonify({"ok": False, "message": "WhatsApp # must use a valid international number."}), 400
+    if not whatsapp_messaging_configured():
+        return jsonify({"ok": False, "message": "RSF WhatsApp API is not connected yet."}), 400
+
+    body = (request.form.get("body", "") or "").strip()[:4096]
+    upload = request.files.get("media")
+    media_data = b""
+    media_name = ""
+    media_mime = ""
+    message_type = "text"
+    if upload and upload.filename:
+        media_name = secure_filename(upload.filename)[:240] or "attachment"
+        media_mime = (upload.mimetype or "application/octet-stream").strip().lower()
+        message_type = _whatsapp_media_kind(media_mime)
+        if message_type == "audio" and body:
+            return jsonify({"ok": False, "message": "Send audio and text as separate WhatsApp messages."}), 400
+        max_bytes = int(current_app.config.get("WHATSAPP_MAX_MEDIA_MB", 16)) * 1024 * 1024
+        media_data = upload.read(max_bytes + 1)
+        if len(media_data) > max_bytes:
+            return jsonify({
+                "ok": False,
+                "message": f"WhatsApp attachment is larger than {current_app.config.get('WHATSAPP_MAX_MEDIA_MB', 16)} MB.",
+            }), 400
+
+    if not body and not media_data:
+        return jsonify({"ok": False, "message": "Write a WhatsApp message or attach a file first."}), 400
+
+    db = get_db()
+    media_id = ""
+    external_id = ""
+    try:
+        if media_data:
+            media_id = upload_media(media_name, media_mime, media_data)
+            response = send_media(
+                normalized,
+                media_id,
+                message_type,
+                filename=media_name,
+                caption=body,
+            )
+        else:
+            response = send_text(normalized, body)
+        external_id = message_id_from_response(response)
+        row_id = _insert_whatsapp_message(
+            db,
+            prospect_id=prospect_id,
+            inquiry_id=inquiry_id,
+            deal_id=deal_id,
+            direction="OUTBOUND",
+            message_type=message_type,
+            body=body,
+            sender_phone="",
+            recipient_phone=normalized,
+            external_message_id=external_id,
+            delivery_status="sent",
+            media_id=media_id,
+            media_name=media_name,
+            media_mime_type=media_mime,
+            media_bytes=media_data or None,
+        )
+        db.commit()
+    except (ValueError, RuntimeError) as exc:
+        _insert_whatsapp_message(
+            db,
+            prospect_id=prospect_id,
+            inquiry_id=inquiry_id,
+            deal_id=deal_id,
+            direction="OUTBOUND",
+            message_type=message_type,
+            body=body,
+            sender_phone="",
+            recipient_phone=normalized,
+            external_message_id=external_id,
+            delivery_status="failed",
+            delivery_error=str(exc)[:1000],
+            media_id=media_id,
+            media_name=media_name,
+            media_mime_type=media_mime,
+            media_bytes=media_data or None,
+        )
+        db.commit()
+        return jsonify({"ok": False, "message": str(exc)}), 502
+    except Exception:
+        db.rollback()
+        current_app.logger.exception("WhatsApp send failed")
+        return jsonify({"ok": False, "message": "RSF could not send that WhatsApp message."}), 500
+
+    return jsonify({"ok": True, "message_id": row_id, "external_message_id": external_id, "message": "WhatsApp message sent."})
+
+
+@bp.get("/communications/whatsapp-media/<int:message_id>")
+@login_required
+def communication_whatsapp_media(message_id: int):
+    row = get_db().execute(
+        """SELECT id,prospect_id,website_inquiry_id,deal_id,media_name,media_mime_type,media_bytes
+           FROM whatsapp_messages WHERE id=?""",
+        (message_id,),
+    ).fetchone()
+    if not row:
+        abort(404)
+    _communication_context_ids(
+        prospect_id=int(row["prospect_id"]) if row["prospect_id"] is not None else None,
+        inquiry_id=int(row["website_inquiry_id"]) if row["website_inquiry_id"] is not None else None,
+        deal_id=int(row["deal_id"]) if row["deal_id"] is not None else None,
+    )
+    if not row["media_bytes"]:
+        abort(404)
+    data = bytes(row["media_bytes"])
+    return send_file(
+        BytesIO(data),
+        mimetype=row["media_mime_type"] or "application/octet-stream",
+        download_name=row["media_name"] or f"whatsapp-{message_id}",
+        as_attachment=False,
+        max_age=0,
+    )
+
+
+@bp.get("/webhooks/whatsapp")
+def whatsapp_webhook_verify():
+    from .whatsapp_ops import whatsapp_webhook_verify_configured
+    expected = (current_app.config.get("WHATSAPP_VERIFY_TOKEN") or "").strip()
+    if not whatsapp_webhook_verify_configured():
+        return "WhatsApp webhook is not configured.", 503
+    if (
+        request.args.get("hub.mode") == "subscribe"
+        and request.args.get("hub.verify_token", "") == expected
+        and request.args.get("hub.challenge")
+    ):
+        return request.args["hub.challenge"], 200, {"Content-Type": "text/plain"}
+    return "Invalid WhatsApp webhook verification.", 403
+
+
+@bp.post("/webhooks/whatsapp")
+def whatsapp_webhook_receive():
+    from .whatsapp_ops import (
+        download_media,
+        normalize_whatsapp_number,
+        verify_webhook_signature,
+        whatsapp_messaging_configured,
+        whatsapp_webhook_signature_configured,
+    )
+    raw = request.get_data(cache=True)
+    if not whatsapp_webhook_signature_configured():
+        return "WhatsApp webhook signature is not configured.", 503
+    if not verify_webhook_signature(raw, request.headers.get("X-Hub-Signature-256")):
+        return "Invalid WhatsApp webhook signature.", 403
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return "Invalid WhatsApp webhook payload.", 400
+
+    db = get_db()
+    for entry in payload.get("entry") or []:
+        for change in (entry or {}).get("changes") or []:
+            value = (change or {}).get("value") or {}
+
+            for status in value.get("statuses") or []:
+                external_id = str((status or {}).get("id") or "").strip()
+                state = str((status or {}).get("status") or "").strip().lower()
+                if not external_id or not state:
+                    continue
+                errors = (status or {}).get("errors") or []
+                error_text = ""
+                if errors:
+                    first = errors[0] or {}
+                    error_text = str(first.get("title") or first.get("message") or first.get("code") or "")[:1000]
+                db.execute(
+                    """UPDATE whatsapp_messages
+                       SET delivery_status=?,delivery_error=?,updated_at=?
+                       WHERE external_message_id=?""",
+                    (state, error_text, utcnow_iso(), external_id),
+                )
+
+            for message in value.get("messages") or []:
+                message = message or {}
+                external_id = str(message.get("id") or "").strip()
+                if not external_id:
+                    continue
+                if db.execute(
+                    "SELECT 1 FROM whatsapp_messages WHERE external_message_id=? LIMIT 1",
+                    (external_id,),
+                ).fetchone():
+                    continue
+
+                sender = normalize_whatsapp_number(str(message.get("from") or ""))
+                if not sender:
+                    continue
+                matched_deal = None
+                candidates = db.execute(
+                    """SELECT id,prospect_id,website_inquiry_id,whatsapp_number
+                       FROM deals
+                       WHERE trim(COALESCE(whatsapp_number,''))<>''
+                       ORDER BY updated_at DESC,id DESC"""
+                ).fetchall()
+                for candidate in candidates:
+                    if normalize_whatsapp_number(candidate["whatsapp_number"]) == sender:
+                        matched_deal = candidate
+                        break
+                if not matched_deal:
+                    continue
+
+                kind = str(message.get("type") or "text").strip().lower()
+                if kind not in {"text", "image", "video", "audio", "document"}:
+                    kind = "unknown"
+                body = ""
+                media_id = ""
+                media_name = ""
+                media_mime = ""
+                media_data = None
+                if kind == "text":
+                    body = str((message.get("text") or {}).get("body") or "")[:4096]
+                elif kind in {"image", "video", "audio", "document"}:
+                    media = message.get(kind) or {}
+                    media_id = str(media.get("id") or "")
+                    media_mime = str(media.get("mime_type") or "")
+                    media_name = secure_filename(str(media.get("filename") or ""))[:240]
+                    body = str(media.get("caption") or "")[:4096]
+                    if not body:
+                        body = media_name or f"[{kind.title()}]"
+                    if media_id and whatsapp_messaging_configured():
+                        try:
+                            downloaded, downloaded_mime = download_media(media_id)
+                            max_bytes = int(current_app.config.get("WHATSAPP_MAX_MEDIA_MB", 16)) * 1024 * 1024
+                            if len(downloaded) <= max_bytes:
+                                media_data = downloaded
+                                media_mime = downloaded_mime or media_mime
+                        except Exception:
+                            current_app.logger.exception("WhatsApp inbound media download failed")
+                else:
+                    body = "[Unsupported WhatsApp message]"
+
+                raw_timestamp = str(message.get("timestamp") or "").strip()
+                try:
+                    created_at = datetime.fromtimestamp(int(raw_timestamp), tz=timezone.utc).replace(microsecond=0).isoformat()
+                except (TypeError, ValueError, OSError):
+                    created_at = utcnow_iso()
+
+                _insert_whatsapp_message(
+                    db,
+                    prospect_id=int(matched_deal["prospect_id"]) if matched_deal["prospect_id"] is not None else None,
+                    inquiry_id=int(matched_deal["website_inquiry_id"]) if matched_deal["website_inquiry_id"] is not None else None,
+                    deal_id=int(matched_deal["id"]),
+                    direction="INBOUND",
+                    message_type=kind,
+                    body=body,
+                    sender_phone=sender,
+                    recipient_phone="",
+                    external_message_id=external_id,
+                    delivery_status="received",
+                    media_id=media_id,
+                    media_name=media_name,
+                    media_mime_type=media_mime,
+                    media_bytes=media_data,
+                    created_at=created_at,
+                )
+
+    db.commit()
+    return "", 200
+
+
+
 def _retell_e164(value: str) -> str:
     raw = (value or "").strip()
     if raw.startswith("00"):
@@ -5472,7 +5921,7 @@ def communication_timeline():
     deal = None
     if deal_id:
         deal = db.execute(
-            "SELECT id,prospect_id,website_inquiry_id,contact_number,email,notes_after_conversation,updated_at FROM deals WHERE id=?",
+            "SELECT id,prospect_id,website_inquiry_id,contact_number,whatsapp_number,email,notes_after_conversation,updated_at FROM deals WHERE id=?",
             (deal_id,),
         ).fetchone()
         if not deal:
@@ -5484,7 +5933,7 @@ def communication_timeline():
     prospect = None
     if prospect_id:
         prospect = db.execute(
-            "SELECT id,name,contact,email,phone,notes_after_conversation,updated_at,recorded_date FROM prospects WHERE id=?",
+            "SELECT id,name,contact,email,phone,notes_after_conversation,updated_at,recorded_date,status FROM prospects WHERE id=?",
             (prospect_id,),
         ).fetchone()
         if not prospect:
@@ -5492,6 +5941,23 @@ def communication_timeline():
 
     if not deal and not inquiry and not prospect:
         abort(400)
+
+    # WhatsApp # is canonical on the Deal workspace even while a source is still
+    # pre-Deal, so resolve that provisional/shared row without changing note behavior.
+    whatsapp_deal = deal
+    if not whatsapp_deal and prospect_id:
+        whatsapp_deal = db.execute(
+            """SELECT id,prospect_id,website_inquiry_id,whatsapp_number
+               FROM deals WHERE prospect_id=? ORDER BY id DESC LIMIT 1""",
+            (prospect_id,),
+        ).fetchone()
+    if not whatsapp_deal and inquiry_id:
+        whatsapp_deal = db.execute(
+            """SELECT id,prospect_id,website_inquiry_id,whatsapp_number
+               FROM deals WHERE website_inquiry_id=? ORDER BY id DESC LIMIT 1""",
+            (inquiry_id,),
+        ).fetchone()
+    whatsapp_deal_id = int(whatsapp_deal["id"]) if whatsapp_deal else None
 
     conversation_ids: set[int] = set()
     if inquiry:
@@ -5532,6 +5998,38 @@ def communication_timeline():
                 "channel": channel,
                 "direction": "CLIENT" if message["direction"] == "INBOUND" else "RSF",
                 "body": message["body"] or "",
+            })
+
+    whatsapp_conditions = []
+    whatsapp_params: list[int] = []
+    if prospect_id:
+        whatsapp_conditions.append("prospect_id=?")
+        whatsapp_params.append(prospect_id)
+    if inquiry_id:
+        whatsapp_conditions.append("website_inquiry_id=?")
+        whatsapp_params.append(inquiry_id)
+    if whatsapp_deal_id:
+        whatsapp_conditions.append("deal_id=?")
+        whatsapp_params.append(whatsapp_deal_id)
+    if whatsapp_conditions:
+        whatsapp_rows = db.execute(
+            f"""SELECT id,direction,message_type,body,media_name,created_at
+                FROM whatsapp_messages
+                WHERE {" OR ".join(whatsapp_conditions)}
+                ORDER BY created_at ASC,id ASC""",
+            whatsapp_params,
+        ).fetchall()
+        for message in whatsapp_rows:
+            display_body = (message["body"] or "").strip()
+            if not display_body:
+                display_body = (message["media_name"] or "").strip() or f"[{(message['message_type'] or 'message').title()}]"
+            entries.append({
+                "id": f"whatsapp-{message['id']}",
+                "at": message["created_at"] or "",
+                "source": "INBOUND" if message["direction"] == "INBOUND" else "OUTBOUND",
+                "channel": "WHATSAPP",
+                "direction": "CLIENT" if message["direction"] == "INBOUND" else "RSF",
+                "body": display_body,
             })
 
     note_conditions = []
@@ -5669,6 +6167,8 @@ def communication_timeline():
         phone = phone or (deal["contact_number"] or "").strip()
         email = email or (deal["email"] or "").strip()
 
+    whatsapp_number = (whatsapp_deal["whatsapp_number"] or "").strip() if whatsapp_deal else ""
+
     preferred_conversation_id = None
     if inquiry and inquiry["client_conversation_id"]:
         preferred_conversation_id = int(inquiry["client_conversation_id"])
@@ -5684,6 +6184,15 @@ def communication_timeline():
         elif prospect_id:
             email_url = url_for("main.communication_email_thread", prospect_id=prospect_id)
 
+    whatsapp_url = ""
+    if whatsapp_number:
+        if deal_id:
+            whatsapp_url = url_for("main.communication_whatsapp_thread", deal_id=deal_id)
+        elif inquiry_id:
+            whatsapp_url = url_for("main.communication_whatsapp_thread", inquiry_id=inquiry_id)
+        elif prospect_id:
+            whatsapp_url = url_for("main.communication_whatsapp_thread", prospect_id=prospect_id)
+
     email_unread = 0
     email_message_count = 0
     if preferred_conversation_id:
@@ -5696,6 +6205,14 @@ def communication_timeline():
         email_message_count = int(db.execute(
             "SELECT COUNT(*) c FROM client_messages WHERE conversation_id=? AND channel='EMAIL'",
             (preferred_conversation_id,),
+        ).fetchone()["c"])
+
+    whatsapp_message_count = 0
+    if whatsapp_conditions:
+        whatsapp_message_count = int(db.execute(
+            f"""SELECT COUNT(*) c FROM whatsapp_messages
+                WHERE {" OR ".join(whatsapp_conditions)}""",
+            whatsapp_params,
         ).fetchone()["c"])
 
     retell_ready = bool(
@@ -5713,12 +6230,15 @@ def communication_timeline():
         "entries": entries,
         "call_url": call_url,
         "email_url": email_url,
+        "whatsapp_url": whatsapp_url,
         "email": email,
         "phone": phone,
+        "whatsapp_number": whatsapp_number,
         "dialer_ready": retell_ready,
         "retell_ready": retell_ready,
         "email_unread": email_unread,
         "email_message_count": email_message_count,
+        "whatsapp_message_count": whatsapp_message_count,
         "conversation_id": preferred_conversation_id,
     })
 
