@@ -434,6 +434,8 @@ const RSFInlineManualCall = (() => {
   const poll = async (panel, statusUrl) => {
     if (!panel || !statusUrl || panel.hidden) return;
     stopPolling(panel);
+    const pollCount = Number(panel.dataset.manualCallPollCount || 0) + 1;
+    panel.dataset.manualCallPollCount = String(pollCount);
     try {
       const response = await fetch(statusUrl, {
         headers: { Accept: 'application/json' },
@@ -447,10 +449,21 @@ const RSFInlineManualCall = (() => {
         const text = statusLabel(data.call?.status);
         status.textContent = data.call?.error ? `${text} · ${data.call.error}` : text;
       }
+      const callStatus = (data.call?.status || '').toUpperCase();
+      const waitingForRecording = (
+        callStatus === 'COMPLETED'
+        && !data.call?.recording_ready
+        && !data.call?.error
+      );
+      const waitingForTranscript = (data.call?.transcript_status || '').toUpperCase() === 'PENDING';
       if (data.call?.terminal) {
         const timeline = panel.closest('dialog')?.querySelector('.conversation-timeline');
         if (timeline) await RSFConversationTimeline.refresh(timeline);
-        return;
+        if (!waitingForRecording && !waitingForTranscript) return;
+        if (pollCount >= 60) {
+          if (status) status.textContent = 'Call finished. Recording/transcript processing is taking longer than expected; reopen Notes later to refresh it.';
+          return;
+        }
       }
       pollers.set(panel, window.setTimeout(() => poll(panel, statusUrl), 2000));
     } catch (error) {
@@ -476,6 +489,7 @@ const RSFInlineManualCall = (() => {
     const status = panel.querySelector('[data-manual-call-status]');
     if (status) status.textContent = 'Loading…';
     stopPolling(panel);
+    panel.dataset.manualCallPollCount = '0';
 
     try {
       const response = await fetch(action.href, {
@@ -578,6 +592,7 @@ const RSFInlineManualCall = (() => {
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.ok) throw new Error(data.message || 'Manual Call could not be started.');
       if (status) status.textContent = data.message || 'Manual Call started.';
+      panel.dataset.manualCallPollCount = '0';
       const timeline = dialog?.querySelector('.conversation-timeline');
       if (timeline) await RSFConversationTimeline.refresh(timeline);
       if (data.status_url) poll(panel, data.status_url);
