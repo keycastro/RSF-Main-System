@@ -414,6 +414,32 @@ CREATE TABLE IF NOT EXISTS client_messages (
 CREATE INDEX IF NOT EXISTS idx_client_messages_conversation ON client_messages(conversation_id,id);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_client_messages_external_id ON client_messages(external_message_id) WHERE external_message_id <> '';
 
+CREATE TABLE IF NOT EXISTS whatsapp_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    prospect_id INTEGER REFERENCES prospects(id) ON DELETE SET NULL,
+    website_inquiry_id INTEGER REFERENCES website_inquiries(id) ON DELETE SET NULL,
+    deal_id INTEGER REFERENCES deals(id) ON DELETE SET NULL,
+    direction TEXT NOT NULL CHECK (direction IN ('INBOUND','OUTBOUND')),
+    message_type TEXT NOT NULL DEFAULT 'text',
+    body TEXT NOT NULL DEFAULT '',
+    sender_phone TEXT NOT NULL DEFAULT '',
+    recipient_phone TEXT NOT NULL DEFAULT '',
+    external_message_id TEXT NOT NULL DEFAULT '',
+    delivery_status TEXT NOT NULL DEFAULT '',
+    delivery_error TEXT NOT NULL DEFAULT '',
+    media_id TEXT NOT NULL DEFAULT '',
+    media_name TEXT NOT NULL DEFAULT '',
+    media_mime_type TEXT NOT NULL DEFAULT '',
+    media_size_bytes INTEGER NOT NULL DEFAULT 0,
+    media_bytes BLOB,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_prospect ON whatsapp_messages(prospect_id,created_at,id);
+CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_inquiry ON whatsapp_messages(website_inquiry_id,created_at,id);
+CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_deal ON whatsapp_messages(deal_id,created_at,id);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_whatsapp_messages_external_id ON whatsapp_messages(external_message_id) WHERE external_message_id <> '';
+
 CREATE TABLE IF NOT EXISTS communication_notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     prospect_id INTEGER REFERENCES prospects(id) ON DELETE SET NULL,
