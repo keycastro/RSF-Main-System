@@ -46,6 +46,18 @@ class MasterLifecycleCardTests(unittest.TestCase):
         self.assertLess(active_deal_position, source_position)
         self.assertLess(source_position, predeal_deal_position)
 
+    def test_deals_pipeline_rename_is_presentation_only(self):
+        base = self.read("app/templates/base.html")
+        deals = self.read("app/templates/deals.html")
+        routes = self.read("app/routes.py")
+
+        self.assertIn('<span class="nav-text">Deals Pipeline</span>', base)
+        self.assertIn("<h1>Deals Pipeline</h1>", deals)
+        self.assertIn('title="Deals Pipeline"', routes)
+        self.assertIn('@bp.get("/deals")', routes)
+        self.assertIn('data-deal-filter="DEAL"', deals)
+        self.assertIn(">Deal</button>", deals)
+
     def test_deals_page_keeps_deal_information_before_source_details(self):
         template = self.read("app/templates/deals.html")
         deal_position = template.index("{% include '_master_deal_information.html' %}")

@@ -52,7 +52,7 @@
       <div class="nav-section-label">INBOUND</div>
       <a class="{{ 'active' if inquiries_active else '' }}" {% if inquiries_active %}aria-current="page"{% endif %} href="{{ url_for('main.inquiries_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("inbox") }}</span><span class="nav-text">Website Inquiries</span></a>
       <div class="nav-section-label">PIPELINE</div>
-      <a class="{{ 'active' if deals_active else '' }}" {% if deals_active %}aria-current="page"{% endif %} href="{{ url_for('main.deals') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("sales") }}</span><span class="nav-text">Deals</span></a>
+      <a class="{{ 'active' if deals_active else '' }}" {% if deals_active %}aria-current="page"{% endif %} href="{{ url_for('main.deals') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("sales") }}</span><span class="nav-text">Deals Pipeline</span></a>
     </nav>
 
     <div class="sidebar-footer">

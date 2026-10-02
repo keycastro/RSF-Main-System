@@ -2077,7 +2077,7 @@ def deals():
     }
     return render_template(
         "deals.html",
-        title="Deals",
+        title="Deals Pipeline",
         deals=rows,
         deal_status_labels=PROSPECT_STATUS_LABELS,
         deal_documents=deal_documents,
