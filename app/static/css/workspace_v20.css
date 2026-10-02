@@ -7518,3 +7518,284 @@ body.card-layout-dragging-global *{cursor:grabbing!important;user-select:none!im
 
 /* v1.18.182 — compact Manual Note composer to maximize visible conversation history. */
 /* Design-only: smaller textarea and slimmer existing Save note button; no workflow changes. */
+
+/* v1.18.183 — restrained premium motion language across core RSF workspace pages. */
+/* Motion is intentionally interaction-led: no continuously moving background outside live-call experiences. */
+.prospects-page,
+.website-inbox-page,
+.deals-page{
+  min-height:100%;
+  background:
+    radial-gradient(circle at 8% 2%,rgba(18,93,73,.040),transparent 28%),
+    radial-gradient(circle at 86% 8%,rgba(198,157,66,.030),transparent 26%),
+    linear-gradient(180deg,#fff 0%,#fbfdfc 100%);
+}
+
+.prospects-page>.workspace-page-head,
+.website-inbox-page>.workspace-page-head,
+.deals-page>.workspace-page-head{
+  animation:rsf-page-enter .24s cubic-bezier(.2,.72,.25,1) both;
+}
+.prospects-page>.prospect-status-filters,
+.deals-page>.prospect-status-filters{
+  animation:rsf-page-enter .24s .045s cubic-bezier(.2,.72,.25,1) both;
+}
+
+.prospect-card-shell,
+.website-inquiry-card,
+.deals-list>.deal-card{
+  animation:rsf-card-enter .24s cubic-bezier(.2,.72,.25,1) both;
+}
+.prospect-card-shell:nth-of-type(2),
+.website-inquiry-card:nth-of-type(2),
+.deals-list>.deal-card:nth-of-type(2){animation-delay:.025s}
+.prospect-card-shell:nth-of-type(3),
+.website-inquiry-card:nth-of-type(3),
+.deals-list>.deal-card:nth-of-type(3){animation-delay:.05s}
+.prospect-card-shell:nth-of-type(4),
+.website-inquiry-card:nth-of-type(4),
+.deals-list>.deal-card:nth-of-type(4){animation-delay:.075s}
+.prospect-card-shell:nth-of-type(5),
+.website-inquiry-card:nth-of-type(5),
+.deals-list>.deal-card:nth-of-type(5){animation-delay:.10s}
+.prospect-card-shell:nth-of-type(n+6),
+.website-inquiry-card:nth-of-type(n+6),
+.deals-list>.deal-card:nth-of-type(n+6){animation-delay:.12s}
+
+.prospect-card{
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease,
+    background-color .18s ease;
+}
+.website-inquiry-card,
+.deal-card{
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease,
+    background-color .18s ease;
+}
+@media (hover:hover){
+  .prospect-card-shell:hover>.prospect-card,
+  .website-inquiry-card:hover,
+  .deal-card:hover{
+    transform:translateY(-2px);
+    border-color:#c5d5ce;
+    box-shadow:
+      0 12px 28px rgba(22,57,47,.085),
+      0 3px 8px rgba(22,57,47,.035);
+  }
+}
+
+.prospect-filter-button{
+  transition:
+    transform .15s ease,
+    border-color .16s ease,
+    background-color .16s ease,
+    color .16s ease,
+    box-shadow .16s ease;
+}
+.prospect-filter-button:hover{transform:translateY(-1px)}
+.prospect-filter-button:active{transform:translateY(0) scale(.985)}
+.prospect-filter-button.is-active{
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.11),
+    0 5px 12px rgba(16,76,59,.12);
+}
+
+.prospect-add-plus,
+.prospect-attempt-step,
+.prospect-delete-button,
+.deal-source-collapse-button,
+.deal-source-link-open,
+.deal-notes-expand-button,
+.button{
+  transition:
+    transform .15s ease,
+    border-color .16s ease,
+    background-color .16s ease,
+    color .16s ease,
+    box-shadow .16s ease,
+    opacity .16s ease;
+}
+@media (hover:hover){
+  .prospect-add-plus:hover,
+  .prospect-attempt-step:not(:disabled):hover,
+  .deal-source-collapse-button:hover,
+  .deal-source-link-open:not(:disabled):hover,
+  .deal-notes-expand-button:not(:disabled):hover,
+  .button:not(:disabled):hover{
+    transform:translateY(-1px);
+  }
+  .prospect-delete-button:not(:disabled):hover{
+    transform:translateY(-1px) scale(1.035);
+    background:rgba(176,53,42,.075);
+  }
+}
+.prospect-add-plus:active,
+.prospect-attempt-step:not(:disabled):active,
+.deal-source-collapse-button:active,
+.deal-source-link-open:not(:disabled):active,
+.deal-notes-expand-button:not(:disabled):active,
+.button:not(:disabled):active{
+  transform:translateY(0) scale(.985);
+}
+
+.prospect-edit-value{
+  transition:background-color .15s ease,color .15s ease,box-shadow .15s ease;
+}
+.prospect-inline-editor,
+.deal-form-grid input,
+.deal-form-grid select,
+.deal-form-grid textarea,
+.website-inquiry-card input,
+.website-inquiry-card select,
+.website-inquiry-card textarea,
+.master-deal-information input,
+.master-deal-information select,
+.master-deal-information textarea{
+  transition:
+    border-color .16s ease,
+    background-color .16s ease,
+    box-shadow .16s ease,
+    color .16s ease;
+}
+.prospect-inline-editor:focus,
+.deal-form-grid input:focus,
+.deal-form-grid select:focus,
+.deal-form-grid textarea:focus,
+.website-inquiry-card input:focus,
+.website-inquiry-card textarea:focus,
+.master-deal-information input:focus,
+.master-deal-information select:focus,
+.master-deal-information textarea:focus{
+  border-color:#9ebcad;
+  box-shadow:0 0 0 3px rgba(24,101,78,.075);
+}
+.website-inquiry-header-status:focus-within,
+.deal-card-identifiers>label:focus-within{
+  border-radius:7px;
+  background:rgba(18,91,71,.045);
+  box-shadow:0 0 0 3px rgba(18,91,71,.045);
+  transition:background-color .16s ease,box-shadow .16s ease;
+}
+
+.prospect-card[open] .prospect-card-details,
+.deal-source-grid:not([hidden]),
+.master-deal-body:not([hidden]),
+[data-timezone-dropdown]:not([hidden]),
+[data-prospect-quick-add]:not([hidden]){
+  animation:rsf-section-reveal .19s cubic-bezier(.2,.72,.25,1) both;
+}
+.deal-source-collapse-button span,
+.master-deal-collapse-button span{
+  transition:transform .18s cubic-bezier(.2,.72,.25,1),color .16s ease;
+}
+
+.workspace-empty-state:not([hidden]){
+  animation:rsf-empty-enter .22s ease-out both;
+}
+
+.simple-primary-nav>a{
+  position:relative;
+  transition:
+    transform .16s ease,
+    background-color .16s ease,
+    color .16s ease,
+    box-shadow .16s ease;
+}
+.simple-primary-nav>a .nav-symbol{
+  transition:transform .16s ease,color .16s ease;
+}
+@media (hover:hover){
+  .simple-primary-nav>a:hover{transform:translateX(2px)}
+  .simple-primary-nav>a:hover .nav-symbol{transform:translateX(1px)}
+}
+.simple-primary-nav>a.active{
+  box-shadow:
+    inset 2px 0 0 rgba(220,180,88,.80),
+    inset 0 0 0 1px rgba(220,180,88,.10);
+}
+
+.rsf-motion-filter-in{
+  animation:rsf-filter-enter .22s calc(var(--rsf-motion-order,0) * 18ms) cubic-bezier(.2,.72,.25,1) both!important;
+}
+.prospect-card-shell.rsf-motion-confirm>.prospect-card,
+.website-inquiry-card.rsf-motion-confirm,
+.deal-card.rsf-motion-confirm{
+  animation:rsf-state-confirm .34s ease-out both;
+}
+
+@keyframes rsf-page-enter{
+  from{opacity:0;transform:translateY(5px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes rsf-card-enter{
+  from{opacity:0;transform:translateY(6px) scale(.997)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes rsf-filter-enter{
+  from{opacity:.62;transform:translateY(4px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes rsf-section-reveal{
+  from{opacity:0;transform:translateY(-3px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes rsf-empty-enter{
+  from{opacity:0;transform:translateY(4px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes rsf-state-confirm{
+  0%{box-shadow:0 4px 14px rgba(25,55,46,.055)}
+  45%{
+    border-color:rgba(191,149,57,.66);
+    box-shadow:
+      0 0 0 3px rgba(191,149,57,.085),
+      0 10px 24px rgba(25,55,46,.075)
+  }
+  100%{box-shadow:0 4px 14px rgba(25,55,46,.055)}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .prospects-page>.workspace-page-head,
+  .website-inbox-page>.workspace-page-head,
+  .deals-page>.workspace-page-head,
+  .prospects-page>.prospect-status-filters,
+  .deals-page>.prospect-status-filters,
+  .prospect-card-shell,
+  .website-inquiry-card,
+  .deals-list>.deal-card,
+  .prospect-card[open] .prospect-card-details,
+  .deal-source-grid:not([hidden]),
+  .master-deal-body:not([hidden]),
+  [data-timezone-dropdown]:not([hidden]),
+  [data-prospect-quick-add]:not([hidden]),
+  .workspace-empty-state:not([hidden]),
+  .rsf-motion-filter-in,
+  .prospect-card-shell.rsf-motion-confirm>.prospect-card,
+  .website-inquiry-card.rsf-motion-confirm,
+  .deal-card.rsf-motion-confirm{
+    animation:none!important;
+  }
+  .prospect-card,
+  .website-inquiry-card,
+  .deal-card,
+  .prospect-filter-button,
+  .prospect-add-plus,
+  .prospect-attempt-step,
+  .prospect-delete-button,
+  .deal-source-collapse-button,
+  .deal-source-link-open,
+  .deal-notes-expand-button,
+  .button,
+  .prospect-edit-value,
+  .prospect-inline-editor,
+  .simple-primary-nav>a,
+  .simple-primary-nav>a .nav-symbol{
+    transition:none!important;
+  }
+}
+

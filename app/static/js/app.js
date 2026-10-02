@@ -1,3 +1,37 @@
+const RSFWorkspaceMotion = (() => {
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+
+  const enabled = () => !reducedMotion?.matches;
+
+  const replay = (element, className) => {
+    if (!element || !enabled()) return;
+    element.classList.remove(className);
+    void element.offsetWidth;
+    element.classList.add(className);
+    element.addEventListener('animationend', () => element.classList.remove(className), {once:true});
+  };
+
+  const reveal = (element) => replay(element, 'rsf-motion-filter-in');
+
+  const revealVisible = (elements) => {
+    if (!enabled()) return;
+    Array.from(elements || []).filter((element) => element && !element.hidden).forEach((element, index) => {
+      element.style.setProperty('--rsf-motion-order', String(Math.min(index, 7)));
+      replay(element, 'rsf-motion-filter-in');
+    });
+  };
+
+  const confirmCard = (element) => {
+    if (!element) return;
+    const card = element.matches?.('[data-prospect-row],[data-website-inquiry-card],[data-deal-card]')
+      ? element
+      : element.closest?.('[data-prospect-row],[data-website-inquiry-card],[data-deal-card]');
+    replay(card, 'rsf-motion-confirm');
+  };
+
+  return {reveal, revealVisible, confirmCard};
+})();
+
 const RSFConversationTimeline = (() => {
   const activeLoads = new WeakMap();
 
@@ -3287,6 +3321,8 @@ document.addEventListener('click', (event) => {
       button.addEventListener('click', () => {
         activeProspectFilter = button.dataset.prospectFilter || 'ALL';
         applyProspectFilter();
+        RSFWorkspaceMotion.revealVisible(list.querySelectorAll('[data-prospect-row]'));
+        if (prospectFilterEmpty && !prospectFilterEmpty.hidden) RSFWorkspaceMotion.reveal(prospectFilterEmpty);
       });
     });
 
@@ -3478,7 +3514,8 @@ document.addEventListener('click', (event) => {
         }
 
         const keepOpen = Boolean(row.querySelector('details.prospect-card')?.open);
-        replaceProspectRow(row, data.row_html, keepOpen);
+        const replacement = replaceProspectRow(row, data.row_html, keepOpen);
+        if (editorType === 'status') RSFWorkspaceMotion.confirmCard(replacement);
         showToast(data.message || 'Prospect updated.');
       } catch (_error) {
         restore();
@@ -3765,6 +3802,8 @@ document.addEventListener('click', (event) => {
       button.addEventListener('click', () => {
         activeDealFilter = button.dataset.dealFilter || 'ALL';
         applyDealFilter();
+        RSFWorkspaceMotion.revealVisible(list.querySelectorAll('[data-deal-card]'));
+        if (filterEmpty && !filterEmpty.hidden) RSFWorkspaceMotion.reveal(filterEmpty);
       });
     });
     applyDealFilter();
@@ -4769,12 +4808,14 @@ document.addEventListener('click', (event) => {
           throw new Error(data.message || 'Deal changes could not be saved.');
         }
         if (data.status) {
+          const previousStatus = form.dataset.dealCurrentStatus || '';
           form.dataset.dealCurrentStatus = data.status;
           const card = form.closest('[data-deal-card]');
           if (card) {
             card.dataset.dealStatus = data.status;
             if (card.hasAttribute('data-prospect-row')) card.dataset.prospectStatus = data.status;
             if (card.hasAttribute('data-website-inquiry-card')) card.dataset.websiteInquiryWorkflowStatus = data.status;
+            if (data.status !== previousStatus) RSFWorkspaceMotion.confirmCard(card);
           }
           const hiddenStatus = form.querySelector('[data-master-deal-status-hidden]');
           if (hiddenStatus) hiddenStatus.value = data.status;
@@ -5474,6 +5515,7 @@ document.addEventListener('click', (event) => {
         const hiddenStatus = embeddedForm?.querySelector('[data-master-deal-status-hidden]');
         if (hiddenStatus) hiddenStatus.value = savedStatus;
         if (embeddedForm) embeddedForm.dataset.dealCurrentStatus = savedStatus;
+        RSFWorkspaceMotion.confirmCard(card);
       }
       const action = card?.querySelector('[data-website-deal-action]');
       if (action) renderWebsiteDealAction(action, savedStatus, data.deal_id || null);
