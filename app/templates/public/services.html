@@ -15,18 +15,12 @@
         <h2>Build a custom system.</h2>
         <p>Tell us the problem. We agree on the system and features before work starts.</p>
 
-        <div class="human-simple-options" aria-label="Custom system build and current free program">
-          <article class="human-option-card">
-            <p class="choice-label choice-label-pill">CUSTOM SYSTEM BUILD</p>
-            <strong>Built around your business</strong>
-            <p class="human-option-explanation">RSF builds the system around your business, your team, and the features you need.</p>
-            <a class="button secondary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Request a Custom System</a>
-          </article>
-
+        <div class="human-simple-options human-simple-options--single" aria-label="Custom system build offer">
           {% if free_build_program.visible %}
           <article class="human-option-card">
             <p class="choice-label choice-label-pill">LIMITED FREE BUILD PROGRAM</p>
             <strong>$0 Development Fee</strong>
+            <p class="human-option-explanation">RSF builds the system around your business, your team, and the features you need.</p>
             <div class="system-choice-price system-choice-price--quote" aria-label="Free custom system build dates">
               <b>{{ free_build_program.start_date }}</b>
               <span>through {{ free_build_program.end_date }}</span>
@@ -36,9 +30,9 @@
           </article>
           {% else %}
           <article class="human-option-card">
-            <p class="choice-label choice-label-pill">CUSTOM PRICING</p>
+            <p class="choice-label choice-label-pill">CUSTOM SYSTEM BUILD</p>
             <strong>Price by Agreement</strong>
-            <p class="human-option-explanation">We review what you need and agree on the work and price before we start.</p>
+            <p class="human-option-explanation">RSF builds the system around your business, your team, and the features you need. We review what you need and agree on the work and price before we start.</p>
             <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Request a Custom System</a>
           </article>
           {% endif %}
