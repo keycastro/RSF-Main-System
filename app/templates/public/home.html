@@ -4,19 +4,19 @@
   <div class="container simple-hero-wrap">
     <div class="hero-copy reveal">
       <h1>We Build Custom Systems for Real Estate Businesses.</h1>
-      <p class="hero-lead">Tell us what your business needs. RSF builds a custom system around the way your business works.</p>
+      <p class="hero-lead">Tell us what your business needs. RSF builds a custom system to match the way your business works.</p>
 
       {% if free_build_program.visible %}
       <div class="free-program-inline">
         <strong>Limited Free Build Program</strong>
-        <span>Accepted projects have a $0 development fee from {{ free_build_program.start_date }} to {{ free_build_program.end_date }}. RSF reviews every request first.</span>
-        <a class="text-link" href="{{ url_for('site.services') }}#free-custom-build-program">Program details</a>
+        <span>For accepted projects, the development fee is $0 from {{ free_build_program.start_date }} to {{ free_build_program.end_date }}. RSF reviews every request before acceptance.</span>
+        <a class="text-link" href="{{ url_for('site.services') }}#free-custom-build-program">See Program Details</a>
       </div>
       {% endif %}
 
       <div class="hero-actions">
-        <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">{% if free_build_program.visible %}Request a Free Custom Build{% else %}Build a Custom System{% endif %}</a>
-        <a class="button secondary" href="{{ url_for('site.system_templates') }}">View Systems We Built</a>
+        <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">{% if free_build_program.visible %}Request a Custom System{% else %}Build a Custom System{% endif %}</a>
+        <a class="button secondary" href="{{ url_for('site.system_templates') }}">View Systems</a>
       </div>
     </div>
   </div>
@@ -26,8 +26,8 @@
   <div class="container">
     <div class="section-head simple-section-head reveal">
       <div>
-        <h2>Systems We Built.</h2>
-        <p class="system-choice-helper">These are examples of systems RSF has built. They show the kind of business work we can organize.</p>
+        <h2>Systems We’ve Built.</h2>
+        <p class="system-choice-helper">These examples show how RSF can turn complex business work into clear, organized systems.</p>
       </div>
     </div>
 
@@ -45,7 +45,7 @@
         </a>
         {% endif %}
         <div class="system-card-footer">
-          <p class="system-audience"><strong>Could help:</strong> {{ item.card_audience }}</p>
+          <p class="system-audience"><strong>Useful for:</strong> {{ item.card_audience }}</p>
           <a class="button primary" href="{{ url_for('site.system_template_detail', slug=item.slug) }}">View System</a>
         </div>
       </article>
@@ -66,16 +66,16 @@
       <div class="home-featured-action home-featured-action--primary reveal">
         <span class="home-featured-action-kicker">NEED A SYSTEM FOR YOUR BUSINESS?</span>
         <a class="home-featured-action-link home-featured-action-link--primary" href="{{ url_for('site.contact', intent='custom-build') }}">
-          <span>{% if free_build_program.visible %}Request a Free Custom Build{% else %}Build a Custom System{% endif %}</span><span class="home-featured-action-arrow" aria-hidden="true">→</span>
+          <span>{% if free_build_program.visible %}Request a Custom System{% else %}Build a Custom System{% endif %}</span><span class="home-featured-action-arrow" aria-hidden="true">→</span>
         </a>
       </div>
 
       <span class="home-featured-action-divider" aria-hidden="true"></span>
 
       <div class="home-featured-action home-featured-action--secondary reveal">
-        <span class="home-featured-action-kicker home-featured-action-kicker--secondary">WANT THE DETAILS?</span>
+        <span class="home-featured-action-kicker home-featured-action-kicker--secondary">SERVICES & PRICING</span>
         <a class="home-featured-action-link home-featured-action-link--secondary" href="{{ url_for('site.services') }}">
-          <span>See Services & Pricing</span><span class="home-featured-action-arrow" aria-hidden="true">→</span>
+          <span>View Services & Pricing</span><span class="home-featured-action-arrow" aria-hidden="true">→</span>
         </a>
       </div>
     </div>
