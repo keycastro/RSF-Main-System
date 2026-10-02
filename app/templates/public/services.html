@@ -3,7 +3,7 @@
 <section class="page-hero page-hero-simple how-page-hero">
   <div class="container simple-page-hero reveal">
     <h1>Services & Pricing</h1>
-    <p>Tell us what your business needs. We build the custom system. Then you choose who takes care of it after delivery.</p>
+    <p>Tell us what your business needs. RSF builds the system, then you choose whether to manage it yourself or use paid RSF support.</p>
   </div>
 </section>
 
@@ -13,14 +13,14 @@
       <div class="human-step-number">1</div>
       <div class="human-step-body">
         <h2>Build a custom system.</h2>
-        <p>Tell us the problem you want the system to solve. We agree on what to build before work starts.</p>
+        <p>Tell us the problem. We agree on the system and features before work starts.</p>
 
         <div class="human-simple-options" aria-label="Custom system build and current free program">
           <article class="human-option-card">
             <p class="choice-label choice-label-pill">CUSTOM SYSTEM BUILD</p>
             <strong>Built around your business</strong>
-            <p class="human-option-explanation">RSF builds the system around your business, the people using it, and the features you need.</p>
-            <a class="button secondary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Tell Us What You Need</a>
+            <p class="human-option-explanation">RSF builds the system around your business, your team, and the features you need.</p>
+            <a class="button secondary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Request a Custom System</a>
           </article>
 
           {% if free_build_program.visible %}
@@ -31,15 +31,15 @@
               <b>{{ free_build_program.start_date }}</b>
               <span>through {{ free_build_program.end_date }}</span>
             </div>
-            <p class="human-option-explanation">RSF reviews every request first. Not every request is accepted.</p>
-            <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Request a Free Custom Build</a>
+            <p class="human-option-explanation">RSF reviews every request before accepting a project.</p>
+            <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Request a Custom System</a>
           </article>
           {% else %}
           <article class="human-option-card">
             <p class="choice-label choice-label-pill">CUSTOM PRICING</p>
             <strong>Price by Agreement</strong>
             <p class="human-option-explanation">We review what you need and agree on the work and price before we start.</p>
-            <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Build a Custom System</a>
+            <a class="button primary human-option-button" href="{{ url_for('site.contact', intent='custom-build') }}">Request a Custom System</a>
           </article>
           {% endif %}
         </div>
@@ -48,8 +48,8 @@
         <section class="free-build-program-detail" id="free-custom-build-program" aria-labelledby="free-build-program-title">
           <div class="free-build-program-intro">
             <p class="choice-label choice-label-pill">PROGRAM DETAILS</p>
-            <h3 id="free-build-program-title">What the free build covers.</h3>
-            <p>The free program covers the system and features we agree on before work starts. This is temporary. It is not a permanent free service.</p>
+            <h3 id="free-build-program-title">What the free program includes.</h3>
+            <p>The program covers the system and features we agree to build before work starts. It is a temporary offer, not a permanent free service.</p>
           </div>
 
           <div class="free-build-scope-grid">
@@ -57,9 +57,9 @@
               <strong class="management-detail-title">Included:</strong>
               <ul class="management-detail-list">
                 <li>The system and features we agree to build</li>
-                <li>A complete working system based on that agreement</li>
-                <li>Testing of the agreed features</li>
-                <li>Fixes for bugs or problems in the agreed features</li>
+                <li>A working system with the agreed features</li>
+                <li>Testing to make sure the agreed features work</li>
+                <li>Fixes for problems in the agreed features</li>
               </ul>
             </div>
             <div class="management-detail-block free-build-not-included">
@@ -68,15 +68,15 @@
                 <li>Unlimited free changes or extra features</li>
                 <li>Lifetime support</li>
                 <li>Hosting costs</li>
-                <li>Costs from other apps, services, APIs, or providers</li>
-                <li>Future big features, big changes, or major system expansion</li>
-                <li>Paid RSF support after the system is finished</li>
+                <li>Costs from other apps, services, or providers</li>
+                <li>Future major features, major changes, or large system expansion</li>
+                <li>Optional paid RSF support after delivery</li>
               </ul>
             </div>
           </div>
 
           <div class="free-build-program-boundary">
-            <p><strong>After {{ free_build_program.end_date }}.</strong> Starting April 1, 2027, RSF will start moving toward paid custom system development.</p>
+            <p><strong>After {{ free_build_program.end_date }}.</strong> Starting April 1, 2027, RSF will begin moving toward paid custom system development.</p>
           </div>
         </section>
         {% endif %}
@@ -86,12 +86,12 @@
     <article class="human-step reveal">
       <div class="human-step-number">2</div>
       <div class="human-step-body">
-        <h2>We build and test it.</h2>
-        <p>The process stays simple and clear.</p>
+        <h2>We build and test your system.</h2>
+        <p>The process is simple and clear.</p>
         <ol class="template-steps compact-steps">
-          <li><span>1</span><p><strong>Tell us the problem.</strong> Explain what the business needs help with.</p></li>
-          <li><span>2</span><p><strong>Agree on what we will build.</strong> We agree on the system, features, people using it, and important rules.</p></li>
-          <li><span>3</span><p><strong>Build the system.</strong> RSF creates the agreed system and features.</p></li>
+          <li><span>1</span><p><strong>Tell us the problem.</strong> Explain what you need the system to help with.</p></li>
+          <li><span>2</span><p><strong>Agree on what we will build.</strong> We confirm the system, features, people who will use it, and important rules.</p></li>
+          <li><span>3</span><p><strong>Build the system.</strong> RSF builds the agreed system and features.</p></li>
           <li><span>4</span><p><strong>Test it.</strong> We make sure the agreed features work before delivery.</p></li>
         </ol>
       </div>
@@ -119,7 +119,7 @@
             <div class="management-detail-block">
               <strong class="management-detail-title">You handle:</strong>
               <ul class="management-detail-list">
-                <li>Hosting and putting the system online</li>
+                <li>Hosting and keeping the system online</li>
                 <li>Security and updates</li>
                 <li>Backups</li>
                 <li>Fixing system problems</li>
@@ -142,7 +142,7 @@
             <div class="management-detail-block">
               <strong class="management-detail-title">RSF can handle:</strong>
               <ul class="management-detail-list">
-                <li>Hosting and putting the system online</li>
+                <li>Hosting and keeping the system online</li>
                 <li>Regular system checks</li>
                 <li>Backups when used</li>
                 <li>Fixing problems in the current system</li>
@@ -155,12 +155,12 @@
         <section class="management-upgrades" aria-labelledby="changes-later-title">
           <div class="management-upgrades-intro">
             <p class="choice-label choice-label-pill">FUTURE BIG CHANGES</p>
-            <h3 id="changes-later-title">Big changes are separate.</h3>
-            <p class="management-upgrades-note">New sections, big features, large expansions, or big connections to other apps or services are priced separately.</p>
+            <h3 id="changes-later-title">Major changes are priced separately.</h3>
+            <p class="management-upgrades-note">New sections, major features, large expansions, or major connections to other apps or services are priced separately.</p>
           </div>
           <div class="management-upgrade-grid">
             <article class="management-upgrade-card">
-              <strong>Big Change / Major Expansion</strong>
+              <strong>Major Change / Expansion</strong>
               <span class="management-upgrade-price">Price by Agreement</span>
               <p>We agree on the price before that work starts.</p>
             </article>
@@ -192,13 +192,13 @@
       </details>
       <details class="detail-disclosure human-disclosure">
         <summary>Can I ask for changes later?</summary>
-        <p>Yes. Small changes can be part of paid RSF support. Big changes are priced separately.</p>
+        <p>Yes. Small changes can be included in paid RSF support. Major changes are priced separately.</p>
       </details>
     </div>
 
     <div class="catalog-next-step reveal human-next-step">
-      <div><strong>Ready to explain what your business needs?</strong><span>Send us the problem and what you want the system to help with.</span></div>
-      <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">{% if free_build_program.visible %}Request a Free Custom Build{% else %}Build a Custom System{% endif %}</a>
+      <div><strong>Ready to request a custom system?</strong><span>Tell us what your business needs and what you want the system to do.</span></div>
+      <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">{% if free_build_program.visible %}Request a Custom System{% else %}Request a Custom System{% endif %}</a>
     </div>
   </div>
 </section>
