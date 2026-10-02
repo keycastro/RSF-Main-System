@@ -6093,6 +6093,12 @@ def twilio_manual_call_conference_webhook(token: str):
 
     current_status = (row["status"] or "").upper()
     terminal = current_status in {"COMPLETED", "BUSY", "FAILED", "NO_ANSWER", "CANCELED", "CANCELLED"}
+    if event_name == "participant-join" and call_sid and call_sid == (row["provider_client_call_sid"] or "") and not terminal:
+        updates.append("status=?")
+        params.append("IN_PROGRESS")
+        if not row["answered_at"]:
+            updates.append("answered_at=?")
+            params.append(now)
     if event_name == "conference-end" and not terminal:
         updates.append("status=?")
         params.append("COMPLETED" if row["answered_at"] else "CANCELED")
@@ -6143,9 +6149,6 @@ def twilio_manual_call_status_webhook(token: str):
     now = utcnow_iso()
     updates = ["status=?", "updated_at=?"]
     params: list = [mapped, now]
-    if leg == "client" and raw_status in {"answered", "in-progress"} and not row["answered_at"]:
-        updates.append("answered_at=?")
-        params.append(now)
     terminal = raw_status in {"completed", "busy", "failed", "no-answer", "canceled", "cancelled"}
     if terminal and (leg == "client" or not row["ended_at"]):
         updates.append("ended_at=?")
