@@ -7223,3 +7223,296 @@ body.card-layout-dragging-global *{cursor:grabbing!important;user-select:none!im
 .conversation-manual-call-error[hidden]{display:none}
 @keyframes manual-call-breathe{0%,100%{transform:translate(-50%,-50%) scale(.98);opacity:.62}50%{transform:translate(-50%,-50%) scale(1.035);opacity:.94}}
 @media (prefers-reduced-motion:reduce){.conversation-manual-call-orbit{animation:none}}
+
+/* v1.18.181 — approved design-only refinement for Notes + Manual Call shell. */
+/* No workflow, control, data, or provider behavior changes in this release. */
+.deal-notes-viewer.conversation-manual-call-open{
+  width:min(1240px,calc(100vw - 32px));
+  height:min(660px,calc(100vh - 32px));
+  border-radius:18px
+}
+.deal-notes-viewer.conversation-manual-call-open::backdrop{
+  background:rgba(10,24,20,.62);
+  backdrop-filter:blur(4px) saturate(.92)
+}
+.deal-notes-viewer.conversation-manual-call-open .deal-notes-viewer-card{
+  border:1px solid rgba(199,211,205,.94);
+  border-radius:18px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.99),rgba(251,253,252,.985));
+  box-shadow:
+    0 30px 90px rgba(5,28,23,.34),
+    0 8px 24px rgba(15,48,39,.12),
+    inset 0 1px 0 rgba(255,255,255,.95);
+  animation:conversation-shell-in .22s ease-out
+}
+.deal-notes-viewer.conversation-manual-call-open .deal-notes-viewer-head{
+  min-height:72px;
+  padding:14px 18px;
+  border-bottom:1px solid rgba(207,220,214,.88);
+  background:
+    radial-gradient(circle at 20% -80%,rgba(225,190,104,.15),transparent 48%),
+    linear-gradient(180deg,rgba(255,255,255,.98),rgba(249,252,250,.96));
+  box-shadow:0 8px 22px rgba(16,56,45,.035)
+}
+.deal-notes-viewer.conversation-manual-call-open .deal-notes-viewer-head h2{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:max-content;
+  color:#102d25;
+  font-size:16px;
+  font-weight:800;
+  letter-spacing:-.018em
+}
+.deal-notes-viewer.conversation-manual-call-open .deal-notes-viewer-head h2::before{
+  content:"K";
+  display:grid;
+  place-items:center;
+  width:36px;
+  height:36px;
+  flex:0 0 auto;
+  border:1px solid rgba(195,151,58,.74);
+  border-radius:10px;
+  background:
+    radial-gradient(circle at 72% 24%,rgba(242,218,152,.20),transparent 32%),
+    linear-gradient(145deg,#0a5143,#06372f);
+  color:#e9c975;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 8px 18px rgba(10,62,51,.14);
+  font-size:17px;
+  font-weight:850;
+  line-height:1
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-header-actions{
+  gap:8px
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-action-icon{
+  height:38px;
+  min-width:38px;
+  padding:0 11px;
+  border-radius:10px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.86),
+    0 3px 9px rgba(20,50,42,.035);
+  font-size:11.5px;
+  transition:
+    transform .16s ease,
+    border-color .16s ease,
+    background .16s ease,
+    box-shadow .16s ease,
+    color .16s ease
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-action-icon:not([aria-disabled="true"]):not(:disabled):hover{
+  transform:translateY(-1px)
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-action-icon svg{
+  width:18px;
+  height:18px
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-action--manual-call{
+  border-color:#d2ad59;
+  background:linear-gradient(180deg,#b98a32,#9c6b18);
+  color:#fff8e8;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.24),
+    0 7px 16px rgba(145,96,19,.22),
+    0 0 0 1px rgba(199,158,70,.10)
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-action--manual-call:hover{
+  border-color:#c89d44;
+  background:linear-gradient(180deg,#c5963e,#a6721d);
+  color:#fff
+}
+.deal-notes-viewer.conversation-manual-call-open .deal-notes-viewer-close{
+  width:36px;
+  height:36px;
+  border:1px solid transparent;
+  border-radius:10px;
+  color:#35584d;
+  transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease
+}
+.deal-notes-viewer.conversation-manual-call-open .deal-notes-viewer-close:hover{
+  border-color:#d7e2dd;
+  background:#f1f6f3;
+  color:#143e32;
+  transform:translateY(-1px)
+}
+.deal-notes-viewer.conversation-manual-call-open .deal-notes-viewer-body{
+  padding:18px;
+  border-right:0;
+  background:
+    radial-gradient(circle at 7% 94%,rgba(215,180,92,.065),transparent 34%),
+    linear-gradient(180deg,#fcfdfc 0%,#f7faf8 100%)
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-history-body{
+  gap:15px
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-timeline{
+  padding:13px;
+  border:1px solid rgba(217,227,222,.92);
+  border-radius:14px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.86),rgba(251,253,252,.76));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.96),
+    0 8px 22px rgba(20,61,49,.025)
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-timeline-empty{
+  min-height:100%;
+  color:#677a73;
+  font-size:12.5px;
+  font-weight:520
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-timeline-item{
+  border-color:#d9e5df;
+  border-radius:12px;
+  box-shadow:0 4px 13px rgba(18,61,49,.035)
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-manual-note{
+  gap:8px
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-manual-note>span{
+  color:#536b62;
+  font-size:9.5px;
+  font-weight:850;
+  letter-spacing:.075em
+}
+.deal-notes-viewer.conversation-manual-call-open .deal-notes-viewer-body.conversation-history-body .conversation-manual-note textarea{
+  height:124px;
+  min-height:124px;
+  padding:14px 15px;
+  border-color:#d2ded8;
+  border-radius:12px;
+  background:rgba(255,255,255,.96);
+  box-shadow:
+    inset 0 1px 2px rgba(27,65,54,.025),
+    0 4px 14px rgba(19,58,47,.025);
+  transition:border-color .16s ease,box-shadow .16s ease,background .16s ease
+}
+.deal-notes-viewer.conversation-manual-call-open .deal-notes-viewer-body.conversation-history-body .conversation-manual-note textarea:focus{
+  border-color:#a88b4d;
+  background:#fff;
+  box-shadow:
+    0 0 0 3px rgba(180,142,61,.09),
+    0 7px 18px rgba(18,55,45,.035)
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-manual-note-save{
+  min-width:118px;
+  min-height:40px;
+  padding:9px 18px;
+  border:1px solid #c59a45;
+  border-radius:10px;
+  background:linear-gradient(180deg,#ddb75f,#c99a3f);
+  color:#17382e;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.42),
+    0 7px 15px rgba(152,103,27,.16);
+  font-size:11.5px;
+  font-weight:800;
+  transition:transform .16s ease,box-shadow .16s ease,filter .16s ease
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-manual-note-save:not(:disabled):hover{
+  transform:translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.45),
+    0 10px 20px rgba(152,103,27,.20);
+  filter:saturate(1.04)
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-manual-call-panel{
+  margin:8px 8px 8px 0;
+  overflow:hidden;
+  border:1px solid rgba(210,188,127,.34);
+  border-radius:15px;
+  background:#073d33;
+  box-shadow:
+    0 18px 42px rgba(6,43,35,.20),
+    0 4px 12px rgba(7,49,40,.12),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  animation:manual-panel-in .24s ease-out
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-manual-call-panel-head{
+  min-height:62px;
+  padding:12px 15px;
+  border-bottom:1px solid rgba(230,210,155,.13);
+  background:
+    radial-gradient(circle at 84% -20%,rgba(216,184,103,.14),transparent 42%),
+    linear-gradient(180deg,#0a4b3e,#073c33);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035)
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-manual-call-panel-head strong{
+  color:#fff;
+  font-size:13.5px;
+  font-weight:800
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-manual-call-panel-head span{
+  color:rgba(239,247,243,.72);
+  font-size:11.5px
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-manual-call-panel-close{
+  border:1px solid transparent;
+  color:rgba(240,248,244,.82)
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-manual-call-panel-close:hover{
+  border-color:rgba(237,216,159,.16);
+  background:rgba(255,255,255,.075);
+  color:#fff
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-manual-call-panel-body{
+  border-radius:0 0 14px 14px
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-manual-call-live::before{
+  inset:16px;
+  border-color:rgba(235,216,164,.20);
+  border-radius:18px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.085),
+    0 25px 64px rgba(0,25,21,.22)
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-manual-call-avatar{
+  box-shadow:
+    0 18px 40px rgba(1,27,23,.30),
+    0 0 0 9px rgba(236,218,167,.055),
+    0 0 42px rgba(221,188,102,.08)
+}
+.deal-notes-viewer.conversation-manual-call-open .conversation-manual-call-error{
+  border-color:rgba(225,198,129,.24);
+  background:rgba(50,65,47,.42);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.045);
+  backdrop-filter:blur(13px)
+}
+@keyframes conversation-shell-in{
+  from{opacity:.88;transform:translateY(5px) scale(.994)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes manual-panel-in{
+  from{opacity:.82;transform:translateX(5px)}
+  to{opacity:1;transform:translateX(0)}
+}
+@media (max-width:980px){
+  .deal-notes-viewer.conversation-manual-call-open .deal-notes-viewer-head{
+    padding:12px 14px
+  }
+  .deal-notes-viewer.conversation-manual-call-open .deal-notes-viewer-head h2::before{
+    display:none
+  }
+  .deal-notes-viewer.conversation-manual-call-open .conversation-header-actions{
+    gap:6px
+  }
+  .deal-notes-viewer.conversation-manual-call-open .conversation-action-icon{
+    padding:0 8px
+  }
+}
+@media (prefers-reduced-motion:reduce){
+  .deal-notes-viewer.conversation-manual-call-open .deal-notes-viewer-card,
+  .deal-notes-viewer.conversation-manual-call-open .conversation-manual-call-panel{
+    animation:none
+  }
+  .deal-notes-viewer.conversation-manual-call-open .conversation-action-icon,
+  .deal-notes-viewer.conversation-manual-call-open .deal-notes-viewer-close,
+  .deal-notes-viewer.conversation-manual-call-open .conversation-manual-note-save{
+    transition:none
+  }
+}
+
