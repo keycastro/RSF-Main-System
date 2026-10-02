@@ -5640,7 +5640,7 @@ def whatsapp_webhook_receive():
 
 
 def _manual_call_context(*, prospect_id: int | None = None, inquiry_id: int | None = None, deal_id: int | None = None):
-    """Resolve the page-specific Contact Number used by the Manual Call button."""
+    """Resolve the page-specific client identity and Contact Number used by Manual Call."""
     db = get_db()
     requested_prospect_id = prospect_id
     requested_inquiry_id = inquiry_id
@@ -5653,22 +5653,25 @@ def _manual_call_context(*, prospect_id: int | None = None, inquiry_id: int | No
     inquiry = None
     deal = None
     if prospect_id:
-        prospect = db.execute("SELECT id,phone FROM prospects WHERE id=?", (prospect_id,)).fetchone()
+        prospect = db.execute(
+            "SELECT id,name,contact,phone FROM prospects WHERE id=?",
+            (prospect_id,),
+        ).fetchone()
     if inquiry_id:
         inquiry = _authorized_inquiry(inquiry_id)
     if deal_id:
         deal = db.execute(
-            "SELECT id,prospect_id,website_inquiry_id,contact_number FROM deals WHERE id=?",
+            "SELECT id,prospect_id,website_inquiry_id,contact_person,contact_number FROM deals WHERE id=?",
             (deal_id,),
         ).fetchone()
     elif prospect_id:
         deal = db.execute(
-            "SELECT id,prospect_id,website_inquiry_id,contact_number FROM deals WHERE prospect_id=? ORDER BY id DESC LIMIT 1",
+            "SELECT id,prospect_id,website_inquiry_id,contact_person,contact_number FROM deals WHERE prospect_id=? ORDER BY id DESC LIMIT 1",
             (prospect_id,),
         ).fetchone()
     elif inquiry_id:
         deal = db.execute(
-            "SELECT id,prospect_id,website_inquiry_id,contact_number FROM deals WHERE website_inquiry_id=? ORDER BY id DESC LIMIT 1",
+            "SELECT id,prospect_id,website_inquiry_id,contact_person,contact_number FROM deals WHERE website_inquiry_id=? ORDER BY id DESC LIMIT 1",
             (inquiry_id,),
         ).fetchone()
 
@@ -5679,13 +5682,19 @@ def _manual_call_context(*, prospect_id: int | None = None, inquiry_id: int | No
     # opened. Do not silently substitute WhatsApp # or another communication field.
     if requested_deal_id:
         phone = (deal["contact_number"] or "").strip() if deal else ""
+        client_name = (deal["contact_person"] or "").strip() if deal else ""
     elif requested_inquiry_id:
         phone = (inquiry["phone"] or "").strip() if inquiry else ""
+        client_name = (inquiry["name"] or "").strip() if inquiry else ""
     elif requested_prospect_id:
         phone = (prospect["phone"] or "").strip() if prospect else ""
+        client_name = ((prospect["contact"] or "").strip() or (prospect["name"] or "").strip()) if prospect else ""
     else:
         phone = ""
-    return prospect_id, inquiry_id, deal_id, phone
+        client_name = ""
+    return prospect_id, inquiry_id, deal_id, phone, client_name
+
+
 
 
 def _manual_call_conditions(prospect_id: int | None, inquiry_id: int | None, deal_id: int | None):
@@ -5743,25 +5752,42 @@ def _manual_call_authorized_row(call_id: int):
 
 
 def _manual_call_status_payload(row) -> dict:
-    terminal = (row["status"] or "").upper() in {
+    status_code = (row["status"] or "").upper()
+    terminal = status_code in {
         "COMPLETED", "BUSY", "FAILED", "NO_ANSWER", "CANCELED", "CANCELLED"
     }
+    in_progress = status_code == "IN_PROGRESS"
+    conference_sid = row["conference_sid"] or ""
+    agent_sid = row["provider_call_sid"] or ""
+    client_sid = row["provider_client_call_sid"] or ""
     return {
         "id": int(row["id"]),
         "status": row["status"] or "",
         "caption": row["caption"] or "",
         "duration_seconds": int(row["duration_seconds"] or row["recording_duration_seconds"] or 0),
+        "started_at": row["started_at"] or "",
+        "answered_at": row["answered_at"] or "",
         "recording_ready": bool(row["recording_bytes"]),
+        "recording_active": bool(in_progress and not terminal),
         "transcript_status": row["transcript_status"] or "",
         "terminal": terminal,
         "error": row["provider_error"] or "",
+        "muted": bool(row["agent_muted"]),
+        "held": bool(row["client_held"]),
+        "controls": {
+            "mute": bool(in_progress and conference_sid and agent_sid),
+            "hold": bool(in_progress and conference_sid and client_sid),
+            "end": bool(not terminal and (conference_sid or agent_sid or client_sid)),
+        },
     }
+
+
 
 
 @bp.get("/communications/manual-call")
 @login_required
 def communication_manual_call():
-    prospect_id, inquiry_id, deal_id, phone = _manual_call_context(
+    prospect_id, inquiry_id, deal_id, phone, client_name = _manual_call_context(
         prospect_id=request.args.get("prospect_id", type=int),
         inquiry_id=request.args.get("inquiry_id", type=int),
         deal_id=request.args.get("deal_id", type=int),
@@ -5769,16 +5795,12 @@ def communication_manual_call():
     if not phone:
         return jsonify({"ok": False, "message": "Add Contact Number first."}), 400
 
-    from .twilio_manual_call_ops import (
-        batch_transcription_configured,
-        manual_call_configured,
-        normalize_e164,
-    )
+    from .twilio_manual_call_ops import manual_call_configured, normalize_e164
     normalized = normalize_e164(phone)
     provider_ready = manual_call_configured()
     start_ready = bool(provider_ready and normalized)
     if not normalized:
-        connection_message = "Use international Contact Number format, for example +63..."
+        connection_message = "Contact Number must use a valid international format."
     elif not provider_ready:
         connection_message = "RSF Manual Call service is not connected yet."
     else:
@@ -5793,22 +5815,22 @@ def communication_manual_call():
                 ORDER BY created_at DESC,id DESC LIMIT 1""",
             params,
         ).fetchone()
+    active = latest if latest and not _manual_call_status_payload(latest)["terminal"] else None
 
     return jsonify({
         "ok": True,
         "recipient": phone,
         "normalized_recipient": normalized,
+        "client_name": client_name or "Client",
         "prospect_id": prospect_id,
         "inquiry_id": inquiry_id,
         "deal_id": deal_id,
         "start_url": url_for("main.communication_manual_call_start"),
         "start_ready": start_ready,
-        "provider_ready": provider_ready,
-        "transcription_ready": batch_transcription_configured(),
         "connection_message": connection_message,
-        "recording_notice": current_app.config.get("TWILIO_RECORDING_NOTICE") or "",
-        "latest_call": _manual_call_status_payload(latest) if latest else None,
-        "latest_status_url": url_for("main.communication_manual_call_status", call_id=latest["id"]) if latest else "",
+        "active_call": _manual_call_status_payload(active) if active else None,
+        "active_status_url": url_for("main.communication_manual_call_status", call_id=active["id"]) if active else "",
+        "active_control_url": url_for("main.communication_manual_call_control", call_id=active["id"]) if active else "",
     })
 
 
@@ -5816,27 +5838,28 @@ def communication_manual_call():
 @login_required
 def communication_manual_call_start():
     validate_csrf()
-    prospect_id, inquiry_id, deal_id, phone = _manual_call_context(
+    prospect_id, inquiry_id, deal_id, phone, client_name = _manual_call_context(
         prospect_id=request.form.get("prospect_id", type=int),
         inquiry_id=request.form.get("inquiry_id", type=int),
         deal_id=request.form.get("deal_id", type=int),
     )
     if not phone:
         return jsonify({"ok": False, "message": "Add Contact Number first."}), 400
-    if request.form.get("recording_consent") != "1":
-        return jsonify({"ok": False, "message": "Confirm the call-recording consent reminder before starting."}), 400
 
     from .twilio_manual_call_ops import create_manual_bridge_call, manual_call_configured, normalize_e164
     normalized = normalize_e164(phone)
     if not normalized:
-        return jsonify({"ok": False, "message": "Contact Number must use international format, for example +63..."}), 400
+        return jsonify({"ok": False, "message": "Contact Number must use a valid international phone format."}), 400
     if not manual_call_configured():
         return jsonify({"ok": False, "message": "RSF Manual Call service is not connected yet."}), 400
 
     db = get_db()
     open_call = db.execute(
         """SELECT id FROM manual_client_calls
-           WHERE status IN ('STARTING','QUEUED','AGENT_RINGING','AGENT_CONNECTED','CLIENT_RINGING','IN_PROGRESS')
+           WHERE status IN (
+               'STARTING','QUEUED','CALLING','AGENT_RINGING','AGENT_CONNECTED',
+               'CLIENT_STARTING','CLIENT_RINGING','IN_PROGRESS','ENDING'
+           )
            ORDER BY id DESC LIMIT 1"""
     ).fetchone()
     if open_call:
@@ -5844,7 +5867,7 @@ def communication_manual_call_start():
 
     now = utcnow_iso()
     webhook_token = uuid4().hex
-    caption = (request.form.get("caption", "") or "").strip()[:240] or f"Manual call with {normalized}"
+    caption = f"Manual call with {(client_name or normalized).strip()}"[:240]
     cur = db.execute(
         """INSERT INTO manual_client_calls(
                prospect_id,website_inquiry_id,deal_id,initiated_by_user_id,provider,provider_call_sid,
@@ -5862,13 +5885,15 @@ def communication_manual_call_start():
 
     twiml_url = _manual_call_public_url("main.twilio_manual_call_twiml", token=webhook_token)
     status_url = _manual_call_public_url("main.twilio_manual_call_status_webhook", token=webhook_token, leg="agent")
+    recording_url = _manual_call_public_url("main.twilio_manual_call_recording_webhook", token=webhook_token)
     try:
         provider_sid = create_manual_bridge_call(
             twiml_url=twiml_url,
             status_callback_url=status_url,
+            recording_status_callback_url=recording_url,
         )
         db.execute(
-            "UPDATE manual_client_calls SET provider_call_sid=?,status='QUEUED',updated_at=? WHERE id=?",
+            "UPDATE manual_client_calls SET provider_call_sid=?,status='CALLING',updated_at=? WHERE id=?",
             (provider_sid, utcnow_iso(), call_id),
         )
         db.commit()
@@ -5888,11 +5913,13 @@ def communication_manual_call_start():
         current_app.logger.exception("Manual Call start failed")
         return jsonify({"ok": False, "message": "RSF could not start the Manual Call."}), 500
 
+    row = db.execute("SELECT * FROM manual_client_calls WHERE id=?", (call_id,)).fetchone()
     return jsonify({
         "ok": True,
         "call_id": call_id,
-        "message": "Manual Call started. Your configured caller phone will ring first.",
+        "call": _manual_call_status_payload(row),
         "status_url": url_for("main.communication_manual_call_status", call_id=call_id),
+        "control_url": url_for("main.communication_manual_call_control", call_id=call_id),
     })
 
 
@@ -5900,6 +5927,70 @@ def communication_manual_call_start():
 @login_required
 def communication_manual_call_status(call_id: int):
     return jsonify({"ok": True, "call": _manual_call_status_payload(_manual_call_authorized_row(call_id))})
+
+
+@bp.post("/communications/manual-call/<int:call_id>/control")
+@login_required
+def communication_manual_call_control(call_id: int):
+    validate_csrf()
+    row = _manual_call_authorized_row(call_id)
+    action = (request.form.get("action", "") or "").strip().lower()
+    status_code = (row["status"] or "").upper()
+    if status_code in {"COMPLETED", "BUSY", "FAILED", "NO_ANSWER", "CANCELED", "CANCELLED"}:
+        return jsonify({"ok": False, "message": "This Manual Call has already ended."}), 409
+
+    from .twilio_manual_call_ops import end_manual_call, update_conference_participant
+    db = get_db()
+    try:
+        if action in {"mute", "unmute"}:
+            if status_code != "IN_PROGRESS" or not row["conference_sid"] or not row["provider_call_sid"]:
+                return jsonify({"ok": False, "message": "Mute is not available until the call is connected."}), 409
+            muted = action == "mute"
+            update_conference_participant(
+                conference_sid=row["conference_sid"],
+                call_sid=row["provider_call_sid"],
+                muted=muted,
+            )
+            db.execute(
+                "UPDATE manual_client_calls SET agent_muted=?,updated_at=? WHERE id=?",
+                (1 if muted else 0, utcnow_iso(), call_id),
+            )
+        elif action in {"hold", "resume"}:
+            if status_code != "IN_PROGRESS" or not row["conference_sid"] or not row["provider_client_call_sid"]:
+                return jsonify({"ok": False, "message": "Hold is not available until the call is connected."}), 409
+            held = action == "hold"
+            update_conference_participant(
+                conference_sid=row["conference_sid"],
+                call_sid=row["provider_client_call_sid"],
+                hold=held,
+            )
+            db.execute(
+                "UPDATE manual_client_calls SET client_held=?,updated_at=? WHERE id=?",
+                (1 if held else 0, utcnow_iso(), call_id),
+            )
+        elif action == "end":
+            end_manual_call(
+                conference_sid=row["conference_sid"] or "",
+                agent_call_sid=row["provider_call_sid"] or "",
+                client_call_sid=row["provider_client_call_sid"] or "",
+            )
+            db.execute(
+                "UPDATE manual_client_calls SET status='ENDING',updated_at=? WHERE id=?",
+                (utcnow_iso(), call_id),
+            )
+        else:
+            return jsonify({"ok": False, "message": "Unsupported Manual Call control."}), 400
+        db.commit()
+    except (ValueError, RuntimeError) as exc:
+        return jsonify({"ok": False, "message": str(exc)}), 502
+    except Exception:
+        current_app.logger.exception("Manual Call control failed")
+        return jsonify({"ok": False, "message": "RSF could not update the Manual Call."}), 500
+
+    current = db.execute("SELECT * FROM manual_client_calls WHERE id=?", (call_id,)).fetchone()
+    return jsonify({"ok": True, "call": _manual_call_status_payload(current)})
+
+
 
 
 @bp.get("/communications/manual-call/<int:call_id>/recording")
@@ -5920,43 +6011,24 @@ def communication_manual_call_recording(call_id: int):
 
 @bp.post("/webhooks/twilio/manual-call/<token>/twiml")
 def twilio_manual_call_twiml(token: str):
-    db = get_db()
-    row = db.execute("SELECT * FROM manual_client_calls WHERE webhook_token=?", (token,)).fetchone()
+    row = get_db().execute("SELECT * FROM manual_client_calls WHERE webhook_token=?", (token,)).fetchone()
     if not row:
         abort(404)
     if not _valid_twilio_form_webhook():
         return "Invalid Twilio signature.", 403
 
-    from .twilio_manual_call_ops import normalize_e164
-    client_phone = normalize_e164(row["phone"])
-    if not client_phone:
-        return Response(
-            '<?xml version="1.0" encoding="UTF-8"?><Response><Say>Client number is invalid.</Say><Hangup/></Response>',
-            mimetype="text/xml",
-        )
-
-    from_number = html_lib.escape(current_app.config.get("TWILIO_FROM_NUMBER") or "", quote=True)
-    client_number = html_lib.escape(client_phone, quote=True)
-    notice_url = html_lib.escape(
-        _manual_call_public_url("main.twilio_manual_call_client_notice", token=token),
-        quote=True,
-    )
-    client_status_url = html_lib.escape(
-        _manual_call_public_url("main.twilio_manual_call_status_webhook", token=token, leg="client"),
-        quote=True,
-    )
-    recording_url = html_lib.escape(
-        _manual_call_public_url("main.twilio_manual_call_recording_webhook", token=token),
+    room_name = html_lib.escape(f"rsf-manual-{token}", quote=False)
+    conference_url = html_lib.escape(
+        _manual_call_public_url("main.twilio_manual_call_conference_webhook", token=token),
         quote=True,
     )
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>'
         '<Response>'
-        f'<Dial callerId="{from_number}" answerOnBridge="true" record="record-from-answer-dual" '
-        f'recordingStatusCallback="{recording_url}" recordingStatusCallbackMethod="POST" '
-        f'recordingStatusCallbackEvent="completed absent">'
-        f'<Number url="{notice_url}" method="POST" statusCallback="{client_status_url}" '
-        f'statusCallbackMethod="POST" statusCallbackEvent="initiated ringing answered completed">{client_number}</Number>'
+        '<Dial>'
+        f'<Conference beep="false" startConferenceOnEnter="true" endConferenceOnExit="true" '
+        f'participantLabel="rsf-agent" statusCallback="{conference_url}" statusCallbackMethod="POST" '
+        f'statusCallbackEvent="start end join leave mute hold">{room_name}</Conference>'
         '</Dial>'
         '</Response>'
     )
@@ -5965,19 +6037,73 @@ def twilio_manual_call_twiml(token: str):
 
 @bp.post("/webhooks/twilio/manual-call/<token>/client-notice")
 def twilio_manual_call_client_notice(token: str):
-    row = get_db().execute("SELECT id FROM manual_client_calls WHERE webhook_token=?", (token,)).fetchone()
+    row = get_db().execute("SELECT * FROM manual_client_calls WHERE webhook_token=?", (token,)).fetchone()
     if not row:
         abort(404)
     if not _valid_twilio_form_webhook():
         return "Invalid Twilio signature.", 403
+
     notice = html_lib.escape(
         current_app.config.get("TWILIO_RECORDING_NOTICE") or "This call may be recorded.",
         quote=False,
     )
+    room_name = html_lib.escape(f"rsf-manual-{token}", quote=False)
+    conference_url = html_lib.escape(
+        _manual_call_public_url("main.twilio_manual_call_conference_webhook", token=token),
+        quote=True,
+    )
     return Response(
-        f'<?xml version="1.0" encoding="UTF-8"?><Response><Say>{notice}</Say></Response>',
+        '<?xml version="1.0" encoding="UTF-8"?><Response>'
+        f'<Say>{notice}</Say><Dial>'
+        f'<Conference beep="false" startConferenceOnEnter="true" endConferenceOnExit="true" '
+        f'participantLabel="rsf-client" statusCallback="{conference_url}" statusCallbackMethod="POST" '
+        f'statusCallbackEvent="start end join leave mute hold">{room_name}</Conference>'
+        '</Dial></Response>',
         mimetype="text/xml",
     )
+
+
+@bp.post("/webhooks/twilio/manual-call/<token>/conference")
+def twilio_manual_call_conference_webhook(token: str):
+    db = get_db()
+    row = db.execute("SELECT * FROM manual_client_calls WHERE webhook_token=?", (token,)).fetchone()
+    if not row:
+        abort(404)
+    if not _valid_twilio_form_webhook():
+        return "Invalid Twilio signature.", 403
+
+    conference_sid = (request.form.get("ConferenceSid", "") or "").strip()
+    event_name = (request.form.get("StatusCallbackEvent", "") or "").strip().lower()
+    call_sid = (request.form.get("CallSid", "") or "").strip()
+    muted = (request.form.get("Muted", "") or "").strip().lower()
+    hold = (request.form.get("Hold", "") or "").strip().lower()
+    now = utcnow_iso()
+
+    updates = ["updated_at=?"]
+    params: list = [now]
+    if conference_sid and conference_sid != (row["conference_sid"] or ""):
+        updates.append("conference_sid=?")
+        params.append(conference_sid)
+    if call_sid and call_sid == (row["provider_call_sid"] or "") and muted in {"true", "false"}:
+        updates.append("agent_muted=?")
+        params.append(1 if muted == "true" else 0)
+    if call_sid and call_sid == (row["provider_client_call_sid"] or "") and hold in {"true", "false"}:
+        updates.append("client_held=?")
+        params.append(1 if hold == "true" else 0)
+
+    current_status = (row["status"] or "").upper()
+    terminal = current_status in {"COMPLETED", "BUSY", "FAILED", "NO_ANSWER", "CANCELED", "CANCELLED"}
+    if event_name == "conference-end" and not terminal:
+        updates.append("status=?")
+        params.append("COMPLETED" if row["answered_at"] else "CANCELED")
+        if not row["ended_at"]:
+            updates.append("ended_at=?")
+            params.append(now)
+
+    params.append(int(row["id"]))
+    db.execute(f"UPDATE manual_client_calls SET {','.join(updates)} WHERE id=?", params)
+    db.commit()
+    return "", 204
 
 
 @bp.post("/webhooks/twilio/manual-call/<token>/status")
@@ -5991,27 +6117,24 @@ def twilio_manual_call_status_webhook(token: str):
 
     raw_status = (request.form.get("CallStatus", "") or "").strip().lower()
     leg = (request.args.get("leg", "") or "").strip().lower()
-    status_map = {
-        "initiated": "CLIENT_RINGING" if leg == "client" else "QUEUED",
-        "queued": "QUEUED",
-        "ringing": "CLIENT_RINGING" if leg == "client" else "AGENT_RINGING",
-        "answered": "IN_PROGRESS" if leg == "client" else "AGENT_CONNECTED",
-        "in-progress": "IN_PROGRESS" if leg == "client" else "AGENT_CONNECTED",
-        "completed": "COMPLETED",
-        "busy": "BUSY",
-        "failed": "FAILED",
-        "no-answer": "NO_ANSWER",
-        "canceled": "CANCELED",
-        "cancelled": "CANCELED",
-    }
+    if leg == "client":
+        status_map = {
+            "initiated": "CALLING", "queued": "CALLING", "ringing": "CLIENT_RINGING",
+            "answered": "IN_PROGRESS", "in-progress": "IN_PROGRESS", "completed": "COMPLETED",
+            "busy": "BUSY", "failed": "FAILED", "no-answer": "NO_ANSWER",
+            "canceled": "CANCELED", "cancelled": "CANCELED",
+        }
+    else:
+        status_map = {
+            "initiated": "CALLING", "queued": "CALLING", "ringing": "CALLING",
+            "answered": "CALLING", "in-progress": "CALLING", "completed": "COMPLETED",
+            "busy": "BUSY", "failed": "FAILED", "no-answer": "NO_ANSWER",
+            "canceled": "CANCELED", "cancelled": "CANCELED",
+        }
     mapped = status_map.get(raw_status)
     if not mapped:
         return "", 204
 
-    # Twilio sends callbacks for both the agent leg and the client leg. Once the
-    # client leg has reached a terminal outcome, the later parent/agent-leg
-    # "completed" callback must not erase a more specific client result such as
-    # BUSY or NO_ANSWER.
     current_status = (row["status"] or "").upper()
     client_terminal = {"COMPLETED", "BUSY", "FAILED", "NO_ANSWER", "CANCELED"}
     if leg == "agent" and raw_status == "completed" and current_status in client_terminal:
@@ -6041,7 +6164,48 @@ def twilio_manual_call_status_webhook(token: str):
     params.append(int(row["id"]))
     db.execute(f"UPDATE manual_client_calls SET {','.join(updates)} WHERE id=?", params)
     db.commit()
+
+    if leg == "agent" and raw_status in {"answered", "in-progress"}:
+        current = db.execute("SELECT * FROM manual_client_calls WHERE id=?", (row["id"],)).fetchone()
+        if current and not current["provider_client_call_sid"] and (current["status"] or "").upper() not in client_terminal:
+            from .twilio_manual_call_ops import create_manual_client_call, end_manual_call
+            client_twiml_url = _manual_call_public_url("main.twilio_manual_call_client_notice", token=token)
+            client_status_url = _manual_call_public_url("main.twilio_manual_call_status_webhook", token=token, leg="client")
+            try:
+                client_sid = create_manual_client_call(
+                    to_number=current["phone"],
+                    twiml_url=client_twiml_url,
+                    status_callback_url=client_status_url,
+                )
+                db.execute(
+                    "UPDATE manual_client_calls SET provider_client_call_sid=?,status='CALLING',updated_at=? WHERE id=?",
+                    (client_sid, utcnow_iso(), current["id"]),
+                )
+                db.commit()
+            except (ValueError, RuntimeError) as exc:
+                db.execute(
+                    "UPDATE manual_client_calls SET status='FAILED',provider_error=?,ended_at=?,updated_at=? WHERE id=?",
+                    (str(exc)[:1200], utcnow_iso(), utcnow_iso(), current["id"]),
+                )
+                db.commit()
+                try:
+                    end_manual_call(
+                        conference_sid=current["conference_sid"] or "",
+                        agent_call_sid=current["provider_call_sid"] or "",
+                        client_call_sid="",
+                    )
+                except Exception:
+                    current_app.logger.exception("Manual Call cleanup after client-leg failure failed")
+            except Exception:
+                db.execute(
+                    "UPDATE manual_client_calls SET status='FAILED',provider_error='Unexpected client connection error.',ended_at=?,updated_at=? WHERE id=?",
+                    (utcnow_iso(), utcnow_iso(), current["id"]),
+                )
+                db.commit()
+                current_app.logger.exception("Manual Call client leg failed")
     return "", 204
+
+
 
 
 @bp.post("/webhooks/twilio/manual-call/<token>/recording")
