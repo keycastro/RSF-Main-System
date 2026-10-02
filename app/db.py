@@ -27,7 +27,7 @@ OperationalError = PGOperationalError
 
 SCHEMA_VERSION = 37
 SCHEMA_NAME = "rsf-main-system-v1.18.175-shared-whatsapp-number"
-SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents","communication_notes","ai_sales_calls"}
+SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents","communication_notes","ai_sales_calls","whatsapp_messages"}
 
 
 def using_postgres() -> bool:
@@ -1345,6 +1345,43 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
         db.execute(
             "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
             (37, "rsf-v1.18.175-shared-whatsapp-number"),
+        )
+
+    # V38 prepares durable WhatsApp messaging storage without requiring Meta
+    # credentials. It stays dormant until the official Cloud API is configured.
+    if 38 not in applied:
+        db.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS whatsapp_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                prospect_id INTEGER REFERENCES prospects(id) ON DELETE SET NULL,
+                website_inquiry_id INTEGER REFERENCES website_inquiries(id) ON DELETE SET NULL,
+                deal_id INTEGER REFERENCES deals(id) ON DELETE SET NULL,
+                direction TEXT NOT NULL CHECK (direction IN ('INBOUND','OUTBOUND')),
+                message_type TEXT NOT NULL DEFAULT 'text',
+                body TEXT NOT NULL DEFAULT '',
+                sender_phone TEXT NOT NULL DEFAULT '',
+                recipient_phone TEXT NOT NULL DEFAULT '',
+                external_message_id TEXT NOT NULL DEFAULT '',
+                delivery_status TEXT NOT NULL DEFAULT '',
+                delivery_error TEXT NOT NULL DEFAULT '',
+                media_id TEXT NOT NULL DEFAULT '',
+                media_name TEXT NOT NULL DEFAULT '',
+                media_mime_type TEXT NOT NULL DEFAULT '',
+                media_size_bytes INTEGER NOT NULL DEFAULT 0,
+                media_bytes BLOB,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_prospect ON whatsapp_messages(prospect_id,created_at,id);
+            CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_inquiry ON whatsapp_messages(website_inquiry_id,created_at,id);
+            CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_deal ON whatsapp_messages(deal_id,created_at,id);
+            CREATE UNIQUE INDEX IF NOT EXISTS uq_whatsapp_messages_external_id ON whatsapp_messages(external_message_id) WHERE external_message_id <> '';
+            """
+        )
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (38, "rsf-v1.18.178-whatsapp-api-ready"),
         )
 
 
