@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#073b33">
+  <meta name="theme-color" content="#15110d">
   <title>{{ title }} · RSF Workspace</title>
   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/brand/KEY_CASTRO.ico') }}">
   <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/brand/icon_32.png') }}">
@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_v18.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_v20.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_v21.css') }}">
 </head>
 <body class="{% if request.endpoint in ['main.messages_home','main.messages_thread'] %}page-messages{% endif %}"{% if g.user %} data-message-poll-url="{{ url_for('main.message_unread') }}" data-csrf="{{ csrf_token() }}"{% endif %}>
 {% macro nav_icon(name) -%}
