@@ -2578,6 +2578,7 @@ body{font-size:17px;line-height:1.68}
 /* 3.8.11 — How It Works organization polish.
    Keeps the approved design language and reorganizes only Step 1 + Step 2 on the How It Works page. */
 .human-simple-options{align-items:stretch}
+.human-simple-options--single{grid-template-columns:1fr}
 .human-simple-options .human-option-card{
   display:flex;
   flex-direction:column;
