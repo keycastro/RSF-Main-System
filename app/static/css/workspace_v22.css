@@ -111,3 +111,176 @@
   .app-shell .workspace-page-head p,.app-shell .page-head p,.app-shell .deals-title-row p{font-size:13px!important}
   .app-shell .prospect-filter-button{min-height:39px!important;padding:0 13px!important;font-size:11.5px!important}
 }
+
+/* =========================================================
+   v1.18.186 — precision correction from side-by-side LIVE
+   comparison against the approved reference screenshot.
+   ========================================================= */
+
+/* Match the approved left-shell proportion more closely. */
+.app-shell{--sidebar:252px!important}
+
+/* Force the operating pages to actually use the full inner panel width. */
+.app-shell .prospects-page,
+.app-shell .website-inbox-page,
+.app-shell .deals-page{
+  width:100%!important;
+  max-width:100%!important;
+}
+.app-shell .prospects-page > .prospect-list-section,
+.app-shell .prospects-page > .prospect-list-section > .simple-list,
+.app-shell .website-inquiry-list,
+.app-shell .deals-list{
+  width:100%!important;
+  max-width:100%!important;
+}
+
+/* Approved panel lighting:
+   warm ivory/light-brown on the left, soft luminous center,
+   deep espresso/black on the far right. */
+.app-shell .content-wrap{
+  background:
+    radial-gradient(ellipse 46% 58% at 53% 50%,
+      rgba(255,250,242,.70) 0%,
+      rgba(248,237,222,.56) 35%,
+      rgba(235,216,191,.24) 58%,
+      transparent 76%),
+    radial-gradient(ellipse 28% 26% at 10% 4%,
+      rgba(255,246,229,.78) 0%,
+      rgba(243,222,192,.36) 48%,
+      transparent 76%),
+    radial-gradient(ellipse 34% 30% at 25% 95%,
+      rgba(221,185,135,.30) 0%,
+      transparent 72%),
+    linear-gradient(104deg,
+      #d7bc9b 0%,
+      #c8af91 31%,
+      #a28c73 55%,
+      #6d5b48 71%,
+      #362a20 84%,
+      #17120e 94%,
+      #0b0907 100%)!important;
+}
+
+/* Replace the thick filled circles with the thin concentric orbit lines
+   visible in the approved screenshot. */
+.app-shell .content-wrap::before{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  left:auto!important;
+  top:auto!important;
+  width:auto!important;
+  height:auto!important;
+  z-index:0!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  pointer-events:none!important;
+  transform:none!important;
+  transform-origin:center!important;
+  opacity:1!important;
+  background:
+    radial-gradient(circle at 56% 42%,
+      transparent 0 222px,
+      rgba(255,248,236,.18) 223px 224px,
+      transparent 225px),
+    radial-gradient(circle at 56% 42%,
+      transparent 0 318px,
+      rgba(233,213,183,.22) 319px 320px,
+      transparent 321px),
+    radial-gradient(circle at 56% 42%,
+      transparent 0 414px,
+      rgba(201,169,94,.38) 415px 416px,
+      transparent 417px),
+    radial-gradient(circle at 56% 42%,
+      transparent 0 510px,
+      rgba(201,169,94,.40) 511px 512px,
+      transparent 513px),
+    radial-gradient(circle at 56% 42%,
+      transparent 0 606px,
+      rgba(201,169,94,.42) 607px 608px,
+      transparent 609px),
+    radial-gradient(circle at 56% 42%,
+      transparent 0 702px,
+      rgba(201,169,94,.34) 703px 704px,
+      transparent 705px)!important;
+  animation:rsf-approved-orbit-lines 30s ease-in-out infinite alternate!important;
+}
+
+/* Smaller, sharper warm glints like the reference instead of large blurry bulbs. */
+.app-shell .content-wrap::after{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  pointer-events:none!important;
+  opacity:1!important;
+  background:
+    radial-gradient(circle at 8% 2%,#fff4d5 0 1.5px,rgba(226,191,111,.70) 2px 4px,rgba(201,169,94,.15) 6px 13px,transparent 18px),
+    radial-gradient(circle at 82% 0%,#fff2cf 0 1.6px,rgba(226,190,105,.72) 2px 4px,rgba(201,169,94,.14) 6px 13px,transparent 18px),
+    radial-gradient(circle at 88% 12%,#fff3d4 0 1.4px,rgba(230,193,109,.72) 2px 4px,rgba(201,169,94,.13) 6px 12px,transparent 17px),
+    radial-gradient(circle at 96% 27%,#fff2cf 0 1.5px,rgba(226,190,105,.72) 2px 4px,rgba(201,169,94,.13) 6px 12px,transparent 17px),
+    radial-gradient(circle at 94% 50%,#fff1c9 0 1.6px,rgba(229,191,104,.75) 2px 4px,rgba(201,169,94,.14) 6px 13px,transparent 18px),
+    radial-gradient(circle at 97% 56%,#fff2ce 0 1.4px,rgba(229,192,106,.70) 2px 4px,rgba(201,169,94,.12) 6px 12px,transparent 17px),
+    radial-gradient(circle at 86% 72%,#fff0c7 0 1.5px,rgba(226,188,101,.68) 2px 4px,rgba(201,169,94,.12) 6px 12px,transparent 17px),
+    radial-gradient(circle at 78% 90%,#fff1ca 0 1.4px,rgba(225,188,102,.66) 2px 4px,rgba(201,169,94,.11) 6px 11px,transparent 16px),
+    radial-gradient(circle at 7% 91%,#fff1ca 0 1.4px,rgba(225,188,102,.64) 2px 4px,rgba(201,169,94,.10) 6px 11px,transparent 16px)!important;
+  animation:rsf-approved-glint-drift 24s ease-in-out infinite alternate!important;
+}
+
+/* Refine the exact approved warm card colors. */
+.app-shell .prospects-page .prospect-card,
+.app-shell .website-inbox-page .website-inquiry-card,
+.app-shell .deals-page .deal-card{
+  border-color:rgba(183,155,115,.72)!important;
+  background:linear-gradient(180deg,#eadfce 0%,#e6d7c3 100%)!important;
+}
+.app-shell .prospects-page .prospect-card-top,
+.app-shell .website-inbox-page .website-inquiry-card-head,
+.app-shell .deals-page .deal-card-head{
+  background:#e7dac8!important;
+  border-bottom-color:rgba(179,150,111,.40)!important;
+}
+.app-shell .prospects-page .prospect-card-meta,
+.app-shell .prospects-page .prospect-card-details,
+.app-shell .website-inbox-page .website-inquiry-card-body,
+.app-shell .deals-page .deal-form,
+.app-shell .deals-page .deal-source-details{
+  background:rgba(238,226,209,.86)!important;
+}
+.app-shell .prospects-page .prospect-card-meta-item,
+.app-shell .prospects-page .prospect-detail,
+.app-shell .deals-page .deal-form-grid>label,
+.app-shell .website-inbox-page .website-inquiry-field,
+.app-shell .deals-page .deal-source-readonly,
+.app-shell .deals-page .deal-source-grid>label{
+  background:#fcf1e6!important;
+  border-color:#decbb0!important;
+}
+
+/* Slightly wider first-row card footprint like the approved reference. */
+@media(min-width:1200px){
+  .app-shell .prospects-page .simple-list,
+  .app-shell .website-inquiry-list,
+  .app-shell .deals-list{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+
+/* Approved reference uses thin lines only: no broad ring breathing. */
+@keyframes rsf-approved-orbit-lines{
+  from{transform:translate3d(0,0,0) scale(1);opacity:.82}
+  to{transform:translate3d(.25%,-.20%,0) scale(1.006);opacity:.96}
+}
+@keyframes rsf-approved-glint-drift{
+  from{transform:translate3d(0,0,0);filter:brightness(.98)}
+  to{transform:translate3d(-.18%,.24%,0);filter:brightness(1.05)}
+}
+@media (prefers-reduced-motion:reduce){
+  .app-shell .content-wrap::before,
+  .app-shell .content-wrap::after{
+    animation:none!important;
+    transform:none!important;
+  }
+}
