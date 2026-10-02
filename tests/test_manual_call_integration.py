@@ -108,6 +108,13 @@ class ManualCallIntegrationTests(unittest.TestCase):
         merge = routes[merge_start:merge_end]
         self.assertIn("UPDATE manual_client_calls SET deal_id=?", merge)
 
+    def test_finished_call_keeps_refreshing_until_recording_processing_finishes(self):
+        js = self.read("app/static/js/app.js")
+        self.assertIn("waitingForRecording", js)
+        self.assertIn("waitingForTranscript", js)
+        self.assertIn("pollCount >= 60", js)
+        self.assertIn("Recording/transcript processing is taking longer than expected", js)
+
 
 if __name__ == "__main__":
     unittest.main()
