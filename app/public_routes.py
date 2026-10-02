@@ -40,8 +40,8 @@ SERVICES = [
     {
         "kind": "custom-build",
         "title": "Build a custom system",
-        "text": "Tell us what your business needs. RSF builds a custom system around your business.",
-        "example": "We agree on what we will build before work starts.",
+        "text": "Tell us what your business needs. RSF builds a custom system to match how your business works.",
+        "example": "We agree on the system and features before work starts.",
     },
 ]
 
@@ -59,15 +59,15 @@ TECHNOLOGIES = [
 PAGE_SEO = {
     "home": {
         "title": "Custom Real Estate Systems | Realty Systems Foundry",
-        "description": "Realty Systems Foundry builds custom software systems around the needs of real estate businesses.",
+        "description": "Realty Systems Foundry builds custom systems for real estate businesses, designed around how each business works.",
     },
     "about": {
         "title": "About Realty Systems Foundry | Real Estate Technology",
-        "description": "Realty Systems Foundry designs, builds, and manages custom software systems and automation for real estate businesses.",
+        "description": "Realty Systems Foundry builds custom systems and automation for real estate businesses to organize work and reduce manual tasks.",
     },
     "services": {
         "title": "Services & Pricing | Realty Systems Foundry",
-        "description": "See how Realty Systems Foundry builds custom systems, the limited free build program, and optional paid support after the system is finished.",
+        "description": "See how RSF builds custom systems, how the limited free build program works, and the support options available after delivery.",
     },
     "skills": {
         "title": "Technology Capabilities | Realty Systems Foundry",
@@ -79,11 +79,11 @@ PAGE_SEO = {
     },
     "contact": {
         "title": "Contact Realty Systems Foundry | Real Estate Systems",
-        "description": "Tell Realty Systems Foundry what your real estate business needs and get a reply by email.",
+        "description": "Tell RSF what your real estate business needs and request a custom system.",
     },
     "system_templates": {
         "title": "Systems We Built | Realty Systems Foundry",
-        "description": "See examples of systems Realty Systems Foundry has built for property operations, property listings, and housing work.",
+        "description": "View examples of systems RSF has built for property operations, property listings, and student housing.",
     },
 }
 
@@ -330,7 +330,7 @@ def contact():
         if len(company) > 140:
             errors.append("Company name is too long.")
         if not 20 <= len(message) <= 3000:
-            errors.append("Please add a little more detail about the system you need.")
+            errors.append("Please add more detail about what you need the system to do.")
 
         if errors:
             for item in errors:
@@ -354,10 +354,10 @@ def contact():
         try:
             inquiry_id = create_public_inquiry(record)
             current_app.logger.info("Website inquiry %s stored for %s", inquiry_id, email)
-            flash("Message received. We’ll reply by email.", "success")
+            flash("Request received. We’ll reply by email.", "success")
         except Exception:
             current_app.logger.exception("Contact delivery failed")
-            flash("Your message could not be sent right now. Please try again later.", "error")
+            flash("Your request could not be sent right now. Please try again later.", "error")
             context["form_data"] = {"name": name, "email": email, "phone": phone, "company": company, "message": message}
             return render_template("public/contact.html", title="Contact", **context), 503
 
