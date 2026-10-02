@@ -395,17 +395,17 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         screenshots=(
             TemplateScreenshot(
                 src="images/templates/student-housing-matching-and-placement-system/dashboard.png",
-                alt="Student Housing Matching and Placement System main screen preview using synthetic sample data",
-                caption="Main screen using synthetic sample data — open requests, available units, follow-ups, viewings, reservations, and placements.",
+                alt="Student Housing Matching and Placement System main screen preview using sample data",
+                caption="Main screen using sample data — open requests, available units, follow-ups, viewings, reservations, and placements.",
             ),
             TemplateScreenshot(
                 src="images/templates/student-housing-matching-and-placement-system/match-center.png",
-                alt="Student Housing Matching and Placement System Find Housing screen using synthetic sample data",
-                caption="Find Housing using synthetic sample data — requests, matching status, budget, location, and move-in timing.",
+                alt="Student Housing Matching and Placement System Find Housing screen using sample data",
+                caption="Find Housing using sample data — requests, matching status, budget, location, and move-in timing.",
             ),
         ),
         project_note=(
-            "Independent RSF portfolio project based on a publicly visible 2026 student-housing system request and research into "
+            "Independent RSF project based on a publicly visible 2026 student-housing system request and research into "
             "the housing placement process. It was not commissioned by, affiliated with, or endorsed by the original poster."
         ),
         seo_title="Student Housing Matching & Placement System | Realty Systems Foundry",
