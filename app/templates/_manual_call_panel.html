@@ -1,29 +1,27 @@
 <section class="conversation-manual-call-panel" data-manual-call-panel hidden data-csrf-token="{{ csrf_token() }}" aria-label="Manual Call">
   <header class="conversation-manual-call-panel-head">
-    <div>
-      <strong>Manual Call</strong>
-      <span data-manual-call-recipient></span>
-    </div>
+    <div><strong>Manual Call</strong><span data-manual-call-recipient></span></div>
     <button type="button" class="conversation-manual-call-panel-close" data-manual-call-panel-close aria-label="Close Manual Call" title="Close Manual Call">×</button>
   </header>
   <div class="conversation-manual-call-panel-body">
-    <div class="conversation-manual-call-intro">
-      <strong>International client call</strong>
-      <p>Start the call from RSF. Your configured caller phone rings first, then RSF connects you to the client and records the connected conversation.</p>
-    </div>
-    <form data-manual-call-form>
-      <label>
-        <span>Caption</span>
-        <input type="text" maxlength="240" data-manual-call-caption placeholder="e.g. First discovery call">
-      </label>
-      <label class="conversation-manual-call-consent">
-        <input type="checkbox" value="1" data-manual-call-consent>
-        <span>I will follow the applicable call-recording consent rules for this client.</span>
-      </label>
-      <div class="conversation-manual-call-actions">
-        <span data-manual-call-status aria-live="polite"></span>
-        <button class="button primary" type="submit" data-manual-call-start>Start Manual Call</button>
+    <div class="conversation-manual-call-live" data-manual-call-live>
+      <div class="conversation-manual-call-orbit" aria-hidden="true"></div>
+      <div class="conversation-manual-call-avatar" data-manual-call-avatar aria-hidden="true">C</div>
+      <h3 data-manual-call-client-name>Client</h3>
+      <div class="conversation-manual-call-number" data-manual-call-live-number></div>
+      <div class="conversation-manual-call-state" data-manual-call-status aria-live="polite">Calling...</div>
+      <div class="conversation-manual-call-timer" data-manual-call-timer hidden>00:00</div>
+      <div class="conversation-manual-call-recording" data-manual-call-recording hidden><span aria-hidden="true"></span> Recording</div>
+      <div class="conversation-manual-call-controls" data-manual-call-controls hidden aria-label="Live call controls">
+        <button type="button" class="conversation-manual-call-control" data-manual-call-mute hidden aria-pressed="false">
+          <span class="conversation-manual-call-control-icon" aria-hidden="true">🎙</span><span data-manual-call-mute-label>Mute</span>
+        </button>
+        <button type="button" class="conversation-manual-call-control" data-manual-call-hold hidden aria-pressed="false">
+          <span class="conversation-manual-call-control-icon" aria-hidden="true">Ⅱ</span><span data-manual-call-hold-label>Hold</span>
+        </button>
       </div>
-    </form>
+      <button type="button" class="conversation-manual-call-end" data-manual-call-end hidden><span aria-hidden="true">☎</span><span>End Call</span></button>
+      <p class="conversation-manual-call-error" data-manual-call-error hidden role="alert"></p>
+    </div>
   </div>
 </section>
