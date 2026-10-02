@@ -118,6 +118,22 @@ class CardLayoutReorderingTests(unittest.TestCase):
         self.assertIn('border-radius:8px!important', css)
         self.assertIn('background:#fff!important', css)
 
+    def test_prospect_source_destination_adapts_moved_shared_fields_to_neighbor_cards(self):
+        css = self.read("app/static/css/workspace_v20.css")
+        selector = '.prospects-page label.card-layout-field-relocated[data-card-layout-current-zone="source"][data-card-layout-field]'
+        self.assertIn(selector, css)
+        self.assertIn("min-height:58px!important", css)
+        self.assertIn("padding:9px 11px!important", css)
+        self.assertIn("border:1px solid #cbd8d3!important", css)
+        self.assertIn("border-radius:10px!important", css)
+        self.assertIn("background:#fff!important", css)
+        self.assertIn('label.card-layout-field-relocated[data-card-layout-current-zone="source"][data-card-layout-field]>input', css)
+        self.assertIn("border:0!important", css)
+        self.assertIn("background:transparent!important", css)
+        master = self.read("app/templates/_master_deal_information.html")
+        self.assertIn('data-card-layout-field="whatsapp_number"', master)
+        self.assertIn('<span>WhatsApp #</span>', master)
+
     def test_visual_moves_preserve_existing_save_ownership(self):
         js = self.read("app/static/js/app.js")
         self.assertIn("const researchSectionFor", js)
