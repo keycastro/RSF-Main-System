@@ -1,0 +1,29 @@
+<section class="conversation-manual-call-panel" data-manual-call-panel hidden data-csrf-token="{{ csrf_token() }}" aria-label="Manual Call">
+  <header class="conversation-manual-call-panel-head">
+    <div>
+      <strong>Manual Call</strong>
+      <span data-manual-call-recipient></span>
+    </div>
+    <button type="button" class="conversation-manual-call-panel-close" data-manual-call-panel-close aria-label="Close Manual Call" title="Close Manual Call">×</button>
+  </header>
+  <div class="conversation-manual-call-panel-body">
+    <div class="conversation-manual-call-intro">
+      <strong>International client call</strong>
+      <p>Start the call from RSF. Your configured caller phone rings first, then RSF connects you to the client and records the connected conversation.</p>
+    </div>
+    <form data-manual-call-form>
+      <label>
+        <span>Caption</span>
+        <input type="text" maxlength="240" data-manual-call-caption placeholder="e.g. First discovery call">
+      </label>
+      <label class="conversation-manual-call-consent">
+        <input type="checkbox" value="1" data-manual-call-consent>
+        <span>I will follow the applicable call-recording consent rules for this client.</span>
+      </label>
+      <div class="conversation-manual-call-actions">
+        <span data-manual-call-status aria-live="polite"></span>
+        <button class="button primary" type="submit" data-manual-call-start>Start Manual Call</button>
+      </div>
+    </form>
+  </div>
+</section>
