@@ -58,12 +58,13 @@ class MasterLifecycleCardTests(unittest.TestCase):
         self.assertIn("url_for('main.prospects')", base)
         self.assertIn("url_for('main.inquiries_list')", base)
 
-    def test_deals_pipeline_rename_is_presentation_only(self):
+    def test_active_pipeline_sidebar_and_deals_page_names_are_distinct(self):
         base = self.read("app/templates/base.html")
         deals = self.read("app/templates/deals.html")
         routes = self.read("app/routes.py")
 
-        self.assertIn('<span class="nav-text">Deals Pipeline</span>', base)
+        self.assertIn('<div class="nav-section-label">ACTIVE PIPELINE</div>', base)
+        self.assertIn('<span class="nav-text">Deal Stages</span>', base)
         self.assertIn("<h1>Deals Pipeline</h1>", deals)
         self.assertIn('title="Deals Pipeline"', routes)
         self.assertIn('@bp.get("/deals")', routes)
