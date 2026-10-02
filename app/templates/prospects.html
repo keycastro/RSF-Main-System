@@ -94,6 +94,10 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3V5Zm9 7 7-5H5l7 5Zm0 2.4L5 9.4V17h14V9.4l-7 5Z" fill="currentColor"/></svg>
             <span class="conversation-action-label">Email</span>
           </a>
+          <a class="conversation-action-icon conversation-action--whatsapp" href="#" data-prospect-whatsapp-action aria-disabled="true" title="WhatsApp" aria-label="WhatsApp">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a8.5 8.5 0 0 0-7.2 13L4 21l5-1.3A8.5 8.5 0 1 0 12 3Zm4.8 12.2c-.2.6-1.3 1.2-1.8 1.3-.5.1-1.1.2-3.5-.8-2.9-1.2-4.8-4.2-4.9-4.4-.1-.2-1.2-1.6-1.2-3 0-1.4.7-2.1 1-2.4.2-.2.5-.3.8-.3h.6c.2 0 .4 0 .6.5l.8 2c.1.3.1.5 0 .7l-.3.5-.5.6c-.2.2-.3.4-.1.7.2.3.8 1.3 1.8 2.1 1.2 1.1 2.3 1.4 2.6 1.6.3.1.5.1.7-.1l1-1.2c.2-.3.5-.3.7-.2l2 .9c.3.1.5.2.6.3.1.1.1.6-.1 1.2Z" fill="currentColor"/></svg>
+            <span class="conversation-action-label">WhatsApp</span>
+          </a>
         </div>
         <button class="deal-notes-viewer-close" type="button" data-prospect-notes-viewer-close aria-label="Close full notes" title="Close">×</button>
       </header>
@@ -131,7 +135,8 @@
             <button class="button primary" type="submit" data-email-send>Send Email</button>
           </div>
         </form>
-      </section>    </div>
+      </section>
+      {% include '_whatsapp_conversation_panel.html' %}    </div>
   </dialog>
 
   <dialog class="deal-notes-viewer prospect-longtext-viewer" data-prospect-longtext-viewer aria-labelledby="prospect-longtext-viewer-title">
