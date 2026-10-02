@@ -1449,6 +1449,16 @@ textarea.prospect-inline-editor{resize:vertical}
   background:#ffeded;
   color:#a61f1f
 }
+.conversation-action--manual-call{
+  border-color:#e5d6bb;
+  background:#fffaf0;
+  color:#8a5b12
+}
+.conversation-action--manual-call:hover{
+  border-color:#d8bf91;
+  background:#fff5df;
+  color:#70470a
+}
 .conversation-action--meet{
   border-color:#d3e5ff;
   background:#f4f8ff;
@@ -6507,6 +6517,241 @@ textarea.prospect-inline-editor{resize:vertical}
     width:calc(100vw - 16px)
   }
   .deal-notes-viewer.conversation-whatsapp-open .deal-notes-viewer-card{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)
+  }
+}
+
+/* v1.18.179 — Contact Number-driven Manual Call + stored recording/transcript UI. */
+.deal-notes-viewer.conversation-manual-call-open{
+  width:min(1180px,calc(100vw - 28px))
+}
+.deal-notes-viewer.conversation-manual-call-open .deal-notes-viewer-card{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  grid-template-rows:auto minmax(0,1fr)
+}
+.deal-notes-viewer.conversation-manual-call-open .deal-notes-viewer-head{
+  grid-column:1/-1;
+  grid-row:1
+}
+.deal-notes-viewer.conversation-manual-call-open .deal-notes-viewer-body{
+  grid-column:1;
+  grid-row:2;
+  min-width:0;
+  border-right:1px solid #e1e9e5
+}
+.conversation-manual-call-panel{
+  grid-column:2;
+  grid-row:2;
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr);
+  min-width:0;
+  min-height:0;
+  background:#faf8f3
+}
+.conversation-manual-call-panel[hidden]{display:none}
+.conversation-manual-call-panel-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:58px;
+  padding:11px 13px;
+  border-bottom:1px solid #e5dfd2;
+  background:#fff
+}
+.conversation-manual-call-panel-head>div{min-width:0}
+.conversation-manual-call-panel-head strong{
+  display:block;
+  color:var(--ux-section-ink);
+  font-size:13px
+}
+.conversation-manual-call-panel-head span{
+  display:block;
+  overflow:hidden;
+  margin-top:2px;
+  color:#6f756f;
+  font-size:11px;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+.conversation-manual-call-panel-close{
+  display:grid;
+  place-items:center;
+  width:30px;
+  height:30px;
+  flex:0 0 auto;
+  padding:0;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:#5f615d;
+  font:inherit;
+  font-size:22px;
+  cursor:pointer
+}
+.conversation-manual-call-panel-close:hover{
+  background:#f3efe6;
+  color:#3d3b34
+}
+.conversation-manual-call-panel-body{
+  min-height:0;
+  overflow:auto;
+  padding:16px;
+  background:#faf8f3
+}
+.conversation-manual-call-intro{
+  padding:13px 14px;
+  border:1px solid #e3dac8;
+  border-radius:10px;
+  background:#fffdf8
+}
+.conversation-manual-call-intro strong{
+  display:block;
+  color:#4b4233;
+  font-size:12px
+}
+.conversation-manual-call-intro p{
+  margin:5px 0 0;
+  color:#6e6659;
+  font-size:11.5px;
+  line-height:1.5
+}
+.conversation-manual-call-panel form{
+  display:grid;
+  gap:12px;
+  margin-top:14px
+}
+.conversation-manual-call-panel form>label:not(.conversation-manual-call-consent){
+  display:grid;
+  gap:5px
+}
+.conversation-manual-call-panel form>label:not(.conversation-manual-call-consent)>span{
+  color:#6d685f;
+  font-size:9.5px;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase
+}
+.conversation-manual-call-panel input[type="text"]{
+  width:100%;
+  min-height:38px;
+  padding:8px 10px;
+  border:1px solid #ddd6c9;
+  border-radius:8px;
+  background:#fff;
+  color:var(--ux-section-ink);
+  font:inherit;
+  font-size:12px;
+  outline:none
+}
+.conversation-manual-call-panel input[type="text"]:focus{
+  border-color:#c7a866;
+  box-shadow:0 0 0 2px rgba(175,133,57,.10)
+}
+.conversation-manual-call-consent{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  padding:10px 11px;
+  border:1px solid #e4ddd0;
+  border-radius:8px;
+  background:#fff
+}
+.conversation-manual-call-consent input{
+  margin-top:2px;
+  flex:0 0 auto
+}
+.conversation-manual-call-consent span{
+  color:#655f55;
+  font-size:10.5px;
+  line-height:1.45
+}
+.conversation-manual-call-actions{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px
+}
+.conversation-manual-call-actions [data-manual-call-status]{
+  color:#68645b;
+  font-size:10.5px;
+  line-height:1.4
+}
+.conversation-manual-call-actions button{
+  flex:0 0 auto
+}
+.manual-call-entry{
+  display:grid;
+  gap:10px
+}
+.manual-call-caption,
+.manual-call-recording{
+  display:grid;
+  gap:5px
+}
+.manual-call-caption>strong,
+.manual-call-recording>strong{
+  color:#29493f;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.04em;
+  text-transform:uppercase
+}
+.manual-call-caption p{
+  margin:0;
+  color:#233b33;
+  font-size:12px;
+  line-height:1.5;
+  white-space:pre-wrap
+}
+.manual-call-recording audio{
+  width:min(100%,440px);
+  height:36px
+}
+.manual-call-recording-pending{
+  color:#73817b;
+  font-size:10.5px
+}
+.manual-call-transcript{
+  padding:8px 9px;
+  border:1px solid #dce5e1;
+  border-radius:8px;
+  background:#fff
+}
+.manual-call-transcript summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  cursor:pointer;
+  list-style:none
+}
+.manual-call-transcript summary::-webkit-details-marker{display:none}
+.manual-call-transcript summary strong{
+  color:#29493f;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.04em;
+  text-transform:uppercase
+}
+.manual-call-transcript summary span{
+  color:#8a5b12;
+  font-size:10px;
+  font-weight:750
+}
+.manual-call-transcript-text{
+  margin-top:8px;
+  color:#354b43;
+  font-size:11px;
+  line-height:1.5;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere
+}
+@media (max-width:760px){
+  .deal-notes-viewer.conversation-manual-call-open{
+    width:calc(100vw - 16px)
+  }
+  .deal-notes-viewer.conversation-manual-call-open .deal-notes-viewer-card{
     grid-template-columns:minmax(0,1fr) minmax(0,1fr)
   }
 }
