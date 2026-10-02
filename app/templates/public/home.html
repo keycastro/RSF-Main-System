@@ -15,7 +15,7 @@
       {% endif %}
 
       <div class="hero-actions">
-        <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">{% if free_build_program.visible %}Request a Custom System{% else %}Build a Custom System{% endif %}</a>
+        <a class="button primary" href="{{ url_for('site.contact', intent='custom-build') }}">{% if free_build_program.visible %}Request a Custom System{% else %}Request a Custom System{% endif %}</a>
         <a class="button secondary" href="{{ url_for('site.system_templates') }}">View Systems</a>
       </div>
     </div>
@@ -66,7 +66,7 @@
       <div class="home-featured-action home-featured-action--primary reveal">
         <span class="home-featured-action-kicker">NEED A SYSTEM FOR YOUR BUSINESS?</span>
         <a class="home-featured-action-link home-featured-action-link--primary" href="{{ url_for('site.contact', intent='custom-build') }}">
-          <span>{% if free_build_program.visible %}Request a Custom System{% else %}Build a Custom System{% endif %}</span><span class="home-featured-action-arrow" aria-hidden="true">→</span>
+          <span>{% if free_build_program.visible %}Request a Custom System{% else %}Request a Custom System{% endif %}</span><span class="home-featured-action-arrow" aria-hidden="true">→</span>
         </a>
       </div>
 
