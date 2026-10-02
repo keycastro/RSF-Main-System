@@ -3,9 +3,9 @@
 <section class="page-hero page-hero-simple contact-hero-simple">
   <div class="container simple-page-hero reveal">
     <h1>Tell us what your business needs.</h1>
-    <p>Tell us the problem you want the system to solve. We will review your request and reply by email.</p>
+    <p>Tell us what you need the system to help with. We will review your request and reply by email.</p>
     {% if not source_intent %}
-    <p><a class="text-link" href="{{ url_for('site.contact', intent='customize') }}">Already have a system? Request an upgrade or customization.</a></p>
+    <p><a class="text-link" href="{{ url_for('site.contact', intent='customize') }}">Already have a system? Request an upgrade or change.</a></p>
     {% endif %}
   </div>
 </section>
@@ -24,16 +24,16 @@
       </div>
       {% elif source_intent %}
       <div class="human-request-note" role="note">
-        <strong>You are asking about:</strong>
-        <span>{% if source_intent == 'custom-build' %}a custom system for your business{% elif source_intent == 'customize' %}an upgrade or change to a system you already have{% elif source_intent == 'handover' %}taking care of the system yourself after it is built{% elif source_intent == 'managed' %}paid RSF support after the system is finished{% else %}a system for your business{% endif %}</span>
+        <strong>Your request:</strong>
+        <span>{% if source_intent == 'custom-build' %}a custom system for your business{% elif source_intent == 'customize' %}an upgrade or change to a system you already have{% elif source_intent == 'handover' %}taking care of the system yourself after it is built{% elif source_intent == 'managed' %}paid RSF support after delivery{% else %}a system for your business{% endif %}</span>
       </div>
       {% endif %}
 
       {% if source_intent == 'custom-build' and free_build_program.visible %}
       <div class="free-build-contact-note" role="note">
         <strong>Limited Free Build Program · {{ free_build_program.period }}</strong>
-        <p>RSF reviews every request. If accepted, the development fee for the system and features we agree on is $0.</p>
-        <a class="text-link" href="{{ url_for('site.services') }}#free-custom-build-program">See full program details</a>
+        <p>RSF reviews every request before acceptance. If accepted, the development fee for the agreed system and features is $0.</p>
+        <a class="text-link" href="{{ url_for('site.services') }}#free-custom-build-program">See Program Details</a>
       </div>
       {% endif %}
 
@@ -49,16 +49,16 @@
         <label><span>Company <small>optional</small></span><input maxlength="140" name="company" value="{{ form_data.company if form_data else '' }}" placeholder="Company name"></label>
       </div>
 
-      <label><span>What do you need help with?</span><textarea required minlength="20" maxlength="3000" name="message" rows="6" placeholder="What is hard to track, repeated, scattered, or missing in your business? What should the system help your team do?">{{ form_data.message if form_data else '' }}</textarea></label>
+      <label><span>What do you need the system to help with?</span><textarea required minlength="20" maxlength="3000" name="message" rows="6" placeholder="Tell us what is hard to track, repeated, scattered, or missing. Explain what you want the system to help your team do.">{{ form_data.message if form_data else '' }}</textarea></label>
 
-      <button class="button primary full-button" type="submit">Send System Request</button>
+      <button class="button primary full-button" type="submit">Send Request</button>
 
       <div class="human-contact-foot">
-        <p>We review your request first and reply to the email you provide.</p>
+        <p>We review every request and reply by email.</p>
         {% if contact_email %}<p>Or email us directly: <a class="text-link" href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>{% endif %}
       </div>
 
-      <p class="form-privacy">Do not send passwords or private client data.</p>
+      <p class="form-privacy">Please do not send passwords or private client information.</p>
       {% if environment_label == 'Local' %}<p class="local-form-note">Local preview: test messages stay on this computer.</p>{% endif %}
     </form>
   </div>
