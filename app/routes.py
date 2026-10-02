@@ -6008,6 +6008,15 @@ def twilio_manual_call_status_webhook(token: str):
     if not mapped:
         return "", 204
 
+    # Twilio sends callbacks for both the agent leg and the client leg. Once the
+    # client leg has reached a terminal outcome, the later parent/agent-leg
+    # "completed" callback must not erase a more specific client result such as
+    # BUSY or NO_ANSWER.
+    current_status = (row["status"] or "").upper()
+    client_terminal = {"COMPLETED", "BUSY", "FAILED", "NO_ANSWER", "CANCELED"}
+    if leg == "agent" and raw_status == "completed" and current_status in client_terminal:
+        return "", 204
+
     now = utcnow_iso()
     updates = ["status=?", "updated_at=?"]
     params: list = [mapped, now]
