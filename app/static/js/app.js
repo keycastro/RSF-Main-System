@@ -84,6 +84,7 @@ const RSFConversationTimeline = (() => {
       else if (channel === 'EMAIL') meta.textContent = entry.direction === 'CLIENT' ? 'CLIENT REPLY' : 'EMAIL SENT';
       else if (channel === 'WHATSAPP') meta.textContent = entry.direction === 'CLIENT' ? 'WHATSAPP RECEIVED' : 'WHATSAPP SENT';
       else if (channel === 'WEBSITE MESSAGE') meta.textContent = 'WEBSITE MESSAGE';
+      else if (channel === 'MANUAL CALL') meta.textContent = 'MANUAL CALL';
       else if (channel === 'AI SALES CALL') meta.textContent = 'AI SALES CALL';
       else meta.textContent = channel || entry.source || 'COMMUNICATION';
 
@@ -99,12 +100,74 @@ const RSFConversationTimeline = (() => {
             hour: 'numeric', minute: '2-digit'
           }).format(date)
         : raw;
+      if (channel === 'MANUAL CALL') {
+        const duration = Number(entry.duration_seconds || 0);
+        if (duration > 0) {
+          const minutes = Math.floor(duration / 60);
+          const seconds = duration % 60;
+          when.textContent += ` · Duration: ${minutes}m ${seconds}s`;
+        }
+      }
       headRight.appendChild(when);
 
       const body = document.createElement('div');
       body.className = 'conversation-timeline-item-body';
 
-      if (channel === 'AI SALES CALL') {
+      if (channel === 'MANUAL CALL') {
+        body.classList.add('manual-call-entry');
+
+        const caption = document.createElement('div');
+        caption.className = 'manual-call-caption';
+        const captionLabel = document.createElement('strong');
+        captionLabel.textContent = 'Caption';
+        const captionText = document.createElement('p');
+        captionText.textContent = entry.caption || entry.body || 'Manual call';
+        caption.append(captionLabel, captionText);
+        body.appendChild(caption);
+
+        const recording = document.createElement('div');
+        recording.className = 'manual-call-recording';
+        const recordingLabel = document.createElement('strong');
+        recordingLabel.textContent = 'Recording';
+        recording.appendChild(recordingLabel);
+        if (entry.recording_url) {
+          const player = document.createElement('audio');
+          player.controls = true;
+          player.preload = 'none';
+          player.src = entry.recording_url;
+          player.setAttribute('aria-label', 'Manual Call recording');
+          recording.appendChild(player);
+        } else {
+          const pending = document.createElement('span');
+          pending.className = 'manual-call-recording-pending';
+          pending.textContent = ['COMPLETED', 'BUSY', 'FAILED', 'NO_ANSWER', 'CANCELED'].includes((entry.status || '').toUpperCase())
+            ? 'No recording available.'
+            : 'Recording will appear here after the call.';
+          recording.appendChild(pending);
+        }
+        body.appendChild(recording);
+
+        const transcript = document.createElement('details');
+        transcript.className = 'manual-call-transcript';
+        const transcriptSummary = document.createElement('summary');
+        const transcriptLabel = document.createElement('strong');
+        transcriptLabel.textContent = 'Transcript';
+        const transcriptToggle = document.createElement('span');
+        transcriptToggle.textContent = 'Expand';
+        transcriptSummary.append(transcriptLabel, transcriptToggle);
+        const transcriptText = document.createElement('div');
+        transcriptText.className = 'manual-call-transcript-text';
+        transcriptText.textContent = entry.transcript || (
+          (entry.transcript_status || '').toUpperCase() === 'FAILED'
+            ? 'Transcript could not be generated.'
+            : 'Transcript is not available yet.'
+        );
+        transcript.append(transcriptSummary, transcriptText);
+        transcript.addEventListener('toggle', () => {
+          transcriptToggle.textContent = transcript.open ? 'Collapse' : 'Expand';
+        });
+        body.appendChild(transcript);
+      } else if (channel === 'AI SALES CALL') {
         body.classList.add('ai-sales-call-entry');
         const facts = document.createElement('div');
         facts.className = 'ai-sales-call-facts';
@@ -269,6 +332,7 @@ const RSFConversationTimeline = (() => {
   const load = async (url, container, callAction, emailAction, options = {}) => {
     if (!url || !container) return null;
     const whatsappAction = options.whatsappAction || container.closest('dialog')?.querySelector('.conversation-action--whatsapp');
+    const manualCallAction = options.manualCallAction || container.closest('dialog')?.querySelector('.conversation-action--manual-call');
     activeLoads.set(container, { url, callAction, emailAction, options });
     container.dataset.timelineUrl = url;
     container.replaceChildren();
@@ -277,6 +341,7 @@ const RSFConversationTimeline = (() => {
     loading.textContent = 'Loading conversation history...';
     container.appendChild(loading);
     setAction(callAction, '');
+    setAction(manualCallAction, '');
     setAction(emailAction, '');
     setAction(whatsappAction, '');
 
@@ -297,6 +362,7 @@ const RSFConversationTimeline = (() => {
         options
       });
       setAction(callAction, data.call_url || '');
+      setAction(manualCallAction, data.manual_call_url || '');
       setAction(emailAction, data.email_url || '');
       setAction(whatsappAction, data.whatsapp_url || '');
       return data;
@@ -349,6 +415,179 @@ const RSFConversationTimeline = (() => {
   };
 
   return { load, refresh, saveManualNote };
+})();
+
+const RSFInlineManualCall = (() => {
+  const pollers = new WeakMap();
+
+  const stopPolling = (panel) => {
+    const timer = pollers.get(panel);
+    if (timer) window.clearTimeout(timer);
+    pollers.delete(panel);
+  };
+
+  const statusLabel = (value) => {
+    const status = (value || '').replaceAll('_', ' ').toLowerCase();
+    return status ? status.replace(/\b\w/g, (letter) => letter.toUpperCase()) : '';
+  };
+
+  const poll = async (panel, statusUrl) => {
+    if (!panel || !statusUrl || panel.hidden) return;
+    stopPolling(panel);
+    try {
+      const response = await fetch(statusUrl, {
+        headers: { Accept: 'application/json' },
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) throw new Error(data.message || 'Manual Call status is unavailable.');
+      const status = panel.querySelector('[data-manual-call-status]');
+      if (status) {
+        const text = statusLabel(data.call?.status);
+        status.textContent = data.call?.error ? `${text} · ${data.call.error}` : text;
+      }
+      if (data.call?.terminal) {
+        const timeline = panel.closest('dialog')?.querySelector('.conversation-timeline');
+        if (timeline) await RSFConversationTimeline.refresh(timeline);
+        return;
+      }
+      pollers.set(panel, window.setTimeout(() => poll(panel, statusUrl), 2000));
+    } catch (error) {
+      const status = panel.querySelector('[data-manual-call-status]');
+      if (status) status.textContent = error.message || 'Manual Call status is unavailable.';
+    }
+  };
+
+  const load = async (action) => {
+    if (!action || action.getAttribute('aria-disabled') === 'true' || !action.href || action.href.endsWith('#')) return null;
+    const dialog = action.closest('dialog');
+    const panel = dialog?.querySelector('[data-manual-call-panel]');
+    if (!dialog || !panel) return null;
+
+    const emailPanel = dialog.querySelector('[data-email-panel]');
+    const whatsappPanel = dialog.querySelector('[data-whatsapp-panel]');
+    if (emailPanel) emailPanel.hidden = true;
+    if (whatsappPanel) whatsappPanel.hidden = true;
+    dialog.classList.remove('conversation-email-open', 'conversation-whatsapp-open');
+    panel.hidden = false;
+    dialog.classList.add('conversation-manual-call-open');
+
+    const status = panel.querySelector('[data-manual-call-status]');
+    if (status) status.textContent = 'Loading…';
+    stopPolling(panel);
+
+    try {
+      const response = await fetch(action.href, {
+        headers: { Accept: 'application/json' },
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) throw new Error(data.message || 'Manual Call could not be loaded.');
+
+      panel.dataset.startUrl = data.start_url || '';
+      panel.dataset.prospectId = data.prospect_id ? String(data.prospect_id) : '';
+      panel.dataset.inquiryId = data.inquiry_id ? String(data.inquiry_id) : '';
+      panel.dataset.dealId = data.deal_id ? String(data.deal_id) : '';
+      const recipient = panel.querySelector('[data-manual-call-recipient]');
+      if (recipient) recipient.textContent = data.recipient || '';
+
+      const start = panel.querySelector('[data-manual-call-start]');
+      if (start) start.disabled = !data.start_ready;
+      if (status) status.textContent = data.connection_message || (
+        data.transcription_ready
+          ? 'Recording and automatic transcript are ready.'
+          : 'Recording is ready. Transcript requires Twilio Batch Transcription setup.'
+      );
+
+      const latest = data.latest_call;
+      if (latest && !latest.terminal && data.latest_status_url) {
+        poll(panel, data.latest_status_url);
+      }
+      return data;
+    } catch (error) {
+      if (status) status.textContent = error.message || 'Manual Call could not be loaded.';
+      return null;
+    }
+  };
+
+  const close = (panel) => {
+    if (!panel) return;
+    stopPolling(panel);
+    const dialog = panel.closest('dialog');
+    panel.hidden = true;
+    dialog?.classList.remove('conversation-manual-call-open');
+  };
+
+  document.addEventListener('click', (event) => {
+    const action = event.target.closest?.('.conversation-action--manual-call');
+    if (action) {
+      if (action.getAttribute('aria-disabled') === 'true') return;
+      event.preventDefault();
+      load(action);
+      return;
+    }
+    const closeButton = event.target.closest?.('[data-manual-call-panel-close]');
+    if (closeButton) {
+      event.preventDefault();
+      close(closeButton.closest('[data-manual-call-panel]'));
+    }
+  });
+
+  document.addEventListener('submit', async (event) => {
+    const form = event.target.closest?.('[data-manual-call-form]');
+    if (!form) return;
+    event.preventDefault();
+    const panel = form.closest('[data-manual-call-panel]');
+    const dialog = panel?.closest('dialog');
+    const action = dialog?.querySelector('.conversation-action--manual-call');
+    const status = panel?.querySelector('[data-manual-call-status]');
+    const start = panel?.querySelector('[data-manual-call-start]');
+    const consent = panel?.querySelector('[data-manual-call-consent]');
+    const caption = panel?.querySelector('[data-manual-call-caption]');
+
+    if (!consent?.checked) {
+      if (status) status.textContent = 'Confirm the call-recording consent reminder first.';
+      consent?.focus();
+      return;
+    }
+
+    const payload = new URLSearchParams({
+      csrf_token: panel?.dataset.csrfToken || '',
+      caption: caption?.value || '',
+      recording_consent: '1'
+    });
+    if (panel?.dataset.prospectId) payload.set('prospect_id', panel.dataset.prospectId);
+    if (panel?.dataset.inquiryId) payload.set('inquiry_id', panel.dataset.inquiryId);
+    if (panel?.dataset.dealId) payload.set('deal_id', panel.dataset.dealId);
+
+    if (start) start.disabled = true;
+    if (status) status.textContent = 'Starting Manual Call…';
+    try {
+      const response = await fetch(panel?.dataset.startUrl || '', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        credentials: 'same-origin',
+        cache: 'no-store',
+        body: payload.toString()
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) throw new Error(data.message || 'Manual Call could not be started.');
+      if (status) status.textContent = data.message || 'Manual Call started.';
+      const timeline = dialog?.querySelector('.conversation-timeline');
+      if (timeline) await RSFConversationTimeline.refresh(timeline);
+      if (data.status_url) poll(panel, data.status_url);
+    } catch (error) {
+      if (status) status.textContent = error.message || 'Manual Call could not be started.';
+      if (start) start.disabled = false;
+    }
+  });
+
+  return { load, close };
 })();
 
 const RSFInlineEmail = (() => {
@@ -422,8 +661,10 @@ const RSFInlineEmail = (() => {
     const panel = dialog?.querySelector('[data-email-panel]');
     if (!dialog || !panel) return null;
     const whatsappPanel = dialog.querySelector('[data-whatsapp-panel]');
+    const manualCallPanel = dialog.querySelector('[data-manual-call-panel]');
     if (whatsappPanel) whatsappPanel.hidden = true;
-    dialog.classList.remove('conversation-whatsapp-open');
+    if (manualCallPanel) manualCallPanel.hidden = true;
+    dialog.classList.remove('conversation-whatsapp-open', 'conversation-manual-call-open');
     panel.hidden = false;
     dialog.classList.add('conversation-email-open');
     const status = panel.querySelector('[data-email-status]');
@@ -615,8 +856,10 @@ const RSFInlineWhatsApp = (() => {
     if (!dialog || !panel) return null;
 
     const emailPanel = dialog.querySelector('[data-email-panel]');
+    const manualCallPanel = dialog.querySelector('[data-manual-call-panel]');
     if (emailPanel) emailPanel.hidden = true;
-    dialog.classList.remove('conversation-email-open');
+    if (manualCallPanel) manualCallPanel.hidden = true;
+    dialog.classList.remove('conversation-email-open', 'conversation-manual-call-open');
     panel.hidden = false;
     dialog.classList.add('conversation-whatsapp-open');
 
