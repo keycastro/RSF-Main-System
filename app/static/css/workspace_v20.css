@@ -6577,57 +6577,38 @@ body.card-layout-dragging-global *{cursor:grabbing!important;user-select:none!im
 }
 
 
-/* v1.18.176 — Prospect source-zone adaptation for moved shared simple fields.
-   A shared Deal label moved beside native Prospect fields must adopt the
-   destination card presentation instead of keeping its inner boxed input. */
-.prospects-page label.card-layout-field-relocated[data-card-layout-current-zone="source"][data-card-layout-field]{
-  display:grid!important;
-  align-content:start!important;
-  gap:0!important;
-  min-width:0!important;
-  min-height:58px!important;
-  margin:0!important;
-  padding:9px 11px!important;
-  border:1px solid #cbd8d3!important;
-  border-radius:10px!important;
-  background:#fff!important;
-  box-shadow:none!important
+
+
+/* v1.18.177 — Prospect WhatsApp uses the native Prospect field/edit pattern.
+   Source-zone presentation is not recreated here: JS applies the actual
+   prospect-detail/prospect-editable-field classes so Contact Number CSS is reused. */
+.prospects-page .prospect-shared-deal-field:not([data-card-layout-current-zone="source"]):not([data-card-layout-current-zone="header"]){
+  display:grid;
+  gap:5px;
+  min-width:0
 }
-.prospects-page label.card-layout-field-relocated[data-card-layout-current-zone="source"][data-card-layout-field]>span{
-  display:block!important;
-  margin:0 0 4px!important;
-  color:#5f706a!important;
-  font-size:9px!important;
-  font-weight:650!important;
-  letter-spacing:.055em!important;
-  line-height:1.35!important;
-  text-transform:uppercase!important
+.prospects-page .prospect-shared-deal-field:not([data-card-layout-current-zone="source"]):not([data-card-layout-current-zone="header"])>span{
+  color:#6f7f79;
+  font-size:9px;
+  font-weight:650;
+  letter-spacing:.055em;
+  text-transform:uppercase
 }
-.prospects-page label.card-layout-field-relocated[data-card-layout-current-zone="source"][data-card-layout-field]>input,
-.prospects-page label.card-layout-field-relocated[data-card-layout-current-zone="source"][data-card-layout-field]>select,
-.prospects-page label.card-layout-field-relocated[data-card-layout-current-zone="source"][data-card-layout-field]>textarea{
-  width:100%!important;
-  min-width:0!important;
-  max-width:none!important;
-  min-height:0!important;
-  height:auto!important;
-  margin:0!important;
-  padding:0!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-  color:var(--ux-section-ink)!important;
-  font:inherit!important;
-  font-size:12px!important;
-  font-weight:500!important;
-  line-height:1.45!important;
-  outline:none!important
+.prospects-page .prospect-shared-deal-field:not([data-card-layout-current-zone="source"]):not([data-card-layout-current-zone="header"])>.prospect-shared-deal-input{
+  width:100%;
+  min-width:0;
+  min-height:39px;
+  padding:9px 10px;
+  border:1px solid #d7e1dd;
+  border-radius:8px;
+  background:#fff;
+  color:var(--ux-section-ink);
+  font:inherit;
+  font-size:12.5px;
+  line-height:1.4;
+  outline:none
 }
-.prospects-page label.card-layout-field-relocated[data-card-layout-current-zone="source"][data-card-layout-field]>input:focus,
-.prospects-page label.card-layout-field-relocated[data-card-layout-current-zone="source"][data-card-layout-field]>select:focus,
-.prospects-page label.card-layout-field-relocated[data-card-layout-current-zone="source"][data-card-layout-field]>textarea:focus{
-  border:0!important;
-  background:transparent!important;
-  box-shadow:inset 0 -1px 0 var(--workspace-emerald)!important
+.prospects-page .prospect-shared-deal-field:not([data-card-layout-current-zone="source"]):not([data-card-layout-current-zone="header"])>.prospect-shared-deal-input:focus{
+  border-color:var(--workspace-emerald);
+  box-shadow:0 0 0 2px rgba(27,94,74,.10)
 }

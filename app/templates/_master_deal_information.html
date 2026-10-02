@@ -15,6 +15,7 @@
 {% set deal_section_heading = deal_section_heading if deal_section_heading is defined else 'Deal Information' %}
 {% set deal_layout_zone = deal_layout_zone if deal_layout_zone is defined else 'deal' %}
 {% set deal_show_became_in_heading = deal_show_became_in_heading if deal_show_became_in_heading is defined else true %}
+{% set deal_use_prospect_native_whatsapp = deal_use_prospect_native_whatsapp if deal_use_prospect_native_whatsapp is defined else false %}
 <section class="master-deal-information" data-master-deal-information>
   {% if show_deal_section_heading %}
   <div class="master-card-section-head">
@@ -82,10 +83,26 @@
       {% elif not deal_external_contact_number %}
       <input type="hidden" name="contact_number" value="{{ deal_client_phone }}">
       {% endif %}
+      {% if deal_use_prospect_native_whatsapp %}
+      <div
+        class="prospect-shared-deal-field"
+        data-card-layout-field="whatsapp_number"
+        data-prospect-edit-field
+        data-prospect-field="whatsapp_number"
+        data-prospect-shared-deal-field="whatsapp_number"
+        data-prospect-editor="tel"
+        data-prospect-value="{{ deal['whatsapp_number'] }}"
+      >
+        <span>WhatsApp #</span>
+        <button class="prospect-edit-value" type="button" data-prospect-edit-trigger aria-label="Edit WhatsApp Number" hidden>{{ deal['whatsapp_number'] or '—' }}</button>
+        <input class="prospect-shared-deal-input" type="tel" name="whatsapp_number" form="{{ form_id }}" maxlength="120" value="{{ deal['whatsapp_number'] }}" data-prospect-shared-deal-input>
+      </div>
+      {% else %}
       <label data-card-layout-field="whatsapp_number">
         <span>WhatsApp #</span>
         <input type="tel" name="whatsapp_number" form="{{ form_id }}" maxlength="120" value="{{ deal['whatsapp_number'] }}">
       </label>
+      {% endif %}
       <input type="hidden" name="location" value="{{ deal_client_location }}">
       {% if deal_show_city_country %}
       {% include '_master_deal_city_country.html' %}

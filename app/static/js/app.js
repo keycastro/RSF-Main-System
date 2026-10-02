@@ -2906,6 +2906,7 @@ document.addEventListener('click', (event) => {
     const fieldName = field.dataset.prospectField || '';
     const editorType = field.dataset.prospectEditor || 'text';
     const originalValue = field.dataset.prospectValue || '';
+    const sharedDealFieldName = field.dataset.prospectSharedDealField || '';
     let editor;
 
     if (editorType === 'textarea') {
@@ -2981,6 +2982,37 @@ document.addEventListener('click', (event) => {
       finished = true;
       editor.disabled = true;
       field.classList.add('is-saving');
+
+      if (sharedDealFieldName) {
+        const control = field.querySelector('[data-prospect-shared-deal-input]');
+        const form = control?.form || null;
+        const saver = window.RSFSaveDealFormInBackground;
+        if (!(control instanceof HTMLInputElement) || !(form instanceof HTMLFormElement) || typeof saver !== 'function') {
+          restore();
+          field.classList.remove('is-saving');
+          showToast('WhatsApp # could not be updated.', true);
+          return;
+        }
+
+        const previousControlValue = control.value;
+        control.value = newValue;
+        const saved = await saver(form);
+        if (saved === false) {
+          control.value = previousControlValue;
+          restore();
+          field.classList.remove('is-saving');
+          return;
+        }
+
+        control.dataset.dealStartValue = newValue;
+        field.dataset.prospectValue = newValue;
+        display.textContent = newValue || '—';
+        restore();
+        field.classList.remove('is-saving');
+        showToast('WhatsApp # updated.');
+        return;
+      }
+
       const body = new URLSearchParams({
         csrf_token: csrfForRow(row),
         field: fieldName,
@@ -4224,6 +4256,19 @@ document.addEventListener('click', (event) => {
         const trigger = wrap.querySelector('[data-prospect-edit-trigger]');
         if (trigger) trigger.textContent = value || '—';
       });
+      if (typeof data.whatsapp_number === 'string') {
+        const whatsapp = card.querySelector('[data-prospect-shared-deal-field="whatsapp_number"]');
+        if (whatsapp) {
+          whatsapp.dataset.prospectValue = data.whatsapp_number;
+          const trigger = whatsapp.querySelector('[data-prospect-edit-trigger]');
+          const control = whatsapp.querySelector('[data-prospect-shared-deal-input]');
+          if (trigger) trigger.textContent = data.whatsapp_number || '—';
+          if (control instanceof HTMLInputElement) {
+            control.value = data.whatsapp_number;
+            control.dataset.dealStartValue = data.whatsapp_number;
+          }
+        }
+      }
       if (typeof data.notes_after_conversation === 'string') {
         const sourceNotes = card.querySelector('[data-prospect-notes-compact]');
         if (sourceNotes instanceof HTMLTextAreaElement) {
@@ -4259,13 +4304,14 @@ document.addEventListener('click', (event) => {
   };
 
   const saveDealFormInBackground = async (form) => {
-    if (!(form instanceof HTMLFormElement)) return;
+    if (!(form instanceof HTMLFormElement)) return false;
     const state = autosaveStateFor(form);
     if (state.saving) {
       state.pending = true;
-      return;
+      return true;
     }
 
+    let saved = true;
     state.saving = true;
     try {
       do {
@@ -4305,12 +4351,16 @@ document.addEventListener('click', (event) => {
         syncEmbeddedSourceFromDeal(form, data);
       } while (state.pending);
     } catch (error) {
+      saved = false;
       state.pending = false;
       window.alert(error.message || 'Deal changes could not be saved. Try again.');
     } finally {
       state.saving = false;
     }
+    return saved;
   };
+
+  window.RSFSaveDealFormInBackground = saveDealFormInBackground;
 
   const notesViewer = page.querySelector('[data-deal-notes-viewer]');
   const notesViewerInput = page.querySelector('[data-deal-notes-viewer-input]');
@@ -5408,6 +5458,22 @@ document.addEventListener('click', (event) => {
     return field.dataset.cardLayoutOriginZone || '';
   };
 
+  const syncProspectSharedDealPresentation = (field, currentZone) => {
+    if (pageName !== 'prospects' || !field.hasAttribute('data-prospect-shared-deal-field')) return;
+    const useProspectNative = currentZone === 'source';
+    field.classList.toggle('prospect-detail', useProspectNative);
+    field.classList.toggle('prospect-editable-field', useProspectNative);
+
+    const display = field.querySelector('[data-prospect-edit-trigger]');
+    const control = field.querySelector('[data-prospect-shared-deal-input]');
+    if (control instanceof HTMLInputElement && useProspectNative) {
+      field.dataset.prospectValue = control.value || '';
+      if (display && field.dataset.prospectEditing !== '1') display.textContent = control.value || '—';
+    }
+    if (display && field.dataset.prospectEditing !== '1') display.hidden = !useProspectNative;
+    if (control instanceof HTMLInputElement) control.hidden = useProspectNative;
+  };
+
   const syncAdaptiveFieldZones = (card) => {
     if (!card) return;
     fieldsForCard(card).forEach((field) => {
@@ -5416,6 +5482,7 @@ document.addEventListener('click', (event) => {
       if (!field.dataset.cardLayoutOriginZone) field.dataset.cardLayoutOriginZone = currentZone;
       field.dataset.cardLayoutCurrentZone = currentZone;
       field.classList.toggle('card-layout-field-relocated', field.dataset.cardLayoutOriginZone !== currentZone);
+      syncProspectSharedDealPresentation(field, currentZone);
     });
   };
 
