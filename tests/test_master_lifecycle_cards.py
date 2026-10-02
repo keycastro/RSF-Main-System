@@ -46,6 +46,18 @@ class MasterLifecycleCardTests(unittest.TestCase):
         self.assertLess(active_deal_position, source_position)
         self.assertLess(source_position, predeal_deal_position)
 
+    def test_primary_sidebar_names_match_current_workspace_pages(self):
+        base = self.read("app/templates/base.html")
+        prospects = self.read("app/templates/prospects.html")
+        inquiries = self.read("app/templates/inquiries.html")
+
+        self.assertIn('<span class="nav-text">Prospects</span>', base)
+        self.assertIn('<span class="nav-text">Website Inbox</span>', base)
+        self.assertIn("<h1>Prospects</h1>", prospects)
+        self.assertIn("<h1>Website Inbox</h1>", inquiries)
+        self.assertIn("url_for('main.prospects')", base)
+        self.assertIn("url_for('main.inquiries_list')", base)
+
     def test_deals_pipeline_rename_is_presentation_only(self):
         base = self.read("app/templates/base.html")
         deals = self.read("app/templates/deals.html")
