@@ -27,7 +27,7 @@ OperationalError = PGOperationalError
 
 SCHEMA_VERSION = 37
 SCHEMA_NAME = "rsf-main-system-v1.18.175-shared-whatsapp-number"
-SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents","communication_notes","ai_sales_calls","whatsapp_messages"}
+SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents","communication_notes","ai_sales_calls","whatsapp_messages","manual_client_calls"}
 
 
 def using_postgres() -> bool:
@@ -1384,6 +1384,51 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
             (38, "rsf-v1.18.178-whatsapp-api-ready"),
         )
 
+    # V39 stores manual external client calls, protected recording audio, captions,
+    # and collapsed transcripts separately from the private Founder/Partner WebRTC calls.
+    if 39 not in applied:
+        db.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS manual_client_calls (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                prospect_id INTEGER REFERENCES prospects(id) ON DELETE SET NULL,
+                website_inquiry_id INTEGER REFERENCES website_inquiries(id) ON DELETE SET NULL,
+                deal_id INTEGER REFERENCES deals(id) ON DELETE SET NULL,
+                initiated_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                provider TEXT NOT NULL DEFAULT 'TWILIO',
+                provider_call_sid TEXT NOT NULL DEFAULT '',
+                webhook_token TEXT NOT NULL UNIQUE,
+                phone TEXT NOT NULL DEFAULT '',
+                status TEXT NOT NULL DEFAULT 'STARTING',
+                caption TEXT NOT NULL DEFAULT '',
+                transcript TEXT NOT NULL DEFAULT '',
+                transcript_status TEXT NOT NULL DEFAULT 'NOT_REQUESTED',
+                transcription_id TEXT NOT NULL DEFAULT '',
+                provider_error TEXT NOT NULL DEFAULT '',
+                recording_sid TEXT NOT NULL DEFAULT '',
+                recording_mime_type TEXT NOT NULL DEFAULT '',
+                recording_size_bytes INTEGER NOT NULL DEFAULT 0,
+                recording_bytes BLOB,
+                recording_duration_seconds INTEGER NOT NULL DEFAULT 0,
+                duration_seconds INTEGER NOT NULL DEFAULT 0,
+                started_at TEXT NOT NULL DEFAULT '',
+                answered_at TEXT NOT NULL DEFAULT '',
+                ended_at TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_manual_client_calls_prospect ON manual_client_calls(prospect_id,created_at,id);
+            CREATE INDEX IF NOT EXISTS idx_manual_client_calls_inquiry ON manual_client_calls(website_inquiry_id,created_at,id);
+            CREATE INDEX IF NOT EXISTS idx_manual_client_calls_deal ON manual_client_calls(deal_id,created_at,id);
+            CREATE UNIQUE INDEX IF NOT EXISTS uq_manual_client_calls_provider_sid ON manual_client_calls(provider_call_sid) WHERE provider_call_sid <> '';
+            CREATE UNIQUE INDEX IF NOT EXISTS uq_manual_client_calls_recording_sid ON manual_client_calls(recording_sid) WHERE recording_sid <> '';
+            """
+        )
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (39, "rsf-v1.18.179-manual-call-recording"),
+        )
+
 
 def _table_exists_postgres(db, table: str) -> bool:
     row = db.execute(
@@ -1436,7 +1481,7 @@ def _import_seed_payload(db) -> None:
         "users", "account_password_vault", "commission_stages", "partners", "leads", "lead_notes", "followups", "sales", "commissions", "sale_corrections",
         "resources", "duplicate_claims", "activity_log", "messages", "message_attachments", "voice_calls",
         "voice_call_signals", "settings", "website_inquiries", "client_conversations", "client_messages",
-        "client_attachments", "client_notifications", "prospects", "deals", "deal_documents", "communication_notes", "ai_sales_calls", "gmail_oauth_credentials", "google_calendar_oauth_credentials"
+        "client_attachments", "client_notifications", "prospects", "deals", "deal_documents", "communication_notes", "ai_sales_calls", "whatsapp_messages", "manual_client_calls", "gmail_oauth_credentials", "google_calendar_oauth_credentials"
     ]
     for table in order:
         rows = tables.get(table) or []
