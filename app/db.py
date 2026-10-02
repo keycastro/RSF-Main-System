@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 39
-SCHEMA_NAME = "rsf-main-system-v1.18.179-manual-call-recording"
+SCHEMA_VERSION = 40
+SCHEMA_NAME = "rsf-main-system-v1.18.180-manual-call-live-controls"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents","communication_notes","ai_sales_calls","whatsapp_messages","manual_client_calls"}
 
 
@@ -1427,6 +1427,24 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
         db.execute(
             "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
             (39, "rsf-v1.18.179-manual-call-recording"),
+        )
+
+    if 40 not in applied:
+        manual_columns = {row["name"] for row in db.execute("PRAGMA table_info(manual_client_calls)").fetchall()}
+        if "provider_client_call_sid" not in manual_columns:
+            db.execute("ALTER TABLE manual_client_calls ADD COLUMN provider_client_call_sid TEXT NOT NULL DEFAULT ''")
+        if "conference_sid" not in manual_columns:
+            db.execute("ALTER TABLE manual_client_calls ADD COLUMN conference_sid TEXT NOT NULL DEFAULT ''")
+        if "agent_muted" not in manual_columns:
+            db.execute("ALTER TABLE manual_client_calls ADD COLUMN agent_muted INTEGER NOT NULL DEFAULT 0")
+        if "client_held" not in manual_columns:
+            db.execute("ALTER TABLE manual_client_calls ADD COLUMN client_held INTEGER NOT NULL DEFAULT 0")
+        db.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS uq_manual_client_calls_client_sid ON manual_client_calls(provider_client_call_sid) WHERE provider_client_call_sid <> ''"
+        )
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (40, "rsf-v1.18.180-manual-call-live-controls"),
         )
 
 
