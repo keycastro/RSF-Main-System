@@ -159,12 +159,12 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         slug="property-operations-command-center",
         name="Property Operations Command Center",
         category="Property Operations",
-        short_description="Keep property tasks, deadlines, approvals, rentals, and follow-ups together in one place.",
+        short_description="Keep property tasks, deadlines, approvals, rentals, and follow-ups organized in one place.",
         card_audience="Property managers and teams handling daily property work.",
         full_description="Keep daily property work, deadlines, approvals, rentals, and team tasks organized in one place.",
         business_problem=(
-            "Property work is easy to miss when tasks, deadlines, approvals, and updates are spread across chats "
-            "and separate tools. This system keeps the important work in one place."
+            "Property work becomes harder to manage when tasks, deadlines, approvals, and updates are spread across chats "
+            "and separate tools. This system keeps the important work organized in one place."
         ),
         target_users=(
             "Property managers",
@@ -231,12 +231,12 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             ),
         ),
         project_note=(
-            "Independent system from Realty Systems Foundry, founded by Key Castro. It is not presented as software commissioned or used by a specific client."
+            "Independent RSF project. It was not commissioned by or built for a specific client."
         ),
         seo_title="Property Operations Command Center | Realty Systems Foundry",
         meta_description=(
-            "See Property Operations Command Center, an RSF portfolio example for organizing property work, deadlines, "
-            "approvals, rentals, tenant placement, checklists, and reminders."
+            "See an RSF system example for organizing property work, deadlines, approvals, rentals, tenant placement, "
+            "checklists, and reminders."
         ),
         og_image="images/templates/property-operations-command-center/dashboard.png",
         published_date="2026-09-19",
@@ -246,11 +246,11 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         slug="property-inventory-hub",
         name="Property Inventory Hub",
         category="Real Estate Inventory",
-        short_description="Keep property listings in one place so your team can find and update them easily.",
+        short_description="Keep property listings in one place so your team can find, review, and update them easily.",
         card_audience="Real estate teams that share property listings.",
         full_description="Keep your property listings organized and easy for your team to search and update.",
         business_problem=(
-            "Property listings are hard to manage when they are spread across chats, spreadsheets, and different files. "
+            "Property listings become harder to manage when they are spread across chats, spreadsheets, and files. "
             "This system keeps them together so your team can find and update them easily."
         ),
         target_users=(
@@ -271,7 +271,7 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             "Each agent can quickly see their own listings",
             "Reminders to check old listings",
             "Keep old listings in history and bring them back when needed",
-            "Manage team access, listing checks, and your company name and look",
+            "Manage team access, listing reviews, and your company name and appearance",
         ),
         technologies=(
             "Python",
@@ -320,8 +320,7 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         ),
         seo_title="Property Inventory Hub | Realty Systems Foundry",
         meta_description=(
-            "See Property Inventory Hub, an RSF portfolio example for keeping property listings organized, searchable, "
-            "current, and easy for a real estate team to manage."
+            "See an RSF system example for keeping property listings organized, searchable, current, and easy for a real estate team to manage."
         ),
         og_image="images/templates/property-inventory-hub/dashboard.png",
         published_date="2026-09-19",
@@ -332,15 +331,15 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
         name="Student Housing Matching and Placement System",
         category="Student Housing Operations",
         short_description=(
-            "Keep student housing requests, available units, viewings, reservations, and placements in one place."
+            "Keep student housing requests, available units, viewings, reservations, and placements organized in one place."
         ),
-        card_audience="Teams helping students find and secure housing.",
+        card_audience="Teams that help students find and secure housing.",
         full_description=(
-            "Help your team manage student housing requests, available units, viewings, reservations, and completed placements in one place."
+            "Keep student housing requests, available units, viewings, reservations, and completed placements organized in one place."
         ),
         business_problem=(
-            "Student housing becomes hard to manage when requests, available units, viewings, and follow-ups are kept in different places. "
-            "This system keeps those steps together from the first request to the final placement."
+            "Student housing work becomes harder to manage when requests, available units, viewings, and follow-ups are kept in different places. "
+            "This system keeps the process together from the first request to final placement."
         ),
         target_users=(
             "Student housing businesses",
@@ -406,14 +405,13 @@ SYSTEM_TEMPLATES: tuple[SystemTemplate, ...] = (
             ),
         ),
         project_note=(
-            "Independent portfolio project from Realty Systems Foundry, founded by Key Castro, after studying a publicly visible 2026 student-housing "
-            "system request and how the housing placement process works. Not commissioned by, affiliated with, or endorsed by "
-            "the original poster."
+            "Independent RSF portfolio project based on a publicly visible 2026 student-housing system request and research into "
+            "the housing placement process. It was not commissioned by, affiliated with, or endorsed by the original poster."
         ),
         seo_title="Student Housing Matching & Placement System | Realty Systems Foundry",
         meta_description=(
-            "See RSF's Student Housing Matching and Placement System, a portfolio example for housing requests, available units, "
-            "viewings, follow-ups, reservations, and placements."
+            "See an RSF system example for organizing housing requests, available units, viewings, follow-ups, reservations, "
+            "and placements."
         ),
         og_image="images/templates/student-housing-matching-and-placement-system/dashboard.png",
         published_date="2026-09-19",
