@@ -24,7 +24,7 @@ class CardLayoutReorderingTests(unittest.TestCase):
         master = self.read("app/templates/_master_deal_information.html")
         city = self.read("app/templates/_master_deal_city_country.html")
         for key in (
-            "followup_date", "email", "price", "developer", "contact_number", "demo_schedule",
+            "followup_date", "email", "price", "developer", "contact_number", "whatsapp_number", "demo_schedule",
             "next_step", "notes_after_conversation", "google_meet", "email_conversation",
         ):
             self.assertIn(f'data-card-layout-field="{key}"', master)

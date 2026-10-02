@@ -82,6 +82,10 @@
       {% elif not deal_external_contact_number %}
       <input type="hidden" name="contact_number" value="{{ deal_client_phone }}">
       {% endif %}
+      <label data-card-layout-field="whatsapp_number">
+        <span>WhatsApp #</span>
+        <input type="tel" name="whatsapp_number" form="{{ form_id }}" maxlength="120" value="{{ deal['whatsapp_number'] }}">
+      </label>
       <input type="hidden" name="location" value="{{ deal_client_location }}">
       {% if deal_show_city_country %}
       {% include '_master_deal_city_country.html' %}

@@ -4627,6 +4627,7 @@ document.addEventListener('click', (event) => {
     'price',
     'developer',
     'contact_number',
+    'whatsapp_number',
     'contact_person',
     'location',
     'next_step',

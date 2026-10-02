@@ -100,6 +100,7 @@ CREATE TABLE IF NOT EXISTS deals (
     price TEXT NOT NULL DEFAULT '',
     developer TEXT NOT NULL DEFAULT '',
     contact_number TEXT NOT NULL DEFAULT '',
+    whatsapp_number TEXT NOT NULL DEFAULT '',
     email TEXT NOT NULL DEFAULT '',
     notes_after_conversation TEXT NOT NULL DEFAULT '',
     became_deal_at TEXT NOT NULL DEFAULT '',

@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 36
-SCHEMA_NAME = "rsf-main-system-v1.18.155-shared-developer-field"
+SCHEMA_VERSION = 37
+SCHEMA_NAME = "rsf-main-system-v1.18.175-shared-whatsapp-number"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents","communication_notes","ai_sales_calls"}
 
 
@@ -1333,6 +1333,18 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
         db.execute(
             "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
             (36, "rsf-v1.18.155-shared-developer-field"),
+        )
+
+    # V37 adds one canonical WhatsApp # value to the Deal workspace. Every
+    # Prospect and Website Inquiry already owns or shares a Deal workspace row,
+    # so the same client value is editable from all three lifecycle pages.
+    if 37 not in applied:
+        deal_columns = {row["name"] for row in db.execute("PRAGMA table_info(deals)").fetchall()}
+        if "whatsapp_number" not in deal_columns:
+            db.execute("ALTER TABLE deals ADD COLUMN whatsapp_number TEXT NOT NULL DEFAULT ''")
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (37, "rsf-v1.18.175-shared-whatsapp-number"),
         )
 
 
