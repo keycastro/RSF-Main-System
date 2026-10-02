@@ -82,6 +82,7 @@ const RSFConversationTimeline = (() => {
       const channel = (entry.channel || '').toUpperCase();
       if (channel === 'NOTE') meta.textContent = 'MANUAL NOTE';
       else if (channel === 'EMAIL') meta.textContent = entry.direction === 'CLIENT' ? 'CLIENT REPLY' : 'EMAIL SENT';
+      else if (channel === 'WHATSAPP') meta.textContent = entry.direction === 'CLIENT' ? 'WHATSAPP RECEIVED' : 'WHATSAPP SENT';
       else if (channel === 'WEBSITE MESSAGE') meta.textContent = 'WEBSITE MESSAGE';
       else if (channel === 'AI SALES CALL') meta.textContent = 'AI SALES CALL';
       else meta.textContent = channel || entry.source || 'COMMUNICATION';
@@ -267,6 +268,7 @@ const RSFConversationTimeline = (() => {
 
   const load = async (url, container, callAction, emailAction, options = {}) => {
     if (!url || !container) return null;
+    const whatsappAction = options.whatsappAction || container.closest('dialog')?.querySelector('.conversation-action--whatsapp');
     activeLoads.set(container, { url, callAction, emailAction, options });
     container.dataset.timelineUrl = url;
     container.replaceChildren();
@@ -276,6 +278,7 @@ const RSFConversationTimeline = (() => {
     container.appendChild(loading);
     setAction(callAction, '');
     setAction(emailAction, '');
+    setAction(whatsappAction, '');
 
     try {
       const response = await fetch(url, {
@@ -295,6 +298,7 @@ const RSFConversationTimeline = (() => {
       });
       setAction(callAction, data.call_url || '');
       setAction(emailAction, data.email_url || '');
+      setAction(whatsappAction, data.whatsapp_url || '');
       return data;
     } catch (_error) {
       container.replaceChildren();
@@ -417,6 +421,9 @@ const RSFInlineEmail = (() => {
     const dialog = action.closest('dialog');
     const panel = dialog?.querySelector('[data-email-panel]');
     if (!dialog || !panel) return null;
+    const whatsappPanel = dialog.querySelector('[data-whatsapp-panel]');
+    if (whatsappPanel) whatsappPanel.hidden = true;
+    dialog.classList.remove('conversation-whatsapp-open');
     panel.hidden = false;
     dialog.classList.add('conversation-email-open');
     const status = panel.querySelector('[data-email-status]');
@@ -530,6 +537,227 @@ const RSFInlineEmail = (() => {
       if (status) status.textContent = error.message || 'Email could not be sent.';
     } finally {
       if (send) send.disabled = false;
+    }
+  });
+
+  return { load, close };
+})();
+
+const RSFInlineWhatsApp = (() => {
+  const formatWhen = (raw) => {
+    const date = raw ? new Date(raw) : null;
+    return date && !Number.isNaN(date.getTime())
+      ? new Intl.DateTimeFormat(undefined, {
+          month: 'short', day: 'numeric', year: 'numeric',
+          hour: 'numeric', minute: '2-digit'
+        }).format(date)
+      : (raw || '');
+  };
+
+  const renderThread = (panel, payload) => {
+    const thread = panel.querySelector('[data-whatsapp-thread]');
+    if (!thread) return;
+    thread.replaceChildren();
+    const messages = payload.messages || [];
+    if (!messages.length) {
+      const empty = document.createElement('div');
+      empty.className = 'conversation-whatsapp-empty';
+      empty.textContent = 'No WhatsApp messages yet.';
+      thread.appendChild(empty);
+      return;
+    }
+
+    messages.forEach((message) => {
+      const item = document.createElement('article');
+      item.className = `conversation-whatsapp-message ${message.direction === 'INBOUND' ? 'is-client' : 'is-rsf'}`;
+
+      const head = document.createElement('div');
+      head.className = 'conversation-whatsapp-message-head';
+      const who = document.createElement('strong');
+      who.textContent = message.direction === 'INBOUND' ? 'Client' : 'Realty Systems Foundry';
+      const when = document.createElement('time');
+      when.textContent = formatWhen(message.at);
+      head.append(who, when);
+      item.appendChild(head);
+
+      if (message.body) {
+        const body = document.createElement('div');
+        body.className = 'conversation-whatsapp-message-body';
+        body.textContent = message.body;
+        item.appendChild(body);
+      }
+
+      if (message.media_url) {
+        const attachment = document.createElement('a');
+        attachment.className = 'conversation-whatsapp-attachment';
+        attachment.href = message.media_url;
+        attachment.target = '_blank';
+        attachment.rel = 'noopener noreferrer';
+        attachment.textContent = message.media_name || message.type || 'Open attachment';
+        item.appendChild(attachment);
+      }
+
+      if (message.direction === 'OUTBOUND' && message.delivery_status) {
+        const delivery = document.createElement('small');
+        delivery.textContent = message.delivery_status;
+        if (message.delivery_error) delivery.title = message.delivery_error;
+        item.appendChild(delivery);
+      }
+      thread.appendChild(item);
+    });
+    thread.scrollTop = thread.scrollHeight;
+  };
+
+  const load = async (action, focusComposer = false) => {
+    if (!action || action.getAttribute('aria-disabled') === 'true' || !action.href || action.href.endsWith('#')) return null;
+    const dialog = action.closest('dialog');
+    const panel = dialog?.querySelector('[data-whatsapp-panel]');
+    if (!dialog || !panel) return null;
+
+    const emailPanel = dialog.querySelector('[data-email-panel]');
+    if (emailPanel) emailPanel.hidden = true;
+    dialog.classList.remove('conversation-email-open');
+    panel.hidden = false;
+    dialog.classList.add('conversation-whatsapp-open');
+
+    const status = panel.querySelector('[data-whatsapp-status]');
+    if (status) status.textContent = 'Loading…';
+    try {
+      const response = await fetch(action.href, {
+        headers: { Accept: 'application/json' },
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) throw new Error(data.message || 'WhatsApp conversation could not be loaded.');
+
+      panel.dataset.threadUrl = action.href;
+      panel.dataset.sendUrl = data.send_url || '';
+      panel.dataset.prospectId = data.prospect_id ? String(data.prospect_id) : '';
+      panel.dataset.inquiryId = data.inquiry_id ? String(data.inquiry_id) : '';
+      panel.dataset.dealId = data.deal_id ? String(data.deal_id) : '';
+      panel.dataset.sendReady = data.send_ready ? '1' : '0';
+
+      const recipient = panel.querySelector('[data-whatsapp-recipient]');
+      if (recipient) recipient.textContent = data.recipient || '';
+
+      const body = panel.querySelector('[data-whatsapp-body]');
+      const media = panel.querySelector('[data-whatsapp-media]');
+      const send = panel.querySelector('[data-whatsapp-send]');
+      if (body) body.disabled = !data.send_ready;
+      if (media) media.disabled = !data.send_ready;
+      if (send) send.disabled = !data.send_ready;
+
+      const call = panel.querySelector('[data-whatsapp-call]');
+      if (call) {
+        call.disabled = !data.call_ready;
+        call.setAttribute('aria-disabled', data.call_ready ? 'false' : 'true');
+        call.dataset.callUrl = data.call_url || '';
+        call.title = data.call_ready ? 'Start WhatsApp call' : (data.call_status || 'WhatsApp Calling is not connected yet.');
+      }
+
+      renderThread(panel, data);
+      if (status) status.textContent = data.connection_message || '';
+      if (focusComposer && data.send_ready) window.setTimeout(() => body?.focus(), 0);
+      return data;
+    } catch (error) {
+      if (status) status.textContent = error.message || 'WhatsApp conversation could not be loaded.';
+      return null;
+    }
+  };
+
+  const close = (panel) => {
+    const dialog = panel?.closest('dialog');
+    if (!dialog || !panel) return;
+    panel.hidden = true;
+    dialog.classList.remove('conversation-whatsapp-open');
+  };
+
+  document.addEventListener('click', (event) => {
+    const action = event.target.closest?.('.conversation-action--whatsapp');
+    if (action) {
+      if (action.getAttribute('aria-disabled') === 'true') return;
+      event.preventDefault();
+      load(action, true);
+      return;
+    }
+
+    const closeButton = event.target.closest?.('[data-whatsapp-panel-close]');
+    if (closeButton) {
+      event.preventDefault();
+      close(closeButton.closest('[data-whatsapp-panel]'));
+      return;
+    }
+
+    const call = event.target.closest?.('[data-whatsapp-call]');
+    if (call) {
+      event.preventDefault();
+      if (call.disabled || call.getAttribute('aria-disabled') === 'true' || !call.dataset.callUrl) return;
+      window.open(call.dataset.callUrl, '_blank', 'noopener,noreferrer');
+    }
+  });
+
+  document.addEventListener('change', (event) => {
+    const input = event.target.closest?.('[data-whatsapp-media]');
+    if (!(input instanceof HTMLInputElement)) return;
+    const panel = input.closest('[data-whatsapp-panel]');
+    const label = panel?.querySelector('[data-whatsapp-file-name]');
+    if (label) label.textContent = input.files?.[0]?.name || '';
+  });
+
+  document.addEventListener('submit', async (event) => {
+    const form = event.target.closest?.('[data-whatsapp-form]');
+    if (!form) return;
+    event.preventDefault();
+
+    const panel = form.closest('[data-whatsapp-panel]');
+    const dialog = panel?.closest('dialog');
+    const action = dialog?.querySelector('.conversation-action--whatsapp');
+    const body = panel?.querySelector('[data-whatsapp-body]');
+    const media = panel?.querySelector('[data-whatsapp-media]');
+    const status = panel?.querySelector('[data-whatsapp-status]');
+    const send = panel?.querySelector('[data-whatsapp-send]');
+    const textValue = (body?.value || '').trim();
+    const file = media?.files?.[0] || null;
+    if (!textValue && !file) {
+      if (status) status.textContent = 'Write a message or attach a file first.';
+      body?.focus();
+      return;
+    }
+
+    const payload = new FormData();
+    payload.set('csrf_token', panel?.dataset.csrfToken || '');
+    payload.set('body', textValue);
+    if (panel?.dataset.prospectId) payload.set('prospect_id', panel.dataset.prospectId);
+    if (panel?.dataset.inquiryId) payload.set('inquiry_id', panel.dataset.inquiryId);
+    if (panel?.dataset.dealId) payload.set('deal_id', panel.dataset.dealId);
+    if (file) payload.set('media', file, file.name);
+
+    if (send) send.disabled = true;
+    if (status) status.textContent = 'Sending…';
+    try {
+      const response = await fetch(panel?.dataset.sendUrl || '', {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+        credentials: 'same-origin',
+        cache: 'no-store',
+        body: payload
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) throw new Error(data.message || 'WhatsApp message could not be sent.');
+
+      if (body) body.value = '';
+      if (media) media.value = '';
+      const fileName = panel?.querySelector('[data-whatsapp-file-name]');
+      if (fileName) fileName.textContent = '';
+      if (status) status.textContent = 'Sent.';
+      await load(action, false);
+      const timeline = dialog?.querySelector('.conversation-timeline');
+      if (timeline) await RSFConversationTimeline.refresh(timeline);
+    } catch (error) {
+      if (status) status.textContent = error.message || 'WhatsApp message could not be sent.';
+    } finally {
+      if (send) send.disabled = panel?.dataset.sendReady !== '1';
     }
   });
 
