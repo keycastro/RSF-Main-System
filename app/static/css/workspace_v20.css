@@ -7547,3 +7547,84 @@ body.card-layout-dragging-global *{cursor:grabbing!important;user-select:none!im
 .support-maintenance-page .support-maintenance-other-fields{
   background:#f4fbf7
 }
+
+
+/* v1.18.194 — Support & Maintenance header must visually inherit the clean
+   Deal Stages identity-header language. The warm global input skin is loaded
+   after this file, so these higher-specificity !important rules intentionally
+   keep only the Support header controls transparent while leaving body fields boxed. */
+.support-maintenance-page .support-maintenance-card .deal-card-head{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:start;
+  gap:14px
+}
+.support-maintenance-page .support-maintenance-card .deal-card-identifiers{
+  max-width:none;
+  min-width:0
+}
+.support-maintenance-page .support-maintenance-card .deal-card-identifiers label{
+  min-width:0;
+  overflow:hidden
+}
+.support-maintenance-page .support-maintenance-card .deal-card-identifiers .deal-identifier-input,
+.support-maintenance-page .support-maintenance-card .deal-card-identifiers .deal-header-status-select{
+  min-width:0!important;
+  min-height:20px!important;
+  height:20px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-bottom:1px solid transparent!important;
+  border-radius:0!important;
+  background:transparent!important;
+  background-color:transparent!important;
+  box-shadow:none!important;
+  color:#211a14!important;
+  font:inherit!important;
+  font-size:12.5px!important;
+  font-weight:700!important;
+  letter-spacing:0!important;
+  line-height:1.35!important;
+  outline:none!important
+}
+.support-maintenance-page .support-maintenance-card .deal-card-identifiers .deal-identifier-input:hover,
+.support-maintenance-page .support-maintenance-card .deal-card-identifiers .deal-identifier-input:focus,
+.support-maintenance-page .support-maintenance-card .deal-card-identifiers .deal-header-status-select:hover,
+.support-maintenance-page .support-maintenance-card .deal-card-identifiers .deal-header-status-select:focus{
+  border:0!important;
+  border-bottom:1px solid transparent!important;
+  background:transparent!important;
+  background-color:transparent!important;
+  box-shadow:none!important
+}
+.support-maintenance-page .support-maintenance-card .deal-card-identifiers .deal-identifier-input{
+  flex:1 1 auto!important;
+  width:auto!important;
+  max-width:200px!important
+}
+.support-maintenance-page .support-maintenance-card .deal-card-identifiers .deal-header-status-select{
+  flex:0 1 105px!important;
+  width:105px!important;
+  max-width:105px!important;
+  padding-right:0!important;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  appearance:none;
+  background-image:none!important;
+  cursor:pointer
+}
+.support-maintenance-page .support-maintenance-card .deal-card-linked{
+  min-width:max-content;
+  padding-top:0
+}
+@media(max-width:460px){
+  .support-maintenance-page .support-maintenance-card .deal-card-head{
+    grid-template-columns:1fr
+  }
+  .support-maintenance-page .support-maintenance-card .deal-card-linked{
+    min-width:0;
+    justify-items:start;
+    text-align:left
+  }
+}

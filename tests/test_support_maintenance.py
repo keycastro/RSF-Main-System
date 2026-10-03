@@ -75,3 +75,24 @@ class SupportMaintenanceTests(unittest.TestCase):
         self.assertIn("deal_documents_description",d)
 
 if __name__=="__main__": unittest.main()
+
+
+class SupportMaintenanceHeaderFormatTests(unittest.TestCase):
+    def read(self,p): return (ROOT/p).read_text(encoding="utf-8")
+
+    def test_support_header_explicitly_overrides_warm_input_boxes(self):
+        css=self.read("app/static/css/workspace_v20.css")
+        self.assertIn("v1.18.194 — Support & Maintenance header",css)
+        self.assertIn(".support-maintenance-page .support-maintenance-card .deal-card-identifiers .deal-identifier-input",css)
+        self.assertIn(".support-maintenance-page .support-maintenance-card .deal-card-identifiers .deal-header-status-select",css)
+        self.assertIn("background:transparent!important",css)
+        self.assertIn("border:0!important",css)
+        self.assertIn("box-shadow:none!important",css)
+        self.assertIn("appearance:none",css)
+
+    def test_support_header_reserves_non_overlapping_right_column(self):
+        css=self.read("app/static/css/workspace_v20.css")
+        self.assertIn("grid-template-columns:minmax(0,1fr) auto",css)
+        self.assertIn("min-width:max-content",css)
+        self.assertIn("width:105px!important",css)
+        self.assertIn("max-width:200px!important",css)
