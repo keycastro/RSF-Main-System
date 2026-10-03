@@ -1,0 +1,445 @@
+/* =========================================================
+   RSF Workspace v1.18.187 — Approved Ambient Black / Warm Beige / Gold Skin
+   Applies only to Prospects, Website Inbox, and Deals Pipeline.
+   IMPORTANT: visual-only layer. No grid, dimensions, spacing, field order,
+   responsive breakpoints, visibility rules, controls, or workflow behavior
+   are changed here.
+   ========================================================= */
+
+:root{
+  --rsf-ambient-black:#0b0907;
+  --rsf-ambient-black-2:#17120e;
+  --rsf-ambient-espresso:#2b2016;
+  --rsf-ambient-brown:#6f563a;
+  --rsf-ambient-taupe:#aa8d68;
+  --rsf-ambient-beige:#ead7bb;
+  --rsf-ambient-ivory:#fff8ee;
+  --rsf-ambient-gold:#C9A95E;
+  --rsf-ambient-gold-soft:#e3c980;
+  --rsf-ambient-ink:#211a14;
+  --rsf-ambient-muted:#6e6151;
+  --rsf-ambient-line:#d9c19e;
+}
+
+/* Scope the approved visual identity to the three approved operating pages. */
+.app-shell:has(.prospects-page) .main-area,
+.app-shell:has(.website-inbox-page) .main-area,
+.app-shell:has(.deals-page) .main-area{
+  color:var(--rsf-ambient-ink);
+  border-radius:14px;
+  box-shadow:
+    inset 0 0 0 1px rgba(201,169,94,.55),
+    inset 0 1px 0 rgba(255,255,255,.10);
+  background:
+    radial-gradient(circle at 9% 5%,rgba(255,238,188,.98) 0 1px,rgba(201,169,94,.50) 2px 5px,rgba(201,169,94,.10) 7px 15px,transparent 19px),
+    radial-gradient(circle at 82% 3%,rgba(255,238,188,.98) 0 1px,rgba(201,169,94,.50) 2px 5px,rgba(201,169,94,.10) 7px 15px,transparent 19px),
+    radial-gradient(circle at 88% 15%,rgba(255,236,177,.96) 0 1px,rgba(201,169,94,.46) 2px 5px,rgba(201,169,94,.09) 7px 14px,transparent 18px),
+    radial-gradient(circle at 96% 38%,rgba(255,235,170,.95) 0 1px,rgba(201,169,94,.45) 2px 5px,rgba(201,169,94,.09) 7px 14px,transparent 18px),
+    radial-gradient(circle at 93% 56%,rgba(255,235,170,.96) 0 1px,rgba(201,169,94,.45) 2px 5px,rgba(201,169,94,.09) 7px 14px,transparent 18px),
+    radial-gradient(circle at 88% 80%,rgba(255,235,170,.94) 0 1px,rgba(201,169,94,.42) 2px 5px,rgba(201,169,94,.08) 7px 14px,transparent 18px),
+    radial-gradient(circle at 76% 94%,rgba(255,235,170,.90) 0 1px,rgba(201,169,94,.38) 2px 5px,rgba(201,169,94,.07) 7px 13px,transparent 17px),
+    radial-gradient(circle at 7% 91%,rgba(255,235,170,.90) 0 1px,rgba(201,169,94,.36) 2px 5px,rgba(201,169,94,.07) 7px 13px,transparent 17px),
+
+    radial-gradient(ellipse at 61% 48%,
+      transparent 0 26%,
+      rgba(237,218,188,.22) 26.10% 26.22%,
+      transparent 26.34% 36%,
+      rgba(201,169,94,.27) 36.10% 36.22%,
+      transparent 36.34% 46%,
+      rgba(201,169,94,.30) 46.10% 46.22%,
+      transparent 46.34% 56%,
+      rgba(201,169,94,.34) 56.10% 56.22%,
+      transparent 56.34% 66%,
+      rgba(201,169,94,.30) 66.10% 66.22%,
+      transparent 66.34%),
+
+    radial-gradient(ellipse at 17% 46%,rgba(255,244,223,.62) 0%,rgba(244,219,183,.36) 31%,transparent 62%),
+    radial-gradient(ellipse at 34% 92%,rgba(220,177,111,.28) 0%,transparent 45%),
+    linear-gradient(104deg,
+      #ead4b4 0%,
+      #d3b993 25%,
+      #b99a72 43%,
+      #846744 59%,
+      #54402b 70%,
+      #2f2116 82%,
+      #17100b 91%,
+      #0b0907 100%);
+}
+
+/* Keep the current page geometry; only make its existing surface transparent
+   so the approved ambient background can show through. */
+.app-shell:has(.prospects-page) .content-wrap,
+.app-shell:has(.website-inbox-page) .content-wrap,
+.app-shell:has(.deals-page) .content-wrap{
+  --rsf-visual-text-ink:var(--rsf-ambient-ink);
+  --rsf-visual-text-muted:var(--rsf-ambient-muted);
+  --rsf-visual-field-border:#dbc5a6;
+  --rsf-visual-card-border:#cdb083;
+  --rsf-visual-card-shadow-alpha:.12;
+  --ux-section-ink:var(--rsf-ambient-ink);
+  --ux-section-muted:var(--rsf-ambient-muted);
+  --workspace-muted:var(--rsf-ambient-muted);
+  background:transparent;
+}
+
+/* Dark luxury navigation shell. No width/padding/layout changes. */
+.app-shell:has(.prospects-page) .sidebar,
+.app-shell:has(.website-inbox-page) .sidebar,
+.app-shell:has(.deals-page) .sidebar{
+  border-right-color:rgba(201,169,94,.30);
+  border-radius:14px;
+  background:
+    radial-gradient(circle at 108% 8%,rgba(201,169,94,.14),transparent 30%),
+    radial-gradient(circle at 0% 87%,rgba(201,169,94,.08),transparent 34%),
+    linear-gradient(180deg,#17120e 0%,#0f0c09 54%,#090706 100%);
+  box-shadow:
+    inset -1px 0 0 rgba(201,169,94,.22),
+    10px 0 34px rgba(0,0,0,.22);
+}
+.app-shell:has(.prospects-page) .brand,
+.app-shell:has(.website-inbox-page) .brand,
+.app-shell:has(.deals-page) .brand{
+  border-bottom-color:rgba(201,169,94,.14);
+}
+.app-shell:has(.prospects-page) .brand-mark,
+.app-shell:has(.website-inbox-page) .brand-mark,
+.app-shell:has(.deals-page) .brand-mark{
+  background:#100d0a;
+  border-color:rgba(201,169,94,.60);
+  box-shadow:
+    0 8px 20px rgba(0,0,0,.24),
+    0 0 0 1px rgba(201,169,94,.10),
+    inset 0 1px 0 rgba(255,255,255,.05);
+}
+.app-shell:has(.prospects-page) .brand-copy strong,
+.app-shell:has(.website-inbox-page) .brand-copy strong,
+.app-shell:has(.deals-page) .brand-copy strong,
+.app-shell:has(.prospects-page) .sidebar .user-block strong,
+.app-shell:has(.website-inbox-page) .sidebar .user-block strong,
+.app-shell:has(.deals-page) .sidebar .user-block strong{
+  color:#fff7eb;
+}
+.app-shell:has(.prospects-page) .nav-section-label,
+.app-shell:has(.website-inbox-page) .nav-section-label,
+.app-shell:has(.deals-page) .nav-section-label{
+  color:#b9aa96;
+}
+.app-shell:has(.prospects-page) .simple-primary-nav>a,
+.app-shell:has(.website-inbox-page) .simple-primary-nav>a,
+.app-shell:has(.deals-page) .simple-primary-nav>a{
+  color:#e0d5c6;
+  background:transparent;
+}
+.app-shell:has(.prospects-page) .simple-primary-nav>a:hover,
+.app-shell:has(.website-inbox-page) .simple-primary-nav>a:hover,
+.app-shell:has(.deals-page) .simple-primary-nav>a:hover{
+  color:#fff9f1;
+  background:rgba(201,169,94,.075);
+  box-shadow:inset 0 0 0 1px rgba(201,169,94,.18);
+}
+.app-shell:has(.prospects-page) .simple-primary-nav>a.active,
+.app-shell:has(.website-inbox-page) .simple-primary-nav>a.active,
+.app-shell:has(.deals-page) .simple-primary-nav>a.active{
+  color:#fff9f0;
+  background:
+    radial-gradient(circle at 12% 50%,rgba(201,169,94,.22),transparent 48%),
+    linear-gradient(90deg,rgba(201,169,94,.17),rgba(201,169,94,.045));
+  box-shadow:
+    inset 3px 0 0 var(--rsf-ambient-gold),
+    inset 0 0 0 1px rgba(201,169,94,.62),
+    0 0 20px rgba(201,169,94,.17);
+}
+.app-shell:has(.prospects-page) .simple-primary-nav>a.active .nav-symbol,
+.app-shell:has(.website-inbox-page) .simple-primary-nav>a.active .nav-symbol,
+.app-shell:has(.deals-page) .simple-primary-nav>a.active .nav-symbol{
+  color:#e3c777;
+}
+.app-shell:has(.prospects-page) .sidebar-footer,
+.app-shell:has(.website-inbox-page) .sidebar-footer,
+.app-shell:has(.deals-page) .sidebar-footer{
+  border-top-color:rgba(201,169,94,.14);
+}
+.app-shell:has(.prospects-page) .sidebar-footer .user-block small,
+.app-shell:has(.website-inbox-page) .sidebar-footer .user-block small,
+.app-shell:has(.deals-page) .sidebar-footer .user-block small,
+.app-shell:has(.prospects-page) .sidebar-footer .version,
+.app-shell:has(.website-inbox-page) .sidebar-footer .version,
+.app-shell:has(.deals-page) .sidebar-footer .version{
+  color:#a99a87;
+}
+.app-shell:has(.prospects-page) .sidebar-footer .signout,
+.app-shell:has(.website-inbox-page) .sidebar-footer .signout,
+.app-shell:has(.deals-page) .sidebar-footer .signout{
+  color:#eadfce;
+}
+
+/* Page headings and approved filter language. */
+.prospects-page .workspace-page-head h1,
+.website-inbox-page .workspace-page-head h1,
+.deals-page .workspace-page-head h1{
+  color:#17120e;
+  text-shadow:0 1px 0 rgba(255,255,255,.24);
+}
+.prospects-page .workspace-page-head p,
+.website-inbox-page .workspace-page-head p,
+.deals-page .workspace-page-head p{
+  color:#4f4336;
+}
+.prospects-page .prospect-add-plus,
+.website-inbox-page .prospect-add-plus,
+.deals-page .prospect-add-plus{
+  color:#221a13;
+  background:#fff7ec;
+  border-color:#d7bf9e;
+  box-shadow:0 5px 16px rgba(71,46,23,.08);
+}
+.prospects-page .prospect-filter-button,
+.website-inbox-page .prospect-filter-button,
+.deals-page .prospect-filter-button{
+  color:#3c3126;
+  background:#fff8ee;
+  border-color:#dcc6a7;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.76);
+}
+.prospects-page .prospect-filter-button:hover,
+.website-inbox-page .prospect-filter-button:hover,
+.deals-page .prospect-filter-button:hover{
+  color:#1c1611;
+  background:#fffaf3;
+  border-color:var(--rsf-ambient-gold);
+}
+.prospects-page .prospect-filter-button.is-active,
+.website-inbox-page .prospect-filter-button.is-active,
+.deals-page .prospect-filter-button.is-active{
+  color:#fff8ee;
+  background:linear-gradient(145deg,#2b2118,#120f0c);
+  border-color:var(--rsf-ambient-gold);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 0 0 1px rgba(201,169,94,.10),
+    0 7px 18px rgba(62,42,21,.18),
+    0 0 17px rgba(201,169,94,.15);
+}
+
+/* Shared cards: preserve every current dimension and grid rule. */
+.prospects-page .prospect-card,
+.website-inbox-page .website-inquiry-card,
+.deals-page .deal-card{
+  color:var(--rsf-ambient-ink);
+  background:linear-gradient(180deg,#f2e6d5 0%,#ebddc8 100%);
+  border-color:#cdb58e!important;
+  box-shadow:
+    0 7px 20px rgba(54,36,20,.13),
+    inset 0 1px 0 rgba(255,255,255,.55)!important;
+}
+.prospects-page .prospect-card:hover,
+.website-inbox-page .website-inquiry-card:hover,
+.deals-page .deal-card:hover,
+.prospects-page .prospect-card[open]{
+  border-color:#c49e5c!important;
+  box-shadow:
+    0 9px 24px rgba(54,36,20,.16),
+    inset 0 1px 0 rgba(255,255,255,.60)!important;
+}
+
+/* Existing card header geometry stays untouched. */
+.prospects-page .prospect-card-top,
+.website-inbox-page .website-inquiry-card-head,
+.deals-page .deal-card-head{
+  background:#eadcc7!important;
+  border-bottom-color:#d5bea0!important;
+}
+.prospects-page .prospect-card-summary{
+  background:#f2e6d5!important;
+}
+.prospects-page .prospect-card-meta,
+.prospects-page .prospect-card-details,
+.website-inbox-page .website-inquiry-card-body,
+.deals-page .deal-form,
+.deals-page .master-deal-body,
+.deals-page .deal-source-details{
+  background:transparent;
+}
+
+/* Card labels, logs, and values. */
+.prospects-page .prospect-card-title>span,
+.prospects-page .prospect-card-platform>span,
+.prospects-page .prospect-card-meta span,
+.prospects-page .prospect-detail>span,
+.website-inbox-page .website-inquiry-field>span,
+.website-inbox-page .website-inquiry-message-field>span,
+.website-inbox-page .website-inquiry-notes-field>span,
+.website-inbox-page .website-inquiry-card-identity span,
+.website-inbox-page .website-inquiry-received-log,
+.deals-page .deal-form-grid label>span,
+.deals-page .deal-demo-schedule-field>span,
+.deals-page .deal-calendar-meet-field>span,
+.deals-page .deal-card-identifiers label>span,
+.deals-page .deal-became-log,
+.deals-page .deal-source-grid label>span,
+.deals-page .deal-source-readonly>span{
+  color:#6d5f4e!important;
+}
+.prospects-page .prospect-card-title>.prospect-edit-value,
+.prospects-page .prospect-card-platform>.prospect-edit-value,
+.prospects-page .prospect-card-meta-item>.prospect-edit-value,
+.prospects-page .prospect-detail>.prospect-edit-value,
+.website-inbox-page .website-inquiry-field>strong,
+.website-inbox-page .website-inquiry-request-link,
+.website-inbox-page .website-inquiry-card-identity strong,
+.deals-page .deal-card-identifiers .deal-identifier-input,
+.deals-page .deal-card-identifiers .deal-header-status-select,
+.deals-page .deal-source-readonly>strong{
+  color:#211a14!important;
+}
+.prospects-page .prospect-card-log{
+  color:#766856!important;
+}
+.website-inbox-page .website-inquiry-status-select,
+.deals-page .deal-header-status-select,
+.prospects-page .prospect-status{
+  color:#2a2119!important;
+}
+
+/* Existing field/control boxes: color treatment only; no sizing/spacing changes. */
+.prospects-page :where(input,select,textarea),
+.website-inbox-page :where(input,select,textarea),
+.deals-page :where(input,select,textarea),
+.deals-page .deal-demo-schedule-box,
+.prospects-page .prospect-card-meta-item,
+.prospects-page .prospect-detail,
+.website-inbox-page .conversation-notes-compact,
+.website-inbox-page .conversation-email-card-field,
+.deals-page .conversation-notes-compact,
+.deals-page .conversation-email-card-field,
+.deals-page .deal-calendar-meet-field,
+.deals-page .deal-source-readonly{
+  color:#211a14;
+  background:#fff9f0!important;
+  border-color:#ddc7a7!important;
+}
+.prospects-page :where(input,select,textarea):focus,
+.website-inbox-page :where(input,select,textarea):focus,
+.deals-page :where(input,select,textarea):focus{
+  border-color:#b58e4a!important;
+  box-shadow:0 0 0 2px rgba(201,169,94,.16)!important;
+}
+.prospects-page :where(input,textarea)::placeholder,
+.website-inbox-page :where(input,textarea)::placeholder,
+.deals-page :where(input,textarea)::placeholder{
+  color:#9b8a76;
+}
+
+/* Website Inbox keeps its exact own structure; this is only its warm skin. */
+.website-inbox-page .website-inquiry-field{
+  color:#211a14;
+  background:rgba(255,249,240,.42);
+  border-radius:8px;
+  box-shadow:inset 0 0 0 1px rgba(221,199,167,.52);
+}
+.website-inbox-page .website-inquiry-message-field,
+.website-inbox-page .website-inquiry-notes-field{
+  color:#211a14;
+}
+.website-inbox-page .website-inquiry-request-link,
+.website-inbox-page .website-inquiry-request-link:hover,
+.website-inbox-page .website-inquiry-request-link:focus,
+.website-inbox-page .website-inquiry-request-link:visited{
+  color:#7f5d28!important;
+}
+.website-inbox-page .website-inquiry-delete-button,
+.prospects-page .prospect-delete-button{
+  color:#c74338;
+}
+.website-inbox-page .deal-notes-expand-button,
+.prospects-page .deal-notes-expand-button,
+.deals-page .deal-notes-expand-button{
+  color:#6d5d49;
+  background:#fff8ee!important;
+  border-color:#d9c19e!important;
+}
+
+/* Deals keeps current field order/visibility and existing long-card geometry. */
+.deals-page .master-card-section-head,
+.deals-page .master-source-section-head,
+.deals-page .deal-source-details-head,
+.deals-page .deal-card-footer{
+  border-color:#d7c09f!important;
+}
+.deals-page .deal-source-collapse-button{
+  color:#705b40;
+}
+.deals-page .deal-linked-label,
+.deals-page .deal-linked-label a,
+.deals-page .deal-calendar-meet-field a,
+.deals-page .deal-calendar-meet-field strong{
+  color:#8a652d!important;
+}
+.deals-page .deal-demo-time-summary{
+  color:#4e4235;
+}
+.deals-page .deal-card-footer,
+.deals-page .deal-source-details{
+  background:rgba(255,249,240,.24);
+}
+
+/* Empty states, confirmation cards, and full-view dialogs follow the same palette. */
+.prospects-page .workspace-empty-state,
+.website-inbox-page .workspace-empty-state,
+.deals-page .workspace-empty-state{
+  color:#5d5042;
+  background:rgba(255,248,238,.76);
+  border-color:#d9c19f;
+}
+.deal-status-confirm::backdrop,
+.deal-notes-viewer::backdrop{
+  background:rgba(8,6,4,.66);
+}
+.deal-status-confirm-card,
+.deal-notes-viewer-card{
+  color:#211a14;
+  background:#f4e8d7;
+  border-color:#ceb184;
+  box-shadow:0 24px 70px rgba(0,0,0,.30);
+}
+.deal-notes-viewer-head{
+  background:#eadbc5;
+  border-bottom-color:#d5bea0;
+}
+.deal-notes-viewer-body{
+  background:#f4e8d7;
+}
+
+/* Preserve destructive red and make approved primary actions dark/gold. */
+.prospects-page .button.primary,
+.website-inbox-page .button.primary,
+.deals-page .button.primary,
+.deal-status-confirm .button.primary{
+  color:#fff8ee;
+  background:linear-gradient(145deg,#2b2118,#15100c);
+  border-color:#b89451;
+  box-shadow:0 7px 18px rgba(66,44,22,.15);
+}
+.prospects-page .button.secondary,
+.website-inbox-page .button.secondary,
+.deals-page .button.secondary,
+.deal-status-confirm .button.secondary{
+  color:#2a2119;
+  background:#fff8ee;
+  border-color:#d6bd99;
+}
+
+/* Alt+Z panel is presentation-only and receives the same approved palette. */
+.app-shell:has(.prospects-page) .workspace-visual-panel,
+.app-shell:has(.website-inbox-page) .workspace-visual-panel,
+.app-shell:has(.deals-page) .workspace-visual-panel{
+  color:#f5eadb;
+  background:linear-gradient(180deg,#1d1712,#0d0a08);
+  border-color:rgba(201,169,94,.38);
+  box-shadow:0 24px 70px rgba(0,0,0,.34);
+}
+.app-shell:has(.prospects-page) .workspace-visual-panel input[type="range"],
+.app-shell:has(.website-inbox-page) .workspace-visual-panel input[type="range"],
+.app-shell:has(.deals-page) .workspace-visual-panel input[type="range"]{
+  accent-color:var(--rsf-ambient-gold);
+}
