@@ -97,6 +97,14 @@ DEAL_PIPELINE_START_INDEX = PROSPECT_STATUS_CODES.index("DEAL")
 DEAL_PRE_STATUS_STATUSES = PROSPECT_STATUS_CODES[:DEAL_PIPELINE_START_INDEX]
 DEAL_ACTIVE_STATUSES = PROSPECT_STATUS_CODES[DEAL_PIPELINE_START_INDEX:]
 
+MANAGEMENT_TYPE_LABELS = {"UNDECIDED":"Undecided","CLIENT_MANAGED":"Client Managed","RSF_MANAGED":"RSF Managed"}
+SERVICE_STATUS_LABELS = {"ONBOARDING":"Onboarding","ACTIVE":"Active","PAUSED":"Paused","ENDED":"Ended"}
+BILLING_CYCLE_LABELS = {"MONTHLY":"Monthly","YEARLY":"Yearly","CUSTOM":"Custom"}
+PAYMENT_STATUS_LABELS = {"PAID":"Paid","PENDING":"Pending","OVERDUE":"Overdue"}
+SYSTEM_HEALTH_LABELS = {"HEALTHY":"Healthy","NEEDS_ATTENTION":"Needs Attention","DOWN":"Down"}
+REQUEST_STATUS_LABELS = {"NEW":"New","IN_PROGRESS":"In Progress","DONE":"Done"}
+PRIORITY_LABELS = {"LOW":"Low","MEDIUM":"Medium","HIGH":"High"}
+
 CARD_LAYOUT_SPECS = {
     "prospects": {
         "zones": ("header", "summary", "source", "other"),
@@ -119,7 +127,7 @@ CARD_LAYOUT_SPECS = {
     "deals": {
         "zones": ("header", "deal", "outbound", "inbound"),
         "fields": {
-            "client_name", "status", "followup_date", "email", "price", "developer",
+            "client_name", "status", "followup_date", "email", "price", "developer", "management_type",
             "contact_number", "whatsapp_number", "city_country", "demo_schedule", "next_step",
             "notes_after_conversation", "google_meet", "email_conversation",
             "outbound_business_type", "outbound_budget", "outbound_post_date",
@@ -769,6 +777,7 @@ def _deal_card_support(db, deal_rows) -> dict:
     from .calendar_ops import connection_status as calendar_connection_status, demo_time_display
     from .timezone_location import timezone_display_location
     return {
+        "management_type_labels": MANAGEMENT_TYPE_LABELS,
         "deal_documents": deal_documents,
         "calendar_status": calendar_connection_status(),
         "deal_demo_time_displays": {
@@ -2006,6 +2015,138 @@ def prospect_delete(prospect_id: int):
     return redirect(url_for("main.prospects"))
 
 
+
+@bp.get("/support-maintenance")
+@login_required
+def support_maintenance():
+    db = get_db()
+    rows = db.execute(
+        """SELECT d.*,
+                  p.name AS prospect_name,p.contact AS prospect_contact,p.location AS prospect_location,
+                  p.email AS prospect_email,p.phone AS prospect_phone,p.notes_after_conversation AS prospect_notes,
+                  i.name AS inquiry_name,i.company AS inquiry_company,i.email AS inquiry_email,i.phone AS inquiry_phone,
+                  i.notes_after_conversation AS inquiry_notes,
+                  CASE WHEN d.prospect_id IS NOT NULL THEN p.status ELSE i.workflow_status END AS workflow_status,
+                  CASE WHEN d.prospect_id IS NOT NULL THEN COALESCE(NULLIF(p.contact,''),i.name,d.contact_person,'')
+                       ELSE COALESCE(NULLIF(d.contact_person,''),i.name,'') END AS client_name,
+                  CASE WHEN d.prospect_id IS NOT NULL THEN COALESCE(NULLIF(p.name,''),i.company,'')
+                       ELSE COALESCE(NULLIF(i.company,''),i.name,'') END AS client_company,
+                  CASE WHEN d.prospect_id IS NOT NULL THEN COALESCE(NULLIF(p.location,''),d.location,'')
+                       ELSE COALESCE(NULLIF(d.location,''),'') END AS client_location,
+                  CASE WHEN d.prospect_id IS NOT NULL THEN COALESCE(NULLIF(p.email,''),i.email,d.email,'')
+                       ELSE COALESCE(NULLIF(d.email,''),i.email,'') END AS client_email,
+                  CASE WHEN d.prospect_id IS NOT NULL THEN COALESCE(NULLIF(p.phone,''),d.contact_number,i.phone,'')
+                       ELSE COALESCE(NULLIF(d.contact_number,''),i.phone,'') END AS client_phone,
+                  CASE WHEN d.prospect_id IS NOT NULL THEN COALESCE(NULLIF(p.notes_after_conversation,''),d.notes_after_conversation,i.notes_after_conversation,'')
+                       ELSE COALESCE(NULLIF(d.notes_after_conversation,''),i.notes_after_conversation,'') END AS client_notes
+           FROM deals d
+           LEFT JOIN prospects p ON p.id=d.prospect_id
+           LEFT JOIN website_inquiries i ON i.id=d.website_inquiry_id
+           WHERE d.management_type='RSF_MANAGED'
+             AND ((d.prospect_id IS NOT NULL AND p.status='WON')
+               OR (d.prospect_id IS NULL AND d.website_inquiry_id IS NOT NULL AND i.workflow_status='WON'))
+           ORDER BY d.updated_at DESC,d.id DESC"""
+    ).fetchall()
+    return render_template(
+        "support_maintenance.html", title="Support & Maintenance", managed_clients=rows,
+        service_status_labels=SERVICE_STATUS_LABELS, billing_cycle_labels=BILLING_CYCLE_LABELS,
+        payment_status_labels=PAYMENT_STATUS_LABELS, system_health_labels=SYSTEM_HEALTH_LABELS,
+        request_status_labels=REQUEST_STATUS_LABELS, priority_labels=PRIORITY_LABELS,
+        **_deal_card_support(db, rows),
+    )
+
+
+@bp.post("/support-maintenance/<int:deal_id>/update")
+@login_required
+def support_maintenance_update(deal_id: int):
+    validate_csrf()
+    db = get_db()
+    deal = db.execute("SELECT id,prospect_id,website_inquiry_id,management_type FROM deals WHERE id=?", (deal_id,)).fetchone()
+    if not deal:
+        abort(404)
+    if deal["prospect_id"] is not None:
+        row = db.execute("SELECT status FROM prospects WHERE id=?", (deal["prospect_id"],)).fetchone()
+        workflow_status = ((row["status"] if row else "") or "").strip().upper()
+    else:
+        row = db.execute("SELECT workflow_status FROM website_inquiries WHERE id=?", (deal["website_inquiry_id"],)).fetchone()
+        workflow_status = ((row["workflow_status"] if row else "") or "").strip().upper()
+    if workflow_status != "WON" or (deal["management_type"] or "").strip().upper() != "RSF_MANAGED":
+        flash("This client is not currently an RSF-managed Won client.", "warning")
+        return redirect(url_for("main.support_maintenance"))
+
+    def fld(name, limit): return (request.form.get(name, "") or "").strip()[:limit]
+    service_status=fld("service_status",40).upper() or "ONBOARDING"
+    billing_cycle=fld("billing_cycle",40).upper() or "MONTHLY"
+    payment_status=fld("payment_status",40).upper() or "PENDING"
+    system_health=fld("system_health",40).upper() or "HEALTHY"
+    request_status=fld("request_status",40).upper() or "NEW"
+    priority=fld("priority",40).upper() or "LOW"
+    for label,value,opts in (
+        ("Service Status",service_status,SERVICE_STATUS_LABELS),("Billing Cycle",billing_cycle,BILLING_CYCLE_LABELS),
+        ("Payment Status",payment_status,PAYMENT_STATUS_LABELS),("System Health",system_health,SYSTEM_HEALTH_LABELS),
+        ("Request Status",request_status,REQUEST_STATUS_LABELS),("Priority",priority,PRIORITY_LABELS),
+    ):
+        if value not in opts:
+            flash(f"{label} is invalid.", "error")
+            return redirect(url_for("main.support_maintenance")+f"#support-client-{deal_id}")
+
+    v={k:fld(k,n) for k,n in {
+        "system_name":240,"management_start_date":10,"system_url":1000,"management_fee":200,"next_billing_date":10,
+        "hosting_provider":200,"repository_url":1000,"current_version":120,"last_deployment":32,"backup_status":200,
+        "last_backup":10,"last_maintenance":10,"next_maintenance":10,"maintenance_type":200,"work_done":3000,
+        "issues_found":3000,"resolution":3000,"open_issues":3000,"client_request":3000,"date_requested":10,
+        "date_completed":10,"included_support":3000,"excluded_work":3000,"additional_charge":200,"agreement_notes":3000
+    }.items()}
+    for label,key in (("Management Start Date","management_start_date"),("Next Billing Date","next_billing_date"),
+                      ("Last Backup","last_backup"),("Last Maintenance","last_maintenance"),("Next Maintenance","next_maintenance"),
+                      ("Date Requested","date_requested"),("Date Completed","date_completed")):
+        if v[key]:
+            try: date.fromisoformat(v[key])
+            except ValueError:
+                flash(f"{label} must be a valid date.", "error")
+                return redirect(url_for("main.support_maintenance")+f"#support-client-{deal_id}")
+    if v["last_deployment"]:
+        try: datetime.fromisoformat(v["last_deployment"])
+        except ValueError:
+            flash("Last Deployment must be a valid date and time.", "error")
+            return redirect(url_for("main.support_maintenance")+f"#support-client-{deal_id}")
+
+    client_name=fld("client_name",200).upper(); location=fld("location",200).upper(); email=fld("email",320)
+    contact_number=fld("contact_number",120); whatsapp_number=fld("whatsapp_number",120); developer=fld("developer",200)
+    notes=fld("notes_after_conversation",3000); major=1 if fld("major_upgrade_required",10).lower() in {"1","true","yes","on"} else 0
+    now=utcnow_iso()
+    db.execute(
+        """UPDATE deals SET contact_person=?,location=?,email=?,contact_number=?,whatsapp_number=?,developer=?,notes_after_conversation=?,
+           service_status=?,system_name=?,management_start_date=?,system_url=?,management_fee=?,billing_cycle=?,next_billing_date=?,payment_status=?,
+           hosting_provider=?,repository_url=?,current_version=?,last_deployment=?,system_health=?,backup_status=?,last_backup=?,last_maintenance=?,
+           next_maintenance=?,maintenance_type=?,work_done=?,issues_found=?,resolution=?,open_issues=?,client_request=?,request_status=?,priority=?,
+           date_requested=?,date_completed=?,included_support=?,excluded_work=?,major_upgrade_required=?,additional_charge=?,agreement_notes=?,updated_at=?
+           WHERE id=?""",
+        (client_name,location,email,contact_number,whatsapp_number,developer,notes,service_status,v["system_name"],v["management_start_date"],
+         v["system_url"],v["management_fee"],billing_cycle,v["next_billing_date"],payment_status,v["hosting_provider"],v["repository_url"],
+         v["current_version"],v["last_deployment"],system_health,v["backup_status"],v["last_backup"],v["last_maintenance"],v["next_maintenance"],
+         v["maintenance_type"],v["work_done"],v["issues_found"],v["resolution"],v["open_issues"],v["client_request"],request_status,priority,
+         v["date_requested"],v["date_completed"],v["included_support"],v["excluded_work"],major,v["additional_charge"],v["agreement_notes"],now,deal_id)
+    )
+    if deal["prospect_id"] is not None:
+        db.execute("UPDATE prospects SET contact=?,location=?,email=?,phone=?,notes_after_conversation=?,updated_at=? WHERE id=?",
+                   (client_name,location,email,contact_number,notes,now,deal["prospect_id"]))
+        db.execute("UPDATE client_conversations SET client_name=?,client_email=?,updated_at=? WHERE prospect_id=?",
+                   (client_name,email,now,deal["prospect_id"]))
+    if deal["website_inquiry_id"] is not None:
+        db.execute("UPDATE website_inquiries SET name=?,email=?,email_norm=?,phone=?,notes_after_conversation=?,updated_at=? WHERE id=?",
+                   (client_name,email,normalize_email(email),contact_number,notes,now,deal["website_inquiry_id"]))
+        db.execute("UPDATE client_conversations SET client_name=?,client_email=?,updated_at=? WHERE inquiry_id=?",
+                   (client_name,email,now,deal["website_inquiry_id"]))
+    log_activity("SUPPORT_MAINTENANCE_UPDATED","deal",deal_id,
+                 "Support & Maintenance details updated on the existing connected client lifecycle record.",
+                 {"service_status":service_status,"billing_cycle":billing_cycle,"payment_status":payment_status,
+                  "system_health":system_health,"request_status":request_status,"priority":priority})
+    db.commit()
+    flash("Support & Maintenance updated.", "success")
+    return redirect(url_for("main.support_maintenance")+f"#support-client-{deal_id}")
+
+
 @bp.get("/deals")
 @login_required
 def deals():
@@ -2082,6 +2223,7 @@ def deals():
         title="Deals Pipeline",
         deals=rows,
         deal_status_labels=PROSPECT_STATUS_LABELS,
+        management_type_labels=MANAGEMENT_TYPE_LABELS,
         deal_documents=deal_documents,
         calendar_status=calendar_connection_status(),
         deal_demo_time_displays=deal_demo_time_displays,
@@ -2386,7 +2528,7 @@ def deal_update(deal_id: int):
     db = get_db()
     deal = db.execute(
         """SELECT id,prospect_id,website_inquiry_id,demo_date,demo_time,demo_timezone,demo_timezone_location,email,contact_person,
-                  developer,whatsapp_number,google_calendar_event_id,google_meet_url
+                  developer,whatsapp_number,management_type,google_calendar_event_id,google_meet_url
            FROM deals WHERE id=?""",
         (deal_id,),
     ).fetchone()
@@ -2485,6 +2627,12 @@ def deal_update(deal_id: int):
     developer = (request.form.get("developer", deal["developer"] or "") or "").strip()[:200]
     contact_number = (request.form.get("contact_number", "") or "").strip()[:120]
     whatsapp_number = (request.form.get("whatsapp_number", deal["whatsapp_number"] or "") or "").strip()[:120]
+    management_type = (request.form.get("management_type", deal["management_type"] or "UNDECIDED") or "").strip().upper()
+    if management_type not in MANAGEMENT_TYPE_LABELS:
+        if async_request:
+            return jsonify({"ok": False, "message": "Invalid Management Type."}), 400
+        flash("Invalid Management Type.", "error")
+        return redirect(url_for("main.deals") + f"#deal-{deal_id}")
     email = (request.form.get("email", "") or "").strip()[:320]
     contact_person = (request.form.get("contact_person", "") or "").strip()[:200].upper()
     location = (request.form.get("location", "") or "").strip()[:200].upper()
@@ -2496,7 +2644,7 @@ def deal_update(deal_id: int):
             _mark_deal_became(db, deal_id, now)
         db.execute(
             """UPDATE deals
-               SET status=?,demo_date=?,demo_time=?,demo_timezone=?,demo_timezone_location=?,followup_date=?,next_step=?,price=?,developer=?,
+               SET status=?,demo_date=?,demo_time=?,demo_timezone=?,demo_timezone_location=?,followup_date=?,next_step=?,price=?,developer=?,management_type=?,
                    contact_number=?,whatsapp_number=?,email=?,notes_after_conversation=?,updated_at=?
                WHERE id=?""",
             (
@@ -2509,6 +2657,7 @@ def deal_update(deal_id: int):
                 next_step,
                 price,
                 developer,
+                management_type,
                 contact_number,
                 whatsapp_number,
                 email,
@@ -2522,7 +2671,7 @@ def deal_update(deal_id: int):
         # The legacy deals.status column only accepts deal-side statuses.
         db.execute(
             """UPDATE deals
-               SET demo_date=?,demo_time=?,demo_timezone=?,demo_timezone_location=?,followup_date=?,next_step=?,price=?,developer=?,
+               SET demo_date=?,demo_time=?,demo_timezone=?,demo_timezone_location=?,followup_date=?,next_step=?,price=?,developer=?,management_type=?,
                    contact_number=?,whatsapp_number=?,email=?,notes_after_conversation=?,updated_at=?
                WHERE id=?""",
             (
@@ -2534,6 +2683,7 @@ def deal_update(deal_id: int):
                 next_step,
                 price,
                 developer,
+                management_type,
                 contact_number,
                 whatsapp_number,
                 email,
@@ -2687,6 +2837,7 @@ def deal_update(deal_id: int):
             "email": email,
             "contact_number": contact_number,
             "whatsapp_number": whatsapp_number,
+            "management_type": management_type,
             "notes_after_conversation": notes_after_conversation,
             "client_time_display": display["client"],
             "philippines_time_display": display["philippines"],

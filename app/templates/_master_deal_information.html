@@ -16,6 +16,8 @@
 {% set deal_layout_zone = deal_layout_zone if deal_layout_zone is defined else 'deal' %}
 {% set deal_show_became_in_heading = deal_show_became_in_heading if deal_show_became_in_heading is defined else true %}
 {% set deal_use_prospect_native_whatsapp = deal_use_prospect_native_whatsapp if deal_use_prospect_native_whatsapp is defined else false %}
+{% set deal_show_management_type = deal_show_management_type if deal_show_management_type is defined else false %}
+{% set management_type_labels = management_type_labels if management_type_labels is defined else {'UNDECIDED':'Undecided','CLIENT_MANAGED':'Client Managed','RSF_MANAGED':'RSF Managed'} %}
 <section class="master-deal-information" data-master-deal-information>
   {% if show_deal_section_heading %}
   <div class="master-card-section-head">
@@ -75,6 +77,16 @@
         <span>Developer</span>
         <input type="text" name="developer" form="{{ form_id }}" maxlength="200" value="{{ deal['developer'] }}">
       </label>
+      {% if deal_show_management_type %}
+      <label data-card-layout-field="management_type" data-management-type-field {% if deal_workflow_status != 'WON' %}hidden{% endif %}>
+        <span>Management Type</span>
+        <select name="management_type" form="{{ form_id }}" aria-label="Management Type">
+          {% for code, label in management_type_labels.items() %}
+            <option value="{{ code }}" {% if (deal['management_type'] or 'UNDECIDED') == code %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      {% endif %}
       {% if deal_show_contact_number %}
       <label data-card-layout-field="contact_number">
         <span>Contact Number</span>

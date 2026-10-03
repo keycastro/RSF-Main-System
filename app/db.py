@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 40
-SCHEMA_NAME = "rsf-main-system-v1.18.180-manual-call-live-controls"
+SCHEMA_VERSION = 41
+SCHEMA_NAME = "rsf-main-system-v1.18.192-support-maintenance-lifecycle"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents","communication_notes","ai_sales_calls","whatsapp_messages","manual_client_calls"}
 
 
@@ -1446,6 +1446,52 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
             "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
             (40, "rsf-v1.18.180-manual-call-live-controls"),
         )
+
+
+    # V41 extends the existing connected Deal lifecycle into post-sale Client Services.
+    # Support & Maintenance is another view of the same client, never a duplicate client record.
+    if 41 not in applied:
+        deal_columns = {row["name"] for row in db.execute("PRAGMA table_info(deals)").fetchall()}
+        additions = {
+            "management_type": "TEXT NOT NULL DEFAULT 'UNDECIDED'",
+            "service_status": "TEXT NOT NULL DEFAULT 'ONBOARDING'",
+            "system_name": "TEXT NOT NULL DEFAULT ''",
+            "management_start_date": "TEXT NOT NULL DEFAULT ''",
+            "system_url": "TEXT NOT NULL DEFAULT ''",
+            "management_fee": "TEXT NOT NULL DEFAULT ''",
+            "billing_cycle": "TEXT NOT NULL DEFAULT 'MONTHLY'",
+            "next_billing_date": "TEXT NOT NULL DEFAULT ''",
+            "payment_status": "TEXT NOT NULL DEFAULT 'PENDING'",
+            "hosting_provider": "TEXT NOT NULL DEFAULT ''",
+            "repository_url": "TEXT NOT NULL DEFAULT ''",
+            "current_version": "TEXT NOT NULL DEFAULT ''",
+            "last_deployment": "TEXT NOT NULL DEFAULT ''",
+            "system_health": "TEXT NOT NULL DEFAULT 'HEALTHY'",
+            "backup_status": "TEXT NOT NULL DEFAULT ''",
+            "last_backup": "TEXT NOT NULL DEFAULT ''",
+            "last_maintenance": "TEXT NOT NULL DEFAULT ''",
+            "next_maintenance": "TEXT NOT NULL DEFAULT ''",
+            "maintenance_type": "TEXT NOT NULL DEFAULT ''",
+            "work_done": "TEXT NOT NULL DEFAULT ''",
+            "issues_found": "TEXT NOT NULL DEFAULT ''",
+            "resolution": "TEXT NOT NULL DEFAULT ''",
+            "open_issues": "TEXT NOT NULL DEFAULT ''",
+            "client_request": "TEXT NOT NULL DEFAULT ''",
+            "request_status": "TEXT NOT NULL DEFAULT 'NEW'",
+            "priority": "TEXT NOT NULL DEFAULT 'LOW'",
+            "date_requested": "TEXT NOT NULL DEFAULT ''",
+            "date_completed": "TEXT NOT NULL DEFAULT ''",
+            "included_support": "TEXT NOT NULL DEFAULT ''",
+            "excluded_work": "TEXT NOT NULL DEFAULT ''",
+            "major_upgrade_required": "INTEGER NOT NULL DEFAULT 0",
+            "additional_charge": "TEXT NOT NULL DEFAULT ''",
+            "agreement_notes": "TEXT NOT NULL DEFAULT ''",
+        }
+        for column, definition in additions.items():
+            if column not in deal_columns:
+                db.execute(f"ALTER TABLE deals ADD COLUMN {column} {definition}")
+        db.execute("INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+                   (41, "rsf-v1.18.192-support-maintenance-lifecycle"))
 
 
 def _table_exists_postgres(db, table: str) -> bool:

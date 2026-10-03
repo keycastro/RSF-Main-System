@@ -4778,6 +4778,8 @@ document.addEventListener('click', (event) => {
           }
           const hiddenStatus = form.querySelector('[data-master-deal-status-hidden]');
           if (hiddenStatus) hiddenStatus.value = data.status;
+          const managementField = form.querySelector('[data-management-type-field]');
+          if (managementField) managementField.hidden = data.status !== 'WON';
           applyDealFilter();
         }
         updateDealMeetState(form, data);
@@ -5142,6 +5144,10 @@ document.addEventListener('click', (event) => {
 
     if (['demo_date', 'demo_time', 'demo_timezone'].includes(field?.name || '')) {
       field.dataset.dealStartValue = field.value || '';
+      saveDealFormInBackground(form);
+      return;
+    }
+    if (field?.name === 'management_type') {
       saveDealFormInBackground(form);
       return;
     }

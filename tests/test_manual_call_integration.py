@@ -13,7 +13,7 @@ class ManualCallIntegrationTests(unittest.TestCase):
         self.assertIn("conference_sid TEXT NOT NULL DEFAULT ''", schema)
         self.assertIn("agent_muted INTEGER NOT NULL DEFAULT 0", schema)
         self.assertIn("client_held INTEGER NOT NULL DEFAULT 0", schema)
-        self.assertIn("SCHEMA_VERSION = 40", db)
+        self.assertIn("SCHEMA_VERSION = 41", db)
         self.assertIn("rsf-v1.18.180-manual-call-live-controls", db)
 
     def test_manual_call_button_exists_on_all_notes_dialogs(self):

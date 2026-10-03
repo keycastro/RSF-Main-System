@@ -90,6 +90,7 @@
         {% set deal_external_email = deal['prospect_id'] %}
         {% set deal_external_contact_number = deal['prospect_id'] %}
         {% set deal_layout_zone = 'deal' %}
+        {% set deal_show_management_type = true %}
         {% include '_master_deal_information.html' %}
 
         {% if deal['prospect_id'] %}

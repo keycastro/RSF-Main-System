@@ -63,6 +63,7 @@
       {% set prospects_active = request.endpoint in ['main.prospects','main.prospect_new','main.prospect_update','main.prospect_contact_attempt','main.prospect_delete'] %}
       {% set inquiries_active = request.endpoint in ['main.inquiries_list','main.inquiry_detail'] %}
       {% set deals_active = request.endpoint in ['main.deals','main.deal_create_from_prospect','main.deal_update'] %}
+      {% set support_active = request.endpoint in ['main.support_maintenance','main.support_maintenance_update'] %}
       <div class="nav-section-label">OUTBOUND</div>
       <a class="{{ 'active' if prospects_active else '' }}" {% if prospects_active %}aria-current="page"{% endif %} href="{{ url_for('main.prospects') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("leads") }}</span><span class="nav-text">Prospects</span></a>
 
@@ -70,6 +71,9 @@
       <a class="{{ 'active' if inquiries_active else '' }}" {% if inquiries_active %}aria-current="page"{% endif %} href="{{ url_for('main.inquiries_list') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("inbox") }}</span><span class="nav-text">Website Inbox</span></a>
       <div class="nav-section-label">ACTIVE PIPELINE</div>
       <a class="{{ 'active' if deals_active else '' }}" {% if deals_active %}aria-current="page"{% endif %} href="{{ url_for('main.deals') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("sales") }}</span><span class="nav-text">Deal Stages</span></a>
+
+      <div class="nav-section-label">CLIENT SERVICES</div>
+      <a class="{{ 'active' if support_active else '' }}" {% if support_active %}aria-current="page"{% endif %} href="{{ url_for('main.support_maintenance') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("resources") }}</span><span class="nav-text">Support &amp; Maintenance</span></a>
     </nav>
 
     <div class="sidebar-footer">
@@ -84,7 +88,7 @@
   </aside>
 
   <main class="main-area" id="main-content" tabindex="-1">
-    {% if request.endpoint not in ['main.prospects','main.deals','main.inquiries_list','main.records','main.inquiry_records'] %}
+    {% if request.endpoint not in ['main.prospects','main.deals','main.inquiries_list','main.support_maintenance','main.records','main.inquiry_records'] %}
     <header class="topbar">
       <div class="topbar-left">
         <button class="menu-button" type="button" data-menu aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">☰</button>
