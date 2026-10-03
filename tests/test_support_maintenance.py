@@ -128,6 +128,39 @@ class SupportMaintenanceTests(unittest.TestCase):
         self.assertIn('async_request = request.headers.get("X-RSF-Async") == "1"', routes)
         self.assertIn('"ok": True', routes)
 
+    def test_support_uses_existing_page_specific_ctrl_drag_reordering(self):
+        template = self.read("app/templates/support_maintenance.html")
+        js = self.read("app/static/js/app.js")
+        routes = self.read("app/routes.py")
+        self.assertIn('data-card-layout-page="support_maintenance"', template)
+        self.assertIn('data-card-layout-zones=\'["header","main","other"]\'', template)
+        self.assertIn("data-support-maintenance-card", template)
+        self.assertIn('data-card-layout-zone="header"', template)
+        self.assertIn('data-card-layout-zone="main"', template)
+        self.assertIn('data-card-layout-zone="other"', template)
+        for key in (
+            "service_status", "system_name", "management_fee", "next_billing_date",
+            "system_health", "next_maintenance", "management_start_date", "system_url",
+            "hosting_provider", "repository_url", "backup_status", "open_issues",
+            "client_request", "management_notes",
+        ):
+            self.assertIn(f'data-card-layout-field="{key}"', template)
+        self.assertIn("pageName === 'support_maintenance'", js)
+        self.assertIn("[data-support-maintenance-card]", js)
+        self.assertIn('"support_maintenance": {', routes)
+        self.assertIn('card_layout=_card_layout_preference(db, "support_maintenance")', routes)
+
+    def test_support_drag_reordering_does_not_replace_autosave_or_collapsibles(self):
+        template = self.read("app/templates/support_maintenance.html")
+        js = self.read("app/static/js/app.js")
+        self.assertIn("data-support-maintenance-form", template)
+        self.assertIn("data-deal-source-toggle", template)
+        self.assertIn("{% include '_master_deal_documents.html' %}", template)
+        self.assertIn("saveSupportFormInBackground", js)
+        self.assertIn("event.ctrlKey", js)
+        self.assertIn("applyAll({animate: true", js)
+        self.assertIn("layout_json: JSON.stringify(state)", js)
+
 
 if __name__ == "__main__":
     unittest.main()

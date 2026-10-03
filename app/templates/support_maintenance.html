@@ -1,6 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="deals-page support-maintenance-page">
+<section
+  class="deals-page support-maintenance-page"
+  data-card-layout-page="support_maintenance"
+  data-card-layout-zones='["header","main","other"]'
+  data-card-layout-state="{{ card_layout|tojson|forceescape }}"
+  data-card-layout-save-url="{{ url_for('main.card_layout_update', page_name='support_maintenance') }}"
+  data-card-layout-csrf="{{ csrf_token() }}"
+  data-card-layout-editable="{{ '1' if g.user and g.user['role'] == 'admin' else '0' }}"
+>
   <div class="page-head workspace-page-head deals-head">
     <div class="deals-title-row">
       <button class="menu-button deal-mobile-menu" type="button" data-menu aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">☰</button>
@@ -14,14 +22,14 @@
   <div class="deals-list">
     {% for deal in managed_clients %}
       {% set support_form_id = 'support-form-' ~ deal['id'] %}
-      <article class="deal-card support-maintenance-card" id="support-client-{{ deal['id'] }}">
+      <article class="deal-card support-maintenance-card" id="support-client-{{ deal['id'] }}" data-support-maintenance-card>
         <header class="deal-card-head">
-          <div class="deal-card-identifiers">
+          <div class="deal-card-identifiers" data-card-layout-zone="header">
             <label>
               <span>Client Name:</span>
               <strong>{{ deal['client_name'] or '—' }}</strong>
             </label>
-            <label>
+            <label data-card-layout-field="service_status">
               <span>Service Status:</span>
               <select class="deal-header-status-select" name="service_status" form="{{ support_form_id }}" aria-label="Service Status">
                 {% for code, label in service_status_labels.items() %}
@@ -41,20 +49,20 @@
         </form>
 
         <div class="deal-form support-maintenance-core-fields">
-          <div class="deal-form-grid">
-            <label class="deal-field-wide">
+          <div class="deal-form-grid" data-card-layout-zone="main">
+            <label class="deal-field-wide" data-card-layout-field="system_name">
               <span>System Name</span>
               <input type="text" name="system_name" form="{{ support_form_id }}" maxlength="240" value="{{ deal['system_name'] }}">
             </label>
-            <label>
+            <label data-card-layout-field="management_fee">
               <span>Management Fee</span>
               <input type="text" name="management_fee" form="{{ support_form_id }}" maxlength="200" value="{{ deal['management_fee'] }}">
             </label>
-            <label>
+            <label data-card-layout-field="next_billing_date">
               <span>Next Billing Date</span>
               <input type="date" name="next_billing_date" form="{{ support_form_id }}" value="{{ deal['next_billing_date'] }}">
             </label>
-            <label>
+            <label data-card-layout-field="system_health">
               <span>System Health</span>
               <select name="system_health" form="{{ support_form_id }}">
                 {% for code, label in system_health_labels.items() %}
@@ -62,7 +70,7 @@
                 {% endfor %}
               </select>
             </label>
-            <label>
+            <label data-card-layout-field="next_maintenance">
               <span>Next Maintenance</span>
               <input type="date" name="next_maintenance" form="{{ support_form_id }}" value="{{ deal['next_maintenance'] }}">
             </label>
@@ -87,36 +95,36 @@
             ><span aria-hidden="true">⌄</span></button>
           </div>
 
-          <div class="deal-source-grid" id="support-other-fields-body-{{ deal['id'] }}" hidden>
-            <label>
+          <div class="deal-source-grid" id="support-other-fields-body-{{ deal['id'] }}" data-card-layout-zone="other" hidden>
+            <label data-card-layout-field="management_start_date">
               <span>Management Start Date</span>
               <input type="date" name="management_start_date" form="{{ support_form_id }}" value="{{ deal['management_start_date'] }}">
             </label>
-            <label class="deal-source-field-wide">
+            <label class="deal-source-field-wide" data-card-layout-field="system_url">
               <span>System URL</span>
               <input type="url" name="system_url" form="{{ support_form_id }}" maxlength="1000" value="{{ deal['system_url'] }}">
             </label>
-            <label>
+            <label data-card-layout-field="hosting_provider">
               <span>Hosting Provider</span>
               <input type="text" name="hosting_provider" form="{{ support_form_id }}" maxlength="200" value="{{ deal['hosting_provider'] }}">
             </label>
-            <label class="deal-source-field-wide">
+            <label class="deal-source-field-wide" data-card-layout-field="repository_url">
               <span>Repository</span>
               <input type="url" name="repository_url" form="{{ support_form_id }}" maxlength="1000" value="{{ deal['repository_url'] }}">
             </label>
-            <label>
+            <label data-card-layout-field="backup_status">
               <span>Backup Status</span>
               <input type="text" name="backup_status" form="{{ support_form_id }}" maxlength="200" value="{{ deal['backup_status'] }}">
             </label>
-            <label class="deal-source-field-wide">
+            <label class="deal-source-field-wide" data-card-layout-field="open_issues">
               <span>Open Issues</span>
               <textarea name="open_issues" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['open_issues'] }}</textarea>
             </label>
-            <label class="deal-source-field-wide">
+            <label class="deal-source-field-wide" data-card-layout-field="client_request">
               <span>Client Request</span>
               <textarea name="client_request" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['client_request'] }}</textarea>
             </label>
-            <label class="deal-source-field-wide">
+            <label class="deal-source-field-wide" data-card-layout-field="management_notes">
               <span>Management Notes</span>
               <textarea name="management_notes" form="{{ support_form_id }}" maxlength="3000" rows="3">{{ deal['agreement_notes'] }}</textarea>
             </label>

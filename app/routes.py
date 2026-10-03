@@ -137,6 +137,15 @@ CARD_LAYOUT_SPECS = {
             "inbound_request", "inbound_message", "inbound_received_date",
         },
     },
+    "support_maintenance": {
+        "zones": ("header", "main", "other"),
+        "fields": {
+            "service_status", "system_name", "management_fee", "next_billing_date",
+            "system_health", "next_maintenance", "management_start_date", "system_url",
+            "hosting_provider", "repository_url", "backup_status", "open_issues",
+            "client_request", "management_notes",
+        },
+    },
 }
 
 
@@ -2051,6 +2060,7 @@ def support_maintenance():
         "support_maintenance.html", title="Support & Maintenance", managed_clients=rows,
         service_status_labels=SERVICE_STATUS_LABELS,
         system_health_labels=SYSTEM_HEALTH_LABELS,
+        card_layout=_card_layout_preference(db, "support_maintenance"),
         **_deal_card_support(db, rows),
     )
 

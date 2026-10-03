@@ -9,14 +9,16 @@ class CardLayoutReorderingTests(unittest.TestCase):
     def read(self, relative: str) -> str:
         return (ROOT / relative).read_text(encoding="utf-8")
 
-    def test_three_workspace_pages_have_independent_layout_roots(self):
+    def test_four_workspace_pages_have_independent_layout_roots(self):
         prospects = self.read("app/templates/prospects.html")
         inquiries = self.read("app/templates/inquiries.html")
         deals = self.read("app/templates/deals.html")
+        support = self.read("app/templates/support_maintenance.html")
         self.assertIn('data-card-layout-page="prospects"', prospects)
         self.assertIn('data-card-layout-page="inquiries"', inquiries)
         self.assertIn('data-card-layout-page="deals"', deals)
-        for template in (prospects, inquiries, deals):
+        self.assertIn('data-card-layout-page="support_maintenance"', support)
+        for template in (prospects, inquiries, deals, support):
             self.assertIn("data-card-layout-save-url", template)
             self.assertIn("data-card-layout-state", template)
 
@@ -53,6 +55,7 @@ class CardLayoutReorderingTests(unittest.TestCase):
         self.assertIn("MutationObserver", js)
         self.assertIn('@bp.post("/card-layout/<page_name>")', routes)
         self.assertIn("CARD_LAYOUT_SPECS", routes)
+        self.assertIn('"support_maintenance": {', routes)
         self.assertIn('return f"card_layout_{page_name}_v1"', routes)
 
     def test_smooth_engine_is_pointer_driven_not_native_html_drag(self):

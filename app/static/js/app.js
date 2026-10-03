@@ -5997,7 +5997,9 @@ document.addEventListener('click', (event) => {
   const csrfToken = root.dataset.cardLayoutCsrf || '';
   const cardSelector = pageName === 'prospects'
     ? '[data-prospect-row]'
-    : (pageName === 'inquiries' ? '[data-website-inquiry-card]' : '[data-deal-card]');
+    : (pageName === 'inquiries'
+      ? '[data-website-inquiry-card]'
+      : (pageName === 'support_maintenance' ? '[data-support-maintenance-card]' : '[data-deal-card]'));
 
   let zones = [];
   try {
