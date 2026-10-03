@@ -7518,3 +7518,32 @@ body.card-layout-dragging-global *{cursor:grabbing!important;user-select:none!im
 
 /* v1.18.182 — compact Manual Note composer to maximize visible conversation history. */
 /* Design-only: smaller textarea and slimmer existing Save note button; no workflow changes. */
+
+
+/* v1.18.193 — Support & Maintenance follows the Deal Stages master card format.
+   Geometry comes from the existing Deal card classes; these rules only close
+   control-type gaps that Deal source details did not previously need. */
+.support-maintenance-page .deal-source-grid select{
+  width:100%;
+  min-width:0;
+  min-height:39px;
+  padding:8px 10px;
+  border:1px solid #d7e1dd;
+  border-radius:8px;
+  background:#fff;
+  color:var(--ux-section-ink);
+  font:inherit;
+  font-size:12px;
+  line-height:1.4;
+  outline:none
+}
+.support-maintenance-page .deal-source-grid select:focus{
+  border-color:var(--workspace-emerald);
+  box-shadow:0 0 0 2px rgba(27,94,74,.10)
+}
+.support-maintenance-page .deal-card-footer .deal-footer-action{
+  gap:8px
+}
+.support-maintenance-page .support-maintenance-other-fields{
+  background:#f4fbf7
+}

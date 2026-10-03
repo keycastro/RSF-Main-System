@@ -1,71 +1,287 @@
 {% extends 'base.html' %}
 {% block content %}
 <section class="deals-page support-maintenance-page">
-  <div class="page-head workspace-page-head deals-head"><div class="deals-title-row">
-    <button class="menu-button deal-mobile-menu" type="button" data-menu aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">☰</button>
-    <div><h1>Support &amp; Maintenance</h1><p>Won clients managed by RSF. These are the same connected client records from Prospects, Website Inbox, and Deal Stages.</p></div>
-  </div></div>
-  <div class="deals-list">
-  {% for deal in managed_clients %}
-    <article class="deal-card" id="support-client-{{ deal['id'] }}">
-      <header class="deal-card-head"><div class="deal-card-identifiers">
-        <div><span>Client Name:</span><strong>{{ deal['client_name'] or '—' }}</strong></div>
-        <div><span>Company:</span><strong>{{ deal['client_company'] or '—' }}</strong></div>
-      </div><div class="deal-card-linked"><span class="deal-linked-label">RSF MANAGED</span><a class="button secondary" href="{{ url_for('main.deals') }}#deal-{{ deal['id'] }}">View Deal</a></div></header>
-      <form class="deal-form" method="post" action="{{ url_for('main.support_maintenance_update', deal_id=deal['id']) }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="deal-form-grid">
-          <label class="deal-field-wide"><span>System Name</span><input name="system_name" maxlength="240" value="{{ deal['system_name'] }}"></label>
-          <label><span>Service Status</span><select name="service_status">{% for code,label in service_status_labels.items() %}<option value="{{ code }}" {% if deal['service_status']==code %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
-          <label><span>Management Fee</span><input name="management_fee" maxlength="200" value="{{ deal['management_fee'] }}"></label>
-          <label><span>Next Billing Date</span><input type="date" name="next_billing_date" value="{{ deal['next_billing_date'] }}"></label>
-          <label><span>System Health</span><select name="system_health">{% for code,label in system_health_labels.items() %}<option value="{{ code }}" {% if deal['system_health']==code %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
-          <label><span>Last Maintenance</span><input type="date" name="last_maintenance" value="{{ deal['last_maintenance'] }}"></label>
-          <label><span>Next Maintenance</span><input type="date" name="next_maintenance" value="{{ deal['next_maintenance'] }}"></label>
-        </div>
-        <details class="deal-source-details"><summary class="deal-source-details-head"><strong>OTHER FIELDS</strong></summary><div class="deal-source-grid">
-          <label><span>Management Type</span><input value="RSF Managed" readonly></label>
-          <label><span>Management Start Date</span><input type="date" name="management_start_date" value="{{ deal['management_start_date'] }}"></label>
-          <label><span>Billing Cycle</span><select name="billing_cycle">{% for code,label in billing_cycle_labels.items() %}<option value="{{ code }}" {% if deal['billing_cycle']==code %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
-          <label><span>Payment Status</span><select name="payment_status">{% for code,label in payment_status_labels.items() %}<option value="{{ code }}" {% if deal['payment_status']==code %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
-          <label><span>System URL</span><input type="url" name="system_url" maxlength="1000" value="{{ deal['system_url'] }}"></label>
-          <label><span>Hosting Provider</span><input name="hosting_provider" maxlength="200" value="{{ deal['hosting_provider'] }}"></label>
-          <label><span>Repository</span><input type="url" name="repository_url" maxlength="1000" value="{{ deal['repository_url'] }}"></label>
-          <label><span>Current Version</span><input name="current_version" maxlength="120" value="{{ deal['current_version'] }}"></label>
-          <label><span>Last Deployment</span><input type="datetime-local" name="last_deployment" value="{{ deal['last_deployment'] }}"></label>
-          <label><span>Backup Status</span><input name="backup_status" maxlength="200" value="{{ deal['backup_status'] }}"></label>
-          <label><span>Last Backup</span><input type="date" name="last_backup" value="{{ deal['last_backup'] }}"></label>
-          <label><span>Maintenance Type</span><input name="maintenance_type" maxlength="200" value="{{ deal['maintenance_type'] }}"></label>
-          <label class="deal-field-wide"><span>Work Done</span><textarea name="work_done" maxlength="3000">{{ deal['work_done'] }}</textarea></label>
-          <label class="deal-field-wide"><span>Issues Found</span><textarea name="issues_found" maxlength="3000">{{ deal['issues_found'] }}</textarea></label>
-          <label class="deal-field-wide"><span>Resolution</span><textarea name="resolution" maxlength="3000">{{ deal['resolution'] }}</textarea></label>
-          <label class="deal-field-wide"><span>Open Issues</span><textarea name="open_issues" maxlength="3000">{{ deal['open_issues'] }}</textarea></label>
-          <label class="deal-field-wide"><span>Client Request</span><textarea name="client_request" maxlength="3000">{{ deal['client_request'] }}</textarea></label>
-          <label><span>Request Status</span><select name="request_status">{% for code,label in request_status_labels.items() %}<option value="{{ code }}" {% if deal['request_status']==code %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
-          <label><span>Priority</span><select name="priority">{% for code,label in priority_labels.items() %}<option value="{{ code }}" {% if deal['priority']==code %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
-          <label><span>Date Requested</span><input type="date" name="date_requested" value="{{ deal['date_requested'] }}"></label>
-          <label><span>Date Completed</span><input type="date" name="date_completed" value="{{ deal['date_completed'] }}"></label>
-          <label class="deal-field-wide"><span>Included Support</span><textarea name="included_support" maxlength="3000">{{ deal['included_support'] }}</textarea></label>
-          <label class="deal-field-wide"><span>Excluded Work</span><textarea name="excluded_work" maxlength="3000">{{ deal['excluded_work'] }}</textarea></label>
-          <label><span>Major Upgrade Required?</span><select name="major_upgrade_required"><option value="0" {% if not deal['major_upgrade_required'] %}selected{% endif %}>No</option><option value="1" {% if deal['major_upgrade_required'] %}selected{% endif %}>Yes</option></select></label>
-          <label><span>Additional Charge</span><input name="additional_charge" maxlength="200" value="{{ deal['additional_charge'] }}"></label>
-          <label class="deal-field-wide"><span>Agreement Notes</span><textarea name="agreement_notes" maxlength="3000">{{ deal['agreement_notes'] }}</textarea></label>
-          <label><span>Client Name</span><input name="client_name" maxlength="200" value="{{ deal['client_name'] }}"></label>
-          <label><span>Developer</span><input name="developer" maxlength="200" value="{{ deal['developer'] }}"></label>
-          <label><span>Email</span><input type="email" name="email" maxlength="320" value="{{ deal['client_email'] }}"></label>
-          <label><span>Contact Number</span><input name="contact_number" maxlength="120" value="{{ deal['client_phone'] }}"></label>
-          <label><span>WhatsApp #</span><input name="whatsapp_number" maxlength="120" value="{{ deal['whatsapp_number'] }}"></label>
-          <label class="deal-field-wide"><span>Location</span><input name="location" maxlength="200" value="{{ deal['client_location'] }}"></label>
-          <label class="deal-field-wide"><span>Notes After Conversation</span><textarea name="notes_after_conversation" maxlength="3000">{{ deal['client_notes'] }}</textarea></label>
-        </div></details>
-        <div class="deal-card-footer"><button class="button primary" type="submit">Save Support &amp; Maintenance</button><a class="button secondary" href="{{ url_for('main.deals') }}#deal-{{ deal['id'] }}">View Deal</a></div>
-      </form>
-      {% set deal_dom_key='support-' ~ deal['id'] %}{% set deal_return_to=url_for('main.support_maintenance') ~ '#support-client-' ~ deal['id'] %}{% include '_master_deal_documents.html' %}
-    </article>
-  {% else %}
-    <div class="workspace-empty-state deals-empty"><strong>No RSF-managed clients yet.</strong><span>A Won Deal appears here after Management Type is set to RSF Managed.</span></div>
-  {% endfor %}
+  <div class="page-head workspace-page-head deals-head">
+    <div class="deals-title-row">
+      <button class="menu-button deal-mobile-menu" type="button" data-menu aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">☰</button>
+      <div>
+        <h1>Support &amp; Maintenance</h1>
+        <p>Won clients managed by RSF. These are the same connected client records from Prospects, Website Inbox, and Deal Stages.</p>
+      </div>
+    </div>
   </div>
+
+  <div class="deals-list">
+    {% for deal in managed_clients %}
+      {% set support_form_id = 'support-form-' ~ deal['id'] %}
+      <article class="deal-card support-maintenance-card" id="support-client-{{ deal['id'] }}">
+        <header class="deal-card-head">
+          <div class="deal-card-identifiers">
+            <label>
+              <span>Client Name:</span>
+              <input
+                class="deal-identifier-input"
+                type="text"
+                name="client_name"
+                form="{{ support_form_id }}"
+                maxlength="200"
+                value="{{ deal['client_name'] }}"
+              >
+            </label>
+            <label>
+              <span>Service Status:</span>
+              <select class="deal-header-status-select" name="service_status" form="{{ support_form_id }}" aria-label="Service Status">
+                {% for code, label in service_status_labels.items() %}
+                  <option value="{{ code }}" {% if deal['service_status'] == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>
+              <span>Developer:</span>
+              <input
+                class="deal-identifier-input"
+                type="text"
+                name="developer"
+                form="{{ support_form_id }}"
+                maxlength="200"
+                value="{{ deal['developer'] }}"
+              >
+            </label>
+          </div>
+          <div class="deal-card-linked">
+            <span class="deal-linked-label">RSF MANAGED</span>
+            <span class="deal-became-log">Became Deal: {{ (deal['became_deal_at'] or deal['created_at'])|dt }}</span>
+          </div>
+        </header>
+
+        <form id="{{ support_form_id }}" method="post" action="{{ url_for('main.support_maintenance_update', deal_id=deal['id']) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        </form>
+
+        <div class="deal-form support-maintenance-core-fields">
+          <div class="deal-form-grid">
+            <label class="deal-field-wide">
+              <span>System Name</span>
+              <input type="text" name="system_name" form="{{ support_form_id }}" maxlength="240" value="{{ deal['system_name'] }}">
+            </label>
+            <label>
+              <span>Management Fee</span>
+              <input type="text" name="management_fee" form="{{ support_form_id }}" maxlength="200" value="{{ deal['management_fee'] }}">
+            </label>
+            <label>
+              <span>Next Billing Date</span>
+              <input type="date" name="next_billing_date" form="{{ support_form_id }}" value="{{ deal['next_billing_date'] }}">
+            </label>
+            <label>
+              <span>System Health</span>
+              <select name="system_health" form="{{ support_form_id }}">
+                {% for code, label in system_health_labels.items() %}
+                  <option value="{{ code }}" {% if deal['system_health'] == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>
+              <span>Management Start Date</span>
+              <input type="date" name="management_start_date" form="{{ support_form_id }}" value="{{ deal['management_start_date'] }}">
+            </label>
+            <label>
+              <span>Last Maintenance</span>
+              <input type="date" name="last_maintenance" form="{{ support_form_id }}" value="{{ deal['last_maintenance'] }}">
+            </label>
+            <label>
+              <span>Next Maintenance</span>
+              <input type="date" name="next_maintenance" form="{{ support_form_id }}" value="{{ deal['next_maintenance'] }}">
+            </label>
+          </div>
+        </div>
+
+        {% set deal_dom_key = 'support-' ~ deal['id'] %}
+        {% set deal_return_to = url_for('main.support_maintenance') ~ '#support-client-' ~ deal['id'] %}
+        {% set deal_documents_description = 'Keep important client system documents organized here.' %}
+        {% include '_master_deal_documents.html' %}
+
+        <section class="deal-source-details deal-source-research support-maintenance-other-fields" aria-labelledby="support-other-fields-{{ deal['id'] }}">
+          <div class="deal-source-details-head">
+            <h3 id="support-other-fields-{{ deal['id'] }}">OTHER FIELDS</h3>
+            <button
+              class="deal-source-collapse-button"
+              type="button"
+              aria-label="Show Other Fields"
+              aria-expanded="false"
+              aria-controls="support-other-fields-body-{{ deal['id'] }}"
+              data-deal-source-toggle
+            ><span aria-hidden="true">⌄</span></button>
+          </div>
+
+          <div class="deal-source-grid" id="support-other-fields-body-{{ deal['id'] }}" hidden>
+            <label>
+              <span>Management Type</span>
+              <input type="text" value="RSF Managed" readonly>
+            </label>
+            <label>
+              <span>Company</span>
+              <input type="text" value="{{ deal['client_company'] }}" readonly>
+            </label>
+
+            <label>
+              <span>Billing Cycle</span>
+              <select name="billing_cycle" form="{{ support_form_id }}">
+                {% for code, label in billing_cycle_labels.items() %}
+                  <option value="{{ code }}" {% if deal['billing_cycle'] == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>
+              <span>Payment Status</span>
+              <select name="payment_status" form="{{ support_form_id }}">
+                {% for code, label in payment_status_labels.items() %}
+                  <option value="{{ code }}" {% if deal['payment_status'] == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </label>
+
+            <label class="deal-source-field-wide">
+              <span>System URL</span>
+              <input type="url" name="system_url" form="{{ support_form_id }}" maxlength="1000" value="{{ deal['system_url'] }}">
+            </label>
+            <label>
+              <span>Hosting Provider</span>
+              <input type="text" name="hosting_provider" form="{{ support_form_id }}" maxlength="200" value="{{ deal['hosting_provider'] }}">
+            </label>
+            <label>
+              <span>Current Version</span>
+              <input type="text" name="current_version" form="{{ support_form_id }}" maxlength="120" value="{{ deal['current_version'] }}">
+            </label>
+            <label class="deal-source-field-wide">
+              <span>Repository</span>
+              <input type="url" name="repository_url" form="{{ support_form_id }}" maxlength="1000" value="{{ deal['repository_url'] }}">
+            </label>
+
+            <label>
+              <span>Last Deployment</span>
+              <input type="datetime-local" name="last_deployment" form="{{ support_form_id }}" value="{{ deal['last_deployment'] }}">
+            </label>
+            <label>
+              <span>Backup Status</span>
+              <input type="text" name="backup_status" form="{{ support_form_id }}" maxlength="200" value="{{ deal['backup_status'] }}">
+            </label>
+            <label>
+              <span>Last Backup</span>
+              <input type="date" name="last_backup" form="{{ support_form_id }}" value="{{ deal['last_backup'] }}">
+            </label>
+            <label>
+              <span>Maintenance Type</span>
+              <input type="text" name="maintenance_type" form="{{ support_form_id }}" maxlength="200" value="{{ deal['maintenance_type'] }}">
+            </label>
+
+            <label class="deal-source-field-wide">
+              <span>Work Done</span>
+              <textarea name="work_done" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['work_done'] }}</textarea>
+            </label>
+            <label class="deal-source-field-wide">
+              <span>Issues Found</span>
+              <textarea name="issues_found" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['issues_found'] }}</textarea>
+            </label>
+            <label class="deal-source-field-wide">
+              <span>Resolution</span>
+              <textarea name="resolution" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['resolution'] }}</textarea>
+            </label>
+            <label class="deal-source-field-wide">
+              <span>Open Issues</span>
+              <textarea name="open_issues" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['open_issues'] }}</textarea>
+            </label>
+
+            <label class="deal-source-field-wide">
+              <span>Client Request</span>
+              <textarea name="client_request" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['client_request'] }}</textarea>
+            </label>
+            <label>
+              <span>Request Status</span>
+              <select name="request_status" form="{{ support_form_id }}">
+                {% for code, label in request_status_labels.items() %}
+                  <option value="{{ code }}" {% if deal['request_status'] == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>
+              <span>Priority</span>
+              <select name="priority" form="{{ support_form_id }}">
+                {% for code, label in priority_labels.items() %}
+                  <option value="{{ code }}" {% if deal['priority'] == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>
+              <span>Date Requested</span>
+              <input type="date" name="date_requested" form="{{ support_form_id }}" value="{{ deal['date_requested'] }}">
+            </label>
+            <label>
+              <span>Date Completed</span>
+              <input type="date" name="date_completed" form="{{ support_form_id }}" value="{{ deal['date_completed'] }}">
+            </label>
+
+            <label class="deal-source-field-wide">
+              <span>Included Support</span>
+              <textarea name="included_support" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['included_support'] }}</textarea>
+            </label>
+            <label class="deal-source-field-wide">
+              <span>Excluded Work</span>
+              <textarea name="excluded_work" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['excluded_work'] }}</textarea>
+            </label>
+            <label>
+              <span>Major Upgrade Required?</span>
+              <select name="major_upgrade_required" form="{{ support_form_id }}">
+                <option value="0" {% if not deal['major_upgrade_required'] %}selected{% endif %}>No</option>
+                <option value="1" {% if deal['major_upgrade_required'] %}selected{% endif %}>Yes</option>
+              </select>
+            </label>
+            <label>
+              <span>Additional Charge</span>
+              <input type="text" name="additional_charge" form="{{ support_form_id }}" maxlength="200" value="{{ deal['additional_charge'] }}">
+            </label>
+            <label class="deal-source-field-wide">
+              <span>Agreement Notes</span>
+              <textarea name="agreement_notes" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['agreement_notes'] }}</textarea>
+            </label>
+
+            <label>
+              <span>Email</span>
+              <input type="email" name="email" form="{{ support_form_id }}" maxlength="320" value="{{ deal['client_email'] }}">
+            </label>
+            <label>
+              <span>Contact Number</span>
+              <input type="text" name="contact_number" form="{{ support_form_id }}" maxlength="120" value="{{ deal['client_phone'] }}">
+            </label>
+            <label>
+              <span>WhatsApp #</span>
+              <input type="text" name="whatsapp_number" form="{{ support_form_id }}" maxlength="120" value="{{ deal['whatsapp_number'] }}">
+            </label>
+            <label>
+              <span>Location</span>
+              <input type="text" name="location" form="{{ support_form_id }}" maxlength="200" value="{{ deal['client_location'] }}">
+            </label>
+            <label class="deal-source-field-wide">
+              <span>Notes After Conversation</span>
+              <textarea name="notes_after_conversation" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['client_notes'] }}</textarea>
+            </label>
+          </div>
+        </section>
+
+        <div class="deal-card-footer">
+          <div class="deal-footer-action">
+            <button class="button primary" type="submit" form="{{ support_form_id }}">Save Support &amp; Maintenance</button>
+            <a class="button secondary" href="{{ url_for('main.deals') }}#deal-{{ deal['id'] }}">View Deal</a>
+          </div>
+        </div>
+      </article>
+    {% else %}
+      <div class="workspace-empty-state deals-empty" role="status">
+        <strong>No RSF-managed clients yet.</strong>
+        <span>A Won Deal appears here after Management Type is set to RSF Managed.</span>
+      </div>
+    {% endfor %}
+  </div>
+
   {% include '_master_deal_dialogs.html' %}
 </section>
 {% endblock %}

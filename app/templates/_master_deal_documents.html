@@ -1,4 +1,5 @@
 {% set documents_dom_key = deal_dom_key if deal_dom_key is defined else ('deal-' ~ deal['id']) %}
+{% set deal_documents_description = deal_documents_description if deal_documents_description is defined else 'Keep important Deal documents organized here.' %}
   <section class="deal-documents" aria-labelledby="deal-documents-{{ documents_dom_key }}">
     <div class="deal-documents-head">
       <div class="deal-documents-heading-copy">
@@ -13,7 +14,7 @@
             data-deal-document-upload-toggle
           >+</button>
         </div>
-        <p>Keep important Deal documents organized here.</p>
+        <p>{{ deal_documents_description }}</p>
       </div>
       <button
         class="deal-documents-collapse-button"
