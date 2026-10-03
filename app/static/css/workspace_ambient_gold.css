@@ -21,38 +21,20 @@
   --rsf-ambient-line:#d9c19e;
 }
 
-/* Scope the approved visual identity to the three approved operating pages. */
+/* Scope the approved visual identity to the three approved operating pages.
+   v1.18.188 separates the decorative background into calm moving layers.
+   Cards, fields, controls, layout, and interaction surfaces remain stationary. */
 .app-shell:has(.prospects-page) .main-area,
 .app-shell:has(.website-inbox-page) .main-area,
 .app-shell:has(.deals-page) .main-area{
+  position:relative;
+  isolation:isolate;
   color:var(--rsf-ambient-ink);
   border-radius:14px;
   box-shadow:
     inset 0 0 0 1px rgba(201,169,94,.55),
     inset 0 1px 0 rgba(255,255,255,.10);
   background:
-    radial-gradient(circle at 9% 5%,rgba(255,238,188,.98) 0 1px,rgba(201,169,94,.50) 2px 5px,rgba(201,169,94,.10) 7px 15px,transparent 19px),
-    radial-gradient(circle at 82% 3%,rgba(255,238,188,.98) 0 1px,rgba(201,169,94,.50) 2px 5px,rgba(201,169,94,.10) 7px 15px,transparent 19px),
-    radial-gradient(circle at 88% 15%,rgba(255,236,177,.96) 0 1px,rgba(201,169,94,.46) 2px 5px,rgba(201,169,94,.09) 7px 14px,transparent 18px),
-    radial-gradient(circle at 96% 38%,rgba(255,235,170,.95) 0 1px,rgba(201,169,94,.45) 2px 5px,rgba(201,169,94,.09) 7px 14px,transparent 18px),
-    radial-gradient(circle at 93% 56%,rgba(255,235,170,.96) 0 1px,rgba(201,169,94,.45) 2px 5px,rgba(201,169,94,.09) 7px 14px,transparent 18px),
-    radial-gradient(circle at 88% 80%,rgba(255,235,170,.94) 0 1px,rgba(201,169,94,.42) 2px 5px,rgba(201,169,94,.08) 7px 14px,transparent 18px),
-    radial-gradient(circle at 76% 94%,rgba(255,235,170,.90) 0 1px,rgba(201,169,94,.38) 2px 5px,rgba(201,169,94,.07) 7px 13px,transparent 17px),
-    radial-gradient(circle at 7% 91%,rgba(255,235,170,.90) 0 1px,rgba(201,169,94,.36) 2px 5px,rgba(201,169,94,.07) 7px 13px,transparent 17px),
-
-    radial-gradient(ellipse at 61% 48%,
-      transparent 0 26%,
-      rgba(237,218,188,.22) 26.10% 26.22%,
-      transparent 26.34% 36%,
-      rgba(201,169,94,.27) 36.10% 36.22%,
-      transparent 36.34% 46%,
-      rgba(201,169,94,.30) 46.10% 46.22%,
-      transparent 46.34% 56%,
-      rgba(201,169,94,.34) 56.10% 56.22%,
-      transparent 56.34% 66%,
-      rgba(201,169,94,.30) 66.10% 66.22%,
-      transparent 66.34%),
-
     radial-gradient(ellipse at 17% 46%,rgba(255,244,223,.62) 0%,rgba(244,219,183,.36) 31%,transparent 62%),
     radial-gradient(ellipse at 34% 92%,rgba(220,177,111,.28) 0%,transparent 45%),
     linear-gradient(104deg,
@@ -66,11 +48,62 @@
       #0b0907 100%);
 }
 
+/* Calm orbit layer — deliberately slow and low-amplitude. */
+.app-shell:has(.prospects-page) .main-area::before,
+.app-shell:has(.website-inbox-page) .main-area::before,
+.app-shell:has(.deals-page) .main-area::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at 61% 48%,
+      transparent 0 26%,
+      rgba(237,218,188,.22) 26.10% 26.22%,
+      transparent 26.34% 36%,
+      rgba(201,169,94,.27) 36.10% 36.22%,
+      transparent 36.34% 46%,
+      rgba(201,169,94,.30) 46.10% 46.22%,
+      transparent 46.34% 56%,
+      rgba(201,169,94,.34) 56.10% 56.22%,
+      transparent 56.34% 66%,
+      rgba(201,169,94,.30) 66.10% 66.22%,
+      transparent 66.34%);
+  transform-origin:61% 48%;
+  will-change:transform,opacity;
+  animation:rsf-ambient-orbit-drift 64s ease-in-out infinite alternate;
+}
+
+/* Gold light points drift independently from the orbit lines. */
+.app-shell:has(.prospects-page) .main-area::after,
+.app-shell:has(.website-inbox-page) .main-area::after,
+.app-shell:has(.deals-page) .main-area::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 9% 5%,rgba(255,238,188,.98) 0 1px,rgba(201,169,94,.50) 2px 5px,rgba(201,169,94,.10) 7px 15px,transparent 19px),
+    radial-gradient(circle at 82% 3%,rgba(255,238,188,.98) 0 1px,rgba(201,169,94,.50) 2px 5px,rgba(201,169,94,.10) 7px 15px,transparent 19px),
+    radial-gradient(circle at 88% 15%,rgba(255,236,177,.96) 0 1px,rgba(201,169,94,.46) 2px 5px,rgba(201,169,94,.09) 7px 14px,transparent 18px),
+    radial-gradient(circle at 96% 38%,rgba(255,235,170,.95) 0 1px,rgba(201,169,94,.45) 2px 5px,rgba(201,169,94,.09) 7px 14px,transparent 18px),
+    radial-gradient(circle at 93% 56%,rgba(255,235,170,.96) 0 1px,rgba(201,169,94,.45) 2px 5px,rgba(201,169,94,.09) 7px 14px,transparent 18px),
+    radial-gradient(circle at 88% 80%,rgba(255,235,170,.94) 0 1px,rgba(201,169,94,.42) 2px 5px,rgba(201,169,94,.08) 7px 14px,transparent 18px),
+    radial-gradient(circle at 76% 94%,rgba(255,235,170,.90) 0 1px,rgba(201,169,94,.38) 2px 5px,rgba(201,169,94,.07) 7px 13px,transparent 17px),
+    radial-gradient(circle at 7% 91%,rgba(255,235,170,.90) 0 1px,rgba(201,169,94,.36) 2px 5px,rgba(201,169,94,.07) 7px 13px,transparent 17px);
+  will-change:transform,opacity,filter;
+  animation:rsf-ambient-glow-drift 43s ease-in-out infinite alternate;
+}
+
 /* Keep the current page geometry; only make its existing surface transparent
    so the approved ambient background can show through. */
 .app-shell:has(.prospects-page) .content-wrap,
 .app-shell:has(.website-inbox-page) .content-wrap,
 .app-shell:has(.deals-page) .content-wrap{
+  position:relative;
+  z-index:1;
   --rsf-visual-text-ink:var(--rsf-ambient-ink);
   --rsf-visual-text-muted:var(--rsf-ambient-muted);
   --rsf-visual-field-border:#dbc5a6;
@@ -442,4 +475,51 @@
 .app-shell:has(.website-inbox-page) .workspace-visual-panel input[type="range"],
 .app-shell:has(.deals-page) .workspace-visual-panel input[type="range"]{
   accent-color:var(--rsf-ambient-gold);
+}
+
+
+/* v1.18.188 — calm ambient background motion only.
+   No card/UI motion is introduced. */
+@keyframes rsf-ambient-orbit-drift{
+  0%{
+    transform:translate3d(-0.28%,0.12%,0) scale(1.002);
+    opacity:.82;
+  }
+  50%{
+    transform:translate3d(0.18%,-0.16%,0) scale(1.006);
+    opacity:.90;
+  }
+  100%{
+    transform:translate3d(0.34%,0.20%,0) scale(1.009);
+    opacity:.85;
+  }
+}
+@keyframes rsf-ambient-glow-drift{
+  0%{
+    transform:translate3d(0.18%,-0.14%,0);
+    opacity:.84;
+    filter:brightness(.98);
+  }
+  50%{
+    transform:translate3d(-0.20%,0.16%,0);
+    opacity:.93;
+    filter:brightness(1.035);
+  }
+  100%{
+    transform:translate3d(0.12%,0.28%,0);
+    opacity:.88;
+    filter:brightness(1.01);
+  }
+}
+@media (prefers-reduced-motion:reduce){
+  .app-shell:has(.prospects-page) .main-area::before,
+  .app-shell:has(.website-inbox-page) .main-area::before,
+  .app-shell:has(.deals-page) .main-area::before,
+  .app-shell:has(.prospects-page) .main-area::after,
+  .app-shell:has(.website-inbox-page) .main-area::after,
+  .app-shell:has(.deals-page) .main-area::after{
+    animation:none!important;
+    transform:none!important;
+    filter:none!important;
+  }
 }
