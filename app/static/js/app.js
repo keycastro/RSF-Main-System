@@ -3736,7 +3736,8 @@ document.addEventListener('click', (event) => {
 
 (() => {
   const page = document.querySelector('.deals-page, .prospects-page, [data-website-inbox-page]');
-  if (!page || !page.querySelector('[data-deal-form]')) return;
+  if (!page) return;
+  const hasDealForm = Boolean(page.querySelector('[data-deal-form]'));
 
   const list = page.querySelector('.deals-list');
   const filterButtons = Array.from(page.querySelectorAll('[data-deal-filter]'));
@@ -3811,6 +3812,10 @@ document.addEventListener('click', (event) => {
       if (firstInput) window.setTimeout(() => firstInput.focus(), 0);
     }
   });
+
+  // Support & Maintenance reuses the Deal collapsible/document controls but does
+  // not use Deal autosave forms. Stop here only after those shared controls exist.
+  if (!hasDealForm) return;
 
   const nextStepFields = Array.from(page.querySelectorAll('[data-deal-next-step]'));
   const resizeNextStep = (field) => {

@@ -1,98 +1,120 @@
-import pathlib, unittest
-ROOT=pathlib.Path(__file__).resolve().parents[1]
+import pathlib
+import unittest
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+
 
 class SupportMaintenanceTests(unittest.TestCase):
-    def read(self,p): return (ROOT/p).read_text(encoding="utf-8")
+    def read(self, path):
+        return (ROOT / path).read_text(encoding="utf-8")
 
-    def test_connected_lifecycle(self):
-        r=self.read("app/routes.py"); s=self.read("app/schema.sql")
-        self.assertIn('@bp.get("/support-maintenance")',r)
-        self.assertIn("d.management_type='RSF_MANAGED'",r)
-        self.assertIn("p.status='WON'",r); self.assertIn("i.workflow_status='WON'",r)
-        self.assertNotIn("CREATE TABLE IF NOT EXISTS support_maintenance",s)
+    def test_connected_lifecycle_remains_same_deal_record(self):
+        routes = self.read("app/routes.py")
+        schema = self.read("app/schema.sql")
+        self.assertIn('@bp.get("/support-maintenance")', routes)
+        self.assertIn("d.management_type='RSF_MANAGED'", routes)
+        self.assertIn("p.status='WON'", routes)
+        self.assertIn("i.workflow_status='WON'", routes)
+        self.assertNotIn("CREATE TABLE IF NOT EXISTS support_maintenance", schema)
 
-    def test_sidebar_and_fields(self):
-        b=self.read("app/templates/base.html"); t=self.read("app/templates/support_maintenance.html")
-        self.assertIn("CLIENT SERVICES",b); self.assertIn("Support &amp; Maintenance",b)
-        for x in ("System Name","Service Status","Management Fee","Next Billing Date","System Health",
-                  "Management Start Date","Last Maintenance","Next Maintenance","OTHER FIELDS",
-                  "Billing Cycle","Payment Status","System URL","Hosting Provider","Repository",
-                  "Current Version","Last Deployment","Backup Status","Last Backup","Maintenance Type",
-                  "Work Done","Issues Found","Resolution","Open Issues","Client Request","Request Status",
-                  "Priority","Date Requested","Date Completed","Included Support","Excluded Work",
-                  "Major Upgrade Required?","Additional Charge","Agreement Notes","Company","Developer",
-                  "Contact Number","WhatsApp #","Email","Location","Notes After Conversation","Documents / Files"):
-            self.assertIn(x,t)
+    def test_only_approved_support_fields_are_rendered(self):
+        template = self.read("app/templates/support_maintenance.html")
+        approved_names = (
+            "service_status", "system_name", "management_fee", "next_billing_date",
+            "system_health", "next_maintenance", "management_start_date", "system_url",
+            "hosting_provider", "repository_url", "backup_status", "open_issues",
+            "client_request", "management_notes",
+        )
+        for name in approved_names:
+            with self.subTest(name=name):
+                self.assertIn(f'name="{name}"', template)
 
-    def test_schema_and_won_management_selector(self):
-        d=self.read("app/db.py"); m=self.read("app/templates/_master_deal_information.html"); j=self.read("app/static/js/app.js")
-        self.assertIn("SCHEMA_VERSION = 41",d); self.assertIn("rsf-v1.18.192-support-maintenance-lifecycle",d)
-        self.assertIn('name="management_type"',m); self.assertIn("deal_workflow_status != 'WON'",m)
-        self.assertIn("managementField.hidden = data.status !== 'WON'",j)
+        removed_names = (
+            "developer", "billing_cycle", "payment_status", "current_version",
+            "last_deployment", "last_backup", "last_maintenance", "maintenance_type",
+            "work_done", "issues_found", "resolution", "request_status", "priority",
+            "date_requested", "date_completed", "included_support", "excluded_work",
+            "major_upgrade_required", "additional_charge", "agreement_notes",
+            "email", "contact_number", "whatsapp_number", "location",
+            "notes_after_conversation",
+        )
+        for name in removed_names:
+            with self.subTest(name=name):
+                self.assertNotIn(f'name="{name}"', template)
 
-    def test_support_card_reuses_deal_stages_master_structure(self):
-        t=self.read("app/templates/support_maintenance.html")
-        self.assertIn('class="deal-card support-maintenance-card"',t)
-        self.assertIn('class="deal-card-head"',t)
-        self.assertIn('class="deal-card-identifiers"',t)
-        self.assertIn('class="deal-identifier-input"',t)
-        self.assertIn('class="deal-header-status-select"',t)
-        self.assertIn('class="deal-form support-maintenance-core-fields"',t)
-        self.assertIn('class="deal-form-grid"',t)
-        self.assertIn('class="deal-source-details deal-source-research support-maintenance-other-fields"',t)
-        self.assertIn('data-deal-source-toggle',t)
-        self.assertIn('class="deal-source-grid"',t)
-        self.assertIn('class="deal-card-footer"',t)
-        self.assertIn('class="deal-footer-action"',t)
+    def test_main_card_and_other_fields_match_approved_labels(self):
+        template = self.read("app/templates/support_maintenance.html")
+        for label in (
+            "System Name", "Service Status", "Management Fee", "Next Billing Date",
+            "System Health", "Next Maintenance", "Management Start Date", "System URL",
+            "Hosting Provider", "Repository", "Backup Status", "Open Issues",
+            "Client Request", "Management Notes",
+        ):
+            with self.subTest(label=label):
+                self.assertIn(label, template)
 
-    def test_support_card_section_order_matches_deal_card_hierarchy(self):
-        t=self.read("app/templates/support_maintenance.html")
-        core=t.index("support-maintenance-core-fields")
-        docs=t.index("_master_deal_documents.html")
-        other=t.index("support-maintenance-other-fields")
-        footer=t.index('class="deal-card-footer"')
-        self.assertLess(core,docs)
-        self.assertLess(docs,other)
-        self.assertLess(other,footer)
+        for removed_label in (
+            "Developer:", "Billing Cycle", "Payment Status", "Current Version",
+            "Last Deployment", "Last Backup", "Last Maintenance", "Maintenance Type",
+            "Work Done", "Issues Found", "Resolution", "Request Status", "Priority",
+            "Date Requested", "Date Completed", "Included Support", "Excluded Work",
+            "Major Upgrade Required?", "Additional Charge", "Agreement Notes",
+            "Contact Number", "WhatsApp #", "Notes After Conversation",
+        ):
+            with self.subTest(removed_label=removed_label):
+                self.assertNotIn(removed_label, template)
 
-    def test_support_save_form_still_owns_all_management_fields(self):
-        t=self.read("app/templates/support_maintenance.html")
-        self.assertIn("support_form_id = 'support-form-' ~ deal['id']",t)
-        self.assertIn('action="{{ url_for(\'main.support_maintenance_update\', deal_id=deal[\'id\']) }}"',t)
-        for name in ("client_name","service_status","developer","system_name","management_fee","next_billing_date",
-                     "system_health","management_start_date","last_maintenance","next_maintenance","billing_cycle",
-                     "payment_status","system_url","hosting_provider","repository_url","current_version","last_deployment",
-                     "backup_status","last_backup","maintenance_type","work_done","issues_found","resolution","open_issues",
-                     "client_request","request_status","priority","date_requested","date_completed","included_support",
-                     "excluded_work","major_upgrade_required","additional_charge","agreement_notes","email","contact_number",
-                     "whatsapp_number","location","notes_after_conversation"):
-            self.assertIn(f'name="{name}"',t)
+    def test_management_notes_reuses_existing_column_without_schema_change(self):
+        template = self.read("app/templates/support_maintenance.html")
+        routes = self.read("app/routes.py")
+        db = self.read("app/db.py")
+        self.assertIn('name="management_notes"', template)
+        self.assertIn("{{ deal['agreement_notes'] }}", template)
+        self.assertIn('"management_notes": fld("management_notes", 3000)', routes)
+        self.assertIn("client_request=?,agreement_notes=?,updated_at=?", routes)
+        self.assertIn("SCHEMA_VERSION = 41", db)
 
-    def test_support_uses_same_deal_document_component(self):
-        t=self.read("app/templates/support_maintenance.html")
-        d=self.read("app/templates/_master_deal_documents.html")
-        self.assertIn("{% include '_master_deal_documents.html' %}",t)
-        self.assertIn("deal_documents_description",d)
+    def test_support_update_only_writes_approved_support_fields(self):
+        routes = self.read("app/routes.py")
+        start = routes.index("def support_maintenance_update(deal_id: int):")
+        end = routes.index('@bp.get("/deals")', start)
+        update = routes[start:end]
+        for field in (
+            "service_status", "system_name", "management_fee", "next_billing_date",
+            "system_health", "next_maintenance", "management_start_date", "system_url",
+            "hosting_provider", "repository_url", "backup_status", "open_issues",
+            "client_request", "agreement_notes",
+        ):
+            self.assertIn(field, update)
+        for removed in (
+            "billing_cycle", "payment_status", "current_version", "last_deployment",
+            "last_backup", "last_maintenance", "maintenance_type", "work_done",
+            "issues_found", "resolution", "request_status", "priority",
+            "date_requested", "date_completed", "included_support", "excluded_work",
+            "major_upgrade_required", "additional_charge", "contact_person=?",
+            "whatsapp_number=?", "notes_after_conversation=?",
+        ):
+            self.assertNotIn(removed, update)
 
-if __name__=="__main__": unittest.main()
+    def test_other_fields_and_document_controls_initialize_on_support_page(self):
+        template = self.read("app/templates/support_maintenance.html")
+        js = self.read("app/static/js/app.js")
+        self.assertIn("data-deal-source-toggle", template)
+        self.assertIn("support-other-fields-body-", template)
+        self.assertIn("const hasDealForm = Boolean(page.querySelector('[data-deal-form]'));", js)
+        self.assertIn("if (!hasDealForm) return;", js)
+        self.assertIn("sourceBody.hidden = !opening;", js)
+        self.assertIn("fileList.hidden = !opening;", js)
+
+    def test_deal_stages_card_structure_is_still_reused(self):
+        template = self.read("app/templates/support_maintenance.html")
+        self.assertIn('class="deal-card support-maintenance-card"', template)
+        self.assertIn('class="deal-card-head"', template)
+        self.assertIn('class="deal-form-grid"', template)
+        self.assertIn("{% include '_master_deal_documents.html' %}", template)
+        self.assertIn("support-maintenance-other-fields", template)
+        self.assertIn('class="deal-card-footer"', template)
 
 
-class SupportMaintenanceHeaderFormatTests(unittest.TestCase):
-    def read(self,p): return (ROOT/p).read_text(encoding="utf-8")
-
-    def test_support_header_explicitly_overrides_warm_input_boxes(self):
-        css=self.read("app/static/css/workspace_v20.css")
-        self.assertIn("v1.18.194 — Support & Maintenance header",css)
-        self.assertIn(".support-maintenance-page .support-maintenance-card .deal-card-identifiers .deal-identifier-input",css)
-        self.assertIn(".support-maintenance-page .support-maintenance-card .deal-card-identifiers .deal-header-status-select",css)
-        self.assertIn("background:transparent!important",css)
-        self.assertIn("border:0!important",css)
-        self.assertIn("box-shadow:none!important",css)
-        self.assertIn("appearance:none",css)
-
-    def test_support_header_reserves_non_overlapping_right_column(self):
-        css=self.read("app/static/css/workspace_v20.css")
-        self.assertIn("grid-template-columns:minmax(0,1fr) auto",css)
-        self.assertIn("min-width:max-content",css)
-        self.assertIn("width:105px!important",css)
-        self.assertIn("max-width:200px!important",css)
+if __name__ == "__main__":
+    unittest.main()

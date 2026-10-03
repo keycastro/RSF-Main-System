@@ -19,14 +19,7 @@
           <div class="deal-card-identifiers">
             <label>
               <span>Client Name:</span>
-              <input
-                class="deal-identifier-input"
-                type="text"
-                name="client_name"
-                form="{{ support_form_id }}"
-                maxlength="200"
-                value="{{ deal['client_name'] }}"
-              >
+              <strong>{{ deal['client_name'] or '—' }}</strong>
             </label>
             <label>
               <span>Service Status:</span>
@@ -35,17 +28,6 @@
                   <option value="{{ code }}" {% if deal['service_status'] == code %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
               </select>
-            </label>
-            <label>
-              <span>Developer:</span>
-              <input
-                class="deal-identifier-input"
-                type="text"
-                name="developer"
-                form="{{ support_form_id }}"
-                maxlength="200"
-                value="{{ deal['developer'] }}"
-              >
             </label>
           </div>
           <div class="deal-card-linked">
@@ -81,14 +63,6 @@
               </select>
             </label>
             <label>
-              <span>Management Start Date</span>
-              <input type="date" name="management_start_date" form="{{ support_form_id }}" value="{{ deal['management_start_date'] }}">
-            </label>
-            <label>
-              <span>Last Maintenance</span>
-              <input type="date" name="last_maintenance" form="{{ support_form_id }}" value="{{ deal['last_maintenance'] }}">
-            </label>
-            <label>
               <span>Next Maintenance</span>
               <input type="date" name="next_maintenance" form="{{ support_form_id }}" value="{{ deal['next_maintenance'] }}">
             </label>
@@ -115,31 +89,9 @@
 
           <div class="deal-source-grid" id="support-other-fields-body-{{ deal['id'] }}" hidden>
             <label>
-              <span>Management Type</span>
-              <input type="text" value="RSF Managed" readonly>
+              <span>Management Start Date</span>
+              <input type="date" name="management_start_date" form="{{ support_form_id }}" value="{{ deal['management_start_date'] }}">
             </label>
-            <label>
-              <span>Company</span>
-              <input type="text" value="{{ deal['client_company'] }}" readonly>
-            </label>
-
-            <label>
-              <span>Billing Cycle</span>
-              <select name="billing_cycle" form="{{ support_form_id }}">
-                {% for code, label in billing_cycle_labels.items() %}
-                  <option value="{{ code }}" {% if deal['billing_cycle'] == code %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-              </select>
-            </label>
-            <label>
-              <span>Payment Status</span>
-              <select name="payment_status" form="{{ support_form_id }}">
-                {% for code, label in payment_status_labels.items() %}
-                  <option value="{{ code }}" {% if deal['payment_status'] == code %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-              </select>
-            </label>
-
             <label class="deal-source-field-wide">
               <span>System URL</span>
               <input type="url" name="system_url" form="{{ support_form_id }}" maxlength="1000" value="{{ deal['system_url'] }}">
@@ -148,121 +100,25 @@
               <span>Hosting Provider</span>
               <input type="text" name="hosting_provider" form="{{ support_form_id }}" maxlength="200" value="{{ deal['hosting_provider'] }}">
             </label>
-            <label>
-              <span>Current Version</span>
-              <input type="text" name="current_version" form="{{ support_form_id }}" maxlength="120" value="{{ deal['current_version'] }}">
-            </label>
             <label class="deal-source-field-wide">
               <span>Repository</span>
               <input type="url" name="repository_url" form="{{ support_form_id }}" maxlength="1000" value="{{ deal['repository_url'] }}">
-            </label>
-
-            <label>
-              <span>Last Deployment</span>
-              <input type="datetime-local" name="last_deployment" form="{{ support_form_id }}" value="{{ deal['last_deployment'] }}">
             </label>
             <label>
               <span>Backup Status</span>
               <input type="text" name="backup_status" form="{{ support_form_id }}" maxlength="200" value="{{ deal['backup_status'] }}">
             </label>
-            <label>
-              <span>Last Backup</span>
-              <input type="date" name="last_backup" form="{{ support_form_id }}" value="{{ deal['last_backup'] }}">
-            </label>
-            <label>
-              <span>Maintenance Type</span>
-              <input type="text" name="maintenance_type" form="{{ support_form_id }}" maxlength="200" value="{{ deal['maintenance_type'] }}">
-            </label>
-
-            <label class="deal-source-field-wide">
-              <span>Work Done</span>
-              <textarea name="work_done" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['work_done'] }}</textarea>
-            </label>
-            <label class="deal-source-field-wide">
-              <span>Issues Found</span>
-              <textarea name="issues_found" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['issues_found'] }}</textarea>
-            </label>
-            <label class="deal-source-field-wide">
-              <span>Resolution</span>
-              <textarea name="resolution" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['resolution'] }}</textarea>
-            </label>
             <label class="deal-source-field-wide">
               <span>Open Issues</span>
               <textarea name="open_issues" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['open_issues'] }}</textarea>
             </label>
-
             <label class="deal-source-field-wide">
               <span>Client Request</span>
               <textarea name="client_request" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['client_request'] }}</textarea>
             </label>
-            <label>
-              <span>Request Status</span>
-              <select name="request_status" form="{{ support_form_id }}">
-                {% for code, label in request_status_labels.items() %}
-                  <option value="{{ code }}" {% if deal['request_status'] == code %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-              </select>
-            </label>
-            <label>
-              <span>Priority</span>
-              <select name="priority" form="{{ support_form_id }}">
-                {% for code, label in priority_labels.items() %}
-                  <option value="{{ code }}" {% if deal['priority'] == code %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-              </select>
-            </label>
-            <label>
-              <span>Date Requested</span>
-              <input type="date" name="date_requested" form="{{ support_form_id }}" value="{{ deal['date_requested'] }}">
-            </label>
-            <label>
-              <span>Date Completed</span>
-              <input type="date" name="date_completed" form="{{ support_form_id }}" value="{{ deal['date_completed'] }}">
-            </label>
-
             <label class="deal-source-field-wide">
-              <span>Included Support</span>
-              <textarea name="included_support" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['included_support'] }}</textarea>
-            </label>
-            <label class="deal-source-field-wide">
-              <span>Excluded Work</span>
-              <textarea name="excluded_work" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['excluded_work'] }}</textarea>
-            </label>
-            <label>
-              <span>Major Upgrade Required?</span>
-              <select name="major_upgrade_required" form="{{ support_form_id }}">
-                <option value="0" {% if not deal['major_upgrade_required'] %}selected{% endif %}>No</option>
-                <option value="1" {% if deal['major_upgrade_required'] %}selected{% endif %}>Yes</option>
-              </select>
-            </label>
-            <label>
-              <span>Additional Charge</span>
-              <input type="text" name="additional_charge" form="{{ support_form_id }}" maxlength="200" value="{{ deal['additional_charge'] }}">
-            </label>
-            <label class="deal-source-field-wide">
-              <span>Agreement Notes</span>
-              <textarea name="agreement_notes" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['agreement_notes'] }}</textarea>
-            </label>
-
-            <label>
-              <span>Email</span>
-              <input type="email" name="email" form="{{ support_form_id }}" maxlength="320" value="{{ deal['client_email'] }}">
-            </label>
-            <label>
-              <span>Contact Number</span>
-              <input type="text" name="contact_number" form="{{ support_form_id }}" maxlength="120" value="{{ deal['client_phone'] }}">
-            </label>
-            <label>
-              <span>WhatsApp #</span>
-              <input type="text" name="whatsapp_number" form="{{ support_form_id }}" maxlength="120" value="{{ deal['whatsapp_number'] }}">
-            </label>
-            <label>
-              <span>Location</span>
-              <input type="text" name="location" form="{{ support_form_id }}" maxlength="200" value="{{ deal['client_location'] }}">
-            </label>
-            <label class="deal-source-field-wide">
-              <span>Notes After Conversation</span>
-              <textarea name="notes_after_conversation" form="{{ support_form_id }}" maxlength="3000" rows="2">{{ deal['client_notes'] }}</textarea>
+              <span>Management Notes</span>
+              <textarea name="management_notes" form="{{ support_form_id }}" maxlength="3000" rows="3">{{ deal['agreement_notes'] }}</textarea>
             </label>
           </div>
         </section>
