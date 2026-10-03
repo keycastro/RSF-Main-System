@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_v18.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_v20.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_ambient_gold.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_living_background.css') }}">
 </head>
 <body class="{% if request.endpoint in ['main.messages_home','main.messages_thread'] %}page-messages{% endif %}"{% if g.user %} data-message-poll-url="{{ url_for('main.message_unread') }}" data-csrf="{{ csrf_token() }}"{% endif %}>
 {% macro nav_icon(name) -%}
@@ -35,6 +36,7 @@
 {%- endmacro %}
 <a class="skip-link" href="#main-content">Skip to main content</a>
 {% if g.user %}
+<div class="rsf-living-scene" aria-hidden="true"></div>
 <div class="app-shell">
   <aside class="sidebar" id="sidebar" aria-label="Main navigation">
     <button class="close-menu" type="button" data-close-menu aria-label="Close navigation">Close ×</button>
