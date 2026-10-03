@@ -7628,3 +7628,19 @@ body.card-layout-dragging-global *{cursor:grabbing!important;user-select:none!im
     text-align:left
   }
 }
+
+
+/* v1.18.198 — reliable, adaptive field drag/drop feedback */
+[data-card-layout-page] .card-layout-placeholder{
+  min-height:var(--card-layout-placeholder-height,42px)!important;
+  max-width:100%;
+}
+[data-card-layout-page].card-layout-drag-active .is-card-layout-expand-target{
+  outline:1.5px dashed rgba(47,86,73,.44)!important;
+  outline-offset:3px;
+  background:rgba(47,86,73,.045);
+  transition:outline-color 90ms ease,background 90ms ease
+}
+[data-card-layout-page].card-layout-drag-active [data-card-layout-zone].is-card-layout-drop-zone{
+  box-shadow:inset 0 0 0 1.5px rgba(47,86,73,.30),0 0 0 2px rgba(255,255,255,.35);
+}

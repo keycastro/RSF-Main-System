@@ -152,6 +152,51 @@ class CardLayoutReorderingTests(unittest.TestCase):
         self.assertIn("researchSectionFor(button)", js)
         self.assertIn("dealFormForField(notesSource)", js)
 
+    def test_reorder_engine_serializes_fast_layout_saves(self):
+        js = self.read("app/static/js/app.js")
+        smooth = js[js.index("/* v1.18.151 — smooth pointer-driven"):]
+        self.assertIn("let persistQueue = Promise.resolve()", smooth)
+        self.assertIn("persistRequestedVersion", smooth)
+        self.assertIn("lastPersistedState", smooth)
+        self.assertIn("persistQueue = persistQueue.then", smooth)
+        self.assertIn("requestVersion === persistRequestedVersion", smooth)
+
+    def test_drop_uses_final_pointer_position_and_zone_hysteresis(self):
+        js = self.read("app/static/js/app.js")
+        smooth = js[js.index("/* v1.18.151 — smooth pointer-driven"):]
+        self.assertIn("const rectContainsWithPadding", smooth)
+        self.assertIn("drag?.highlightedZone", smooth)
+        self.assertIn("updateDragPlacement()", smooth)
+        self.assertIn("drag.x = event.clientX", smooth)
+        self.assertIn("drag.y = event.clientY", smooth)
+
+    def test_collapsed_sections_auto_expand_during_drag(self):
+        js = self.read("app/static/js/app.js")
+        css = self.read("app/static/css/workspace_v20.css")
+        smooth = js[js.index("/* v1.18.151 — smooth pointer-driven"):]
+        self.assertIn("const collapsedZoneAtPoint", smooth)
+        self.assertIn("const armAutoExpand", smooth)
+        self.assertIn("aria-expanded", smooth)
+        self.assertIn("360", smooth)
+        self.assertIn("is-card-layout-expand-target", css)
+
+    def test_placeholder_adapts_to_destination_field_size(self):
+        js = self.read("app/static/js/app.js")
+        css = self.read("app/static/css/workspace_v20.css")
+        smooth = js[js.index("/* v1.18.151 — smooth pointer-driven"):]
+        self.assertIn("syncPlaceholderToZone", smooth)
+        self.assertIn("cardLayoutCurrentZone", smooth)
+        self.assertIn("--card-layout-placeholder-height", smooth)
+        self.assertIn("--card-layout-placeholder-height", css)
+
+    def test_insertion_feedback_has_micro_jitter_guard(self):
+        js = self.read("app/static/js/app.js")
+        smooth = js[js.index("/* v1.18.151 — smooth pointer-driven"):]
+        self.assertIn("pointerTravel", smooth)
+        self.assertIn("pointerTravel < 4", smooth)
+        self.assertIn("lastPlacementX", smooth)
+        self.assertIn("lastPlacementY", smooth)
+
 
 if __name__ == "__main__":
     unittest.main()

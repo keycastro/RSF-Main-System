@@ -6100,6 +6100,9 @@ document.addEventListener('click', (event) => {
   let drag = null;
   let frameRequest = 0;
   let suppressClickUntil = 0;
+  let persistQueue = Promise.resolve();
+  let persistRequestedVersion = 0;
+  let lastPersistedState = null;
 
   const isNearViewport = (card) => {
     const rect = card.getBoundingClientRect();
@@ -6178,9 +6181,11 @@ document.addEventListener('click', (event) => {
   };
 
   const restoreState = (previous) => {
-    zones.forEach((zone) => { state[zone] = Array.from(previous[zone] || []); });
+    zones.forEach((zone) => { state[zone] = Array.from(previous?.[zone] || []); });
     applyAll({animate: true});
   };
+
+  lastPersistedState = cloneState();
 
   const updateStateFromDrop = (card, movedKey, targetZoneName) => {
     zones.forEach((zone) => {
@@ -6213,31 +6218,50 @@ document.addEventListener('click', (event) => {
     state[targetZoneName] = merged;
   };
 
-  const persist = async (previous) => {
-    if (!saveUrl || !csrfToken) return;
-    try {
-      const body = new URLSearchParams({
-        csrf_token: csrfToken,
-        layout_json: JSON.stringify(state),
-      });
-      const response = await fetch(saveUrl, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-        },
-        body: body.toString(),
-        credentials: 'same-origin',
-        cache: 'no-store',
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || !data.ok) throw new Error(data.message || 'Card field order could not be saved.');
-      root.dataset.cardLayoutState = JSON.stringify(data.layout || state);
-      customized = true;
-    } catch (error) {
-      restoreState(previous);
-      window.alert(error.message || 'Card field order could not be saved. Try again.');
-    }
+  /* v1.18.198 — serialized persistence prevents fast consecutive drops from
+     racing and lets the UI recover to the last layout the server accepted. */
+  const persist = () => {
+    if (!saveUrl || !csrfToken) return persistQueue;
+    const requestVersion = ++persistRequestedVersion;
+    const payload = cloneState();
+    const payloadJson = JSON.stringify(payload);
+
+    persistQueue = persistQueue.then(async () => {
+      try {
+        const body = new URLSearchParams({
+          csrf_token: csrfToken,
+          layout_json: payloadJson,
+        });
+        const response = await fetch(saveUrl, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          },
+          body: body.toString(),
+          credentials: 'same-origin',
+          cache: 'no-store',
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok) throw new Error(data.message || 'Card field order could not be saved.');
+
+        const accepted = data.layout && typeof data.layout === 'object' ? data.layout : payload;
+        lastPersistedState = {};
+        zones.forEach((zone) => {
+          lastPersistedState[zone] = Array.from(accepted[zone] || payload[zone] || []);
+        });
+        if (requestVersion === persistRequestedVersion) {
+          root.dataset.cardLayoutState = JSON.stringify(accepted);
+        }
+        customized = true;
+      } catch (error) {
+        if (requestVersion === persistRequestedVersion) {
+          restoreState(lastPersistedState || {});
+          window.alert(error.message || 'Card field order could not be saved. Try again.');
+        }
+      }
+    });
+    return persistQueue;
   };
 
   const setControlMode = (enabled) => {
@@ -6294,12 +6318,30 @@ document.addEventListener('click', (event) => {
     placeholder.classList.add('card-layout-placeholder');
     placeholder.removeAttribute('id');
     placeholder.setAttribute('aria-hidden', 'true');
-    placeholder.style.minHeight = `${Math.max(30, rect.height)}px`;
-    const parent = field.parentElement;
-    if (parent && getComputedStyle(parent).display.includes('flex')) {
-      placeholder.style.flex = `0 0 ${rect.width}px`;
-    }
+    placeholder.dataset.cardLayoutPlaceholder = '1';
+    placeholder.style.setProperty('--card-layout-placeholder-height', `${Math.max(30, Math.min(rect.height, 120))}px`);
     return placeholder;
+  };
+
+  const syncPlaceholderToZone = (zoneName, zone) => {
+    if (!drag?.placeholder || !(zone instanceof HTMLElement)) return;
+    const placeholder = drag.placeholder;
+    placeholder.dataset.cardLayoutCurrentZone = zoneName;
+
+    const sourceHeight = Math.max(30, Math.min(drag.sourceRect?.height || 42, 120));
+    const fieldHasTextarea = Boolean(drag.field?.querySelector?.('textarea'));
+    const targetHeight = zoneName === 'header'
+      ? 24
+      : (fieldHasTextarea ? Math.max(58, sourceHeight) : Math.max(42, Math.min(sourceHeight, 72)));
+    placeholder.style.setProperty('--card-layout-placeholder-height', `${targetHeight}px`);
+
+    const zoneDisplay = getComputedStyle(zone).display || '';
+    if (zoneDisplay.includes('flex')) {
+      const zoneWidth = Math.max(1, zone.getBoundingClientRect().width);
+      placeholder.style.flex = `0 1 ${Math.min(drag.sourceRect?.width || zoneWidth, zoneWidth)}px`;
+    } else {
+      placeholder.style.removeProperty('flex');
+    }
   };
 
   const positionGhost = (x, y) => {
@@ -6315,38 +6357,96 @@ document.addEventListener('click', (event) => {
     return Math.hypot(dx, dy);
   };
 
+  const isZoneVisible = (zone) => {
+    if (!(zone instanceof HTMLElement) || zone.hidden) return false;
+    const style = getComputedStyle(zone);
+    if (style.display === 'none' || style.visibility === 'hidden') return false;
+    const rect = zone.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0;
+  };
+
   const visibleZonesForCard = (card) => zones
     .map((zoneName) => ({zoneName, zone: zoneForCard(card, zoneName)}))
-    .filter(({zone}) => {
-      if (!(zone instanceof HTMLElement) || zone.hidden) return false;
-      const style = getComputedStyle(zone);
-      if (style.display === 'none' || style.visibility === 'hidden') return false;
-      const rect = zone.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0;
-    })
+    .filter(({zone}) => isZoneVisible(zone))
     .map((entry) => ({...entry, rect: entry.zone.getBoundingClientRect()}));
+
+  const rectContainsWithPadding = (rect, x, y, padding = 0) => (
+    x >= rect.left - padding && x <= rect.right + padding
+    && y >= rect.top - padding && y <= rect.bottom + padding
+  );
 
   const zoneAtPoint = (card, x, y) => {
     const available = visibleZonesForCard(card);
     if (!available.length) return null;
 
-    const directHit = available.find(({rect}) => x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom);
+    // Keep the active zone sticky near its boundary to prevent oscillation
+    // when two different field grids are close together.
+    if (drag?.highlightedZone) {
+      const current = available.find(({zone}) => zone === drag.highlightedZone);
+      if (current && rectContainsWithPadding(current.rect, x, y, 14)) return current;
+    }
+
+    const directHit = available.find(({rect}) => rectContainsWithPadding(rect, x, y, 0));
     if (directHit) return directHit;
 
     const paddedHit = available
       .map((entry) => ({...entry, distance: rectDistance(x, y, entry.rect)}))
-      .filter((entry) => entry.distance <= 34)
+      .filter((entry) => entry.distance <= 46)
       .sort((a, b) => a.distance - b.distance)[0];
     if (paddedHit) return paddedHit;
 
     const cardRect = card.getBoundingClientRect();
-    const withinCardMargin = x >= cardRect.left - 38 && x <= cardRect.right + 38
-      && y >= cardRect.top - 38 && y <= cardRect.bottom + 38;
-    if (!withinCardMargin) return null;
+    if (!rectContainsWithPadding(cardRect, x, y, 44)) return null;
 
     return available
       .map((entry) => ({...entry, distance: rectDistance(x, y, entry.rect)}))
       .sort((a, b) => a.distance - b.distance)[0] || null;
+  };
+
+  const collapsedZoneAtPoint = (card, x, y) => {
+    for (const zoneName of zones) {
+      const zone = zoneForCard(card, zoneName);
+      if (!(zone instanceof HTMLElement) || isZoneVisible(zone) || !zone.id) continue;
+      const toggle = Array.from(card.querySelectorAll('[aria-controls]')).find(
+        (node) => node.getAttribute('aria-controls') === zone.id && node.getAttribute('aria-expanded') === 'false'
+      );
+      if (!(toggle instanceof HTMLElement)) continue;
+      const surface = toggle.closest('.deal-source-details-head,.deal-documents-head,.master-source-section-head') || toggle;
+      const rect = surface.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0 && rectContainsWithPadding(rect, x, y, 8)) {
+        return {zoneName, zone, toggle, surface};
+      }
+    }
+    return null;
+  };
+
+  const clearAutoExpandIntent = () => {
+    if (!drag) return;
+    if (drag.expandTimer) window.clearTimeout(drag.expandTimer);
+    drag.expandTimer = 0;
+    drag.expandSurface?.classList?.remove('is-card-layout-expand-target');
+    drag.expandSurface = null;
+    drag.expandZoneName = '';
+  };
+
+  const armAutoExpand = (hit) => {
+    if (!drag || !hit) return;
+    if (drag.expandZoneName === hit.zoneName && drag.expandSurface === hit.surface) return;
+    clearAutoExpandIntent();
+    drag.expandZoneName = hit.zoneName;
+    drag.expandSurface = hit.surface;
+    hit.surface.classList.add('is-card-layout-expand-target');
+    drag.expandTimer = window.setTimeout(() => {
+      if (!drag || drag.expandZoneName !== hit.zoneName || drag.expandSurface !== hit.surface) return;
+      if (hit.toggle.getAttribute('aria-expanded') === 'false') hit.toggle.click();
+      clearAutoExpandIntent();
+      requestAnimationFrame(() => {
+        if (!drag || !isZoneVisible(hit.zone)) return;
+        const reference = insertionReference(hit.zone, drag.x, drag.y);
+        movePlaceholder(hit.zoneName, hit.zone, reference);
+        schedulePointerFrame();
+      });
+    }, 360);
   };
 
   const nextLayoutSibling = (node) => {
@@ -6413,14 +6513,24 @@ document.addEventListener('click', (event) => {
     `${zoneName}:${reference?.dataset?.cardLayoutField || '__end__'}`;
 
   const movePlaceholder = (zoneName, zone, reference) => {
-    if (!drag?.placeholder || !zone) return;
+    if (!drag?.placeholder || !(zone instanceof HTMLElement)) return;
     const signature = placementSignature(zoneName, reference);
     if (signature === drag.placementSignature) return;
 
+    const sameZone = drag.highlightedZone === zone;
+    const pointerTravel = Math.hypot(
+      drag.x - (drag.lastPlacementX ?? drag.x),
+      drag.y - (drag.lastPlacementY ?? drag.y)
+    );
+    if (sameZone && drag.placementSignature && pointerTravel < 4) return;
+
     const before = capturePositions(drag.card);
+    syncPlaceholderToZone(zoneName, zone);
     if (reference && reference.parentElement === zone) zone.insertBefore(drag.placeholder, reference);
     else zone.appendChild(drag.placeholder);
     drag.placementSignature = signature;
+    drag.lastPlacementX = drag.x;
+    drag.lastPlacementY = drag.y;
     animateReflow(drag.card, before);
 
     if (drag.highlightedZone !== zone) {
@@ -6431,10 +6541,32 @@ document.addEventListener('click', (event) => {
   };
 
   const autoScrollSpeed = (y) => {
-    const edge = Math.min(82, Math.max(52, window.innerHeight * 0.09));
-    if (y < edge) return -Math.ceil((edge - y) / edge * 18);
-    if (y > window.innerHeight - edge) return Math.ceil((y - (window.innerHeight - edge)) / edge * 18);
-    return 0;
+    const edge = Math.min(88, Math.max(56, window.innerHeight * 0.095));
+    let ratio = 0;
+    let direction = 0;
+    if (y < edge) {
+      ratio = Math.max(0, Math.min(1, (edge - y) / edge));
+      direction = -1;
+    } else if (y > window.innerHeight - edge) {
+      ratio = Math.max(0, Math.min(1, (y - (window.innerHeight - edge)) / edge));
+      direction = 1;
+    }
+    return direction * Math.ceil(2 + ratio * ratio * 14);
+  };
+
+  const updateDragPlacement = () => {
+    if (!drag) return;
+    const collapsedHit = collapsedZoneAtPoint(drag.card, drag.x, drag.y);
+    if (collapsedHit) {
+      armAutoExpand(collapsedHit);
+      return;
+    }
+    clearAutoExpandIntent();
+
+    const hit = zoneAtPoint(drag.card, drag.x, drag.y);
+    if (!hit) return;
+    const reference = insertionReference(hit.zone, drag.x, drag.y);
+    movePlaceholder(hit.zoneName, hit.zone, reference);
   };
 
   const processPointerFrame = () => {
@@ -6444,12 +6576,7 @@ document.addEventListener('click', (event) => {
     positionGhost(drag.x, drag.y);
     const scrollSpeed = autoScrollSpeed(drag.y);
     if (scrollSpeed) window.scrollBy(0, scrollSpeed);
-
-    const hit = zoneAtPoint(drag.card, drag.x, drag.y);
-    if (hit) {
-      const reference = insertionReference(hit.zone, drag.x, drag.y);
-      movePlaceholder(hit.zoneName, hit.zone, reference);
-    }
+    updateDragPlacement();
 
     if (scrollSpeed && drag) frameRequest = requestAnimationFrame(processPointerFrame);
   };
@@ -6463,6 +6590,7 @@ document.addEventListener('click', (event) => {
       cancelAnimationFrame(frameRequest);
       frameRequest = 0;
     }
+    clearAutoExpandIntent();
     clearZoneFeedback();
     root.classList.remove('card-layout-drag-active');
     document.body.classList.remove('card-layout-dragging-global');
@@ -6501,12 +6629,15 @@ document.addEventListener('click', (event) => {
     field.classList.add('is-card-layout-source-hidden');
 
     const ghost = createGhost(field, rect);
+    const sourceZoneName = zone.dataset.cardLayoutZone || '';
     drag = {
       field,
       card,
       key,
       pointerId,
       previous: cloneState(),
+      sourceRect: rect,
+      sourceZoneName,
       placeholder,
       ghost,
       offsetX: Math.max(0, Math.min(rect.width, event.clientX - rect.left)),
@@ -6515,7 +6646,13 @@ document.addEventListener('click', (event) => {
       y: event.clientY,
       placementSignature: '',
       highlightedZone: null,
+      lastPlacementX: event.clientX,
+      lastPlacementY: event.clientY,
+      expandTimer: 0,
+      expandSurface: null,
+      expandZoneName: '',
     };
+    syncPlaceholderToZone(sourceZoneName, zone);
 
     candidate = null;
     root.classList.add('card-layout-drag-active');
@@ -6542,6 +6679,7 @@ document.addEventListener('click', (event) => {
     completed.field.classList.remove('is-card-layout-source-hidden');
     completed.placeholder.remove();
     completed.ghost.remove();
+    clearAutoExpandIntent();
     clearZoneFeedback();
     root.classList.remove('card-layout-drag-active');
     document.body.classList.remove('card-layout-dragging-global');
@@ -6555,7 +6693,7 @@ document.addEventListener('click', (event) => {
     syncAdaptiveFieldZones(completed.card);
     animateReflow(completed.card, before);
     applyAll({animate: true, skipCard: completed.card});
-    persist(completed.previous);
+    persist();
 
     completed.field.animate?.(
       [
@@ -6641,8 +6779,13 @@ document.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
 
-    if (drag) finishActiveDrag();
-    else {
+    if (drag) {
+      drag.x = event.clientX;
+      drag.y = event.clientY;
+      positionGhost(drag.x, drag.y);
+      updateDragPlacement();
+      finishActiveDrag();
+    } else {
       try { candidate?.field?.releasePointerCapture?.(event.pointerId); } catch (_error) {}
       candidate = null;
       suppressClickUntil = Date.now() + 260;
