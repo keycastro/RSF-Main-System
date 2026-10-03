@@ -1,0 +1,105 @@
+/* =========================================================
+   RSF Workspace v1.18.190 — Real Global Living Video Background
+   Background presentation layer only.
+   ========================================================= */
+
+:root{
+  --rsf-video-poster:url("https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1920&q=85");
+}
+
+/* Fixed to the viewport, not the document flow. Scrolling cards/content never
+   moves this layer. It is decorative and cannot intercept input. */
+.rsf-workspace-video-background{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+  background:
+    linear-gradient(rgba(7,6,5,.10),rgba(7,6,5,.10)),
+    var(--rsf-video-poster) center center / cover no-repeat,
+    #0b0907;
+}
+
+.rsf-workspace-video{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center center;
+  pointer-events:none;
+  border:0;
+  filter:none;
+  transform:none;
+}
+
+/* Readability treatment belongs to the VIDEO layer only.
+   No cards, fields, text, buttons, sidebars, panels, or modals are altered. */
+.rsf-workspace-video-overlay{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:rgba(7,6,5,.08);
+}
+
+/* Keep the authenticated application above the video without changing its
+   grid, dimensions, sticky sidebar, card geometry, or document scrolling. */
+body:has(.app-shell){
+  background:#0b0907;
+  overflow-x:hidden;
+}
+body:has(.app-shell) .app-shell{
+  position:relative;
+  z-index:1;
+  background:transparent;
+}
+
+/* On the three pages whose approved v1.18.188 skin owns an opaque abstract
+   background, remove ONLY that background paint so the real video can show
+   through. Existing border radius, shadows, card styling, layout and controls
+   remain exactly as defined by the existing stylesheets. */
+.app-shell:has(.prospects-page) .main-area,
+.app-shell:has(.website-inbox-page) .main-area,
+.app-shell:has(.deals-page) .main-area{
+  background:transparent!important;
+  background-color:transparent!important;
+}
+
+/* Disable only the previous decorative abstract orbit/glow background layers.
+   This does not target cards or any operational UI element. */
+.app-shell:has(.prospects-page) .main-area::before,
+.app-shell:has(.website-inbox-page) .main-area::before,
+.app-shell:has(.deals-page) .main-area::before,
+.app-shell:has(.prospects-page) .main-area::after,
+.app-shell:has(.website-inbox-page) .main-area::after,
+.app-shell:has(.deals-page) .main-area::after{
+  content:none!important;
+  display:none!important;
+  animation:none!important;
+}
+
+/* The existing content keeps its normal document flow and scrolling behavior. */
+body:has(.app-shell) .main-area,
+body:has(.app-shell) .content-wrap{
+  position:relative;
+  z-index:1;
+}
+
+/* Reduced-motion users keep a static scenic poster instead of an autoplaying
+   moving background. The interface remains unchanged. */
+@media (prefers-reduced-motion:reduce){
+  .rsf-workspace-video{
+    display:none!important;
+  }
+}
+
+/* Keep object-cover framing useful on narrower screens without changing any UI. */
+@media (max-width:900px){
+  .rsf-workspace-video{
+    object-position:58% center;
+  }
+  .rsf-workspace-video-background{
+    background-position:58% center;
+  }
+}

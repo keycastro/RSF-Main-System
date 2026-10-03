@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_v18.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_v20.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_ambient_gold.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_video_background.css') }}">
 </head>
 <body class="{% if request.endpoint in ['main.messages_home','main.messages_thread'] %}page-messages{% endif %}"{% if g.user %} data-message-poll-url="{{ url_for('main.message_unread') }}" data-csrf="{{ csrf_token() }}"{% endif %}>
 {% macro nav_icon(name) -%}
@@ -35,6 +36,21 @@
 {%- endmacro %}
 <a class="skip-link" href="#main-content">Skip to main content</a>
 {% if g.user %}
+<div class="rsf-workspace-video-background" aria-hidden="true">
+  <video
+    class="rsf-workspace-video"
+    autoplay
+    muted
+    loop
+    playsinline
+    preload="auto"
+    tabindex="-1"
+    poster="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1920&q=85"
+  >
+    <source src="https://assets.mixkit.co/videos/preview/mixkit-sunset-from-a-forest-full-of-pines-3395-large.mp4" type="video/mp4">
+  </video>
+  <div class="rsf-workspace-video-overlay"></div>
+</div>
 <div class="app-shell">
   <aside class="sidebar" id="sidebar" aria-label="Main navigation">
     <button class="close-menu" type="button" data-close-menu aria-label="Close navigation">Close ×</button>
