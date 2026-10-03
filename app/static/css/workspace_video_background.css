@@ -103,3 +103,53 @@ body:has(.app-shell) .content-wrap{
     background-position:58% center;
   }
 }
+
+
+/* =========================================================
+   RSF Workspace v1.18.191 — Header / Workspace Text Readability
+   Readability-only patch for the current dark workspace background.
+   No card, field, button, sidebar, grid, spacing, workflow, or data
+   behavior is modified here.
+   ========================================================= */
+
+/* The previous ambient skin intentionally used dark heading text because the
+   main-area background was light. v1.18.190 made that surface transparent,
+   exposing a dark background. Force only the page-level heading copy to a
+   high-contrast warm ivory so titles and descriptions remain readable. */
+.app-shell:has(.prospects-page) .workspace-page-head h1,
+.app-shell:has(.website-inbox-page) .workspace-page-head h1,
+.app-shell:has(.deals-page) .workspace-page-head h1{
+  color:#fff8ee!important;
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.92),
+    0 0 10px rgba(0,0,0,.46);
+}
+
+.app-shell:has(.prospects-page) .workspace-page-head p,
+.app-shell:has(.website-inbox-page) .workspace-page-head p,
+.app-shell:has(.deals-page) .workspace-page-head p{
+  color:#eadcc9!important;
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.95),
+    0 0 8px rgba(0,0,0,.42);
+}
+
+/* Keep unified empty-state copy strongly readable without changing its size,
+   spacing, position, or structural layout. */
+.app-shell:has(.prospects-page) .workspace-empty-state,
+.app-shell:has(.website-inbox-page) .workspace-empty-state,
+.app-shell:has(.deals-page) .workspace-empty-state{
+  background:rgba(255,248,238,.90)!important;
+}
+
+.app-shell:has(.prospects-page) .workspace-empty-state strong,
+.app-shell:has(.website-inbox-page) .workspace-empty-state strong,
+.app-shell:has(.deals-page) .workspace-empty-state strong{
+  color:#211a14!important;
+}
+
+.app-shell:has(.prospects-page) .workspace-empty-state>span,
+.app-shell:has(.website-inbox-page) .workspace-empty-state>span,
+.app-shell:has(.deals-page) .workspace-empty-state>span{
+  color:#5f5142!important;
+}
