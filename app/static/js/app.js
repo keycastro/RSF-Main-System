@@ -5244,6 +5244,133 @@ document.addEventListener('click', (event) => {
 
 
 (() => {
+  const page = document.querySelector('.support-maintenance-page');
+  if (!page) return;
+
+  const forms = Array.from(page.querySelectorAll('[data-support-maintenance-form]'));
+  if (!forms.length) return;
+
+  const states = new WeakMap();
+  const stateFor = (form) => {
+    let state = states.get(form);
+    if (!state) {
+      state = {saving:false, pending:false};
+      states.set(form, state);
+    }
+    return state;
+  };
+  const fieldForm = (field) => {
+    const form = field?.form;
+    return form?.matches?.('[data-support-maintenance-form]') ? form : null;
+  };
+  const editableFields = (form) => Array.from(form.elements).filter((field) => (
+    field instanceof HTMLInputElement
+    || field instanceof HTMLSelectElement
+    || field instanceof HTMLTextAreaElement
+  )).filter((field) => field.name && field.name !== 'csrf_token' && !field.disabled);
+
+  forms.forEach((form) => {
+    editableFields(form).forEach((field) => {
+      field.dataset.supportStartValue = field.value || '';
+    });
+  });
+
+  const saveSupportFormInBackground = async (form) => {
+    if (!(form instanceof HTMLFormElement)) return false;
+    const state = stateFor(form);
+    if (state.saving) {
+      state.pending = true;
+      return true;
+    }
+
+    state.saving = true;
+    let saved = true;
+    try {
+      do {
+        state.pending = false;
+        const body = new URLSearchParams();
+        const snapshot = new Map();
+        for (const [key, value] of new FormData(form).entries()) body.append(key, String(value));
+        editableFields(form).forEach((field) => snapshot.set(field, field.value || ''));
+
+        const response = await fetch(form.action, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-RSF-Async': '1'
+          },
+          body: body.toString(),
+          credentials: 'same-origin',
+          cache: 'no-store',
+          keepalive: true
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok) {
+          throw new Error(data.message || 'Support & Maintenance changes could not be saved.');
+        }
+
+        snapshot.forEach((value, field) => {
+          if ((field.value || '') === value) field.dataset.supportStartValue = value;
+          else state.pending = true;
+        });
+      } while (state.pending);
+    } catch (error) {
+      saved = false;
+      state.pending = false;
+      window.alert(error.message || 'Support & Maintenance changes could not be saved. Try again.');
+    } finally {
+      state.saving = false;
+    }
+    return saved;
+  };
+
+  window.RSFSaveSupportMaintenanceFormInBackground = saveSupportFormInBackground;
+
+  page.addEventListener('focusin', (event) => {
+    const field = event.target;
+    const form = fieldForm(field);
+    if (!form || !(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) return;
+    field.dataset.supportStartValue = field.value || '';
+  });
+
+  page.addEventListener('focusout', (event) => {
+    const field = event.target;
+    const form = fieldForm(field);
+    if (!form || !(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) return;
+    const previous = field.dataset.supportStartValue ?? '';
+    if ((field.value || '') === previous) return;
+    saveSupportFormInBackground(form);
+  });
+
+  page.addEventListener('change', (event) => {
+    const field = event.target;
+    const form = fieldForm(field);
+    if (!form) return;
+    if (field instanceof HTMLSelectElement || (field instanceof HTMLInputElement && field.type === 'date')) {
+      saveSupportFormInBackground(form);
+    }
+  });
+
+  page.addEventListener('keydown', (event) => {
+    const field = event.target;
+    const form = fieldForm(field);
+    if (!form || event.key !== 'Enter' || event.isComposing) return;
+    if (field instanceof HTMLTextAreaElement) return;
+    event.preventDefault();
+    field.blur?.();
+  });
+
+  page.addEventListener('submit', (event) => {
+    const form = event.target.closest?.('[data-support-maintenance-form]');
+    if (!form) return;
+    event.preventDefault();
+    saveSupportFormInBackground(form);
+  });
+})();
+
+
+(() => {
   const page = document.querySelector('[data-website-inbox-page]');
   if (!page) return;
 

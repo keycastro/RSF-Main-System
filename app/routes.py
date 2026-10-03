@@ -2059,12 +2059,15 @@ def support_maintenance():
 @login_required
 def support_maintenance_update(deal_id: int):
     validate_csrf()
+    async_request = request.headers.get("X-RSF-Async") == "1"
     db = get_db()
     deal = db.execute(
         "SELECT id,prospect_id,website_inquiry_id,management_type FROM deals WHERE id=?",
         (deal_id,),
     ).fetchone()
     if not deal:
+        if async_request:
+            return jsonify({"ok": False, "message": "Support & Maintenance record not found."}), 404
         abort(404)
 
     if deal["prospect_id"] is not None:
@@ -2078,7 +2081,10 @@ def support_maintenance_update(deal_id: int):
         workflow_status = ((row["workflow_status"] if row else "") or "").strip().upper()
 
     if workflow_status != "WON" or (deal["management_type"] or "").strip().upper() != "RSF_MANAGED":
-        flash("This client is not currently an RSF-managed Won client.", "warning")
+        message = "This client is not currently an RSF-managed Won client."
+        if async_request:
+            return jsonify({"ok": False, "message": message}), 409
+        flash(message, "warning")
         return redirect(url_for("main.support_maintenance"))
 
     def fld(name, limit):
@@ -2087,10 +2093,16 @@ def support_maintenance_update(deal_id: int):
     service_status = fld("service_status", 40).upper() or "ONBOARDING"
     system_health = fld("system_health", 40).upper() or "HEALTHY"
     if service_status not in SERVICE_STATUS_LABELS:
-        flash("Service Status is invalid.", "error")
+        message = "Service Status is invalid."
+        if async_request:
+            return jsonify({"ok": False, "message": message}), 400
+        flash(message, "error")
         return redirect(url_for("main.support_maintenance") + f"#support-client-{deal_id}")
     if system_health not in SYSTEM_HEALTH_LABELS:
-        flash("System Health is invalid.", "error")
+        message = "System Health is invalid."
+        if async_request:
+            return jsonify({"ok": False, "message": message}), 400
+        flash(message, "error")
         return redirect(url_for("main.support_maintenance") + f"#support-client-{deal_id}")
 
     values = {
@@ -2117,7 +2129,10 @@ def support_maintenance_update(deal_id: int):
             try:
                 date.fromisoformat(values[key])
             except ValueError:
-                flash(f"{label} must be a valid date.", "error")
+                message = f"{label} must be a valid date."
+                if async_request:
+                    return jsonify({"ok": False, "message": message}), 400
+                flash(message, "error")
                 return redirect(url_for("main.support_maintenance") + f"#support-client-{deal_id}")
 
     now = utcnow_iso()
@@ -2155,6 +2170,13 @@ def support_maintenance_update(deal_id: int):
         {"service_status": service_status, "system_health": system_health},
     )
     db.commit()
+    if async_request:
+        return jsonify({
+            "ok": True,
+            "service_status": service_status,
+            "system_health": system_health,
+            "updated_at": now,
+        })
     flash("Support & Maintenance updated.", "success")
     return redirect(url_for("main.support_maintenance") + f"#support-client-{deal_id}")
 

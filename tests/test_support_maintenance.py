@@ -115,6 +115,19 @@ class SupportMaintenanceTests(unittest.TestCase):
         self.assertIn("support-maintenance-other-fields", template)
         self.assertIn('class="deal-card-footer"', template)
 
+    def test_support_autosaves_without_manual_save_button(self):
+        template = self.read("app/templates/support_maintenance.html")
+        js = self.read("app/static/js/app.js")
+        routes = self.read("app/routes.py")
+        self.assertIn("data-support-maintenance-form", template)
+        self.assertNotIn("Save Support &amp; Maintenance", template)
+        self.assertIn("saveSupportFormInBackground", js)
+        self.assertIn("X-RSF-Async", js)
+        self.assertIn("page.addEventListener('focusout'", js)
+        self.assertIn("page.addEventListener('change'", js)
+        self.assertIn('async_request = request.headers.get("X-RSF-Async") == "1"', routes)
+        self.assertIn('"ok": True', routes)
+
 
 if __name__ == "__main__":
     unittest.main()

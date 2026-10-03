@@ -36,7 +36,7 @@
           </div>
         </header>
 
-        <form id="{{ support_form_id }}" method="post" action="{{ url_for('main.support_maintenance_update', deal_id=deal['id']) }}">
+        <form id="{{ support_form_id }}" method="post" action="{{ url_for('main.support_maintenance_update', deal_id=deal['id']) }}" data-support-maintenance-form>
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         </form>
 
@@ -125,7 +125,6 @@
 
         <div class="deal-card-footer">
           <div class="deal-footer-action">
-            <button class="button primary" type="submit" form="{{ support_form_id }}">Save Support &amp; Maintenance</button>
             <a class="button secondary" href="{{ url_for('main.deals') }}#deal-{{ deal['id'] }}">View Deal</a>
           </div>
         </div>
