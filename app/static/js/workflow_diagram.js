@@ -1,4 +1,4 @@
-/* RSF Workflow Diagram v1.18.207 */
+/* RSF Workflow Diagram v1.18.208 */
 (() => {
   const page = document.querySelector('[data-workflow-diagram]');
   if (!page) return;
@@ -67,6 +67,8 @@
   const detailList = page.querySelector('[data-workflow-detail-list]');
   const detailLink = page.querySelector('[data-workflow-detail-link]');
   const zoomOutput = page.querySelector('[data-workflow-zoom]');
+  const expandButton = page.querySelector('[data-workflow-expand]');
+  const expandLabel = page.querySelector('[data-workflow-expand-label]');
 
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
   const view = { scale: 1, x: 0, y: 0 };
@@ -248,6 +250,61 @@
       }
     }
   };
+
+  let expanded = false;
+
+  const isEditingControl = () => {
+    const active = document.activeElement;
+    return Boolean(active && (
+      active.matches?.('input, textarea, select') ||
+      active.isContentEditable
+    ));
+  };
+
+  const hasOpenDialog = () => Boolean(
+    document.querySelector('dialog[open], [role="dialog"][open], [role="dialog"]:not([hidden])')
+  );
+
+  const refitAfterModeChange = () => {
+    autoFit = true;
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        drawEdges();
+        fitView();
+      });
+    });
+  };
+
+  const setExpanded = (next) => {
+    expanded = Boolean(next);
+    page.classList.toggle('is-expanded', expanded);
+    document.body.classList.toggle('workflow-diagram-focus-active', expanded);
+
+    if (expandButton) {
+      expandButton.setAttribute('aria-pressed', expanded ? 'true' : 'false');
+      expandButton.setAttribute(
+        'aria-label',
+        expanded ? 'Exit expanded Workflow Diagram' : 'Expand Workflow Diagram'
+      );
+      expandButton.title = expanded ? 'Exit expanded view (Esc)' : 'Expand Workflow Diagram';
+    }
+    if (expandLabel) expandLabel.textContent = expanded ? 'Exit' : 'Expand';
+
+    clearSelection();
+    refitAfterModeChange();
+  };
+
+  expandButton?.addEventListener('click', () => setExpanded(!expanded));
+
+  // Capture phase is intentional: while the Workflow Diagram is expanded,
+  // Esc exits focus mode before the Settings-level Esc handler can leave Settings.
+  document.addEventListener('keydown', (event) => {
+    if (!expanded || event.defaultPrevented || event.key !== 'Escape') return;
+    if (isEditingControl() || hasOpenDialog()) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    setExpanded(false);
+  }, true);
 
   nodes.forEach((node, id) => {
     node.addEventListener('click', () => selectNode(id));

@@ -113,8 +113,29 @@ class WorkflowDiagramTests(unittest.TestCase):
         settings = self.read("app/templates/settings.html")
         self.assertIn("settings-experience--{{ active_section }}", settings)
 
+    def test_workflow_normal_mode_allocates_more_space_to_canvas(self):
+        settings_css = self.read("app/static/css/settings_experience.css")
+        workflow_css = self.read("app/static/css/workflow_diagram.css")
+        self.assertIn("grid-template-columns:225px minmax(0,1fr)", settings_css)
+        self.assertIn("height:54px", settings_css)
+        self.assertIn("workflow-diagram-head", workflow_css)
+        self.assertIn("workflow-diagram-toolbar", workflow_css)
+
+    def test_workflow_expand_focus_mode_and_escape_priority(self):
+        template = self.read("app/templates/workflow_diagram.html")
+        js = self.read("app/static/js/workflow_diagram.js")
+        css = self.read("app/static/css/workflow_diagram.css")
+        self.assertIn("data-workflow-expand", template)
+        self.assertIn("setExpanded", js)
+        self.assertIn("workflow-diagram-focus-active", js)
+        self.assertIn("event.stopImmediatePropagation()", js)
+        self.assertIn("isEditingControl", js)
+        self.assertIn("hasOpenDialog", js)
+        self.assertIn(".workflow-diagram-page.is-expanded", css)
+        self.assertIn("position:fixed", css)
+
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.207")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.208")
 
 
 if __name__ == "__main__":
