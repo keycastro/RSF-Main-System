@@ -1,74 +1,41 @@
 {% extends 'base.html' %}{% block content %}
-<div class="page-head workspace-page-head"><div><h1>Settings</h1><p>Workspace name, currency, and commission levels.</p></div></div>
-<nav class="settings-subnav compact-settings-nav" aria-label="Settings sections"><a class="active" aria-current="page" href="{{ url_for('main.settings') }}">Workspace</a><a href="{{ url_for('main.account_security') }}">Security</a></nav>
-<div class="two-col settings-layout simplified-settings-layout">
-  <section class="workspace-section"><div class="section-head"><div><h2>Workspace</h2></div></div><form method="post" class="form-stack"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Company name<input name="company_name" value="{{ company_name }}" maxlength="160"></label><label>Currency<input name="currency_code" value="{{ currency_code }}" maxlength="3" autocapitalize="characters"><small class="help">Three-letter code such as USD or PHP.</small></label><button class="button primary" type="submit">Save Settings</button></form></section>
-  <section class="workspace-section"><div class="section-head"><div><h2>Commission levels</h2><p>Used when new commissions are created.</p></div></div><div class="ladder-list refined-ladder">{% for s in stages %}<div><span>{{ s.name }}</span><strong>{{ s.rate_bp|rate }}</strong></div>{% endfor %}</div><small class="help">Existing commissions keep their original rate.</small></section>
-</div>
-
-<section class="workspace-section" style="margin-top:20px">
-  <div class="section-head">
-    <div>
-      <h2>RSF Gmail</h2>
-      <p>Official client email connection used by Email Conversation.</p>
-    </div>
-  </div>
-  <div class="form-stack">
-    <div>
-      <strong>Status:</strong>
-      {% if gmail_status.connected %}
-        Connected
-      {% elif gmail_status.oauth_configured %}
-        Ready to connect
-      {% else %}
-        OAuth setup required
+<section class="settings-experience" data-settings-experience data-settings-fallback="{{ url_for('main.prospects') }}">
+  <header class="settings-experience-topbar">
+    <button class="settings-experience-back" type="button" data-settings-exit aria-label="Back to previous RSF screen"><span aria-hidden="true">←</span><span>Back</span></button>
+    <div><span>SETTINGS</span><h1>Settings</h1></div>
+    <small>Esc to return</small>
+  </header>
+  <div class="settings-experience-grid">
+    {% include '_settings_navigation.html' %}
+    <main class="settings-experience-content" aria-label="{{ active_section|title }} settings">
+      {% if active_section == 'workflow' %}
+        {% include 'workflow_diagram.html' %}
+      {% elif active_section == 'general' %}
+        <div class="settings-content-heading"><span>SETTINGS</span><h2>General</h2><p>Existing RSF workspace preferences and commission configuration.</p></div>
+        <div class="settings-content-columns">
+          <section class="settings-card"><div class="section-head"><div><h3>Workspace</h3></div></div><form method="post" class="form-stack"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Company name<input name="company_name" value="{{ company_name }}" maxlength="160"></label><label>Currency<input name="currency_code" value="{{ currency_code }}" maxlength="3" autocapitalize="characters"><small class="help">Three-letter code such as USD or PHP.</small></label><button class="button primary" type="submit">Save Settings</button></form></section>
+          <section class="settings-card"><div class="section-head"><div><h3>Commission levels</h3><p>Used when new commissions are created.</p></div></div><div class="ladder-list refined-ladder">{% for s in stages %}<div><span>{{ s.name }}</span><strong>{{ s.rate_bp|rate }}</strong></div>{% endfor %}</div><small class="help">Existing commissions keep their original rate.</small></section>
+        </div>
+      {% elif active_section == 'appearance' %}
+        <div class="settings-content-heading"><span>SETTINGS</span><h2>Appearance</h2><p>RSF already has real page-level Content Display controls. This section documents the current control instead of creating a second fake theme system.</p></div>
+        <section class="settings-card settings-appearance-reference">
+          <div class="settings-reference-icon" aria-hidden="true">Aa</div>
+          <div><h3>Content Display</h3><p>On normal RSF operational pages, press <kbd>Alt</kbd> + <kbd>Z</kbd> to open the existing display controls for text clarity, field / box lines, and card definition.</p><small>The dedicated Settings screen intentionally does not duplicate those page-specific sliders.</small></div>
+        </section>
+      {% elif active_section == 'integrations' %}
+        <div class="settings-content-heading"><span>SETTINGS</span><h2>Integrations</h2><p>Existing live connection controls for RSF communication and scheduling.</p></div>
+        <div class="settings-content-columns">
+          <section class="settings-card">
+            <div class="section-head"><div><h3>RSF Gmail</h3><p>Official client email connection used by Email Conversation.</p></div></div>
+            <div class="form-stack"><div><strong>Status:</strong> {% if gmail_status.connected %}Connected{% elif gmail_status.oauth_configured %}Ready to connect{% else %}OAuth setup required{% endif %}</div>{% if gmail_status.email %}<div><strong>Connected account:</strong> {{ gmail_status.email }}</div>{% endif %}{% if gmail_status.configured_sender %}<div><strong>Approved sender:</strong> {{ gmail_status.configured_sender }}</div>{% endif %}{% if gmail_status.connected %}<form method="post" action="{{ url_for('main.gmail_verify') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button secondary" type="submit">Verify Gmail Connection</button></form>{% elif gmail_status.oauth_configured %}<a class="button primary" href="{{ url_for('main.gmail_connect') }}">Connect Gmail</a>{% else %}<small class="help">Google OAuth Client ID and Client Secret must be configured in Render before Gmail can be connected.</small>{% endif %}</div>
+          </section>
+          <section class="settings-card">
+            <div class="section-head"><div><h3>Google Calendar</h3><p>Used by Deals to schedule demos and automatically create Google Meet links.</p></div></div>
+            <div class="form-stack"><div><strong>Status:</strong> {% if calendar_status.connected %}Connected{% elif calendar_status.oauth_configured %}Ready to connect{% else %}OAuth setup required{% endif %}</div><div><strong>Calendar:</strong> {{ calendar_status.calendar_id }}</div><div><strong>Timezone:</strong> {{ calendar_status.timezone }}</div>{% if calendar_status.connected %}<form method="post" action="{{ url_for('main.calendar_verify') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button secondary" type="submit">Verify Google Calendar</button></form>{% elif calendar_status.oauth_configured %}<a class="button primary" href="{{ url_for('main.calendar_connect') }}">Connect Google Calendar</a>{% else %}<small class="help">Google OAuth Client ID and Client Secret must be configured in Render before Calendar can be connected.</small>{% endif %}</div>
+          </section>
+        </div>
       {% endif %}
-    </div>
-    {% if gmail_status.email %}<div><strong>Connected account:</strong> {{ gmail_status.email }}</div>{% endif %}
-    {% if gmail_status.configured_sender %}<div><strong>Approved sender:</strong> {{ gmail_status.configured_sender }}</div>{% endif %}
-    {% if gmail_status.connected %}
-      <form method="post" action="{{ url_for('main.gmail_verify') }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button class="button secondary" type="submit">Verify Gmail Connection</button>
-      </form>
-    {% elif gmail_status.oauth_configured %}
-      <a class="button primary" href="{{ url_for('main.gmail_connect') }}">Connect Gmail</a>
-    {% else %}
-      <small class="help">Google OAuth Client ID and Client Secret must be configured in Render before Gmail can be connected.</small>
-    {% endif %}
-  </div>
-</section>
-
-<section class="workspace-section" style="margin-top:20px">
-  <div class="section-head">
-    <div>
-      <h2>Google Calendar</h2>
-      <p>Used by Deals to schedule demos and automatically create Google Meet links.</p>
-    </div>
-  </div>
-  <div class="form-stack">
-    <div>
-      <strong>Status:</strong>
-      {% if calendar_status.connected %}
-        Connected
-      {% elif calendar_status.oauth_configured %}
-        Ready to connect
-      {% else %}
-        OAuth setup required
-      {% endif %}
-    </div>
-    <div><strong>Calendar:</strong> {{ calendar_status.calendar_id }}</div>
-    <div><strong>Timezone:</strong> {{ calendar_status.timezone }}</div>
-    {% if calendar_status.connected %}
-      <form method="post" action="{{ url_for('main.calendar_verify') }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button class="button secondary" type="submit">Verify Google Calendar</button>
-      </form>
-    {% elif calendar_status.oauth_configured %}
-      <a class="button primary" href="{{ url_for('main.calendar_connect') }}">Connect Google Calendar</a>
-    {% else %}
-      <small class="help">Google OAuth Client ID and Client Secret must be configured in Render before Calendar can be connected.</small>
-    {% endif %}
+    </main>
   </div>
 </section>
 {% endblock %}

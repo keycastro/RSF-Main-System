@@ -6853,3 +6853,15 @@ document.addEventListener('click', (event) => {
   observer.observe(root, {childList: true, subtree: true});
 })();
 
+
+
+/* v1.18.204 — remember the exact operational screen before entering Settings. */
+(() => {
+  const STORAGE_KEY = 'rsf.settings.returnTo';
+  document.addEventListener('click', (event) => {
+    const link = event.target.closest?.('[data-settings-entry]');
+    if (!link) return;
+    const target = window.location.pathname + window.location.search + window.location.hash;
+    try { window.sessionStorage.setItem(STORAGE_KEY, target); } catch (_error) {}
+  });
+})();

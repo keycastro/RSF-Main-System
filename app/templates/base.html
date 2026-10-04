@@ -15,11 +15,14 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_v20.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_ambient_gold.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_video_background.css') }}">
-  {% if request.endpoint == 'main.workflow_diagram' %}
+  {% if request.endpoint in ['main.settings','main.account_security'] %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/settings_experience.css') }}">
+  {% endif %}
+  {% if request.endpoint == 'main.settings' and request.args.get('section','general') == 'workflow' %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/workflow_diagram.css') }}">
   {% endif %}
 </head>
-<body class="{% if request.endpoint in ['main.messages_home','main.messages_thread'] %}page-messages{% endif %}"{% if g.user %} data-message-poll-url="{{ url_for('main.message_unread') }}" data-csrf="{{ csrf_token() }}"{% endif %}>
+<body class="{% if request.endpoint in ['main.settings','main.account_security'] %}page-settings-dedicated{% endif %}{% if request.endpoint in ['main.messages_home','main.messages_thread'] %} page-messages{% endif %}"{% if g.user %} data-message-poll-url="{{ url_for('main.message_unread') }}" data-csrf="{{ csrf_token() }}"{% endif %}>
 {% macro nav_icon(name) -%}
 <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
   {% if name == 'home' %}<path d="M3.5 10.5 12 3.7l8.5 6.8v9.3a1.2 1.2 0 0 1-1.2 1.2h-5.1v-6.2H9.8V21H4.7a1.2 1.2 0 0 1-1.2-1.2v-9.3Z"/>
@@ -68,7 +71,6 @@
       {% set inquiries_active = request.endpoint in ['main.inquiries_list','main.inquiry_detail'] %}
       {% set deals_active = request.endpoint in ['main.deals','main.deal_create_from_prospect','main.deal_update'] %}
       {% set support_active = request.endpoint in ['main.support_maintenance','main.support_maintenance_update'] %}
-      {% set workflow_active = request.endpoint == 'main.workflow_diagram' %}
       <div class="nav-section-label">OUTBOUND</div>
       <a class="{{ 'active' if prospects_active else '' }}" {% if prospects_active %}aria-current="page"{% endif %} href="{{ url_for('main.prospects') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("leads") }}</span><span class="nav-text">Prospects</span></a>
 
@@ -80,25 +82,26 @@
       <div class="nav-section-label">MANAGED CLIENTS</div>
       <a class="{{ 'active' if support_active else '' }}" {% if support_active %}aria-current="page"{% endif %} href="{{ url_for('main.support_maintenance') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("resources") }}</span><span class="nav-text">Support &amp; Maintenance</span></a>
 
-      {% if g.user.role == 'admin' %}
-      <div class="nav-section-label">SYSTEM MAP</div>
-      <a class="{{ 'active' if workflow_active else '' }}" {% if workflow_active %}aria-current="page"{% endif %} href="{{ url_for('main.workflow_diagram') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("workflow") }}</span><span class="nav-text">Workflow Diagram</span></a>
-      {% endif %}
     </nav>
 
     <div class="sidebar-footer">
       {% set sidebar_avatar = profile_picture_url(g.user.id, g.user.role) %}<a class="user-block user-block-with-avatar user-block-link" href="{{ url_for('main.profile') }}" aria-label="Open your profile"><div class="sidebar-avatar" aria-hidden="true">{% if sidebar_avatar %}<img class="sidebar-profile-photo" src="{{ sidebar_avatar }}" alt="">{% else %}<span>{{ g.user.full_name[:1]|upper }}</span>{% endif %}</div><div class="user-block-copy"><strong>{{ g.user.full_name }}</strong><small>{{ 'Founder' if g.user.role=='admin' else 'Partner' }}</small></div></a>
 
-      <form method="post" action="{{ url_for('main.logout') }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button class="signout" type="submit">Sign out</button>
-      </form>
+      <div class="sidebar-session-actions">
+        <form method="post" action="{{ url_for('main.logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="signout" type="submit">Sign out</button>
+        </form>
+        {% if g.user.role == 'admin' %}
+        <a class="settings-footer-link" data-settings-entry href="{{ url_for('main.settings', section='workflow') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("settings") }}</span><span>Settings</span></a>
+        {% endif %}
+      </div>
       <small class="version">RSF Workspace · v{{ app_version }}</small>
     </div>
   </aside>
 
   <main class="main-area" id="main-content" tabindex="-1">
-    {% if request.endpoint not in ['main.prospects','main.deals','main.inquiries_list','main.support_maintenance','main.workflow_diagram','main.records','main.inquiry_records'] %}
+    {% if request.endpoint not in ['main.prospects','main.deals','main.inquiries_list','main.support_maintenance','main.settings','main.account_security','main.records','main.inquiry_records'] %}
     <header class="topbar">
       <div class="topbar-left">
         <button class="menu-button" type="button" data-menu aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">☰</button>
@@ -173,7 +176,10 @@
   {% block guest %}{% endblock %}
 {% endif %}
 <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
-{% if request.endpoint == 'main.workflow_diagram' %}
+{% if request.endpoint in ['main.settings','main.account_security'] %}
+<script src="{{ url_for('static', filename='js/settings_experience.js') }}" defer></script>
+{% endif %}
+{% if request.endpoint == 'main.settings' and request.args.get('section','general') == 'workflow' %}
 <script src="{{ url_for('static', filename='js/workflow_diagram.js') }}" defer></script>
 {% endif %}
 </body>

@@ -1376,15 +1376,9 @@ def workspace_root():
 @bp.get("/workflow-diagram")
 @admin_required
 def workflow_diagram():
-    workflow = build_workflow_diagram(
-        PROSPECT_STATUS_LABELS,
-        DEAL_PRE_STATUS_STATUSES,
-        DEAL_ACTIVE_STATUSES,
-    )
-    for node in workflow["nodes"]:
-        endpoint = node.pop("endpoint", "")
-        node["href"] = url_for(endpoint) if endpoint else ""
-    return render_template("workflow_diagram.html", title="Workflow Diagram", workflow=workflow)
+    # Backward-compatible bookmark: Workflow Diagram now lives inside the
+    # dedicated Founder Settings experience.
+    return redirect(url_for("main.settings", section="workflow"))
 
 
 @bp.post("/card-layout/<page_name>")
@@ -4750,6 +4744,11 @@ def founder_password_change():
 @admin_required
 def settings():
     db = get_db()
+    allowed_sections = {"general", "appearance", "workflow", "integrations"}
+    section = (request.args.get("section", "general") or "general").strip().lower()
+    if section not in allowed_sections:
+        section = "general"
+
     stages = db.execute("SELECT * FROM commission_stages ORDER BY sort_order").fetchall()
     if request.method == "POST":
         validate_csrf()
@@ -4764,17 +4763,32 @@ def settings():
             log_activity("SETTINGS_UPDATED", "settings", None, "Settings updated.")
             db.commit()
             flash("Settings updated.", "success")
-            return redirect(url_for("main.settings"))
+            return redirect(url_for("main.settings", section="general"))
+
     from .gmail_ops import connection_status as gmail_connection_status
     from .calendar_ops import connection_status as calendar_connection_status
+
+    workflow = None
+    if section == "workflow":
+        workflow = build_workflow_diagram(
+            PROSPECT_STATUS_LABELS,
+            DEAL_PRE_STATUS_STATUSES,
+            DEAL_ACTIVE_STATUSES,
+        )
+        for node in workflow["nodes"]:
+            endpoint = node.pop("endpoint", "")
+            node["href"] = url_for(endpoint) if endpoint else ""
+
     return render_template(
         "settings.html",
         title="Settings",
+        active_section=section,
         stages=stages,
         company_name=setting("company_name","Realty Systems Foundry"),
         currency_code=setting("currency_code","USD"),
         gmail_status=gmail_connection_status(),
         calendar_status=calendar_connection_status(),
+        workflow=workflow,
     )
 
 
@@ -4785,12 +4799,12 @@ def gmail_connect():
     redirect_uri = current_app.config.get("GMAIL_OAUTH_REDIRECT_URI", "").strip()
     if not redirect_uri:
         flash("Gmail OAuth redirect URI is not configured yet.", "error")
-        return redirect(url_for("main.settings"))
+        return redirect(url_for("main.settings", section="integrations"))
     try:
         authorization_url = build_authorization_url(redirect_uri)
     except RuntimeError as exc:
         flash(str(exc), "error")
-        return redirect(url_for("main.settings"))
+        return redirect(url_for("main.settings", section="integrations"))
     return redirect(authorization_url)
 
 
@@ -4800,7 +4814,7 @@ def gmail_callback():
     from .gmail_ops import complete_authorization, validate_oauth_state
     if request.args.get("error"):
         flash("Google Gmail authorization was cancelled or denied.", "warning")
-        return redirect(url_for("main.settings"))
+        return redirect(url_for("main.settings", section="integrations"))
     redirect_uri = current_app.config.get("GMAIL_OAUTH_REDIRECT_URI", "").strip()
     try:
         validate_oauth_state(request.args.get("state", ""))
@@ -4808,10 +4822,10 @@ def gmail_callback():
     except RuntimeError as exc:
         current_app.logger.warning("Gmail OAuth connection failed: %s", exc)
         flash(str(exc), "error")
-        return redirect(url_for("main.settings"))
+        return redirect(url_for("main.settings", section="integrations"))
     log_activity("GMAIL_CONNECTED", "settings", None, f"Gmail API connected for {email_address}.")
     flash(f"Gmail connected: {email_address}", "success")
-    return redirect(url_for("main.settings"))
+    return redirect(url_for("main.settings", section="integrations"))
 
 
 @bp.post("/admin/settings/gmail/verify")
@@ -4825,7 +4839,7 @@ def gmail_verify():
         flash(str(exc), "error")
     else:
         flash(f"Gmail connection verified: {profile.get('emailAddress','')}", "success")
-    return redirect(url_for("main.settings"))
+    return redirect(url_for("main.settings", section="integrations"))
 
 
 @bp.get("/admin/settings/calendar/connect")
@@ -4835,12 +4849,12 @@ def calendar_connect():
     redirect_uri = current_app.config.get("GOOGLE_CALENDAR_OAUTH_REDIRECT_URI", "").strip()
     if not redirect_uri:
         flash("Google Calendar OAuth redirect URI is not configured yet.", "error")
-        return redirect(url_for("main.settings"))
+        return redirect(url_for("main.settings", section="integrations"))
     try:
         authorization_url = build_authorization_url(redirect_uri)
     except RuntimeError as exc:
         flash(str(exc), "error")
-        return redirect(url_for("main.settings"))
+        return redirect(url_for("main.settings", section="integrations"))
     return redirect(authorization_url)
 
 
@@ -4850,7 +4864,7 @@ def calendar_callback():
     from .calendar_ops import complete_authorization, validate_oauth_state
     if request.args.get("error"):
         flash("Google Calendar authorization was cancelled or denied.", "warning")
-        return redirect(url_for("main.settings"))
+        return redirect(url_for("main.settings", section="integrations"))
     redirect_uri = current_app.config.get("GOOGLE_CALENDAR_OAUTH_REDIRECT_URI", "").strip()
     try:
         validate_oauth_state(request.args.get("state", ""))
@@ -4858,10 +4872,10 @@ def calendar_callback():
     except RuntimeError as exc:
         current_app.logger.warning("Google Calendar OAuth connection failed: %s", exc)
         flash(str(exc), "error")
-        return redirect(url_for("main.settings"))
+        return redirect(url_for("main.settings", section="integrations"))
     log_activity("GOOGLE_CALENDAR_CONNECTED", "settings", None, "Google Calendar connected for Deal demo scheduling.")
     flash("Google Calendar connected.", "success")
-    return redirect(url_for("main.settings"))
+    return redirect(url_for("main.settings", section="integrations"))
 
 
 @bp.post("/admin/settings/calendar/verify")
@@ -4875,7 +4889,7 @@ def calendar_verify():
         flash(str(exc), "error")
     else:
         flash("Google Calendar connection verified.", "success")
-    return redirect(url_for("main.settings"))
+    return redirect(url_for("main.settings", section="integrations"))
 
 
 @bp.get("/profile-picture/<int:user_id>")

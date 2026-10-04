@@ -1,0 +1,72 @@
+/* RSF v1.18.204 — Dedicated Founder Settings experience */
+body.page-settings-dedicated{background:#0b0907;color:#f4eadb}
+body.page-settings-dedicated .rsf-workspace-video-background{display:none!important}
+body.page-settings-dedicated .app-shell{display:block;min-height:100vh;background:radial-gradient(circle at 13% 0%,rgba(102,70,31,.26),transparent 31%),linear-gradient(120deg,#120e0a 0%,#090806 58%,#050505 100%)}
+body.page-settings-dedicated .sidebar{display:none!important}
+body.page-settings-dedicated .main-area{min-height:100vh;margin:0;border-radius:0;background:transparent!important;box-shadow:none!important}
+body.page-settings-dedicated .topbar,body.page-settings-dedicated .workspace-visual-panel,body.page-settings-dedicated .scrim{display:none!important}
+body.page-settings-dedicated .content-wrap{max-width:none;margin:0;padding:18px 20px 28px;background:transparent!important}
+body.page-settings-dedicated .flash-stack{max-width:1200px;margin:0 auto 10px}
+
+.settings-experience{max-width:1600px;margin:0 auto;min-height:calc(100vh - 46px);border:1px solid rgba(201,169,94,.22);border-radius:16px;background:rgba(8,7,5,.84);box-shadow:0 24px 70px rgba(0,0,0,.28);overflow:hidden}
+.settings-experience-topbar{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;min-height:72px;padding:0 18px;border-bottom:1px solid rgba(201,169,94,.19);background:linear-gradient(90deg,rgba(55,39,22,.74),rgba(13,11,8,.96) 35%,rgba(8,8,7,.98))}
+.settings-experience-topbar>div span{display:block;font-size:9px;font-weight:900;letter-spacing:.15em;color:#c9a95e}
+.settings-experience-topbar h1{margin:2px 0 0;font-size:24px;line-height:1;color:#fff8ef}
+.settings-experience-topbar>small{color:#8f8373;font-size:10px}
+.settings-experience-back{display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:7px 11px;border:1px solid rgba(201,169,94,.54);border-radius:10px;background:rgba(201,169,94,.06);color:#f3e6d3;font-weight:800;cursor:pointer}
+.settings-experience-back span:first-child{font-size:18px;line-height:1;color:#d6b65f}
+.settings-experience-back:hover{background:rgba(201,169,94,.12);border-color:#c9a95e}
+.settings-experience-back:focus-visible{outline:2px solid #d6b65f;outline-offset:2px}
+
+.settings-experience-grid{display:grid;grid-template-columns:310px minmax(0,1fr);min-height:calc(100vh - 120px)}
+.settings-experience-nav{padding:24px 14px 28px;border-right:1px solid rgba(201,169,94,.16);background:linear-gradient(180deg,rgba(17,15,12,.96),rgba(8,8,7,.94))}
+.settings-experience-nav-head{padding:0 10px 18px;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,.07)}
+.settings-experience-nav-head>span{display:block;font-size:9px;font-weight:900;letter-spacing:.14em;color:#c7a75c}
+.settings-experience-nav-head p{margin:8px 0 0;font-size:11.5px;line-height:1.5;color:#aaa092}
+.settings-experience-nav nav{display:grid;gap:6px}
+.settings-experience-nav a{display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;align-items:center;min-height:62px;padding:8px 10px;border:1px solid transparent;border-radius:11px;color:#e8dfd3;background:transparent}
+.settings-experience-nav a:hover{background:rgba(255,255,255,.035);border-color:rgba(201,169,94,.17)}
+.settings-experience-nav a.active{border-color:#b9913c;background:linear-gradient(90deg,rgba(201,169,94,.19),rgba(201,169,94,.045));box-shadow:inset 3px 0 0 #d5b765,0 0 18px rgba(201,169,94,.06)}
+.settings-experience-nav a>span:last-child{min-width:0}
+.settings-experience-nav a strong{display:block;font-size:12.5px;color:#fff9f1}
+.settings-experience-nav a small{display:block;margin-top:3px;font-size:10px;color:#9f968a}
+.settings-nav-icon{width:42px;height:42px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.09);border-radius:10px;background:rgba(255,255,255,.025);color:#ded7cd}
+.settings-experience-nav a.active .settings-nav-icon{color:#e4c36e;border-color:rgba(201,169,94,.35);background:rgba(201,169,94,.08)}
+.settings-nav-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+.settings-experience-content{min-width:0;padding:26px;background:radial-gradient(circle at 86% 4%,rgba(201,169,94,.07),transparent 22%),linear-gradient(180deg,rgba(16,13,10,.92),rgba(8,8,7,.96))}
+.settings-content-heading{margin:0 0 18px}
+.settings-content-heading>span{display:block;font-size:9px;font-weight:900;letter-spacing:.15em;color:#c6a458}
+.settings-content-heading h2{margin:5px 0 0;font-size:30px;line-height:1;color:#fff8ef}
+.settings-content-heading p{max-width:720px;margin:8px 0 0;font-size:12px;line-height:1.5;color:#a9a093}
+.settings-content-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.settings-card{padding:16px;border:1px solid rgba(201,169,94,.22);border-radius:13px;background:rgba(255,248,238,.035);box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+.settings-card h3{margin:0;font-size:14px;color:#f5eadb}
+.settings-card .section-head h3{font-size:14px}
+.settings-card .section-head p,.settings-card p,.settings-card small,.settings-card .help{color:#aaa092}
+.settings-card label{color:#e7ddcf}
+.settings-card input,.settings-card select,.settings-card textarea{background:#0d0c0a;color:#f4eadb;border-color:#55452e}
+.settings-card .ladder-list>div{border-color:rgba(255,255,255,.07)}
+.settings-card .ladder-list span{color:#d7cdc0}
+.settings-card .ladder-list strong{color:#e0bf68}
+.settings-appearance-reference{display:flex;gap:15px;align-items:flex-start;max-width:760px}
+.settings-reference-icon{display:grid;place-items:center;flex:0 0 52px;height:52px;border:1px solid rgba(201,169,94,.34);border-radius:12px;background:rgba(201,169,94,.07);color:#e0bf68;font-weight:900}
+.settings-appearance-reference p{margin:7px 0 5px}
+.settings-appearance-reference kbd{display:inline-flex;min-width:26px;justify-content:center;padding:2px 6px;border:1px solid rgba(201,169,94,.35);border-radius:5px;background:#0e0c09;color:#f2e3cf;box-shadow:inset 0 -1px 0 rgba(255,255,255,.05)}
+
+.settings-account-shell{max-width:none;color:#e9dfd1}
+.settings-account-shell .workspace-section{border-top-color:rgba(201,169,94,.18)}
+.settings-account-shell .section-head h2,.settings-account-shell .partner-compact-identity strong{color:#f5eadb}
+.settings-account-shell .section-head p,.settings-account-shell .partner-compact-identity span,.settings-account-shell .account-password-vault>span,.settings-account-shell .partner-inline-vault>span{color:#aaa092}
+.settings-account-shell input,.settings-account-shell select{background:#0d0c0a;color:#f4eadb;border-color:#55452e}
+.settings-account-shell .security-change-disclosure,.settings-account-shell .partner-password-expand{background:rgba(255,248,238,.035);border-color:rgba(201,169,94,.18)}
+.settings-account-shell .partner-security-list,.settings-account-shell .partner-security-row{border-color:rgba(255,255,255,.07)}
+
+body.page-settings-dedicated .workflow-diagram-page{color:#f0e5d6}
+body.page-settings-dedicated .workflow-diagram-head{margin-top:0}
+body.page-settings-dedicated .workflow-diagram-layout{min-height:590px}
+body.page-settings-dedicated .workflow-diagram-viewport,body.page-settings-dedicated .workflow-diagram-inspector{height:clamp(590px,65vh,780px)}
+
+@media(max-width:1050px){.settings-experience-grid{grid-template-columns:240px minmax(0,1fr)}.settings-content-columns{grid-template-columns:1fr}}
+@media(max-width:780px){body.page-settings-dedicated .content-wrap{padding:8px}.settings-experience{border-radius:10px}.settings-experience-topbar{padding:0 10px}.settings-experience-grid{grid-template-columns:1fr}.settings-experience-nav{border-right:0;border-bottom:1px solid rgba(201,169,94,.16);padding:12px}.settings-experience-nav-head{padding-bottom:10px}.settings-experience-nav nav{grid-template-columns:repeat(2,minmax(0,1fr))}.settings-experience-nav a{min-height:52px;grid-template-columns:34px minmax(0,1fr)}.settings-nav-icon{width:32px;height:32px}.settings-nav-icon svg{width:19px;height:19px}.settings-experience-content{padding:16px}.settings-experience-topbar>small{display:none}}
+@media(max-width:520px){.settings-experience-nav nav{grid-template-columns:1fr}.settings-experience-back span:last-child{display:none}.settings-content-heading h2{font-size:25px}}

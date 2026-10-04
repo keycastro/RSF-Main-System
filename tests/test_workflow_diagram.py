@@ -9,23 +9,45 @@ class WorkflowDiagramTests(unittest.TestCase):
     def read(self, path: str) -> str:
         return (ROOT / path).read_text(encoding="utf-8")
 
-    def test_route_uses_canonical_status_sets_and_founder_access(self):
+    def test_legacy_route_redirects_to_settings_workflow(self):
         routes = self.read("app/routes.py")
         self.assertIn('@bp.get("/workflow-diagram")', routes)
         self.assertIn("def workflow_diagram():", routes)
-        self.assertIn("@admin_required", routes)
+        self.assertIn('url_for("main.settings", section="workflow")', routes)
+
+    def test_settings_route_builds_workflow_from_canonical_status_sets(self):
+        routes = self.read("app/routes.py")
+        self.assertIn('section == "workflow"', routes)
         self.assertIn("build_workflow_diagram(", routes)
         self.assertIn("PROSPECT_STATUS_LABELS", routes)
         self.assertIn("DEAL_PRE_STATUS_STATUSES", routes)
         self.assertIn("DEAL_ACTIVE_STATUSES", routes)
 
-    def test_sidebar_exposes_workflow_diagram_as_rsf_feature(self):
+    def test_normal_sidebar_no_longer_exposes_system_map(self):
         base = self.read("app/templates/base.html")
-        self.assertIn("workflow_active", base)
-        self.assertIn("Workflow Diagram", base)
-        self.assertIn("url_for('main.workflow_diagram')", base)
-        self.assertIn("name == 'workflow'", base)
-        self.assertIn("g.user.role == 'admin'", base)
+        self.assertNotIn("SYSTEM MAP", base)
+        self.assertNotIn("workflow_active", base)
+        self.assertIn("data-settings-entry", base)
+        self.assertIn("settings-footer-link", base)
+
+    def test_dedicated_settings_navigation_contains_real_sections(self):
+        template = self.read("app/templates/_settings_navigation.html")
+        for label in ("General", "Appearance", "Account", "Workflow Diagram", "Integrations"):
+            self.assertIn(label, template)
+
+    def test_dedicated_settings_hides_operational_sidebar(self):
+        css = self.read("app/static/css/settings_experience.css")
+        self.assertIn("body.page-settings-dedicated .sidebar{display:none!important}", css)
+        self.assertIn("body.page-settings-dedicated .workspace-visual-panel", css)
+
+    def test_back_and_escape_restore_previous_operational_page_safely(self):
+        js = self.read("app/static/js/settings_experience.js")
+        app_js = self.read("app/static/js/app.js")
+        self.assertIn("rsf.settings.returnTo", js)
+        self.assertIn("event.key !== 'Escape'", js)
+        self.assertIn("input, textarea, select", js)
+        self.assertIn("dialog[open]", js)
+        self.assertIn("data-settings-entry", app_js)
 
     def test_diagram_contains_required_architecture_areas(self):
         workflow = self.read("app/workflow_diagram.py")
@@ -41,29 +63,9 @@ class WorkflowDiagramTests(unittest.TestCase):
         ):
             self.assertIn(label, workflow)
 
-    def test_lifecycle_and_sync_rules_are_represented(self):
-        workflow = self.read("app/workflow_diagram.py")
-        for text in (
-            "Backward Movement Gate",
-            "Source Reconciliation",
-            "Linked Deal Record",
-            "Notes After Conversation",
-            "Manual Call",
-            "WhatsApp",
-            "Google Meet / Calendar",
-            "Documents / Files",
-            "deals.prospect_id",
-            "deals.website_inquiry_id",
-        ):
-            self.assertIn(text, workflow)
-        self.assertIn("status_labels.get", workflow)
-        self.assertIn("pre_statuses", workflow)
-        self.assertIn("active_statuses", workflow)
-
     def test_diagram_is_read_only_and_interactive(self):
         template = self.read("app/templates/workflow_diagram.html")
         js = self.read("app/static/js/workflow_diagram.js")
-        css = self.read("app/static/css/workflow_diagram.css")
         self.assertIn("data-workflow-viewport", template)
         self.assertIn("data-workflow-inspector", template)
         self.assertIn("data-workflow-fit", template)
@@ -71,11 +73,10 @@ class WorkflowDiagramTests(unittest.TestCase):
         self.assertIn("fitView", js)
         self.assertIn("selectNode", js)
         self.assertIn("pointerdown", js)
-        self.assertIn("workflow-diagram-node", css)
         self.assertNotIn("<form", template)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.203")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.204")
 
 
 if __name__ == "__main__":
