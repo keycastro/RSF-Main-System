@@ -5878,6 +5878,10 @@ document.addEventListener('click', (event) => {
   const searchInput = page.querySelector('[data-records-search]');
   const clearFilters = page.querySelector('[data-records-clear]');
   const visibleCount = page.querySelector('[data-records-visible-count]');
+  const countLabel = page.querySelector('[data-records-count-label]');
+  const filterToggle = page.querySelector('[data-records-filter-toggle]');
+  const filterPanel = page.querySelector('[data-records-filter-panel]');
+  const filterCount = page.querySelector('[data-records-filter-count]');
   const filterInput = page.querySelector('[data-records-filter-input]');
   const sourceInput = page.querySelector('[data-records-source-input]');
   const groupInput = page.querySelector('[data-records-group-input]');
@@ -5899,6 +5903,23 @@ document.addEventListener('click', (event) => {
   let activeSource = page.dataset.recordsInitialSource || 'ALL';
   let activeGroup = page.dataset.recordsInitialGroup || 'ALL';
   let searchTerm = '';
+  let filtersOpen = activeStatus !== 'ALL' || activeSource !== 'ALL' || activeGroup !== 'ALL';
+
+  const setFiltersOpen = (open) => {
+    filtersOpen = Boolean(open);
+    if (filterPanel) filterPanel.hidden = !filtersOpen;
+    filterToggle?.setAttribute('aria-expanded', filtersOpen ? 'true' : 'false');
+  };
+
+  const activeFilterCount = () =>
+    [activeStatus, activeSource, activeGroup].filter((value) => value && value !== 'ALL').length;
+
+  const updateFilterCount = () => {
+    if (!filterCount) return;
+    const count = activeFilterCount();
+    filterCount.textContent = String(count);
+    filterCount.hidden = count === 0;
+  };
 
   const visibleRowChecks = () => rowChecks.filter((check) => {
     const row = check.closest('[data-master-record-row]');
@@ -5918,13 +5939,13 @@ document.addEventListener('click', (event) => {
   const setManageMode = (enabled) => {
     page.dataset.recordsManageMode = enabled ? 'true' : 'false';
     manageToggle?.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    if (enabled) setFiltersOpen(false);
     if (!enabled) clearSelection();
     updateSelection();
   };
 
   const updateSelection = () => {
     const selected = rowChecks.filter((check) => check.checked && !check.disabled);
-    const visibleChecks = visibleRowChecks();
     const visibleDeletable = visibleDeletableChecks();
     const allVisibleSelected = visibleDeletable.length > 0
       && visibleDeletable.every((check) => check.checked);
@@ -5969,11 +5990,15 @@ document.addEventListener('click', (event) => {
 
     const visibleRows = rows.filter((row) => !row.hidden);
     if (visibleCount) visibleCount.textContent = String(visibleRows.length);
+    if (countLabel) countLabel.textContent = visibleRows.length === 1 ? 'record' : 'records';
     if (empty) empty.hidden = rows.length !== 0;
     if (filterEmpty) filterEmpty.hidden = rows.length === 0 || visibleRows.length !== 0;
+    updateFilterCount();
     updateSelection();
     syncUrl();
   };
+
+  filterToggle?.addEventListener('click', () => setFiltersOpen(!filtersOpen));
 
   statusSelect?.addEventListener('change', () => {
     activeStatus = statusSelect.value || 'ALL';
@@ -6003,11 +6028,8 @@ document.addEventListener('click', (event) => {
     activeStatus = 'ALL';
     activeSource = 'ALL';
     activeGroup = 'ALL';
-    searchTerm = '';
-    if (searchInput) searchInput.value = '';
     clearSelection();
     applyFilters();
-    searchInput?.focus();
   });
 
   manageToggle?.addEventListener('click', () => {
@@ -6051,6 +6073,7 @@ document.addEventListener('click', (event) => {
     closeConfirm();
   });
 
+  setFiltersOpen(filtersOpen);
   setManageMode(false);
   applyFilters();
 })();

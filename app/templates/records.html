@@ -12,69 +12,72 @@
     <div>
       <span class="general-records-eyebrow">Records &amp; History Control</span>
       <h1>General Records</h1>
-      <p>One calm place to find every client journey across Prospects, Website Inbox, Deal Stages, and Support &amp; Maintenance.</p>
-    </div>
-    <div class="general-records-total" aria-label="{{ records|length }} total General Records">
-      <strong>{{ records|length }}</strong>
-      <span>Total Records</span>
+      <p>Find a client record and open its complete history.</p>
     </div>
   </header>
 
-  <section class="general-records-summary" aria-label="General Records overview">
-    <div><span>Pre-Deal</span><strong>{{ lifecycle_counts.get('PRE_DEAL', 0) }}</strong><small>Not Contacted / No Answer</small></div>
-    <div><span>Deal Pipeline</span><strong>{{ lifecycle_counts.get('DEAL', 0) }}</strong><small>Deal through Won</small></div>
-    <div><span>Support &amp; Maintenance</span><strong>{{ lifecycle_counts.get('SUPPORT', 0) }}</strong><small>Managed clients</small></div>
-    <div><span>Closed</span><strong>{{ lifecycle_counts.get('CLOSED', 0) }}</strong><small>Rejected / Lost</small></div>
-  </section>
-
-  <section class="general-records-controls" aria-label="Find General Records">
+  <section class="general-records-find" aria-label="Find General Records">
     <label class="general-records-search">
       <span class="sr-only">Search General Records</span>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 20-4.4-4.4m2.4-5.1a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z"/></svg>
-      <input type="search" placeholder="Search client, email, phone, status…" autocomplete="off" data-records-search>
+      <input type="search" placeholder="Search records" autocomplete="off" data-records-search>
     </label>
-
-    <label class="general-records-filter">
-      <span>Lifecycle</span>
-      <select data-records-lifecycle-select>
-        <option value="ALL">All lifecycle</option>
-        <option value="PRE_DEAL">Pre-Deal</option>
-        <option value="DEAL">Deal Pipeline</option>
-        <option value="SUPPORT">Support &amp; Maintenance</option>
-        <option value="CLOSED">Closed</option>
-      </select>
-    </label>
-
-    <label class="general-records-filter">
-      <span>Status</span>
-      <select data-records-status-select>
-        <option value="ALL">All statuses</option>
-        {% for code, label in workflow_status_labels.items() %}
-        <option value="{{ code }}">{{ label }} ({{ workflow_counts.get(code, 0) }})</option>
-        {% endfor %}
-      </select>
-    </label>
-
-    <label class="general-records-filter">
-      <span>Source</span>
-      <select data-records-source-select>
-        <option value="ALL">All sources</option>
-        <option value="RESEARCH">Research ({{ source_counts.get('RESEARCH', 0) }})</option>
-        <option value="WEBSITE">Website ({{ source_counts.get('WEBSITE', 0) }})</option>
-        <option value="MULTI">Merged ({{ source_counts.get('MULTI', 0) }})</option>
-      </select>
-    </label>
-
-    <button class="general-records-clear" type="button" data-records-clear>Clear</button>
-
-    {% if g.user and g.user['role'] == 'admin' %}
-    <button class="general-records-manage" type="button" data-records-manage-toggle aria-pressed="false">Manage Records</button>
-    {% endif %}
+    <button
+      class="general-records-filter-toggle"
+      type="button"
+      data-records-filter-toggle
+      aria-expanded="false"
+      aria-controls="general-records-filters"
+    >
+      Filters
+      <span data-records-filter-count hidden>0</span>
+    </button>
   </section>
 
-  <div class="general-records-result-line" aria-live="polite">
-    <span><strong data-records-visible-count>{{ records|length }}</strong> records shown</span>
-    <span>Newest activity first</span>
+  <section class="general-records-filter-panel" id="general-records-filters" data-records-filter-panel hidden>
+    <div class="general-records-filter-grid">
+      <label class="general-records-filter">
+        <span>Where now</span>
+        <select data-records-lifecycle-select>
+          <option value="ALL">Anywhere</option>
+          <option value="PRE_DEAL">Pre-Deal</option>
+          <option value="DEAL">Deal Pipeline</option>
+          <option value="SUPPORT">Support &amp; Maintenance</option>
+          <option value="CLOSED">Closed</option>
+        </select>
+      </label>
+
+      <label class="general-records-filter">
+        <span>Status</span>
+        <select data-records-status-select>
+          <option value="ALL">Any status</option>
+          {% for code, label in workflow_status_labels.items() %}
+          <option value="{{ code }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="general-records-filter">
+        <span>Source</span>
+        <select data-records-source-select>
+          <option value="ALL">Any source</option>
+          <option value="RESEARCH">Research</option>
+          <option value="WEBSITE">Website</option>
+          <option value="MULTI">Merged</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="general-records-filter-actions">
+      <button class="general-records-clear" type="button" data-records-clear>Clear filters</button>
+      {% if g.user and g.user['role'] == 'admin' %}
+      <button class="general-records-manage" type="button" data-records-manage-toggle aria-pressed="false">Manage records</button>
+      {% endif %}
+    </div>
+  </section>
+
+  <div class="general-records-list-head" aria-live="polite">
+    <strong><span data-records-visible-count>{{ records|length }}</span> <span data-records-count-label>{{ 'record' if records|length == 1 else 'records' }}</span></strong>
   </div>
 
   {% if g.user and g.user['role'] == 'admin' %}
@@ -100,11 +103,9 @@
           <tr>
             {% if g.user and g.user['role'] == 'admin' %}<th class="records-select-col">Select</th>{% endif %}
             <th>Client</th>
-            <th>Current Place</th>
-            <th>Source</th>
-            <th>Linked Records</th>
-            <th>Activity</th>
-            <th class="records-action-col">Record</th>
+            <th>Where Now</th>
+            <th>Last Activity</th>
+            <th class="records-action-col">History</th>
           </tr>
         </thead>
         <tbody>
@@ -131,35 +132,22 @@
 
             <td class="general-records-client">
               <a href="{{ url_for('main.record_detail', record_key=record.record_key) }}">{{ record.client_title }}</a>
-              {% if record.contact_name and record.contact_name|lower != record.client_title|lower %}<span>{{ record.contact_name }}</span>{% endif %}
-              {% if record.email %}<span>{{ record.email }}</span>{% endif %}
-              {% if record.phone %}<span>{{ record.phone }}</span>{% endif %}
+              <span class="general-records-client-meta">
+                {% if record.source_filter == 'RESEARCH' %}Research
+                {% elif record.source_filter == 'WEBSITE' %}Website
+                {% else %}Research + Website{% endif %}
+                {% if record.email %} · {{ record.email }}{% elif record.phone %} · {{ record.phone }}{% endif %}
+              </span>
             </td>
 
-            <td>
-              <span class="general-records-group general-records-group--{{ record.lifecycle_group|lower }}">{{ record.lifecycle_group_label }}</span>
-              <strong class="general-records-status">{{ workflow_status_labels.get(record.current_status, record.current_status) }}</strong>
-            </td>
-
-            <td>
-              <div class="general-records-sources">
-                {% if record.prospect_ids %}<span>Research</span>{% endif %}
-                {% if record.inquiry_ids %}<span>Website</span>{% endif %}
-              </div>
-            </td>
-
-            <td>
-              <div class="general-records-linked">
-                {% if record.prospect_ids %}<span><strong>{{ record.prospect_ids|length }}</strong> Prospect{{ '' if record.prospect_ids|length == 1 else 's' }}</span>{% endif %}
-                {% if record.inquiry_ids %}<span><strong>{{ record.inquiry_ids|length }}</strong> Inquir{{ 'y' if record.inquiry_ids|length == 1 else 'ies' }}</span>{% endif %}
-                {% if record.deal_ids %}<span><strong>{{ record.deal_ids|length }}</strong> Deal{{ '' if record.deal_ids|length == 1 else 's' }}</span>{% endif %}
-              </div>
+            <td class="general-records-place">
+              <strong>{{ record.lifecycle_group_label }}</strong>
+              <span>{{ workflow_status_labels.get(record.current_status, record.current_status) }}</span>
             </td>
 
             <td class="general-records-activity">
               <strong>{{ record.last_updated_at|dateonly }}</strong>
               <span>{{ record.last_updated_at|timeonly }}</span>
-              <small>First seen {{ record.first_seen_at|dateonly }}</small>
             </td>
 
             <td class="records-action-col">
@@ -171,13 +159,13 @@
       </table>
 
       <div class="general-records-empty" data-records-empty {% if records %}hidden{% endif %}>
-        <strong>No General Records yet.</strong>
-        <span>Prospects and Website Inquiries will appear here automatically and stay linked to their Deal history.</span>
+        <strong>No records yet.</strong>
+        <span>Client records will appear here automatically.</span>
       </div>
 
       <div class="general-records-empty" data-records-filter-empty hidden>
-        <strong>No records match your filters.</strong>
-        <span>Clear a filter or search for another client.</span>
+        <strong>No matching records.</strong>
+        <span>Try another search or clear your filters.</span>
       </div>
     </div>
 

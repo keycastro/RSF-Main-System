@@ -26,14 +26,30 @@ class GeneralRecordsTests(unittest.TestCase):
         for marker in (
             "General Records",
             "data-records-search",
-            "data-records-lifecycle-select",
-            "data-records-status-select",
-            "data-records-source-select",
+            "data-records-filter-toggle",
+            "data-records-filter-panel",
             "data-records-visible-count",
-            "data-records-manage-toggle",
+            "Where Now",
+            "Last Activity",
         ):
             self.assertIn(marker, template)
-        self.assertNotIn("records-status-filters", template)
+        self.assertNotIn("general-records-summary", template)
+        self.assertNotIn("<th>Source</th>", template)
+        self.assertNotIn("<th>Linked Records</th>", template)
+
+    def test_advanced_filters_and_management_are_secondary(self):
+        template = self.read("app/templates/records.html")
+        css = self.read("app/static/css/general_records.css")
+        js = self.read("app/static/js/app.js")
+        self.assertIn("data-records-filter-panel hidden", template)
+        self.assertIn("data-records-manage-toggle", template)
+        self.assertIn(".general-records-filter-panel[hidden]{display:none!important}", css)
+        self.assertIn("setFiltersOpen", js)
+        self.assertIn("activeFilterCount", js)
+
+    def test_empty_states_respect_hidden_attribute(self):
+        css = self.read("app/static/css/general_records.css")
+        self.assertIn(".general-records-empty[hidden]{display:none!important}", css)
 
     def test_destructive_controls_are_intentional_manage_mode(self):
         css = self.read("app/static/css/general_records.css")
@@ -59,7 +75,7 @@ class GeneralRecordsTests(unittest.TestCase):
         self.assertIn("main.prospects", error)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.210")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.212")
 
 
 if __name__ == "__main__":
