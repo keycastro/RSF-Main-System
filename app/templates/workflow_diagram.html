@@ -33,13 +33,12 @@
       <div
         class="workflow-diagram-board"
         data-workflow-board
-        style="--workflow-board-width:{{ workflow.board_width }}px;--workflow-board-height:{{ workflow.board_height }}px"
       >
         {% for section in workflow.sections %}
         <section
           class="workflow-diagram-section workflow-diagram-section--{{ section.tone }}"
+          data-workflow-section="{{ section.id }}"
           aria-label="{{ section.label }}"
-          style="left:{{ section.x }}px;top:{{ section.y }}px;width:{{ section.width }}px;height:{{ section.height }}px"
         >
           <div class="workflow-diagram-section-head">
             <strong>{{ section.label }}</strong>
@@ -62,7 +61,6 @@
           type="button"
           class="workflow-diagram-node workflow-diagram-node--{{ node.kind }}"
           data-workflow-node="{{ node.id }}"
-          style="left:{{ node.x }}px;top:{{ node.y }}px;width:{{ node.width }}px"
           aria-label="{{ node.label }}. Select for details."
         >
           <span class="workflow-diagram-node-eyebrow">{{ node.eyebrow }}</span>

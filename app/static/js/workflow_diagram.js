@@ -16,6 +16,35 @@
     return;
   }
 
+  const applyModelLayout = () => {
+    const boardWidth = Number(model.board_width || 1780);
+    const boardHeight = Number(model.board_height || 840);
+    board.style.width = `${boardWidth}px`;
+    board.style.height = `${boardHeight}px`;
+    svg.setAttribute('width', String(boardWidth));
+    svg.setAttribute('height', String(boardHeight));
+    svg.setAttribute('viewBox', `0 0 ${boardWidth} ${boardHeight}`);
+
+    (model.sections || []).forEach((section) => {
+      const element = board.querySelector(`[data-workflow-section="${CSS.escape(section.id)}"]`);
+      if (!element) return;
+      element.style.left = `${Number(section.x || 0)}px`;
+      element.style.top = `${Number(section.y || 0)}px`;
+      element.style.width = `${Number(section.width || 0)}px`;
+      element.style.height = `${Number(section.height || 0)}px`;
+    });
+
+    (model.nodes || []).forEach((item) => {
+      const element = board.querySelector(`[data-workflow-node="${CSS.escape(item.id)}"]`);
+      if (!element) return;
+      element.style.left = `${Number(item.x || 0)}px`;
+      element.style.top = `${Number(item.y || 0)}px`;
+      element.style.width = `${Number(item.width || 170)}px`;
+    });
+  };
+
+  applyModelLayout();
+
   const nodes = new Map(
     Array.from(board.querySelectorAll('[data-workflow-node]')).map((node) => [node.dataset.workflowNode, node])
   );

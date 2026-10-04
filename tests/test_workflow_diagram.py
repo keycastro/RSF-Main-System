@@ -86,6 +86,18 @@ class WorkflowDiagramTests(unittest.TestCase):
         self.assertIn("compact_sections", workflow)
         self.assertIn("compact_nodes", workflow)
 
+    def test_csp_safe_layout_does_not_depend_on_server_inline_styles(self):
+        template = self.read("app/templates/workflow_diagram.html")
+        js = self.read("app/static/js/workflow_diagram.js")
+        base = self.read("app/templates/base.html")
+        self.assertNotIn('style="left:', template)
+        self.assertNotIn('--workflow-board-width:', template)
+        self.assertIn("data-workflow-section", template)
+        self.assertIn("applyModelLayout", js)
+        self.assertIn("element.style.left", js)
+        self.assertIn("element.style.top", js)
+        self.assertIn("?v={{ app_version }}", base)
+
     def test_fit_uses_rendered_content_bounds_and_inspector_is_overlay(self):
         js = self.read("app/static/js/workflow_diagram.js")
         css = self.read("app/static/css/workflow_diagram.css")
@@ -99,7 +111,7 @@ class WorkflowDiagramTests(unittest.TestCase):
         self.assertIn("settings-experience--{{ active_section }}", settings)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.205")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.206")
 
 
 if __name__ == "__main__":

@@ -16,10 +16,10 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_ambient_gold.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace_video_background.css') }}">
   {% if request.endpoint in ['main.settings','main.account_security'] %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/settings_experience.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/settings_experience.css') }}?v={{ app_version }}">
   {% endif %}
   {% if request.endpoint == 'main.settings' and request.args.get('section','general') == 'workflow' %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/workflow_diagram.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/workflow_diagram.css') }}?v={{ app_version }}">
   {% endif %}
 </head>
 <body class="{% if request.endpoint in ['main.settings','main.account_security'] %}page-settings-dedicated{% endif %}{% if request.endpoint in ['main.messages_home','main.messages_thread'] %} page-messages{% endif %}"{% if g.user %} data-message-poll-url="{{ url_for('main.message_unread') }}" data-csrf="{{ csrf_token() }}"{% endif %}>
@@ -177,10 +177,10 @@
 {% endif %}
 <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
 {% if request.endpoint in ['main.settings','main.account_security'] %}
-<script src="{{ url_for('static', filename='js/settings_experience.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/settings_experience.js') }}?v={{ app_version }}" defer></script>
 {% endif %}
 {% if request.endpoint == 'main.settings' and request.args.get('section','general') == 'workflow' %}
-<script src="{{ url_for('static', filename='js/workflow_diagram.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/workflow_diagram.js') }}?v={{ app_version }}" defer></script>
 {% endif %}
 </body>
 </html>
