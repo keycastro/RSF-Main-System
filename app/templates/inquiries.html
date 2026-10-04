@@ -19,7 +19,7 @@
 
 <div class="website-inquiry-list" data-website-inquiry-list>
   {% for inquiry in website_inquiries %}
-  {% set is_active_deal_stage = inquiry.workflow_status in ['DEAL','DEMO','PROPOSAL','DECISION','WON','LOST'] %}
+  {% set is_active_deal_stage = inquiry.workflow_status in ['DEAL','DEMO','PROPOSAL','DECISION','WON','SUPPORT_MAINTENANCE','LOST'] %}
   {% set deal = inquiry_deals.get(inquiry.id) if inquiry_deals is defined else none %}
   {% set deal_dom_key = 'inquiry-' ~ inquiry.id ~ '-deal' %}
   {% set deal_form_id = 'inquiry-deal-form-' ~ inquiry.id %}

@@ -168,7 +168,7 @@
       {% endif %}
       <div class="deal-calendar-meet-field" data-card-layout-field="google_meet" data-deal-calendar-meet-field>
         <span>Google Meet</span>
-        {% if deal_workflow_status not in ['DEAL','DEMO','PROPOSAL','DECISION','WON','LOST'] %}
+        {% if deal_workflow_status not in ['DEAL','DEMO','PROPOSAL','DECISION','WON','SUPPORT_MAINTENANCE','LOST'] %}
           <strong data-deal-meet-status>Available when Deal</strong>
         {% elif deal['google_meet_url'] %}
           <a href="{{ deal['google_meet_url'] }}" target="_blank" rel="noopener noreferrer" data-deal-scheduled-meet>Join Meeting</a>

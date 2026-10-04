@@ -3249,6 +3249,7 @@ document.addEventListener('click', (event) => {
     ['PROPOSAL', 'Proposal'],
     ['DECISION', 'Decision'],
     ['WON', 'Won'],
+    ['SUPPORT_MAINTENANCE', 'In Support & Maintenance'],
     ['LOST', 'Lost']
   ];
   const prospectDealStartIndex = statusOptions.findIndex(([value]) => value === 'DEAL');
@@ -3749,18 +3750,7 @@ document.addEventListener('click', (event) => {
     const cards = Array.from(list.querySelectorAll('[data-deal-card]'));
     cards.forEach((card) => {
       const status = card.dataset.dealStatus || '';
-      const managementType = card.dataset.dealManagementType || 'UNDECIDED';
-      const inSupportMaintenance = status === 'WON' && managementType === 'RSF_MANAGED';
-
-      let visible = false;
-      if (activeDealFilter === 'SUPPORT_MAINTENANCE') {
-        visible = inSupportMaintenance;
-      } else if (activeDealFilter === 'WON') {
-        visible = status === 'WON' && !inSupportMaintenance;
-      } else {
-        visible = status === activeDealFilter;
-      }
-      card.hidden = !visible;
+      card.hidden = status !== activeDealFilter;
     });
     filterButtons.forEach((button) => {
       const active = button.dataset.dealFilter === activeDealFilter;
@@ -3781,6 +3771,31 @@ document.addEventListener('click', (event) => {
       });
     });
     applyDealFilter();
+  }
+
+  const openTargetDeal = () => {
+    if (!list || !window.location.hash) return;
+    let target = null;
+    try {
+      target = document.querySelector(window.location.hash);
+    } catch (_error) {
+      return;
+    }
+    if (!(target instanceof HTMLElement) || !target.matches('[data-deal-card]')) return;
+
+    const targetStatus = target.dataset.dealStatus || '';
+    if (filterButtons.some((button) => button.dataset.dealFilter === targetStatus)) {
+      activeDealFilter = targetStatus;
+      applyDealFilter();
+    }
+    window.requestAnimationFrame(() => {
+      target.scrollIntoView({block:'center', behavior:'auto'});
+    });
+  };
+
+  if (list && filterButtons.length) {
+    openTargetDeal();
+    window.addEventListener('hashchange', openTargetDeal);
   }
 
   page.addEventListener('click', (event) => {
@@ -4857,7 +4872,7 @@ document.addEventListener('click', (event) => {
     if (dealMeetAction) {
       const scheduledMeetUrl = trigger.dataset.googleMeetUrl || '';
       const cardStatus = notesSource.closest('[data-deal-card]')?.dataset.dealStatus || '';
-      const dealSide = ['DEAL', 'DEMO', 'PROPOSAL', 'DECISION', 'WON', 'LOST'].includes(cardStatus);
+      const dealSide = ['DEAL', 'DEMO', 'PROPOSAL', 'DECISION', 'WON', 'SUPPORT_MAINTENANCE', 'LOST'].includes(cardStatus);
       if (dealSide) {
         dealMeetAction.href = scheduledMeetUrl || 'https://meet.google.com/';
         dealMeetAction.removeAttribute('aria-disabled');
@@ -5389,7 +5404,7 @@ document.addEventListener('click', (event) => {
   const page = document.querySelector('[data-website-inbox-page]');
   if (!page) return;
 
-  const websiteDealStatuses = new Set(['DEAL', 'DEMO', 'PROPOSAL', 'DECISION', 'WON', 'LOST']);
+  const websiteDealStatuses = new Set(['DEAL', 'DEMO', 'PROPOSAL', 'DECISION', 'WON', 'SUPPORT_MAINTENANCE', 'LOST']);
   const websitePreDealStatuses = new Set(['NOT_CONTACTED', 'NO_ANSWER', 'REJECTED']);
   const websiteStatusLabels = {
     NOT_CONTACTED: 'Not Contacted',
