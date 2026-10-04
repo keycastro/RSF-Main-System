@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="workflow-diagram-page" data-workflow-diagram>
+  <header class="workflow-diagram-head">
+    <div class="workflow-diagram-title">
+      <span class="workflow-diagram-eyebrow">RSF SYSTEM MAP</span>
+      <h1>Workflow Diagram</h1>
+      <p>See how client data, Status changes, pages, communication tools, and database records connect across the RSF Private System.</p>
+    </div>
+    <div class="workflow-diagram-metrics" aria-label="Workflow summary">
+      <span><strong>{{ workflow.status_count }}</strong> lifecycle Statuses</span>
+      <span><strong>{{ workflow.pre_status_count }}</strong> pre-Deal</span>
+      <span><strong>{{ workflow.active_status_count }}</strong> Deal-side</span>
+    </div>
+  </header>
+
+  <div class="workflow-diagram-toolbar">
+    <div class="workflow-diagram-legend" aria-label="Diagram legend">
+      <span><i class="workflow-legend-dot workflow-legend-dot--primary"></i>Main lifecycle</span>
+      <span><i class="workflow-legend-dot workflow-legend-dot--sync"></i>Synchronization</span>
+      <span><i class="workflow-legend-dot workflow-legend-dot--condition"></i>Condition / optional</span>
+      <span><i class="workflow-legend-dot workflow-legend-dot--data"></i>Data relationship</span>
+    </div>
+    <div class="workflow-diagram-controls" aria-label="Workflow diagram controls">
+      <button type="button" data-workflow-fit>Fit</button>
+      <button type="button" data-workflow-zoom-out aria-label="Zoom out">−</button>
+      <output data-workflow-zoom>100%</output>
+      <button type="button" data-workflow-zoom-in aria-label="Zoom in">+</button>
+      <button type="button" data-workflow-reset>Reset</button>
+    </div>
+  </div>
+
+  <div class="workflow-diagram-layout">
+    <div class="workflow-diagram-viewport" data-workflow-viewport tabindex="0" aria-label="Interactive RSF workflow canvas. Drag empty space to pan and use the toolbar to zoom.">
+      <div
+        class="workflow-diagram-board"
+        data-workflow-board
+        style="--workflow-board-width:{{ workflow.board_width }}px;--workflow-board-height:{{ workflow.board_height }}px"
+      >
+        {% for section in workflow.sections %}
+        <section
+          class="workflow-diagram-section workflow-diagram-section--{{ section.tone }}"
+          aria-label="{{ section.label }}"
+          style="left:{{ section.x }}px;top:{{ section.y }}px;width:{{ section.width }}px;height:{{ section.height }}px"
+        >
+          <div class="workflow-diagram-section-head">
+            <strong>{{ section.label }}</strong>
+            <span>{{ section.subtitle }}</span>
+          </div>
+        </section>
+        {% endfor %}
+
+        <svg
+          class="workflow-diagram-lines"
+          data-workflow-svg
+          width="{{ workflow.board_width }}"
+          height="{{ workflow.board_height }}"
+          viewBox="0 0 {{ workflow.board_width }} {{ workflow.board_height }}"
+          aria-hidden="true"
+        ></svg>
+
+        {% for node in workflow.nodes %}
+        <button
+          type="button"
+          class="workflow-diagram-node workflow-diagram-node--{{ node.kind }}"
+          data-workflow-node="{{ node.id }}"
+          style="left:{{ node.x }}px;top:{{ node.y }}px;width:{{ node.width }}px"
+          aria-label="{{ node.label }}. Select for details."
+        >
+          <span class="workflow-diagram-node-eyebrow">{{ node.eyebrow }}</span>
+          <strong>{{ node.label }}</strong>
+          {% if node.badge %}<span class="workflow-diagram-node-badge">{{ node.badge }}</span>{% endif %}
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <aside class="workflow-diagram-inspector" data-workflow-inspector aria-live="polite">
+      <div class="workflow-diagram-inspector-empty" data-workflow-inspector-empty>
+        <span class="workflow-diagram-inspector-kicker">NODE DETAILS</span>
+        <h2>Select any node</h2>
+        <p>Click a box in the diagram to see what it does, what it connects to, and the internal RSF behavior behind it.</p>
+      </div>
+      <div class="workflow-diagram-inspector-content" data-workflow-inspector-content hidden>
+        <span class="workflow-diagram-inspector-kicker" data-workflow-detail-eyebrow></span>
+        <h2 data-workflow-detail-title></h2>
+        <p data-workflow-detail-summary></p>
+        <ul data-workflow-detail-list></ul>
+        <a class="button secondary workflow-diagram-open-page" href="#" data-workflow-detail-link hidden>Open connected page</a>
+      </div>
+    </aside>
+  </div>
+
+  <div class="workflow-diagram-notes" aria-label="How to read this diagram">
+    <strong>How to read it</strong>
+    {% for note in workflow.notes %}<p>{{ note }}</p>{% endfor %}
+  </div>
+
+  <script type="application/json" data-workflow-model>{{ workflow|tojson }}</script>
+</section>
+{% endblock %}

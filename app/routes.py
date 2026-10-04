@@ -63,6 +63,7 @@ from .services import (
     validate_sale_amounts,
     utcnow_iso,
 )
+from .workflow_diagram import build_workflow_diagram
 
 bp = Blueprint("main", __name__)
 
@@ -1370,6 +1371,20 @@ def logout():
 @login_required
 def workspace_root():
     return redirect(url_for("main.prospects"))
+
+
+@bp.get("/workflow-diagram")
+@admin_required
+def workflow_diagram():
+    workflow = build_workflow_diagram(
+        PROSPECT_STATUS_LABELS,
+        DEAL_PRE_STATUS_STATUSES,
+        DEAL_ACTIVE_STATUSES,
+    )
+    for node in workflow["nodes"]:
+        endpoint = node.pop("endpoint", "")
+        node["href"] = url_for(endpoint) if endpoint else ""
+    return render_template("workflow_diagram.html", title="Workflow Diagram", workflow=workflow)
 
 
 @bp.post("/card-layout/<page_name>")
