@@ -74,8 +74,16 @@ class GeneralRecordsTests(unittest.TestCase):
         self.assertNotIn("main.dashboard", error)
         self.assertIn("main.prospects", error)
 
+    def test_general_record_detail_hides_shared_topbar(self):
+        base = self.read("app/templates/base.html")
+        condition_line = next(
+            line for line in base.splitlines()
+            if "request.endpoint not in" in line and "main.records" in line
+        )
+        self.assertIn("'main.record_detail'", condition_line)
+
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.212")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.213")
 
 
 if __name__ == "__main__":
