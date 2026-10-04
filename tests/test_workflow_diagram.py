@@ -49,6 +49,10 @@ class WorkflowDiagramTests(unittest.TestCase):
         self.assertIn("dialog[open]", js)
         self.assertIn("data-settings-entry", app_js)
 
+    def test_account_password_success_returns_to_dedicated_settings_route(self):
+        routes = self.read("app/routes.py")
+        self.assertIn('return redirect(url_for("main.account_security"))', routes)
+
     def test_diagram_contains_required_architecture_areas(self):
         workflow = self.read("app/workflow_diagram.py")
         for label in (

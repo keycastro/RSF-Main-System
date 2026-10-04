@@ -3866,14 +3866,8 @@ def partner_reset_password(partner_id: int):
     vault_store_password(db, partner["user_id"], password)
     log_activity("PARTNER_PASSWORD_RESET", "partner", partner_id, "Partner password changed from Account & Security.")
     db.commit()
-    founder, partners = _account_security_context(db)
     flash(f"Password changed for {partner['full_name']}.", "success")
-    return render_template(
-        "account_security.html",
-        title="Account & Security",
-        founder=founder,
-        partners=partners,
-    )
+    return redirect(url_for("main.account_security"))
 
 
 @bp.post("/admin/partners/<int:partner_id>/delete")
@@ -4730,14 +4724,8 @@ def founder_password_change():
                 first_access.unlink()
         except OSError:
             pass
-    founder, partners = _account_security_context(db)
     flash("Founder password changed successfully. Other Founder sessions were signed out.", "success")
-    return render_template(
-        "account_security.html",
-        title="Account & Security",
-        founder=founder,
-        partners=partners,
-    )
+    return redirect(url_for("main.account_security"))
 
 
 @bp.route("/admin/settings", methods=["GET", "POST"])

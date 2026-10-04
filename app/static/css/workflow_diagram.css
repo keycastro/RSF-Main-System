@@ -90,3 +90,64 @@
 @media(max-width:1180px){.workflow-diagram-layout{grid-template-columns:1fr}.workflow-diagram-inspector{height:auto;min-height:180px;max-height:340px}}
 @media(max-width:760px){.workflow-diagram-head{align-items:flex-start;flex-direction:column}.workflow-diagram-metrics{justify-content:flex-start}.workflow-diagram-toolbar{align-items:flex-start;flex-direction:column}.workflow-diagram-controls{width:100%;justify-content:flex-end}.workflow-diagram-viewport{height:68vh;min-height:520px}}
 @media(prefers-reduced-motion:reduce){.workflow-diagram-node{transition:none}}
+
+
+/* v1.18.204 — approved dark Settings presentation */
+body.page-settings-dedicated .workflow-diagram-head{
+  border-color:rgba(201,169,94,.22);
+  background:linear-gradient(180deg,rgba(24,19,13,.72),rgba(11,10,8,.58));
+  box-shadow:none;
+}
+body.page-settings-dedicated .workflow-diagram-eyebrow{color:#c9a95e}
+body.page-settings-dedicated .workflow-diagram-head h1{color:#fff8ef}
+body.page-settings-dedicated .workflow-diagram-head p{color:#aaa092}
+body.page-settings-dedicated .workflow-diagram-metrics span{
+  border-color:rgba(201,169,94,.25);
+  background:rgba(201,169,94,.055);
+  color:#b9ae9f;
+}
+body.page-settings-dedicated .workflow-diagram-metrics strong{color:#f1ddad}
+body.page-settings-dedicated .workflow-diagram-toolbar{
+  border-color:rgba(201,169,94,.22);
+  background:rgba(10,9,7,.72);
+}
+body.page-settings-dedicated .workflow-diagram-inspector{
+  border-color:rgba(201,169,94,.24);
+  background:linear-gradient(180deg,rgba(22,18,13,.96),rgba(10,9,7,.97));
+  box-shadow:none;
+}
+body.page-settings-dedicated .workflow-diagram-inspector h2{color:#fff8ef}
+body.page-settings-dedicated .workflow-diagram-inspector p{color:#aaa092}
+body.page-settings-dedicated .workflow-diagram-inspector li{
+  border-color:rgba(201,169,94,.17);
+  background:rgba(255,248,238,.035);
+  color:#d7cdbf;
+}
+body.page-settings-dedicated .workflow-diagram-inspector-kicker{color:#c9a95e}
+body.page-settings-dedicated .workflow-diagram-notes{
+  border-color:rgba(201,169,94,.23);
+  background:linear-gradient(90deg,rgba(87,58,25,.24),rgba(18,14,10,.72));
+  color:#b8ad9e;
+}
+body.page-settings-dedicated .workflow-diagram-notes strong{color:#e8c86d}
+body.page-settings-dedicated .workflow-diagram-node{
+  border-color:rgba(201,169,94,.38);
+  background:linear-gradient(180deg,#1b1814,#11100e);
+  color:#f1e8dc;
+  box-shadow:0 8px 22px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.035);
+}
+body.page-settings-dedicated .workflow-diagram-node>strong{color:#fff8ef}
+body.page-settings-dedicated .workflow-diagram-node-eyebrow{color:#bba270}
+body.page-settings-dedicated .workflow-diagram-node-badge{
+  background:rgba(201,169,94,.07);
+  color:#d3bd89;
+}
+body.page-settings-dedicated .workflow-diagram-node--status-active{border-color:#527e9f;background:linear-gradient(180deg,#142337,#0e1722)}
+body.page-settings-dedicated .workflow-diagram-node--status-pre{border-color:#9c7742;background:linear-gradient(180deg,#2a2115,#17120d)}
+body.page-settings-dedicated .workflow-diagram-node--status-won{border-color:#3e9a74;background:linear-gradient(180deg,#123428,#0d211b)}
+body.page-settings-dedicated .workflow-diagram-node--status-lost{border-color:#a74848;background:linear-gradient(180deg,#351717,#1e1010)}
+body.page-settings-dedicated .workflow-diagram-node--status-support{border-color:#7754a8;background:linear-gradient(180deg,#261b36,#171020)}
+body.page-settings-dedicated .workflow-diagram-node--condition{border-color:#a17a45;background:linear-gradient(180deg,#2b2115,#17120d)}
+body.page-settings-dedicated .workflow-diagram-node--integration{border-color:#4f7f80;background:linear-gradient(180deg,#162627,#101818)}
+body.page-settings-dedicated .workflow-diagram-node--hub{border-color:#b8903c;background:linear-gradient(180deg,#302515,#19130d)}
+body.page-settings-dedicated .workflow-diagram-node--db-table{border-color:#666;background:linear-gradient(180deg,#1c1c1c,#111)}
