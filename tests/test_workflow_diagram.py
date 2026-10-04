@@ -134,8 +134,21 @@ class WorkflowDiagramTests(unittest.TestCase):
         self.assertIn(".workflow-diagram-page.is-expanded", css)
         self.assertIn("position:fixed", css)
 
+    def test_workflow_f_shortcut_toggles_focus_mode_safely(self):
+        template = self.read("app/templates/workflow_diagram.html")
+        js = self.read("app/static/js/workflow_diagram.js")
+        self.assertIn('aria-keyshortcuts="F"', template)
+        self.assertIn("String(event.key).toLowerCase() !== 'f'", js)
+        self.assertIn("event.repeat", js)
+        self.assertIn("event.ctrlKey", js)
+        self.assertIn("event.altKey", js)
+        self.assertIn("event.metaKey", js)
+        self.assertIn("isEditingControl()", js)
+        self.assertIn("hasOpenDialog()", js)
+        self.assertIn("setExpanded(!expanded)", js)
+
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.208")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.209")
 
 
 if __name__ == "__main__":

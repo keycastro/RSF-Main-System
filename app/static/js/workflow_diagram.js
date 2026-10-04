@@ -1,4 +1,4 @@
-/* RSF Workflow Diagram v1.18.208 */
+/* RSF Workflow Diagram v1.18.209 */
 (() => {
   const page = document.querySelector('[data-workflow-diagram]');
   if (!page) return;
@@ -284,9 +284,9 @@
       expandButton.setAttribute('aria-pressed', expanded ? 'true' : 'false');
       expandButton.setAttribute(
         'aria-label',
-        expanded ? 'Exit expanded Workflow Diagram' : 'Expand Workflow Diagram'
+        expanded ? 'Exit expanded Workflow Diagram (F)' : 'Expand Workflow Diagram (F)'
       );
-      expandButton.title = expanded ? 'Exit expanded view (Esc)' : 'Expand Workflow Diagram';
+      expandButton.title = expanded ? 'Exit expanded view (F or Esc)' : 'Expand Workflow Diagram (F)';
     }
     if (expandLabel) expandLabel.textContent = expanded ? 'Exit' : 'Expand';
 
@@ -295,6 +295,24 @@
   };
 
   expandButton?.addEventListener('click', () => setExpanded(!expanded));
+
+  // Plain F toggles Workflow Diagram focus mode only on this page.
+  // Modified shortcuts (for example Ctrl+F) are left to the browser/system.
+  document.addEventListener('keydown', (event) => {
+    if (
+      event.defaultPrevented ||
+      event.repeat ||
+      event.ctrlKey ||
+      event.altKey ||
+      event.metaKey ||
+      String(event.key).toLowerCase() !== 'f'
+    ) return;
+    if (isEditingControl() || hasOpenDialog()) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    setExpanded(!expanded);
+  }, true);
 
   // Capture phase is intentional: while the Workflow Diagram is expanded,
   // Esc exits focus mode before the Settings-level Esc handler can leave Settings.
