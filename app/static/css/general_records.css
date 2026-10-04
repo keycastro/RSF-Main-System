@@ -196,3 +196,105 @@ body:not(.page-settings-dedicated) .brand.brand-active{
   .general-records-clear,.general-records-manage{grid-row:auto}
   .general-records-total{display:none}
 }
+
+
+/* =========================================================
+   RSF v1.18.214 — General Record readability hardening
+   Prevent legacy light-theme text tokens from becoming
+   dark-on-dark after the Record Detail surface is darkened.
+   ========================================================= */
+
+/* Client identity footer: remove the legacy light strip and keep metadata
+   readable inside the dark General Record card. */
+.record-detail-page .record-client-primary,
+.record-detail-page .record-client-grid>div,
+.record-detail-page .record-client-meta{
+  border-color:rgba(255,255,255,.075)!important;
+}
+.record-detail-page .record-client-meta{
+  background:rgba(255,255,255,.025)!important;
+  color:#b8ad9e!important;
+}
+.record-detail-page .record-client-meta strong{
+  color:#f4eadc!important;
+}
+
+/* Origin summary: these three text levels previously inherited
+   --ux-section-ink / --ux-section-muted from the old light theme. */
+.record-detail-page .record-origin-item small{
+  color:#b8ad9e!important;
+}
+.record-detail-page .record-origin-item strong{
+  color:#f4eadc!important;
+}
+.record-detail-page .record-origin-item>div>span{
+  color:#a99f92!important;
+}
+.record-detail-page .record-origin-merged span{
+  color:#d8c06f!important;
+}
+.record-detail-page .record-origin-merged strong{
+  color:#f4eadc!important;
+}
+
+/* Original Source Details: keep the whole source grouping inside the same
+   dark RSF visual language instead of switching back to old white cards. */
+.record-detail-page .record-source-group{
+  border-color:rgba(212,180,95,.16)!important;
+  background:rgba(255,255,255,.018)!important;
+}
+.record-detail-page .record-source-group-head h3{
+  color:#eee4d6!important;
+}
+.record-detail-page .record-source-group-head p{
+  color:#a99f92!important;
+}
+.record-detail-page .record-source-group-outbound .record-source-direction{
+  color:#9ed9c8!important;
+}
+.record-detail-page .record-source-group-inbound .record-source-direction{
+  color:#9fc5ee!important;
+}
+
+/* Source/Deal type pills were legacy light-mode chips. Re-skin them for the
+   dark source/deal cards while preserving their semantic distinctions. */
+.record-detail-page .record-source-type{
+  background:rgba(255,255,255,.035)!important;
+  border-color:rgba(255,255,255,.10)!important;
+}
+.record-detail-page .record-source-card-outbound .record-source-type{
+  color:#9ed9c8!important;
+  border-color:rgba(158,217,200,.25)!important;
+  background:rgba(158,217,200,.07)!important;
+}
+.record-detail-page .record-source-card-inbound .record-source-type{
+  color:#9fc5ee!important;
+  border-color:rgba(159,197,238,.25)!important;
+  background:rgba(159,197,238,.07)!important;
+}
+.record-detail-page .record-deal-card-v2 .record-source-type{
+  color:#e0c27b!important;
+  border-color:rgba(224,194,123,.25)!important;
+  background:rgba(224,194,123,.07)!important;
+}
+.record-detail-page .record-source-card>header,
+.record-detail-page .record-deal-card-v2>header{
+  border-bottom-color:rgba(255,255,255,.075)!important;
+}
+
+/* Secondary helper text inside dark cards must never fall back to the old
+   #687972 light-theme muted token. */
+.record-detail-page .record-documents>strong,
+.record-detail-page .record-documents>span,
+.record-detail-page .record-documents-label strong,
+.record-detail-page .record-document-links>span,
+.record-detail-page .record-no-deal span{
+  color:#b8ad9e!important;
+}
+.record-detail-page .record-documents{
+  border-top-color:rgba(255,255,255,.075)!important;
+}
+.record-detail-page .record-documents-label span{
+  background:rgba(224,194,123,.08)!important;
+  color:#e0c27b!important;
+}

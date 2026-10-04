@@ -82,8 +82,36 @@ class GeneralRecordsTests(unittest.TestCase):
         )
         self.assertIn("'main.record_detail'", condition_line)
 
+    def test_record_detail_dark_surface_has_explicit_readable_text(self):
+        css = self.read("app/static/css/general_records.css")
+        required = (
+            ".record-detail-page .record-origin-item small",
+            ".record-detail-page .record-origin-item strong",
+            ".record-detail-page .record-origin-item>div>span",
+            ".record-detail-page .record-origin-merged span",
+            ".record-detail-page .record-origin-merged strong",
+            ".record-detail-page .record-client-meta strong",
+            ".record-detail-page .record-no-deal span",
+            ".record-detail-page .record-document-links>span",
+        )
+        for selector in required:
+            self.assertIn(selector, css)
+
+    def test_record_detail_source_groups_use_dark_theme_consistently(self):
+        css = self.read("app/static/css/general_records.css")
+        self.assertIn(".record-detail-page .record-source-group{", css)
+        self.assertIn("background:rgba(255,255,255,.018)!important", css)
+        self.assertIn(".record-detail-page .record-source-card-outbound .record-source-type", css)
+        self.assertIn(".record-detail-page .record-source-card-inbound .record-source-type", css)
+        self.assertIn(".record-detail-page .record-deal-card-v2 .record-source-type", css)
+
+    def test_record_detail_readability_colors_are_high_contrast_light_tokens(self):
+        css = self.read("app/static/css/general_records.css")
+        for color in ("#f4eadc", "#b8ad9e", "#a99f92", "#9ed9c8", "#9fc5ee", "#e0c27b"):
+            self.assertIn(color, css)
+
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.213")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.214")
 
 
 if __name__ == "__main__":
