@@ -115,6 +115,13 @@ class SupportMaintenanceTests(unittest.TestCase):
         self.assertIn("support-maintenance-other-fields", template)
         self.assertIn('class="deal-card-footer"', template)
 
+    def test_sidebar_uses_managed_clients_section_label(self):
+        base = self.read("app/templates/base.html")
+        self.assertIn('<div class="nav-section-label">MANAGED CLIENTS</div>', base)
+        self.assertNotIn('<div class="nav-section-label">CLIENT SERVICES</div>', base)
+        self.assertIn("url_for('main.support_maintenance')", base)
+        self.assertIn("Support &amp; Maintenance", base)
+
     def test_support_autosaves_without_manual_save_button(self):
         template = self.read("app/templates/support_maintenance.html")
         js = self.read("app/static/js/app.js")
@@ -159,7 +166,7 @@ class SupportMaintenanceTests(unittest.TestCase):
         self.assertIn("saveSupportFormInBackground", js)
         self.assertIn("event.ctrlKey", js)
         self.assertIn("applyAll({animate: true", js)
-        self.assertIn("layout_json: JSON.stringify(state)", js)
+        self.assertIn("layout_json: payloadJson", js)
 
 
 if __name__ == "__main__":

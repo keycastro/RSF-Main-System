@@ -72,7 +72,7 @@
       <div class="nav-section-label">ACTIVE PIPELINE</div>
       <a class="{{ 'active' if deals_active else '' }}" {% if deals_active %}aria-current="page"{% endif %} href="{{ url_for('main.deals') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("sales") }}</span><span class="nav-text">Deal Stages</span></a>
 
-      <div class="nav-section-label">CLIENT SERVICES</div>
+      <div class="nav-section-label">MANAGED CLIENTS</div>
       <a class="{{ 'active' if support_active else '' }}" {% if support_active %}aria-current="page"{% endif %} href="{{ url_for('main.support_maintenance') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("resources") }}</span><span class="nav-text">Support &amp; Maintenance</span></a>
     </nav>
 
