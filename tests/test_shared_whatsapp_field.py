@@ -27,7 +27,7 @@ class SharedWhatsAppFieldTests(unittest.TestCase):
 
     def test_schema_migration_adds_whatsapp_once(self):
         db = self.read("app/db.py")
-        self.assertIn("SCHEMA_VERSION = 41", db)
+        self.assertIn("SCHEMA_VERSION = 42", db)
         self.assertIn('if "whatsapp_number" not in deal_columns:', db)
         self.assertIn('ALTER TABLE deals ADD COLUMN whatsapp_number TEXT NOT NULL DEFAULT', db)
         self.assertIn('(37, "rsf-v1.18.175-shared-whatsapp-number")', db)

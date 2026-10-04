@@ -8,24 +8,39 @@ class SupportMaintenanceTests(unittest.TestCase):
     def read(self, path):
         return (ROOT / path).read_text(encoding="utf-8")
 
-    def test_deal_filter_matches_support_eligibility(self):
+    def test_deal_filter_matches_real_support_lifecycle_status(self):
         deals = self.read("app/templates/deals.html")
         routes = self.read("app/routes.py")
         js = self.read("app/static/js/app.js")
         self.assertIn('data-deal-filter="SUPPORT_MAINTENANCE"', deals)
-        self.assertIn("d.management_type='RSF_MANAGED'", routes)
-        self.assertIn("p.status='WON'", routes)
-        self.assertIn("i.workflow_status='WON'", routes)
-        self.assertIn("status === 'WON' && managementType === 'RSF_MANAGED'", js)
+        self.assertIn("p.status='SUPPORT_MAINTENANCE'", routes)
+        self.assertIn("i.workflow_status='SUPPORT_MAINTENANCE'", routes)
+        self.assertIn("card.hidden = status !== activeDealFilter", js)
+        self.assertNotIn("status === 'WON' && managementType === 'RSF_MANAGED'", js)
 
     def test_connected_lifecycle_remains_same_deal_record(self):
         routes = self.read("app/routes.py")
         schema = self.read("app/schema.sql")
         self.assertIn('@bp.get("/support-maintenance")', routes)
-        self.assertIn("d.management_type='RSF_MANAGED'", routes)
-        self.assertIn("p.status='WON'", routes)
-        self.assertIn("i.workflow_status='WON'", routes)
+        self.assertIn("p.status='SUPPORT_MAINTENANCE'", routes)
+        self.assertIn("i.workflow_status='SUPPORT_MAINTENANCE'", routes)
         self.assertNotIn("CREATE TABLE IF NOT EXISTS support_maintenance", schema)
+
+    def test_v42_preserves_existing_managed_won_clients_as_new_status(self):
+        db = self.read("app/db.py")
+        schema = self.read("app/schema.sql")
+        self.assertIn("SCHEMA_VERSION = 42", db)
+        self.assertIn("rsf-v1.18.202-support-maintenance-workflow-status", db)
+        self.assertIn("SET status='SUPPORT_MAINTENANCE',management_type='RSF_MANAGED'", db)
+        self.assertIn("SET status='SUPPORT_MAINTENANCE'", db)
+        self.assertIn("SET workflow_status='SUPPORT_MAINTENANCE'", db)
+        self.assertIn("'WON','SUPPORT_MAINTENANCE','LOST'", schema)
+
+    def test_support_status_forces_rsf_managed_compatibility(self):
+        routes = self.read("app/routes.py")
+        self.assertIn('if status == "SUPPORT_MAINTENANCE":', routes)
+        self.assertIn('management_type = "RSF_MANAGED"', routes)
+        self.assertIn("UPDATE deals SET management_type='RSF_MANAGED'", routes)
 
     def test_only_approved_support_fields_are_rendered(self):
         template = self.read("app/templates/support_maintenance.html")
@@ -82,7 +97,7 @@ class SupportMaintenanceTests(unittest.TestCase):
         self.assertIn("{{ deal['agreement_notes'] }}", template)
         self.assertIn('"management_notes": fld("management_notes", 3000)', routes)
         self.assertIn("client_request=?,agreement_notes=?,updated_at=?", routes)
-        self.assertIn("SCHEMA_VERSION = 41", db)
+        self.assertIn("SCHEMA_VERSION = 42", db)
 
     def test_support_update_only_writes_approved_support_fields(self):
         routes = self.read("app/routes.py")

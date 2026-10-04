@@ -122,17 +122,31 @@ class MasterLifecycleCardTests(unittest.TestCase):
         self.assertNotIn("data-website-inquiry-filter", inquiries)
         self.assertNotIn("data-support-maintenance-filter", support)
 
-    def test_deals_page_separates_won_from_support_maintenance_filter(self):
+    def test_support_maintenance_is_real_shared_status_after_won(self):
         deals = self.read("app/templates/deals.html")
+        routes = self.read("app/routes.py")
         js = self.read("app/static/js/app.js")
-        self.assertIn('data-deal-filter="SUPPORT_MAINTENANCE"', deals)
-        self.assertIn('>In Support &amp; Maintenance</button>', deals)
-        self.assertIn('data-deal-management-type="{{ deal[\'management_type\'] or \'UNDECIDED\' }}"', deals)
-        self.assertIn("activeDealFilter === 'SUPPORT_MAINTENANCE'", js)
-        self.assertIn("status === 'WON' && managementType === 'RSF_MANAGED'", js)
-        self.assertIn("activeDealFilter === 'WON'", js)
-        self.assertIn("status === 'WON' && !inSupportMaintenance", js)
-        self.assertIn("card.dataset.dealManagementType = data.management_type", js)
+        self.assertIn('"WON": "Won",\n    "SUPPORT_MAINTENANCE": "In Support & Maintenance",\n    "LOST": "Lost"', routes)
+        won_at = deals.index('data-deal-filter="WON"')
+        support_at = deals.index('data-deal-filter="SUPPORT_MAINTENANCE"')
+        lost_at = deals.index('data-deal-filter="LOST"')
+        self.assertLess(won_at, support_at)
+        self.assertLess(support_at, lost_at)
+        self.assertIn("card.hidden = status !== activeDealFilter", js)
+        self.assertNotIn("status === 'WON' && managementType === 'RSF_MANAGED'", js)
+
+    def test_view_deal_hash_selects_exact_stage_and_scrolls_to_exact_card(self):
+        js = self.read("app/static/js/app.js")
+        prospect = self.read("app/templates/_prospect_row.html")
+        inquiry = self.read("app/templates/inquiries.html")
+        self.assertIn('href="{{ url_for(\'main.deals\') }}#deal-{{ linked_deal_id }}">View Deal</a>', prospect)
+        self.assertIn("action.dataset.dealsUrl || '/app/deals'", js)
+        self.assertIn("const openTargetDeal = () =>", js)
+        self.assertIn("target.matches('[data-deal-card]')", js)
+        self.assertIn("activeDealFilter = targetStatus", js)
+        self.assertIn("target.scrollIntoView({block:'center', behavior:'auto'})", js)
+        self.assertIn("window.addEventListener('hashchange', openTargetDeal)", js)
+        self.assertIn("View Deal", inquiry)
 
     def test_deals_page_keeps_deal_information_before_source_details(self):
         template = self.read("app/templates/deals.html")
@@ -154,7 +168,7 @@ class MasterLifecycleCardTests(unittest.TestCase):
         db = self.read("app/db.py")
         deals = self.read("app/templates/deals.html")
         self.assertIn("became_deal_at TEXT NOT NULL DEFAULT ''", schema)
-        self.assertIn("SCHEMA_VERSION = 41", db)
+        self.assertIn("SCHEMA_VERSION = 42", db)
         self.assertIn("rsf-v1.18.131-master-lifecycle-cards", db)
         self.assertIn("deal['became_deal_at']", deals)
 
