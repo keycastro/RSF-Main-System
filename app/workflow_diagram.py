@@ -20,8 +20,8 @@ def build_workflow_diagram(
         {"id": "active-pipeline", "label": "Active Deal Pipeline", "subtitle": "Deal-side lifecycle statuses", "x": 1180, "y": 55, "width": 400, "height": 690, "tone": "pipeline"},
         {"id": "outcomes", "label": "Won / Lost", "subtitle": "Commercial lifecycle outcomes", "x": 1610, "y": 55, "width": 300, "height": 690, "tone": "outcome"},
         {"id": "managed", "label": "Support & Maintenance", "subtitle": "Managed-client lifecycle", "x": 1940, "y": 55, "width": 360, "height": 690, "tone": "managed"},
-        {"id": "actions", "label": "Communication / Actions", "subtitle": "Connected tools around the same client record", "x": 1180, "y": 775, "width": 1120, "height": 390, "tone": "action"},
-        {"id": "data", "label": "Database Relationships", "subtitle": "Canonical tables and linked history", "x": 40, "y": 1195, "width": 2260, "height": 390, "tone": "data"},
+        {"id": "actions", "label": "Communication / Actions", "subtitle": "Connected tools around the same client record", "x": 1180, "y": 775, "width": 1320, "height": 390, "tone": "action"},
+        {"id": "data", "label": "Database Relationships", "subtitle": "Canonical tables and linked history", "x": 40, "y": 1195, "width": 2460, "height": 390, "tone": "data"},
     ]
 
     nodes: list[dict] = []
@@ -511,6 +511,8 @@ def build_workflow_diagram(
 
     if first_pipeline:
         add_edge(first_pipeline, "client-actions", label="same client context", style="secondary", source_anchor="bottom", target_anchor="top")
+    add_edge("prospects-page", "client-actions", label="pre-Deal actions", style="action", source_anchor="bottom", target_anchor="left")
+    add_edge("website-inbox", "client-actions", label="inbound actions", style="action", source_anchor="bottom", target_anchor="left")
     for target in ("notes", "email", "manual-call", "whatsapp", "google-meet", "documents", "activity-log"):
         add_edge("client-actions", target, style="action")
     add_edge("client-actions", "shared-fields", style="sync")
@@ -526,7 +528,7 @@ def build_workflow_diagram(
     add_edge("db-deals", "db-activity", label="entity history", style="data")
 
     return {
-        "board_width": 2340,
+        "board_width": 2540,
         "board_height": 1625,
         "sections": sections,
         "nodes": nodes,
