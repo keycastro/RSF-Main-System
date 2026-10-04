@@ -80,8 +80,10 @@ class MasterLifecycleCardTests(unittest.TestCase):
 
         self.assertIn('class="prospect-status-filters"', prospects)
         self.assertIn('class="prospect-status-filters"', deals)
+        self.assertNotIn('data-prospect-filter="ALL"', prospects)
+        self.assertNotIn('>All</button>', prospects)
+        self.assertIn('data-prospect-filter="NOT_CONTACTED" aria-pressed="true"', prospects)
         for code, label in (
-            ("ALL", "All"),
             ("NOT_CONTACTED", "Not Contacted"),
             ("NO_ANSWER", "No Answer"),
             ("REJECTED", "Rejected"),
@@ -101,6 +103,24 @@ class MasterLifecycleCardTests(unittest.TestCase):
         self.assertIn("deal['prospect_id']", deals)
         self.assertIn("Became Deal:", deals)
         self.assertIn(">LINKED IN WEBSITE INBOX</a>", deals)
+
+    def test_status_filter_pages_do_not_show_all_filter(self):
+        prospects = self.read("app/templates/prospects.html")
+        deals = self.read("app/templates/deals.html")
+        inquiries = self.read("app/templates/inquiries.html")
+        support = self.read("app/templates/support_maintenance.html")
+        js = self.read("app/static/js/app.js")
+
+        self.assertNotIn('data-prospect-filter="ALL"', prospects)
+        self.assertNotIn('data-deal-filter="ALL"', deals)
+        self.assertNotIn('>All</button>', prospects)
+        self.assertNotIn('>All</button>', deals)
+        self.assertIn('data-prospect-filter="NOT_CONTACTED" aria-pressed="true"', prospects)
+        self.assertIn('data-deal-filter="DEAL" aria-pressed="true"', deals)
+        self.assertIn("let activeProspectFilter = 'NOT_CONTACTED'", js)
+        self.assertIn("let activeDealFilter = 'DEAL'", js)
+        self.assertNotIn("data-website-inquiry-filter", inquiries)
+        self.assertNotIn("data-support-maintenance-filter", support)
 
     def test_deals_page_separates_won_from_support_maintenance_filter(self):
         deals = self.read("app/templates/deals.html")

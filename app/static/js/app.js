@@ -3258,7 +3258,7 @@ document.addEventListener('click', (event) => {
 
   const prospectFilterButtons = Array.from(page.querySelectorAll('[data-prospect-filter]'));
   const prospectFilterEmpty = page.querySelector('[data-prospect-filter-empty]');
-  let activeProspectFilter = 'ALL';
+  let activeProspectFilter = 'NOT_CONTACTED';
 
   const applyProspectFilter = () => {
     if (!list || !prospectFilterButtons.length) return;
@@ -3267,7 +3267,7 @@ document.addEventListener('click', (event) => {
       const exactStatusMatch = card.dataset.prospectStatus === activeProspectFilter;
       const dealStageMatch = activeProspectFilter === 'DEAL_STAGES'
         && card.dataset.prospectDealStage === '1';
-      card.hidden = activeProspectFilter !== 'ALL' && !exactStatusMatch && !dealStageMatch;
+      card.hidden = !exactStatusMatch && !dealStageMatch;
     });
 
     prospectFilterButtons.forEach((button) => {
@@ -3278,14 +3278,14 @@ document.addEventListener('click', (event) => {
 
     if (prospectFilterEmpty) {
       const hasVisibleCards = cards.some((card) => !card.hidden);
-      prospectFilterEmpty.hidden = cards.length === 0 || activeProspectFilter === 'ALL' || hasVisibleCards;
+      prospectFilterEmpty.hidden = cards.length === 0 || hasVisibleCards;
     }
   };
 
   if (prospectFilterButtons.length && list) {
     prospectFilterButtons.forEach((button) => {
       button.addEventListener('click', () => {
-        activeProspectFilter = button.dataset.prospectFilter || 'ALL';
+        activeProspectFilter = button.dataset.prospectFilter || 'NOT_CONTACTED';
         applyProspectFilter();
       });
     });
@@ -3742,7 +3742,7 @@ document.addEventListener('click', (event) => {
   const list = page.querySelector('.deals-list');
   const filterButtons = Array.from(page.querySelectorAll('[data-deal-filter]'));
   const filterEmpty = page.querySelector('[data-deal-filter-empty]');
-  let activeDealFilter = 'ALL';
+  let activeDealFilter = 'DEAL';
 
   const applyDealFilter = () => {
     if (!list || !filterButtons.length) return;
@@ -3752,12 +3752,12 @@ document.addEventListener('click', (event) => {
       const managementType = card.dataset.dealManagementType || 'UNDECIDED';
       const inSupportMaintenance = status === 'WON' && managementType === 'RSF_MANAGED';
 
-      let visible = true;
+      let visible = false;
       if (activeDealFilter === 'SUPPORT_MAINTENANCE') {
         visible = inSupportMaintenance;
       } else if (activeDealFilter === 'WON') {
         visible = status === 'WON' && !inSupportMaintenance;
-      } else if (activeDealFilter !== 'ALL') {
+      } else {
         visible = status === activeDealFilter;
       }
       card.hidden = !visible;
@@ -3769,14 +3769,14 @@ document.addEventListener('click', (event) => {
     });
     if (filterEmpty) {
       const hasVisibleCards = cards.some((card) => !card.hidden);
-      filterEmpty.hidden = cards.length === 0 || activeDealFilter === 'ALL' || hasVisibleCards;
+      filterEmpty.hidden = cards.length === 0 || hasVisibleCards;
     }
   };
 
   if (filterButtons.length && list) {
     filterButtons.forEach((button) => {
       button.addEventListener('click', () => {
-        activeDealFilter = button.dataset.dealFilter || 'ALL';
+        activeDealFilter = button.dataset.dealFilter || 'DEAL';
         applyDealFilter();
       });
     });
