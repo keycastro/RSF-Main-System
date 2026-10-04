@@ -80,6 +80,11 @@ def partner_scope_id() -> int | None:
     return g.partner["id"] if g.user and g.user["role"] == "partner" and g.partner else None
 
 
+def _records_for_current_user(db):
+    """Return master Records scoped to the signed-in workspace user."""
+    return build_master_records(db, partner_id=partner_scope_id())
+
+
 PROSPECT_STATUS_LABELS = {
     "NOT_CONTACTED": "Not Contacted",
     "NO_ANSWER": "No Answer",
@@ -7362,26 +7367,53 @@ def records():
 
     workflow_counts = {code: 0 for code in PROSPECT_STATUS_LABELS}
     source_counts = {"ALL": len(master_records), "RESEARCH": 0, "WEBSITE": 0, "MULTI": 0}
+    lifecycle_counts = {"ALL": len(master_records), "PRE_DEAL": 0, "DEAL": 0, "SUPPORT": 0, "CLOSED": 0}
+
+    pre_deal_statuses = {"NOT_CONTACTED", "NO_ANSWER"}
+    deal_statuses = {"DEAL", "DEMO", "PROPOSAL", "DECISION", "WON"}
+    closed_statuses = {"REJECTED", "LOST"}
+
     for record in master_records:
         status = (record["current_status"] or "").strip().upper()
         if status in workflow_counts:
             workflow_counts[status] += 1
         source_counts[record["source_filter"]] = source_counts.get(record["source_filter"], 0) + 1
 
+        if status == "SUPPORT_MAINTENANCE":
+            group = "SUPPORT"
+            group_label = "Support & Maintenance"
+        elif status in deal_statuses:
+            group = "DEAL"
+            group_label = "Deal Pipeline"
+        elif status in closed_statuses:
+            group = "CLOSED"
+            group_label = "Closed"
+        else:
+            group = "PRE_DEAL"
+            group_label = "Pre-Deal"
+
+        record["lifecycle_group"] = group
+        record["lifecycle_group_label"] = group_label
+        lifecycle_counts[group] += 1
+
     requested_filter = (request.args.get("filter", "") or "").strip().upper()
     initial_filter = requested_filter if requested_filter in PROSPECT_STATUS_LABELS else "ALL"
     requested_source = (request.args.get("source", "") or "").strip().upper()
     initial_source = requested_source if requested_source in ("RESEARCH", "WEBSITE", "MULTI") else "ALL"
+    requested_group = (request.args.get("group", "") or "").strip().upper()
+    initial_group = requested_group if requested_group in ("PRE_DEAL", "DEAL", "SUPPORT", "CLOSED") else "ALL"
 
     return render_template(
         "records.html",
-        title="Records & History Control",
+        title="General Records",
         records=master_records,
         workflow_status_labels=PROSPECT_STATUS_LABELS,
         workflow_counts=workflow_counts,
         source_counts=source_counts,
+        lifecycle_counts=lifecycle_counts,
         initial_filter=initial_filter,
         initial_source=initial_source,
+        initial_group=initial_group,
     )
 
 
@@ -7508,9 +7540,12 @@ def records_bulk_delete():
     current_source = (request.form.get("source", "") or "").strip().upper()
     redirect_source = current_source if current_source in ("RESEARCH", "WEBSITE", "MULTI") else "ALL"
 
+    current_group = (request.form.get("group", "") or "").strip().upper()
+    redirect_group = current_group if current_group in ("PRE_DEAL", "DEAL", "SUPPORT", "CLOSED") else "ALL"
+
     if not requested_keys:
         flash("Select at least one Record.", "warning")
-        return redirect(url_for("main.records", filter=redirect_filter, source=redirect_source))
+        return redirect(url_for("main.records", filter=redirect_filter, source=redirect_source, group=redirect_group))
 
     db = get_db()
     record_map = {record["record_key"]: record for record in build_master_records(db)}
@@ -7578,7 +7613,7 @@ def records_bulk_delete():
         else:
             flash("No selected Records were available to delete.", "warning")
 
-    return redirect(url_for("main.records", filter=redirect_filter, source=redirect_source))
+    return redirect(url_for("main.records", filter=redirect_filter, source=redirect_source, group=redirect_group))
 
 
 @bp.post("/inquiries/<int:inquiry_id>/workflow-status")

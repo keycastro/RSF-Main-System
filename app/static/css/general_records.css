@@ -1,0 +1,176 @@
+/* RSF v1.18.210 — General Records
+   Central, scan-first record history experience. */
+
+body:not(.page-settings-dedicated) .brand.brand-active{
+  border-color:rgba(201,169,94,.62);
+  background:linear-gradient(135deg,rgba(201,169,94,.12),rgba(201,169,94,.035));
+  box-shadow:inset 3px 0 0 #d5b765;
+}
+
+.general-records-page,
+.record-detail-page{
+  --gr-gold:#d4b45f;
+  --gr-gold-soft:rgba(212,180,95,.12);
+  --gr-border:rgba(212,180,95,.20);
+  --gr-line:rgba(255,255,255,.075);
+  --gr-panel:rgba(18,15,11,.72);
+  --gr-panel-2:rgba(12,10,8,.82);
+  --gr-text:#f6eee2;
+  --gr-muted:#a99f92;
+  --gr-green:#76bca8;
+  --gr-red:#d07b78;
+  --gr-blue:#78a9d3;
+  color:var(--gr-text);
+}
+
+.general-records-page{max-width:none;padding-bottom:28px}
+.general-records-hero{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
+  padding:16px 18px;margin-bottom:10px;border:1px solid var(--gr-border);
+  border-radius:14px;background:linear-gradient(135deg,rgba(46,33,18,.55),rgba(10,9,7,.88));
+}
+.general-records-eyebrow,.record-eyebrow{
+  display:block;margin-bottom:5px;color:var(--gr-gold);font-size:9px;font-weight:900;letter-spacing:.14em;text-transform:uppercase
+}
+.general-records-hero h1{margin:0;font-size:30px;line-height:1;color:#fff8ee}
+.general-records-hero p{max-width:760px;margin:7px 0 0;color:var(--gr-muted);font-size:12px;line-height:1.45}
+.general-records-total{flex:0 0 auto;display:grid;justify-items:end}
+.general-records-total strong{font-size:30px;line-height:1;color:#f2d98d;font-variant-numeric:tabular-nums}
+.general-records-total span{margin-top:4px;color:var(--gr-muted);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+
+.general-records-summary{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:10px;
+  border:1px solid var(--gr-border);border-radius:12px;overflow:hidden;background:var(--gr-panel-2)
+}
+.general-records-summary>div{min-height:64px;padding:9px 12px;border-left:1px solid var(--gr-line)}
+.general-records-summary>div:first-child{border-left:0}
+.general-records-summary span{display:block;color:var(--gr-muted);font-size:9px;font-weight:850;text-transform:uppercase;letter-spacing:.07em}
+.general-records-summary strong{display:block;margin-top:4px;font-size:22px;line-height:1;color:#fff5e8;font-variant-numeric:tabular-nums}
+.general-records-summary small{display:block;margin-top:4px;color:#81786d;font-size:8.5px}
+
+.general-records-controls{
+  display:grid;grid-template-columns:minmax(260px,1.6fr) repeat(3,minmax(145px,.55fr)) auto auto;
+  align-items:end;gap:7px;padding:9px;margin-bottom:7px;border:1px solid var(--gr-border);
+  border-radius:12px;background:var(--gr-panel-2)
+}
+.general-records-search{position:relative;display:block}
+.general-records-search svg{position:absolute;left:10px;top:50%;width:16px;height:16px;transform:translateY(-50%);fill:none;stroke:#978c7c;stroke-width:1.8;stroke-linecap:round}
+.general-records-search input,
+.general-records-filter select{
+  width:100%;height:36px;box-sizing:border-box;border:1px solid rgba(212,180,95,.24);border-radius:8px;
+  background:#0d0b09;color:#eee4d6;font:600 11px/1.2 Inter,system-ui,sans-serif
+}
+.general-records-search input{padding:0 11px 0 34px}
+.general-records-search input::placeholder{color:#756d63}
+.general-records-filter{display:grid;gap:4px}
+.general-records-filter>span{padding-left:2px;color:#8f8578;font-size:8px;font-weight:850;text-transform:uppercase;letter-spacing:.07em}
+.general-records-filter select{padding:0 28px 0 9px}
+.general-records-search input:focus,.general-records-filter select:focus{outline:2px solid rgba(212,180,95,.35);outline-offset:1px;border-color:#b99948}
+.general-records-clear,.general-records-manage{
+  height:36px;padding:0 11px;border:1px solid rgba(212,180,95,.26);border-radius:8px;background:rgba(212,180,95,.04);
+  color:#d7cbb9;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap
+}
+.general-records-manage{border-color:rgba(212,180,95,.52);color:#f0d37d;background:rgba(212,180,95,.08)}
+.general-records-clear:hover,.general-records-manage:hover{background:rgba(212,180,95,.13);border-color:#c8a750}
+
+.general-records-result-line{
+  display:flex;justify-content:space-between;align-items:center;min-height:24px;padding:0 3px 5px;color:#80786d;font-size:9.5px
+}
+.general-records-result-line strong{color:#d7c7aa;font-variant-numeric:tabular-nums}
+
+.general-records-selection-bar{
+  display:none;align-items:center;gap:14px;margin:0 0 7px;padding:7px 9px;border:1px solid rgba(212,180,95,.28);
+  border-radius:9px;background:rgba(212,180,95,.06);font-size:10px;color:#d8cdbf
+}
+.general-records-page[data-records-manage-mode="true"] .general-records-selection-bar{display:flex}
+.general-records-selection-bar label{display:flex;align-items:center;gap:6px}
+.general-records-selection-bar>div{margin-left:auto;display:flex;gap:6px}
+.general-records-selection-cancel,.general-records-delete{
+  min-height:29px;padding:4px 9px;border-radius:6px;border:1px solid rgba(212,180,95,.25);background:#100d0a;color:#d7cbbd;font-size:9.5px;font-weight:800;cursor:pointer
+}
+.general-records-delete{border-color:rgba(208,123,120,.5);color:#edaaa6}
+.general-records-delete:disabled{opacity:.4;cursor:default}
+
+.general-records-table-shell{
+  border:1px solid var(--gr-border);border-radius:12px;background:rgba(8,7,6,.78);overflow:auto
+}
+.general-records-table{width:100%;min-width:980px;border-collapse:collapse;table-layout:fixed;font-size:10.5px}
+.general-records-table th{
+  position:sticky;top:0;z-index:2;padding:8px 10px;text-align:left;border-bottom:1px solid var(--gr-border);
+  background:#12100d;color:#908678;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.075em;white-space:nowrap
+}
+.general-records-table td{padding:10px;border-bottom:1px solid var(--gr-line);vertical-align:middle;color:#d8cfc3}
+.general-records-table tbody tr:last-child td{border-bottom:0}
+.general-records-table tbody tr:hover{background:rgba(212,180,95,.035)}
+.general-records-table tbody tr[hidden]{display:none}
+.general-records-table th:nth-child(2),.general-records-table td:nth-child(2){width:24%}
+.general-records-table th:nth-child(3),.general-records-table td:nth-child(3){width:16%}
+.general-records-table th:nth-child(4),.general-records-table td:nth-child(4){width:12%}
+.general-records-table th:nth-child(5),.general-records-table td:nth-child(5){width:18%}
+.general-records-table th:nth-child(6),.general-records-table td:nth-child(6){width:14%}
+.records-select-col{display:none;width:52px!important;text-align:center!important}
+.general-records-page[data-records-manage-mode="true"] .records-select-col{display:table-cell}
+.records-action-col{width:78px!important;text-align:right!important}
+
+.general-records-client>a{display:inline-block;color:#fff3e2;font-size:12px;font-weight:850;text-decoration:none}
+.general-records-client>a:hover{text-decoration:underline;text-underline-offset:3px}
+.general-records-client>span{display:block;margin-top:2px;color:#93897d;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.general-records-group{display:inline-flex;align-items:center;min-height:20px;padding:2px 7px;border:1px solid rgba(212,180,95,.28);border-radius:999px;background:rgba(212,180,95,.05);color:#d8bd72;font-size:8.5px;font-weight:850}
+.general-records-group--deal{border-color:rgba(120,169,211,.36);background:rgba(120,169,211,.08);color:#a7cbe9}
+.general-records-group--support{border-color:rgba(118,188,168,.38);background:rgba(118,188,168,.08);color:#9ed9c8}
+.general-records-group--closed{border-color:rgba(208,123,120,.35);background:rgba(208,123,120,.07);color:#e3a09d}
+.general-records-status{display:block;margin-top:4px;color:#c4baad;font-size:9.5px}
+.general-records-sources,.general-records-linked{display:flex;flex-wrap:wrap;gap:4px}
+.general-records-sources span,.general-records-linked span{display:inline-flex;align-items:center;gap:3px;padding:3px 6px;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(255,255,255,.025);color:#aaa095;font-size:8.5px}
+.general-records-linked strong{color:#e2d5c2}
+.general-records-activity strong,.general-records-activity span,.general-records-activity small{display:block}
+.general-records-activity strong{color:#dbd0c2;font-size:9.5px}
+.general-records-activity span{margin-top:1px;color:#948a7d;font-size:8.5px}
+.general-records-activity small{margin-top:4px;color:#716a61;font-size:8px}
+.general-records-open{display:inline-flex;min-height:28px;align-items:center;padding:3px 8px;border:1px solid rgba(212,180,95,.34);border-radius:7px;background:rgba(212,180,95,.06);color:#e1c672;font-size:9px;font-weight:850;text-decoration:none}
+.general-records-open:hover{background:rgba(212,180,95,.13);border-color:#c7a54a}
+
+.general-records-page input[type="checkbox"]{accent-color:#c5a44e}
+.general-records-empty{display:grid;justify-items:center;gap:4px;padding:42px 18px;color:#948a7e;text-align:center}
+.general-records-empty strong{color:#ded2c1;font-size:13px}
+.general-records-empty span{max-width:520px;font-size:10px;line-height:1.5}
+
+/* General Record detail */
+.record-detail-page{max-width:1180px;margin:0 auto;padding-bottom:32px}
+.record-detail-hero{padding:14px 16px!important;border:1px solid var(--gr-border);border-radius:13px;background:linear-gradient(135deg,rgba(46,33,18,.45),rgba(10,9,7,.85))}
+.record-detail-hero h1{color:#fff5e8!important}
+.record-detail-hero p{color:var(--gr-muted)!important}
+.record-detail-page .inbound-records-back{color:#dec477!important}
+.record-story-section{margin-top:10px;padding:14px!important;border:1px solid var(--gr-border)!important;border-radius:12px;background:var(--gr-panel)!important}
+.record-story-heading{display:flex!important;align-items:flex-start!important;gap:10px!important;margin-bottom:10px!important}
+.record-story-heading h2{margin:0!important;color:#f4eadc!important;font-size:15px!important}
+.record-story-heading p{margin:3px 0 0!important;color:#91877a!important;font-size:10px!important}
+.record-step-number{display:grid!important;place-items:center!important;flex:0 0 26px!important;height:26px!important;border:1px solid rgba(212,180,95,.36)!important;border-radius:7px!important;background:rgba(212,180,95,.07)!important;color:#dfc36f!important;font-size:10px!important}
+.record-client-card,.record-origin-card,.record-source-card,.record-deal-card,.record-no-deal{border-color:rgba(212,180,95,.18)!important;background:rgba(8,7,6,.52)!important;color:#dcd2c5!important;box-shadow:none!important}
+.record-client-primary span,.record-client-grid span,.record-client-meta,.record-detail-list dt,.record-source-card p,.record-deal-card p{color:#8f8578!important}
+.record-client-primary strong,.record-client-grid strong,.record-detail-list dd,.record-source-card h3,.record-deal-card h3{color:#eee4d6!important}
+.record-origin-item,.record-origin-merged{border-color:rgba(255,255,255,.08)!important;background:rgba(255,255,255,.025)!important}
+.record-timeline-v2{border-left-color:rgba(212,180,95,.24)!important}
+.record-timeline-body{border-color:rgba(255,255,255,.08)!important;background:rgba(255,255,255,.025)!important}
+.record-timeline-top strong{color:#e7dccd!important}
+.record-timeline-top time,.record-timeline-body>span{color:#8e8478!important}
+.record-timeline-marker{background:#c9a95e!important;border-color:#17120c!important}
+.record-source-card header a,.record-deal-card header a,.record-document-links a{color:#ddc16d!important}
+.record-detail-list>div{border-color:rgba(255,255,255,.065)!important}
+.record-documents{border-color:rgba(255,255,255,.07)!important;background:rgba(255,255,255,.02)!important}
+.record-no-deal strong{color:#e6dbcc!important}
+
+@media(max-width:1100px){
+  .general-records-controls{grid-template-columns:minmax(240px,1fr) repeat(3,minmax(130px,.6fr));}
+  .general-records-clear,.general-records-manage{grid-row:2}
+}
+@media(max-width:760px){
+  .general-records-hero{align-items:flex-start}
+  .general-records-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .general-records-summary>div:nth-child(3){border-left:0;border-top:1px solid var(--gr-line)}
+  .general-records-summary>div:nth-child(4){border-top:1px solid var(--gr-line)}
+  .general-records-controls{grid-template-columns:1fr 1fr}
+  .general-records-search{grid-column:1/-1}
+  .general-records-clear,.general-records-manage{grid-row:auto}
+  .general-records-total{display:none}
+}

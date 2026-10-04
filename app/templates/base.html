@@ -18,6 +18,9 @@
   {% if request.endpoint in ['main.settings','main.account_security'] %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/settings_experience.css') }}?v={{ app_version }}">
   {% endif %}
+  {% if request.endpoint in ['main.records','main.record_detail'] %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/general_records.css') }}?v={{ app_version }}">
+  {% endif %}
   {% if request.endpoint == 'main.settings' and request.args.get('section','general') == 'workflow' %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/workflow_diagram.css') }}?v={{ app_version }}">
   <link rel="stylesheet" href="{{ url_for('main.workflow_diagram_layout_css') }}?v={{ app_version }}">
@@ -62,7 +65,7 @@
 <div class="app-shell">
   <aside class="sidebar" id="sidebar" aria-label="Main navigation">
     <button class="close-menu" type="button" data-close-menu aria-label="Close navigation">Close ×</button>
-    <a class="brand" href="{{ url_for('main.records') }}" aria-label="Open Records & History Control">
+    <a class="brand {{ 'brand-active' if request.endpoint in ['main.records','main.record_detail'] else '' }}" href="{{ url_for('main.records') }}" aria-label="Open General Records">
       <span class="brand-mark" aria-hidden="true"><img src="{{ url_for('static', filename='images/brand/icon_64.png') }}" alt=""></span>
       <span class="brand-copy"><strong>Records &amp; History Control</strong></span>
     </a>

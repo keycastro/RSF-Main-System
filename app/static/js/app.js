@@ -5872,11 +5872,15 @@ document.addEventListener('click', (event) => {
   if (!page) return;
 
   const rows = Array.from(page.querySelectorAll('[data-master-record-row]'));
-  const statusButtons = Array.from(page.querySelectorAll('[data-records-status-filter]'));
-  const sourceButtons = Array.from(page.querySelectorAll('[data-records-source-filter]'));
+  const statusSelect = page.querySelector('[data-records-status-select]');
+  const sourceSelect = page.querySelector('[data-records-source-select]');
+  const lifecycleSelect = page.querySelector('[data-records-lifecycle-select]');
   const searchInput = page.querySelector('[data-records-search]');
+  const clearFilters = page.querySelector('[data-records-clear]');
+  const visibleCount = page.querySelector('[data-records-visible-count]');
   const filterInput = page.querySelector('[data-records-filter-input]');
   const sourceInput = page.querySelector('[data-records-source-input]');
+  const groupInput = page.querySelector('[data-records-group-input]');
   const empty = page.querySelector('[data-records-empty]');
   const filterEmpty = page.querySelector('[data-records-filter-empty]');
   const selectAll = page.querySelector('[data-records-select-all]');
@@ -5888,9 +5892,12 @@ document.addEventListener('click', (event) => {
   const confirmMessage = page.querySelector('[data-records-delete-confirm-message]');
   const confirmYes = page.querySelector('[data-records-delete-yes]');
   const confirmNo = page.querySelector('[data-records-delete-no]');
+  const manageToggle = page.querySelector('[data-records-manage-toggle]');
+  const manageCancel = page.querySelector('[data-records-manage-cancel]');
 
   let activeStatus = page.dataset.recordsInitialFilter || 'ALL';
   let activeSource = page.dataset.recordsInitialSource || 'ALL';
+  let activeGroup = page.dataset.recordsInitialGroup || 'ALL';
   let searchTerm = '';
 
   const visibleRowChecks = () => rowChecks.filter((check) => {
@@ -5908,65 +5915,82 @@ document.addEventListener('click', (event) => {
     }
   };
 
+  const setManageMode = (enabled) => {
+    page.dataset.recordsManageMode = enabled ? 'true' : 'false';
+    manageToggle?.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    if (!enabled) clearSelection();
+    updateSelection();
+  };
+
   const updateSelection = () => {
     const selected = rowChecks.filter((check) => check.checked && !check.disabled);
     const visibleChecks = visibleRowChecks();
     const visibleDeletable = visibleDeletableChecks();
-    const allVisibleSelected = visibleChecks.length > 0
-      && visibleChecks.every((check) => !check.disabled && check.checked);
+    const allVisibleSelected = visibleDeletable.length > 0
+      && visibleDeletable.every((check) => check.checked);
 
     if (selectedCount) selectedCount.textContent = `Selected ${selected.length}`;
     if (deleteTrigger) deleteTrigger.disabled = selected.length === 0;
 
     if (selectAll) {
       selectAll.checked = allVisibleSelected;
-      selectAll.indeterminate = false;
+      selectAll.indeterminate = selected.length > 0 && !allVisibleSelected;
       selectAll.disabled = visibleDeletable.length === 0;
     }
+  };
+
+  const syncUrl = () => {
+    const url = new URL(window.location.href);
+    const setOrDelete = (key, value) => {
+      if (!value || value === 'ALL') url.searchParams.delete(key);
+      else url.searchParams.set(key, value);
+    };
+    setOrDelete('filter', activeStatus);
+    setOrDelete('source', activeSource);
+    setOrDelete('group', activeGroup);
+    window.history.replaceState({}, '', url.pathname + url.search + url.hash);
   };
 
   const applyFilters = () => {
     rows.forEach((row) => {
       const statusMatch = activeStatus === 'ALL' || row.dataset.recordStatus === activeStatus;
       const sourceMatch = activeSource === 'ALL' || row.dataset.recordSource === activeSource;
+      const groupMatch = activeGroup === 'ALL' || row.dataset.recordGroup === activeGroup;
       const searchMatch = !searchTerm || (row.dataset.recordSearch || '').includes(searchTerm);
-      row.hidden = !(statusMatch && sourceMatch && searchMatch);
+      row.hidden = !(statusMatch && sourceMatch && groupMatch && searchMatch);
     });
 
-    statusButtons.forEach((button) => {
-      const active = button.dataset.recordsStatusFilter === activeStatus;
-      button.classList.toggle('is-active', active);
-      button.setAttribute('aria-pressed', active ? 'true' : 'false');
-    });
-    sourceButtons.forEach((button) => {
-      const active = button.dataset.recordsSourceFilter === activeSource;
-      button.classList.toggle('is-active', active);
-      button.setAttribute('aria-pressed', active ? 'true' : 'false');
-    });
-
+    if (statusSelect) statusSelect.value = activeStatus;
+    if (sourceSelect) sourceSelect.value = activeSource;
+    if (lifecycleSelect) lifecycleSelect.value = activeGroup;
     if (filterInput) filterInput.value = activeStatus;
     if (sourceInput) sourceInput.value = activeSource;
+    if (groupInput) groupInput.value = activeGroup;
 
     const visibleRows = rows.filter((row) => !row.hidden);
+    if (visibleCount) visibleCount.textContent = String(visibleRows.length);
     if (empty) empty.hidden = rows.length !== 0;
     if (filterEmpty) filterEmpty.hidden = rows.length === 0 || visibleRows.length !== 0;
     updateSelection();
+    syncUrl();
   };
 
-  statusButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      activeStatus = button.dataset.recordsStatusFilter || 'ALL';
-      clearSelection();
-      applyFilters();
-    });
+  statusSelect?.addEventListener('change', () => {
+    activeStatus = statusSelect.value || 'ALL';
+    clearSelection();
+    applyFilters();
   });
 
-  sourceButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      activeSource = button.dataset.recordsSourceFilter || 'ALL';
-      clearSelection();
-      applyFilters();
-    });
+  sourceSelect?.addEventListener('change', () => {
+    activeSource = sourceSelect.value || 'ALL';
+    clearSelection();
+    applyFilters();
+  });
+
+  lifecycleSelect?.addEventListener('change', () => {
+    activeGroup = lifecycleSelect.value || 'ALL';
+    clearSelection();
+    applyFilters();
   });
 
   searchInput?.addEventListener('input', () => {
@@ -5974,6 +5998,22 @@ document.addEventListener('click', (event) => {
     clearSelection();
     applyFilters();
   });
+
+  clearFilters?.addEventListener('click', () => {
+    activeStatus = 'ALL';
+    activeSource = 'ALL';
+    activeGroup = 'ALL';
+    searchTerm = '';
+    if (searchInput) searchInput.value = '';
+    clearSelection();
+    applyFilters();
+    searchInput?.focus();
+  });
+
+  manageToggle?.addEventListener('click', () => {
+    setManageMode(page.dataset.recordsManageMode !== 'true');
+  });
+  manageCancel?.addEventListener('click', () => setManageMode(false));
 
   selectAll?.addEventListener('change', () => {
     const shouldSelect = selectAll.checked;
@@ -5991,14 +6031,13 @@ document.addEventListener('click', (event) => {
     const count = rowChecks.filter((check) => check.checked && !check.disabled).length;
     if (!count || !bulkForm) return;
 
-    const text = `Permanently delete ${count} selected inactive master Record${count === 1 ? '' : 's'}? This removes the linked Prospect/Website source data, Deals, Deal documents, and dedicated history for those Records. Shared client conversations still used by other records are preserved. This cannot be undone. Active Deal / Demo / Proposal / Decision Records are protected.`;
+    const text = `Permanently delete ${count} selected inactive General Record${count === 1 ? '' : 's'}? This removes linked Prospect / Website source data, Deals, Deal documents, and dedicated history. Shared client conversations still used by other records are preserved. Active pipeline and Support & Maintenance records are protected.`;
     if (confirmMessage) confirmMessage.textContent = text;
 
     if (confirmDialog && typeof confirmDialog.showModal === 'function') {
       confirmDialog.showModal();
       return;
     }
-
     if (window.confirm(text)) bulkForm.requestSubmit();
   });
 
@@ -6012,9 +6051,9 @@ document.addEventListener('click', (event) => {
     closeConfirm();
   });
 
+  setManageMode(false);
   applyFilters();
 })();
-
 
 /* v1.18.151 — smooth pointer-driven page-specific Ctrl+drag field organization. */
 (() => {
