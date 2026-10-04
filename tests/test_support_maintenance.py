@@ -8,6 +8,16 @@ class SupportMaintenanceTests(unittest.TestCase):
     def read(self, path):
         return (ROOT / path).read_text(encoding="utf-8")
 
+    def test_deal_filter_matches_support_eligibility(self):
+        deals = self.read("app/templates/deals.html")
+        routes = self.read("app/routes.py")
+        js = self.read("app/static/js/app.js")
+        self.assertIn('data-deal-filter="SUPPORT_MAINTENANCE"', deals)
+        self.assertIn("d.management_type='RSF_MANAGED'", routes)
+        self.assertIn("p.status='WON'", routes)
+        self.assertIn("i.workflow_status='WON'", routes)
+        self.assertIn("status === 'WON' && managementType === 'RSF_MANAGED'", js)
+
     def test_connected_lifecycle_remains_same_deal_record(self):
         routes = self.read("app/routes.py")
         schema = self.read("app/schema.sql")

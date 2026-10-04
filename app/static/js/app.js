@@ -3748,7 +3748,19 @@ document.addEventListener('click', (event) => {
     if (!list || !filterButtons.length) return;
     const cards = Array.from(list.querySelectorAll('[data-deal-card]'));
     cards.forEach((card) => {
-      card.hidden = activeDealFilter !== 'ALL' && card.dataset.dealStatus !== activeDealFilter;
+      const status = card.dataset.dealStatus || '';
+      const managementType = card.dataset.dealManagementType || 'UNDECIDED';
+      const inSupportMaintenance = status === 'WON' && managementType === 'RSF_MANAGED';
+
+      let visible = true;
+      if (activeDealFilter === 'SUPPORT_MAINTENANCE') {
+        visible = inSupportMaintenance;
+      } else if (activeDealFilter === 'WON') {
+        visible = status === 'WON' && !inSupportMaintenance;
+      } else if (activeDealFilter !== 'ALL') {
+        visible = status === activeDealFilter;
+      }
+      card.hidden = !visible;
     });
     filterButtons.forEach((button) => {
       const active = button.dataset.dealFilter === activeDealFilter;
@@ -4778,6 +4790,9 @@ document.addEventListener('click', (event) => {
           const card = form.closest('[data-deal-card]');
           if (card) {
             card.dataset.dealStatus = data.status;
+            if (typeof data.management_type === 'string') {
+              card.dataset.dealManagementType = data.management_type || 'UNDECIDED';
+            }
             if (card.hasAttribute('data-prospect-row')) card.dataset.prospectStatus = data.status;
             if (card.hasAttribute('data-website-inquiry-card')) card.dataset.websiteInquiryWorkflowStatus = data.status;
           }

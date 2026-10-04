@@ -102,6 +102,18 @@ class MasterLifecycleCardTests(unittest.TestCase):
         self.assertIn("Became Deal:", deals)
         self.assertIn(">LINKED IN WEBSITE INBOX</a>", deals)
 
+    def test_deals_page_separates_won_from_support_maintenance_filter(self):
+        deals = self.read("app/templates/deals.html")
+        js = self.read("app/static/js/app.js")
+        self.assertIn('data-deal-filter="SUPPORT_MAINTENANCE"', deals)
+        self.assertIn('>In Support &amp; Maintenance</button>', deals)
+        self.assertIn('data-deal-management-type="{{ deal[\'management_type\'] or \'UNDECIDED\' }}"', deals)
+        self.assertIn("activeDealFilter === 'SUPPORT_MAINTENANCE'", js)
+        self.assertIn("status === 'WON' && managementType === 'RSF_MANAGED'", js)
+        self.assertIn("activeDealFilter === 'WON'", js)
+        self.assertIn("status === 'WON' && !inSupportMaintenance", js)
+        self.assertIn("card.dataset.dealManagementType = data.management_type", js)
+
     def test_deals_page_keeps_deal_information_before_source_details(self):
         template = self.read("app/templates/deals.html")
         deal_position = template.index("{% include '_master_deal_information.html' %}")
