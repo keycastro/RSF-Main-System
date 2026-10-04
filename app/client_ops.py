@@ -603,7 +603,7 @@ def create_public_inquiry(record: dict[str, str]) -> int:
 
     # If Research already has an active Deal for this same opportunity, attach
     # the new Website source to that Deal instead of creating a second pipeline.
-    if active_prospect and (active_prospect["status"] or "").upper() in ("DEAL", "DEMO", "PROPOSAL", "DECISION"):
+    if active_prospect and (active_prospect["status"] or "").upper() in ("DEAL", "DEMO", "PROPOSAL", "DECISION", "SUPPORT_MAINTENANCE"):
         existing_deal = db.execute(
             "SELECT id,website_inquiry_id FROM deals WHERE prospect_id=? LIMIT 1",
             (active_prospect["id"],),

@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 41
-SCHEMA_NAME = "rsf-main-system-v1.18.192-support-maintenance-lifecycle"
+SCHEMA_VERSION = 42
+SCHEMA_NAME = "rsf-main-system-v1.18.202-support-maintenance-workflow-status"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents","communication_notes","ai_sales_calls","whatsapp_messages","manual_client_calls"}
 
 
@@ -1492,6 +1492,91 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
                 db.execute(f"ALTER TABLE deals ADD COLUMN {column} {definition}")
         db.execute("INSERT INTO schema_migrations(version,name) VALUES (?,?)",
                    (41, "rsf-v1.18.192-support-maintenance-lifecycle"))
+
+    # V42 makes Support & Maintenance an actual shared lifecycle Status.
+    # Existing WON + RSF_MANAGED clients are migrated in place.
+    if 42 not in applied:
+        if using_postgres():
+            deal_checks = db.execute(
+                """SELECT c.conname AS name
+                   FROM pg_constraint c
+                   JOIN pg_class t ON t.oid=c.conrelid
+                   JOIN pg_namespace n ON n.oid=t.relnamespace
+                   WHERE n.nspname='public' AND t.relname='deals' AND c.contype='c'
+                     AND position('status' in lower(pg_get_constraintdef(c.oid))) > 0"""
+            ).fetchall()
+            for row in deal_checks:
+                name = str(row["name"]).replace('"', '""')
+                db.execute(f'ALTER TABLE deals DROP CONSTRAINT "{name}"')
+            db.execute(
+                """ALTER TABLE deals ADD CONSTRAINT deals_status_check
+                   CHECK (status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','SUPPORT_MAINTENANCE','LOST'))"""
+            )
+
+            inquiry_checks = db.execute(
+                """SELECT c.conname AS name
+                   FROM pg_constraint c
+                   JOIN pg_class t ON t.oid=c.conrelid
+                   JOIN pg_namespace n ON n.oid=t.relnamespace
+                   WHERE n.nspname='public' AND t.relname='website_inquiries' AND c.contype='c'
+                     AND position('workflow_status' in lower(pg_get_constraintdef(c.oid))) > 0"""
+            ).fetchall()
+            for row in inquiry_checks:
+                name = str(row["name"]).replace('"', '""')
+                db.execute(f'ALTER TABLE website_inquiries DROP CONSTRAINT "{name}"')
+            db.execute(
+                """ALTER TABLE website_inquiries
+                   ADD CONSTRAINT website_inquiries_workflow_status_check
+                   CHECK (workflow_status IN ('NOT_CONTACTED','NO_ANSWER','REJECTED','DEAL','DEMO','PROPOSAL','DECISION','WON','SUPPORT_MAINTENANCE','LOST'))"""
+            )
+        else:
+            db.commit()
+            db.execute("PRAGMA foreign_keys=OFF")
+            try:
+                _sqlite_rebuild_table_from_release_schema(db, "deals")
+                _sqlite_rebuild_table_from_release_schema(db, "website_inquiries")
+                db.execute("CREATE INDEX IF NOT EXISTS idx_deals_status_updated ON deals(status,updated_at DESC,id DESC)")
+                db.execute("CREATE INDEX IF NOT EXISTS idx_deals_followup ON deals(followup_date,status,id)")
+                db.execute("CREATE INDEX IF NOT EXISTS idx_website_inquiries_workflow ON website_inquiries(workflow_status,updated_at DESC,id DESC)")
+                db.commit()
+            except Exception:
+                db.rollback()
+                raise
+            finally:
+                db.execute("PRAGMA foreign_keys=ON")
+            violations = db.execute("PRAGMA foreign_key_check").fetchall()
+            if violations:
+                raise RuntimeError(f"Support workflow status migration foreign-key violations: {violations[:5]}")
+
+        db.execute(
+            """UPDATE deals
+               SET status='SUPPORT_MAINTENANCE',management_type='RSF_MANAGED'
+               WHERE management_type='RSF_MANAGED'
+                 AND (
+                   (prospect_id IS NOT NULL AND prospect_id IN (SELECT id FROM prospects WHERE status='WON'))
+                   OR
+                   (prospect_id IS NULL AND website_inquiry_id IS NOT NULL
+                    AND website_inquiry_id IN (SELECT id FROM website_inquiries WHERE workflow_status='WON'))
+                 )"""
+        )
+        db.execute(
+            """UPDATE prospects SET status='SUPPORT_MAINTENANCE'
+               WHERE id IN (
+                 SELECT prospect_id FROM deals
+                 WHERE status='SUPPORT_MAINTENANCE' AND prospect_id IS NOT NULL
+               )"""
+        )
+        db.execute(
+            """UPDATE website_inquiries SET workflow_status='SUPPORT_MAINTENANCE'
+               WHERE id IN (
+                 SELECT website_inquiry_id FROM deals
+                 WHERE status='SUPPORT_MAINTENANCE' AND website_inquiry_id IS NOT NULL
+               )"""
+        )
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (42, "rsf-v1.18.202-support-maintenance-workflow-status"),
+        )
 
 
 def _table_exists_postgres(db, table: str) -> bool:

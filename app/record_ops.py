@@ -5,7 +5,7 @@ from itertools import combinations
 from .services import normalize_email, normalize_phone, normalize_text
 
 
-RECORD_DELETE_PROTECTED_STATUSES = ("DEAL", "DEMO", "PROPOSAL", "DECISION")
+RECORD_DELETE_PROTECTED_STATUSES = ("DEAL", "DEMO", "PROPOSAL", "DECISION", "SUPPORT_MAINTENANCE")
 
 
 def _clean(value) -> str:

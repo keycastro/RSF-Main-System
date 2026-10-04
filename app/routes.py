@@ -88,6 +88,7 @@ PROSPECT_STATUS_LABELS = {
     "PROPOSAL": "Proposal",
     "DECISION": "Decision",
     "WON": "Won",
+    "SUPPORT_MAINTENANCE": "In Support & Maintenance",
     "LOST": "Lost",
 }
 # The ordered status map is canonical. Anything from DEAL onward is Deal-side,
@@ -387,6 +388,11 @@ def _sync_deal_source_statuses(db, deal_id: int, status: str, now: str) -> None:
     ).fetchone()
     if not deal:
         return
+    if status == "SUPPORT_MAINTENANCE":
+        db.execute(
+            "UPDATE deals SET management_type='RSF_MANAGED',updated_at=? WHERE id=?",
+            (now, deal_id),
+        )
     if deal["prospect_id"] is not None:
         db.execute(
             "UPDATE prospects SET status=?,updated_at=? WHERE id=?",
@@ -2051,9 +2057,10 @@ def support_maintenance():
            FROM deals d
            LEFT JOIN prospects p ON p.id=d.prospect_id
            LEFT JOIN website_inquiries i ON i.id=d.website_inquiry_id
-           WHERE d.management_type='RSF_MANAGED'
-             AND ((d.prospect_id IS NOT NULL AND p.status='WON')
-               OR (d.prospect_id IS NULL AND d.website_inquiry_id IS NOT NULL AND i.workflow_status='WON'))
+           WHERE (d.prospect_id IS NOT NULL AND p.status='SUPPORT_MAINTENANCE')
+              OR (d.prospect_id IS NULL
+                  AND d.website_inquiry_id IS NOT NULL
+                  AND i.workflow_status='SUPPORT_MAINTENANCE')
            ORDER BY d.updated_at DESC,d.id DESC"""
     ).fetchall()
     return render_template(
@@ -2090,8 +2097,8 @@ def support_maintenance_update(deal_id: int):
         ).fetchone()
         workflow_status = ((row["workflow_status"] if row else "") or "").strip().upper()
 
-    if workflow_status != "WON" or (deal["management_type"] or "").strip().upper() != "RSF_MANAGED":
-        message = "This client is not currently an RSF-managed Won client."
+    if workflow_status != "SUPPORT_MAINTENANCE":
+        message = "This client is not currently In Support & Maintenance."
         if async_request:
             return jsonify({"ok": False, "message": message}), 409
         flash(message, "warning")
@@ -2195,8 +2202,10 @@ def support_maintenance_update(deal_id: int):
 @login_required
 def deals():
     db = get_db()
+    deal_status_placeholders = ",".join("?" for _ in DEAL_ACTIVE_STATUSES)
+    deal_status_params = tuple(DEAL_ACTIVE_STATUSES) + tuple(DEAL_ACTIVE_STATUSES)
     rows = db.execute(
-        """SELECT d.*,p.name AS prospect_name,p.recorded_date AS prospect_recorded_date,
+        f"""SELECT d.*,p.name AS prospect_name,p.recorded_date AS prospect_recorded_date,
                   CASE WHEN d.prospect_id IS NOT NULL THEN p.status ELSE i.workflow_status END AS workflow_status,
                   CASE WHEN d.prospect_id IS NOT NULL THEN COALESCE(NULLIF(p.contact,''),i.name,d.contact_person,'')
                        ELSE COALESCE(NULLIF(d.contact_person,''),i.name,'') END AS prospect_contact,
@@ -2228,9 +2237,10 @@ def deals():
            FROM deals d
            LEFT JOIN prospects p ON p.id=d.prospect_id
            LEFT JOIN website_inquiries i ON i.id=d.website_inquiry_id
-           WHERE (p.id IS NOT NULL AND p.status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','LOST'))
-              OR (i.id IS NOT NULL AND i.workflow_status IN ('DEAL','DEMO','PROPOSAL','DECISION','WON','LOST'))
-           ORDER BY d.updated_at DESC,d.id DESC"""
+           WHERE (p.id IS NOT NULL AND p.status IN ({deal_status_placeholders}))
+              OR (i.id IS NOT NULL AND i.workflow_status IN ({deal_status_placeholders}))
+           ORDER BY d.updated_at DESC,d.id DESC""",
+        deal_status_params,
     ).fetchall()
     deal_ids = [int(row["id"]) for row in rows]
     deal_documents: dict[int, list] = {}
@@ -2677,6 +2687,8 @@ def deal_update(deal_id: int):
             return jsonify({"ok": False, "message": "Invalid Management Type."}), 400
         flash("Invalid Management Type.", "error")
         return redirect(url_for("main.deals") + f"#deal-{deal_id}")
+    if status == "SUPPORT_MAINTENANCE":
+        management_type = "RSF_MANAGED"
     email = (request.form.get("email", "") or "").strip()[:320]
     contact_person = (request.form.get("contact_person", "") or "").strip()[:200].upper()
     location = (request.form.get("location", "") or "").strip()[:200].upper()
@@ -7532,7 +7544,7 @@ def records_bulk_delete():
     else:
         db.rollback()
         if protected_count:
-            flash("No Records were deleted. Active Deal / Demo / Proposal / Decision records are protected.", "warning")
+            flash("No Records were deleted. Active Deal / Demo / Proposal / Decision / In Support & Maintenance records are protected.", "warning")
         else:
             flash("No selected Records were available to delete.", "warning")
 
