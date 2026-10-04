@@ -1,4 +1,4 @@
-/* RSF Workflow Diagram v1.18.203 */
+/* RSF Workflow Diagram v1.18.205 */
 (() => {
   const page = document.querySelector('[data-workflow-diagram]');
   if (!page) return;
@@ -19,6 +19,7 @@
   const nodes = new Map(
     Array.from(board.querySelectorAll('[data-workflow-node]')).map((node) => [node.dataset.workflowNode, node])
   );
+  const inspector = page.querySelector('[data-workflow-inspector]');
   const inspectorEmpty = page.querySelector('[data-workflow-inspector-empty]');
   const inspectorContent = page.querySelector('[data-workflow-inspector-content]');
   const detailEyebrow = page.querySelector('[data-workflow-detail-eyebrow]');
@@ -31,6 +32,7 @@
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
   const view = { scale: 1, x: 0, y: 0 };
   let panning = null;
+  let autoFit = true;
 
   const setTransform = () => {
     board.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.scale})`;
@@ -51,12 +53,12 @@
   const curvePath = (start, end, sourceAnchor, targetAnchor) => {
     const horizontal = ['left', 'right'].includes(sourceAnchor) || ['left', 'right'].includes(targetAnchor);
     if (horizontal) {
-      const distance = Math.max(55, Math.abs(end.x - start.x) * 0.45);
+      const distance = Math.max(42, Math.abs(end.x - start.x) * 0.40);
       const c1x = start.x + (sourceAnchor === 'left' ? -distance : sourceAnchor === 'right' ? distance : 0);
       const c2x = end.x + (targetAnchor === 'left' ? -distance : targetAnchor === 'right' ? distance : 0);
       return `M ${start.x} ${start.y} C ${c1x} ${start.y}, ${c2x} ${end.y}, ${end.x} ${end.y}`;
     }
-    const distance = Math.max(45, Math.abs(end.y - start.y) * 0.45);
+    const distance = Math.max(38, Math.abs(end.y - start.y) * 0.42);
     const c1y = start.y + (sourceAnchor === 'top' ? -distance : distance);
     const c2y = end.y + (targetAnchor === 'top' ? -distance : distance);
     return `M ${start.x} ${start.y} C ${start.x} ${c1y}, ${end.x} ${c2y}, ${end.x} ${end.y}`;
@@ -109,7 +111,7 @@
         const middle = path.getPointAtLength(path.getTotalLength() / 2);
         const label = createSvg('text', {
           x: middle.x,
-          y: middle.y - 6,
+          y: middle.y - 5,
           class: 'workflow-diagram-edge-label',
           'text-anchor': 'middle',
         });
@@ -119,27 +121,62 @@
     });
   };
 
+  const getContentBounds = () => {
+    const elements = Array.from(board.querySelectorAll('.workflow-diagram-section,[data-workflow-node]'));
+    if (!elements.length) {
+      return { left: 0, top: 0, right: Number(model.board_width || 1), bottom: Number(model.board_height || 1) };
+    }
+    let left = Infinity;
+    let top = Infinity;
+    let right = -Infinity;
+    let bottom = -Infinity;
+    elements.forEach((element) => {
+      left = Math.min(left, element.offsetLeft);
+      top = Math.min(top, element.offsetTop);
+      right = Math.max(right, element.offsetLeft + element.offsetWidth);
+      bottom = Math.max(bottom, element.offsetTop + element.offsetHeight);
+    });
+    return { left, top, right, bottom };
+  };
+
+  const fitBounds = (bounds, padding = 24) => {
+    const width = Math.max(1, bounds.right - bounds.left);
+    const height = Math.max(1, bounds.bottom - bounds.top);
+    const availableWidth = Math.max(1, viewport.clientWidth - padding * 2);
+    const availableHeight = Math.max(1, viewport.clientHeight - padding * 2);
+    const scale = clamp(Math.min(availableWidth / width, availableHeight / height), 0.58, 1);
+    view.scale = scale;
+    view.x = (viewport.clientWidth - width * scale) / 2 - bounds.left * scale;
+    view.y = (viewport.clientHeight - height * scale) / 2 - bounds.top * scale;
+    setTransform();
+  };
+
   const fitView = () => {
-    const boardWidth = Number(model.board_width || board.offsetWidth || 1);
-    const boardHeight = Number(model.board_height || board.offsetHeight || 1);
-    const availableWidth = Math.max(1, viewport.clientWidth - 34);
-    const availableHeight = Math.max(1, viewport.clientHeight - 34);
-    view.scale = clamp(Math.min(availableWidth / boardWidth, availableHeight / boardHeight), 0.32, 1);
-    view.x = (viewport.clientWidth - boardWidth * view.scale) / 2;
-    view.y = (viewport.clientHeight - boardHeight * view.scale) / 2;
+    autoFit = true;
+    fitBounds(getContentBounds(), 22);
+  };
+
+  const zoomAtPoint = (nextScale, pointerX, pointerY) => {
+    const scale = clamp(nextScale, 0.46, 1.7);
+    const boardX = (pointerX - view.x) / view.scale;
+    const boardY = (pointerY - view.y) / view.scale;
+    view.scale = scale;
+    view.x = pointerX - boardX * scale;
+    view.y = pointerY - boardY * scale;
+    autoFit = false;
     setTransform();
   };
 
   const zoomAtCenter = (nextScale) => {
-    const scale = clamp(nextScale, 0.32, 1.7);
-    const centerX = viewport.clientWidth / 2;
-    const centerY = viewport.clientHeight / 2;
-    const boardX = (centerX - view.x) / view.scale;
-    const boardY = (centerY - view.y) / view.scale;
-    view.scale = scale;
-    view.x = centerX - boardX * scale;
-    view.y = centerY - boardY * scale;
-    setTransform();
+    zoomAtPoint(nextScale, viewport.clientWidth / 2, viewport.clientHeight / 2);
+  };
+
+  const clearSelection = () => {
+    nodes.forEach((node) => node.classList.remove('is-selected'));
+    page.classList.remove('has-workflow-selection');
+    inspector?.setAttribute('aria-hidden', 'true');
+    if (inspectorEmpty) inspectorEmpty.hidden = false;
+    if (inspectorContent) inspectorContent.hidden = true;
   };
 
   const nodeModel = new Map((model.nodes || []).map((item) => [item.id, item]));
@@ -147,6 +184,8 @@
     const item = nodeModel.get(id);
     if (!item) return;
     nodes.forEach((node) => node.classList.toggle('is-selected', node.dataset.workflowNode === id));
+    page.classList.add('has-workflow-selection');
+    inspector?.setAttribute('aria-hidden', 'false');
     if (inspectorEmpty) inspectorEmpty.hidden = true;
     if (inspectorContent) inspectorContent.hidden = false;
     if (detailEyebrow) detailEyebrow.textContent = item.eyebrow || 'NODE DETAILS';
@@ -174,6 +213,7 @@
   nodes.forEach((node, id) => {
     node.addEventListener('click', () => selectNode(id));
   });
+  page.querySelector('[data-workflow-detail-close]')?.addEventListener('click', clearSelection);
 
   viewport.addEventListener('pointerdown', (event) => {
     if (event.button !== 0 || event.target.closest('[data-workflow-node]')) return;
@@ -184,6 +224,7 @@
       originX: view.x,
       originY: view.y,
     };
+    autoFit = false;
     viewport.classList.add('is-panning');
     try { viewport.setPointerCapture(event.pointerId); } catch (_error) {}
     event.preventDefault();
@@ -209,31 +250,30 @@
     const rect = viewport.getBoundingClientRect();
     const pointerX = event.clientX - rect.left;
     const pointerY = event.clientY - rect.top;
-    const boardX = (pointerX - view.x) / view.scale;
-    const boardY = (pointerY - view.y) / view.scale;
-    const scale = clamp(view.scale * (event.deltaY < 0 ? 1.08 : 0.92), 0.32, 1.7);
-    view.scale = scale;
-    view.x = pointerX - boardX * scale;
-    view.y = pointerY - boardY * scale;
-    setTransform();
+    zoomAtPoint(view.scale * (event.deltaY < 0 ? 1.08 : 0.92), pointerX, pointerY);
   }, { passive: false });
 
-  page.querySelector('[data-workflow-zoom-in]')?.addEventListener('click', () => zoomAtCenter(view.scale + 0.12));
-  page.querySelector('[data-workflow-zoom-out]')?.addEventListener('click', () => zoomAtCenter(view.scale - 0.12));
+  page.querySelector('[data-workflow-zoom-in]')?.addEventListener('click', () => zoomAtCenter(view.scale + 0.10));
+  page.querySelector('[data-workflow-zoom-out]')?.addEventListener('click', () => zoomAtCenter(view.scale - 0.10));
   page.querySelector('[data-workflow-fit]')?.addEventListener('click', fitView);
   page.querySelector('[data-workflow-reset]')?.addEventListener('click', () => {
-    view.scale = 1;
-    view.x = 24;
-    view.y = 24;
-    setTransform();
-  });
-
-  const redraw = () => window.requestAnimationFrame(drawEdges);
-  window.addEventListener('resize', () => {
-    redraw();
+    clearSelection();
     fitView();
   });
 
-  drawEdges();
-  fitView();
+  const redraw = () => window.requestAnimationFrame(drawEdges);
+  const resizeObserver = new ResizeObserver(() => {
+    redraw();
+    if (autoFit) fitView();
+  });
+  resizeObserver.observe(viewport);
+
+  const initialLayout = () => {
+    drawEdges();
+    fitView();
+  };
+  window.requestAnimationFrame(() => window.requestAnimationFrame(initialLayout));
+  if (document.fonts?.ready) {
+    document.fonts.ready.then(() => window.requestAnimationFrame(initialLayout)).catch(() => {});
+  }
 })();

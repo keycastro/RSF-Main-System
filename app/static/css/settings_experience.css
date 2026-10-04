@@ -70,3 +70,38 @@ body.page-settings-dedicated .workflow-diagram-viewport,body.page-settings-dedic
 @media(max-width:1050px){.settings-experience-grid{grid-template-columns:240px minmax(0,1fr)}.settings-content-columns{grid-template-columns:1fr}}
 @media(max-width:780px){body.page-settings-dedicated .content-wrap{padding:8px}.settings-experience{border-radius:10px}.settings-experience-topbar{padding:0 10px}.settings-experience-grid{grid-template-columns:1fr}.settings-experience-nav{border-right:0;border-bottom:1px solid rgba(201,169,94,.16);padding:12px}.settings-experience-nav-head{padding-bottom:10px}.settings-experience-nav nav{grid-template-columns:repeat(2,minmax(0,1fr))}.settings-experience-nav a{min-height:52px;grid-template-columns:34px minmax(0,1fr)}.settings-nav-icon{width:32px;height:32px}.settings-nav-icon svg{width:19px;height:19px}.settings-experience-content{padding:16px}.settings-experience-topbar>small{display:none}}
 @media(max-width:520px){.settings-experience-nav nav{grid-template-columns:1fr}.settings-experience-back span:last-child{display:none}.settings-content-heading h2{font-size:25px}}
+
+
+/* v1.18.205 — match the dedicated Settings footprint to the normal RSF working panel. */
+@media(min-width:781px){
+  body.page-settings-dedicated{overflow:hidden}
+  body.page-settings-dedicated .content-wrap{
+    width:100%;
+    height:100vh;
+    box-sizing:border-box;
+    padding:8px;
+    overflow:hidden;
+  }
+  .settings-experience{
+    width:100%;
+    max-width:none;
+    height:calc(100vh - 16px);
+    min-height:0;
+    margin:0;
+    border-radius:14px;
+  }
+  .settings-experience-topbar{height:72px;min-height:72px}
+  .settings-experience-grid{
+    grid-template-columns:290px minmax(0,1fr);
+    height:calc(100% - 72px);
+    min-height:0;
+  }
+  .settings-experience-nav{min-height:0;overflow:auto}
+  .settings-experience-content{
+    height:100%;
+    min-height:0;
+    box-sizing:border-box;
+    padding:18px;
+    overflow:hidden;
+  }
+}

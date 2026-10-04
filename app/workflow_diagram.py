@@ -527,9 +527,75 @@ def build_workflow_diagram(
     add_edge("db-deals", "db-documents", label="deal_id", style="data")
     add_edge("db-deals", "db-activity", label="entity history", style="data")
 
+    # v1.18.205 display-only compact layout.
+    # Semantic nodes, edges, lifecycle rules, and database relationships above remain unchanged.
+    compact_sections = {
+        "lead-sources": (30, 30, 210, 390),
+        "client-intake": (255, 30, 225, 390),
+        "pre-deal": (495, 30, 215, 390),
+        "active-pipeline": (725, 30, 230, 390),
+        "outcomes": (970, 30, 190, 390),
+        "managed": (1175, 30, 575, 390),
+        "actions": (255, 435, 1495, 200),
+        "data": (30, 650, 1720, 170),
+    }
+    for section in sections:
+        layout = compact_sections.get(section["id"])
+        if layout:
+            section["x"], section["y"], section["width"], section["height"] = layout
+
+    compact_nodes = {
+        "research-source": (50, 90, 170),
+        "website-form": (50, 205, 170),
+        "identity-check": (50, 320, 170),
+        "prospects-page": (280, 85, 175),
+        "website-inbox": (280, 175, 175),
+        "linked-deal-record": (280, 265, 175),
+        "source-reconcile": (280, 335, 175),
+        "backward-confirmation": (520, 325, 165),
+        "status-won": (995, 120, 140),
+        "status-lost": (995, 260, 140),
+        "status-support-maintenance": (1205, 90, 250),
+        "support-page": (1470, 90, 250),
+        "service-status": (1338, 250, 250),
+        "client-actions": (285, 490, 170),
+        "shared-fields": (480, 470, 170),
+        "notes": (665, 470, 170),
+        "email": (850, 470, 170),
+        "documents": (1035, 470, 170),
+        "manual-call": (480, 555, 170),
+        "whatsapp": (665, 555, 170),
+        "google-meet": (850, 555, 170),
+        "activity-log": (1035, 555, 170),
+    }
+
+    for index, code in enumerate(pre_statuses):
+        compact_nodes[f"status-{code.lower().replace('_', '-')}"] = (520, 85 + index * 90, 165)
+    for index, code in enumerate(pipeline_codes):
+        compact_nodes[f"status-{code.lower().replace('_', '-')}"] = (750, 75 + index * 85, 180)
+
+    db_ids = (
+        "db-prospects",
+        "db-inquiries",
+        "db-deals",
+        "db-conversations",
+        "db-messages",
+        "db-calls",
+        "db-whatsapp",
+        "db-documents",
+        "db-activity",
+    )
+    for index, node_id in enumerate(db_ids):
+        compact_nodes[node_id] = (70 + index * 185, 700, 165)
+
+    for node in nodes:
+        layout = compact_nodes.get(node["id"])
+        if layout:
+            node["x"], node["y"], node["width"] = layout
+
     return {
-        "board_width": 2540,
-        "board_height": 1625,
+        "board_width": 1780,
+        "board_height": 840,
         "sections": sections,
         "nodes": nodes,
         "edges": edges,

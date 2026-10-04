@@ -151,3 +151,132 @@ body.page-settings-dedicated .workflow-diagram-node--condition{border-color:#a17
 body.page-settings-dedicated .workflow-diagram-node--integration{border-color:#4f7f80;background:linear-gradient(180deg,#162627,#101818)}
 body.page-settings-dedicated .workflow-diagram-node--hub{border-color:#b8903c;background:linear-gradient(180deg,#302515,#19130d)}
 body.page-settings-dedicated .workflow-diagram-node--db-table{border-color:#666;background:linear-gradient(180deg,#1c1c1c,#111)}
+
+
+/* =========================================================
+   RSF Workspace v1.18.205 — Workflow Diagram display fix
+   Compact visual coordinates + full-size Settings canvas.
+   ========================================================= */
+body.page-settings-dedicated .workflow-diagram-page{
+  height:100%;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+body.page-settings-dedicated .workflow-diagram-head{
+  flex:0 0 auto;
+  margin-bottom:8px;
+  padding:12px 14px;
+}
+body.page-settings-dedicated .workflow-diagram-head h1{font-size:30px}
+body.page-settings-dedicated .workflow-diagram-toolbar{
+  flex:0 0 auto;
+  margin-bottom:8px;
+}
+body.page-settings-dedicated .workflow-diagram-layout{
+  position:relative;
+  display:block;
+  flex:1 1 auto;
+  min-height:0;
+}
+body.page-settings-dedicated .workflow-diagram-viewport{
+  width:100%;
+  height:100%;
+  min-height:0;
+  border-radius:12px;
+}
+body.page-settings-dedicated .workflow-diagram-inspector{
+  position:absolute;
+  z-index:12;
+  top:12px;
+  right:12px;
+  bottom:12px;
+  width:min(300px,calc(100% - 24px));
+  height:auto;
+  min-height:0;
+  max-height:none;
+  padding:16px;
+  padding-top:42px;
+  transform:translateX(calc(100% + 28px));
+  opacity:0;
+  pointer-events:none;
+  transition:transform .16s ease,opacity .16s ease;
+  box-shadow:0 18px 46px rgba(0,0,0,.40);
+}
+body.page-settings-dedicated .workflow-diagram-page.has-workflow-selection .workflow-diagram-inspector{
+  transform:translateX(0);
+  opacity:1;
+  pointer-events:auto;
+}
+.workflow-diagram-inspector-close{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:28px;
+  height:28px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(201,169,94,.28);
+  border-radius:7px;
+  background:rgba(201,169,94,.05);
+  color:#d9c291;
+  font:800 18px/1 Inter,system-ui,sans-serif;
+  cursor:pointer;
+}
+.workflow-diagram-inspector-close:hover{background:rgba(201,169,94,.12);border-color:rgba(201,169,94,.58)}
+.workflow-diagram-inspector-close:focus-visible{outline:2px solid #d6b65f;outline-offset:2px}
+body.page-settings-dedicated .workflow-diagram-notes{
+  flex:0 0 auto;
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  margin-top:8px;
+  padding:9px 11px;
+  overflow:hidden;
+}
+body.page-settings-dedicated .workflow-diagram-notes strong{
+  flex:0 0 auto;
+  margin:1px 4px 0 0;
+  white-space:nowrap;
+}
+body.page-settings-dedicated .workflow-diagram-notes p{
+  margin:0;
+  font-size:9.5px;
+  line-height:1.35;
+}
+body.page-settings-dedicated .workflow-diagram-node{
+  min-height:66px;
+  padding:8px 9px;
+}
+body.page-settings-dedicated .workflow-diagram-node-eyebrow{
+  margin-bottom:4px;
+  font-size:8px;
+}
+body.page-settings-dedicated .workflow-diagram-node>strong{
+  font-size:12px;
+  line-height:1.15;
+}
+body.page-settings-dedicated .workflow-diagram-node-badge{
+  margin-top:5px;
+  font-size:8px;
+  padding:2px 5px;
+}
+body.page-settings-dedicated .workflow-diagram-section-head{padding:9px 10px}
+body.page-settings-dedicated .workflow-diagram-section-head strong{font-size:11px}
+body.page-settings-dedicated .workflow-diagram-section-head span{font-size:8.5px}
+@media(max-width:1180px){
+  body.page-settings-dedicated .workflow-diagram-layout{display:block}
+  body.page-settings-dedicated .workflow-diagram-inspector{
+    top:10px;
+    right:10px;
+    bottom:10px;
+    width:min(290px,calc(100% - 20px));
+    height:auto;
+    min-height:0;
+    max-height:none;
+  }
+}
+@media(max-width:760px){
+  body.page-settings-dedicated .workflow-diagram-notes{display:block}
+  body.page-settings-dedicated .workflow-diagram-notes p{margin-top:4px}
+}

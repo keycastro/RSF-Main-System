@@ -79,8 +79,25 @@ class WorkflowDiagramTests(unittest.TestCase):
         self.assertIn("pointerdown", js)
         self.assertNotIn("<form", template)
 
+    def test_diagram_uses_compact_panel_friendly_layout(self):
+        workflow = self.read("app/workflow_diagram.py")
+        self.assertIn('"board_width": 1780', workflow)
+        self.assertIn('"board_height": 840', workflow)
+        self.assertIn("compact_sections", workflow)
+        self.assertIn("compact_nodes", workflow)
+
+    def test_fit_uses_rendered_content_bounds_and_inspector_is_overlay(self):
+        js = self.read("app/static/js/workflow_diagram.js")
+        css = self.read("app/static/css/workflow_diagram.css")
+        template = self.read("app/templates/workflow_diagram.html")
+        self.assertIn("getContentBounds", js)
+        self.assertIn("fitBounds", js)
+        self.assertIn("has-workflow-selection", js)
+        self.assertIn("position:absolute", css)
+        self.assertIn("data-workflow-detail-close", template)
+
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.204")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.205")
 
 
 if __name__ == "__main__":
