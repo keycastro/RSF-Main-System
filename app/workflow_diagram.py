@@ -552,7 +552,7 @@ def build_workflow_diagram(
         "website-inbox": (280, 175, 175),
         "linked-deal-record": (280, 265, 175),
         "source-reconcile": (280, 335, 175),
-        "backward-confirmation": (520, 325, 165),
+        "backward-confirmation": (520, 340, 165),
         "status-won": (995, 120, 140),
         "status-lost": (995, 260, 140),
         "status-support-maintenance": (1205, 90, 250),

@@ -95,6 +95,8 @@ class WorkflowDiagramTests(unittest.TestCase):
         self.assertIn("has-workflow-selection", js)
         self.assertIn("position:absolute", css)
         self.assertIn("data-workflow-detail-close", template)
+        settings = self.read("app/templates/settings.html")
+        self.assertIn("settings-experience--{{ active_section }}", settings)
 
     def test_version_advanced(self):
         self.assertEqual(self.read("VERSION.txt").strip(), "1.18.205")

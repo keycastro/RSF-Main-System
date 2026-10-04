@@ -105,3 +105,11 @@ body.page-settings-dedicated .workflow-diagram-viewport,body.page-settings-dedic
     overflow:hidden;
   }
 }
+
+
+/* v1.18.205 — only Workflow Diagram locks its content area to the panel viewport.
+   Other Settings sections remain vertically scrollable. */
+@media(min-width:781px){
+  .settings-experience-content{overflow:auto}
+  .settings-experience--workflow .settings-experience-content{overflow:hidden}
+}

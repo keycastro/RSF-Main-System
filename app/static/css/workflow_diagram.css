@@ -178,6 +178,7 @@ body.page-settings-dedicated .workflow-diagram-layout{
   display:block;
   flex:1 1 auto;
   min-height:0;
+  overflow:hidden;
 }
 body.page-settings-dedicated .workflow-diagram-viewport{
   width:100%;

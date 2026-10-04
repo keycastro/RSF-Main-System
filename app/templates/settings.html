@@ -1,5 +1,5 @@
 {% extends 'base.html' %}{% block content %}
-<section class="settings-experience" data-settings-experience data-settings-fallback="{{ url_for('main.prospects') }}">
+<section class="settings-experience settings-experience--{{ active_section }}" data-settings-experience data-settings-fallback="{{ url_for('main.prospects') }}">
   <header class="settings-experience-topbar">
     <button class="settings-experience-back" type="button" data-settings-exit aria-label="Back to previous RSF screen"><span aria-hidden="true">←</span><span>Back</span></button>
     <div><span>SETTINGS</span><h1>Settings</h1></div>
