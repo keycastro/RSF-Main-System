@@ -20,6 +20,7 @@
   {% endif %}
   {% if request.endpoint == 'main.settings' and request.args.get('section','general') == 'workflow' %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/workflow_diagram.css') }}?v={{ app_version }}">
+  <link rel="stylesheet" href="{{ url_for('main.workflow_diagram_layout_css') }}?v={{ app_version }}">
   {% endif %}
 </head>
 <body class="{% if request.endpoint in ['main.settings','main.account_security'] %}page-settings-dedicated{% endif %}{% if request.endpoint in ['main.messages_home','main.messages_thread'] %} page-messages{% endif %}"{% if g.user %} data-message-poll-url="{{ url_for('main.message_unread') }}" data-csrf="{{ csrf_token() }}"{% endif %}>

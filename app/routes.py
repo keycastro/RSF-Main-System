@@ -63,7 +63,7 @@ from .services import (
     validate_sale_amounts,
     utcnow_iso,
 )
-from .workflow_diagram import build_workflow_diagram
+from .workflow_diagram import build_workflow_diagram, build_workflow_layout_css
 
 bp = Blueprint("main", __name__)
 
@@ -1379,6 +1379,19 @@ def workflow_diagram():
     # Backward-compatible bookmark: Workflow Diagram now lives inside the
     # dedicated Founder Settings experience.
     return redirect(url_for("main.settings", section="workflow"))
+
+
+@bp.get("/admin/settings/workflow-layout.css")
+@admin_required
+def workflow_diagram_layout_css():
+    workflow = build_workflow_diagram(
+        PROSPECT_STATUS_LABELS,
+        DEAL_PRE_STATUS_STATUSES,
+        DEAL_ACTIVE_STATUSES,
+    )
+    response = Response(build_workflow_layout_css(workflow), mimetype="text/css")
+    response.headers["Cache-Control"] = "no-store, private, max-age=0"
+    return response
 
 
 @bp.post("/card-layout/<page_name>")

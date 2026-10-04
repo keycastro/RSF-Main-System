@@ -608,3 +608,55 @@ def build_workflow_diagram(
             "Solid gold/green paths are lifecycle flow; dashed paths represent conditions, synchronization, or optional integrations.",
         ],
     }
+
+
+def build_workflow_layout_css(workflow: Mapping[str, object]) -> str:
+    """Render the diagram geometry as same-origin external CSS.
+
+    The RSF private CSP intentionally disallows inline styles. Keeping critical
+    node/section geometry in a real stylesheet makes the layout deterministic
+    before JavaScript runs while preserving the strict style-src 'self' policy.
+    """
+
+    def css_id(value: object) -> str:
+        return str(value or "").replace("\\", "\\\\").replace('"', '\\"')
+
+    def px(value: object, fallback: int = 0) -> int:
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return fallback
+
+    lines = [
+        ".workflow-diagram-board{"
+        f"width:{px(workflow.get('board_width'), 1780)}px;"
+        f"height:{px(workflow.get('board_height'), 840)}px"
+        "}"
+    ]
+
+    for section in workflow.get("sections", ()) or ():
+        if not isinstance(section, Mapping):
+            continue
+        selector = css_id(section.get("id"))
+        lines.append(
+            f'.workflow-diagram-section[data-workflow-section="{selector}"]{{'
+            f'left:{px(section.get("x"))}px;'
+            f'top:{px(section.get("y"))}px;'
+            f'width:{px(section.get("width"))}px;'
+            f'height:{px(section.get("height"))}px'
+            "}"
+        )
+
+    for node in workflow.get("nodes", ()) or ():
+        if not isinstance(node, Mapping):
+            continue
+        selector = css_id(node.get("id"))
+        lines.append(
+            f'.workflow-diagram-node[data-workflow-node="{selector}"]{{'
+            f'left:{px(node.get("x"))}px;'
+            f'top:{px(node.get("y"))}px;'
+            f'width:{px(node.get("width"), 170)}px'
+            "}"
+        )
+
+    return "\n".join(lines) + "\n"

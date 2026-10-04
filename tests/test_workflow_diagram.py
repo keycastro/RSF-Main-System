@@ -93,9 +93,12 @@ class WorkflowDiagramTests(unittest.TestCase):
         self.assertNotIn('style="left:', template)
         self.assertNotIn('--workflow-board-width:', template)
         self.assertIn("data-workflow-section", template)
-        self.assertIn("applyModelLayout", js)
-        self.assertIn("element.style.left", js)
-        self.assertIn("element.style.top", js)
+        self.assertIn("data-workflow-section", template)
+        self.assertIn("build_workflow_layout_css", self.read("app/workflow_diagram.py"))
+        self.assertIn("workflow_diagram_layout_css", self.read("app/routes.py"))
+        self.assertIn("workflow_diagram_layout_css", base)
+        self.assertIn("layoutMatchesModel", js)
+        self.assertIn("applyEmergencyLayoutFallback", js)
         self.assertIn("?v={{ app_version }}", base)
 
     def test_fit_uses_rendered_content_bounds_and_inspector_is_overlay(self):
@@ -111,7 +114,7 @@ class WorkflowDiagramTests(unittest.TestCase):
         self.assertIn("settings-experience--{{ active_section }}", settings)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.206")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.207")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-/* RSF Workflow Diagram v1.18.205 */
+/* RSF Workflow Diagram v1.18.207 */
 (() => {
   const page = document.querySelector('[data-workflow-diagram]');
   if (!page) return;
@@ -16,26 +16,38 @@
     return;
   }
 
-  const applyModelLayout = () => {
+  const nodes = new Map(
+    Array.from(board.querySelectorAll('[data-workflow-node]')).map((node) => [node.dataset.workflowNode, node])
+  );
+  const sections = new Map(
+    Array.from(board.querySelectorAll('[data-workflow-section]')).map((section) => [section.dataset.workflowSection, section])
+  );
+
+  const layoutMatchesModel = () => {
+    const first = (model.nodes || []).find((item) => nodes.has(item.id));
+    if (!first) return false;
+    const element = nodes.get(first.id);
+    return Math.abs(element.offsetLeft - Number(first.x || 0)) <= 1
+      && Math.abs(element.offsetTop - Number(first.y || 0)) <= 1;
+  };
+
+  const applyEmergencyLayoutFallback = () => {
     const boardWidth = Number(model.board_width || 1780);
     const boardHeight = Number(model.board_height || 840);
     board.style.width = `${boardWidth}px`;
     board.style.height = `${boardHeight}px`;
-    svg.setAttribute('width', String(boardWidth));
-    svg.setAttribute('height', String(boardHeight));
-    svg.setAttribute('viewBox', `0 0 ${boardWidth} ${boardHeight}`);
 
-    (model.sections || []).forEach((section) => {
-      const element = board.querySelector(`[data-workflow-section="${CSS.escape(section.id)}"]`);
+    (model.sections || []).forEach((item) => {
+      const element = sections.get(item.id);
       if (!element) return;
-      element.style.left = `${Number(section.x || 0)}px`;
-      element.style.top = `${Number(section.y || 0)}px`;
-      element.style.width = `${Number(section.width || 0)}px`;
-      element.style.height = `${Number(section.height || 0)}px`;
+      element.style.left = `${Number(item.x || 0)}px`;
+      element.style.top = `${Number(item.y || 0)}px`;
+      element.style.width = `${Number(item.width || 0)}px`;
+      element.style.height = `${Number(item.height || 0)}px`;
     });
 
     (model.nodes || []).forEach((item) => {
-      const element = board.querySelector(`[data-workflow-node="${CSS.escape(item.id)}"]`);
+      const element = nodes.get(item.id);
       if (!element) return;
       element.style.left = `${Number(item.x || 0)}px`;
       element.style.top = `${Number(item.y || 0)}px`;
@@ -43,11 +55,9 @@
     });
   };
 
-  applyModelLayout();
-
-  const nodes = new Map(
-    Array.from(board.querySelectorAll('[data-workflow-node]')).map((node) => [node.dataset.workflowNode, node])
-  );
+  if (!layoutMatchesModel()) {
+    applyEmergencyLayoutFallback();
+  }
   const inspector = page.querySelector('[data-workflow-inspector]');
   const inspectorEmpty = page.querySelector('[data-workflow-inspector-empty]');
   const inspectorContent = page.querySelector('[data-workflow-inspector-content]');
