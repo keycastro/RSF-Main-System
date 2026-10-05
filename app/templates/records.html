@@ -112,19 +112,6 @@
             data-record-group="{{ record.lifecycle_group }}"
             data-record-search="{{ record.search_text }}"
           >
-            {% if g.user and g.user['role'] == 'admin' %}
-            <td class="records-select-col">
-              <input
-                type="checkbox"
-                name="record_keys"
-                value="{{ record.record_key }}"
-                data-record-row-check
-                {% if not record.can_delete %}disabled title="Protected while active or managed"{% endif %}
-                aria-label="Select General Record for {{ record.client_title }}"
-              >
-            </td>
-            {% endif %}
-
             <td class="general-records-client">
               <a href="{{ url_for('main.record_detail', record_key=record.record_key) }}">{{ record.client_title }}</a>
               <span class="general-records-client-meta">
