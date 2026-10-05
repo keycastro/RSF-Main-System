@@ -5882,28 +5882,22 @@ document.addEventListener('click', (event) => {
   const filterToggle = page.querySelector('[data-records-filter-toggle]');
   const filterPanel = page.querySelector('[data-records-filter-panel]');
   const filterCount = page.querySelector('[data-records-filter-count]');
-  const filterInput = page.querySelector('[data-records-filter-input]');
-  const sourceInput = page.querySelector('[data-records-source-input]');
-  const groupInput = page.querySelector('[data-records-group-input]');
   const empty = page.querySelector('[data-records-empty]');
   const filterEmpty = page.querySelector('[data-records-filter-empty]');
-  const selectAll = page.querySelector('[data-records-select-all]');
-  const rowChecks = Array.from(page.querySelectorAll('[data-record-row-check]'));
-  const selectedCount = page.querySelector('[data-records-selected-count]');
-  const deleteTrigger = page.querySelector('[data-records-delete-trigger]');
-  const bulkForm = page.querySelector('[data-records-bulk-form]');
+  const removeButtons = Array.from(page.querySelectorAll('[data-records-remove-trigger]'));
+  const removeUrl = page.dataset.recordsRemoveUrl || '';
+  const csrfToken = page.dataset.recordsCsrf || '';
   const confirmDialog = page.querySelector('[data-records-delete-confirm]');
   const confirmMessage = page.querySelector('[data-records-delete-confirm-message]');
   const confirmYes = page.querySelector('[data-records-delete-yes]');
   const confirmNo = page.querySelector('[data-records-delete-no]');
-  const manageToggle = page.querySelector('[data-records-manage-toggle]');
-  const manageCancel = page.querySelector('[data-records-manage-cancel]');
 
   let activeStatus = page.dataset.recordsInitialFilter || 'ALL';
   let activeSource = page.dataset.recordsInitialSource || 'ALL';
   let activeGroup = page.dataset.recordsInitialGroup || 'ALL';
   let searchTerm = '';
   let filtersOpen = activeStatus !== 'ALL' || activeSource !== 'ALL' || activeGroup !== 'ALL';
+  let pendingRemove = null;
 
   const setFiltersOpen = (open) => {
     filtersOpen = Boolean(open);
@@ -5919,45 +5913,6 @@ document.addEventListener('click', (event) => {
     const count = activeFilterCount();
     filterCount.textContent = String(count);
     filterCount.hidden = count === 0;
-  };
-
-  const visibleRowChecks = () => rowChecks.filter((check) => {
-    const row = check.closest('[data-master-record-row]');
-    return row && !row.hidden;
-  });
-
-  const visibleDeletableChecks = () => visibleRowChecks().filter((check) => !check.disabled);
-
-  const clearSelection = () => {
-    rowChecks.forEach((check) => { check.checked = false; });
-    if (selectAll) {
-      selectAll.checked = false;
-      selectAll.indeterminate = false;
-    }
-  };
-
-  const setManageMode = (enabled) => {
-    page.dataset.recordsManageMode = enabled ? 'true' : 'false';
-    manageToggle?.setAttribute('aria-pressed', enabled ? 'true' : 'false');
-    if (enabled) setFiltersOpen(false);
-    if (!enabled) clearSelection();
-    updateSelection();
-  };
-
-  const updateSelection = () => {
-    const selected = rowChecks.filter((check) => check.checked && !check.disabled);
-    const visibleDeletable = visibleDeletableChecks();
-    const allVisibleSelected = visibleDeletable.length > 0
-      && visibleDeletable.every((check) => check.checked);
-
-    if (selectedCount) selectedCount.textContent = `Selected ${selected.length}`;
-    if (deleteTrigger) deleteTrigger.disabled = selected.length === 0;
-
-    if (selectAll) {
-      selectAll.checked = allVisibleSelected;
-      selectAll.indeterminate = selected.length > 0 && !allVisibleSelected;
-      selectAll.disabled = visibleDeletable.length === 0;
-    }
   };
 
   const syncUrl = () => {
@@ -5984,9 +5939,6 @@ document.addEventListener('click', (event) => {
     if (statusSelect) statusSelect.value = activeStatus;
     if (sourceSelect) sourceSelect.value = activeSource;
     if (lifecycleSelect) lifecycleSelect.value = activeGroup;
-    if (filterInput) filterInput.value = activeStatus;
-    if (sourceInput) sourceInput.value = activeSource;
-    if (groupInput) groupInput.value = activeGroup;
 
     const visibleRows = rows.filter((row) => !row.hidden);
     if (visibleCount) visibleCount.textContent = String(visibleRows.length);
@@ -5994,87 +5946,95 @@ document.addEventListener('click', (event) => {
     if (empty) empty.hidden = rows.length !== 0;
     if (filterEmpty) filterEmpty.hidden = rows.length === 0 || visibleRows.length !== 0;
     updateFilterCount();
-    updateSelection();
     syncUrl();
   };
-
-  filterToggle?.addEventListener('click', () => setFiltersOpen(!filtersOpen));
-
-  statusSelect?.addEventListener('change', () => {
-    activeStatus = statusSelect.value || 'ALL';
-    clearSelection();
-    applyFilters();
-  });
-
-  sourceSelect?.addEventListener('change', () => {
-    activeSource = sourceSelect.value || 'ALL';
-    clearSelection();
-    applyFilters();
-  });
-
-  lifecycleSelect?.addEventListener('change', () => {
-    activeGroup = lifecycleSelect.value || 'ALL';
-    clearSelection();
-    applyFilters();
-  });
-
-  searchInput?.addEventListener('input', () => {
-    searchTerm = String(searchInput.value || '').trim().toLowerCase();
-    clearSelection();
-    applyFilters();
-  });
-
-  clearFilters?.addEventListener('click', () => {
-    activeStatus = 'ALL';
-    activeSource = 'ALL';
-    activeGroup = 'ALL';
-    clearSelection();
-    applyFilters();
-  });
-
-  manageToggle?.addEventListener('click', () => {
-    setManageMode(page.dataset.recordsManageMode !== 'true');
-  });
-  manageCancel?.addEventListener('click', () => setManageMode(false));
-
-  selectAll?.addEventListener('change', () => {
-    const shouldSelect = selectAll.checked;
-    visibleDeletableChecks().forEach((check) => { check.checked = shouldSelect; });
-    updateSelection();
-  });
-
-  rowChecks.forEach((check) => check.addEventListener('change', updateSelection));
 
   const closeConfirm = () => {
     if (confirmDialog?.open) confirmDialog.close();
   };
 
-  deleteTrigger?.addEventListener('click', () => {
-    const count = rowChecks.filter((check) => check.checked && !check.disabled).length;
-    if (!count || !bulkForm) return;
+  const submitRemoval = () => {
+    if (!pendingRemove || !removeUrl || !csrfToken) return;
+    const recordKey = pendingRemove.dataset.recordKey || '';
+    if (!recordKey) return;
 
-    const text = `Permanently delete ${count} selected inactive General Record${count === 1 ? '' : 's'}? This removes linked Prospect / Website source data, Deals, Deal documents, and dedicated history. Shared client conversations still used by other records are preserved. Active pipeline and Support & Maintenance records are protected.`;
-    if (confirmMessage) confirmMessage.textContent = text;
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = removeUrl;
+    form.hidden = true;
 
-    if (confirmDialog && typeof confirmDialog.showModal === 'function') {
-      confirmDialog.showModal();
-      return;
-    }
-    if (window.confirm(text)) bulkForm.requestSubmit();
+    const fields = {
+      csrf_token: csrfToken,
+      record_key: recordKey,
+      confirm_delete: 'yes',
+    };
+    Object.entries(fields).forEach(([name, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+  };
+
+  removeButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      pendingRemove = button;
+      const clientName = button.dataset.recordClient || 'this client';
+      const text = `Remove ${clientName} from the whole RSF system? Choose Yes to continue or No to cancel.`;
+      if (confirmMessage) confirmMessage.textContent = text;
+
+      if (confirmDialog && typeof confirmDialog.showModal === 'function') {
+        confirmDialog.showModal();
+        return;
+      }
+      if (window.confirm(text)) submitRemoval();
+      else pendingRemove = null;
+    });
   });
 
   confirmYes?.addEventListener('click', () => {
     closeConfirm();
-    bulkForm?.requestSubmit();
+    submitRemoval();
   });
-  confirmNo?.addEventListener('click', closeConfirm);
+  confirmNo?.addEventListener('click', () => {
+    closeConfirm();
+    pendingRemove = null;
+  });
   confirmDialog?.addEventListener('cancel', (event) => {
     event.preventDefault();
     closeConfirm();
+    pendingRemove = null;
+  });
+
+  filterToggle?.addEventListener('click', () => setFiltersOpen(!filtersOpen));
+  statusSelect?.addEventListener('change', () => {
+    activeStatus = statusSelect.value || 'ALL';
+    applyFilters();
+  });
+  sourceSelect?.addEventListener('change', () => {
+    activeSource = sourceSelect.value || 'ALL';
+    applyFilters();
+  });
+  lifecycleSelect?.addEventListener('change', () => {
+    activeGroup = lifecycleSelect.value || 'ALL';
+    applyFilters();
+  });
+  searchInput?.addEventListener('input', () => {
+    searchTerm = String(searchInput.value || '').trim().toLowerCase();
+    applyFilters();
+  });
+  clearFilters?.addEventListener('click', () => {
+    activeStatus = 'ALL';
+    activeSource = 'ALL';
+    activeGroup = 'ALL';
+    applyFilters();
   });
 
   setFiltersOpen(filtersOpen);
-  setManageMode(false);
   applyFilters();
 })();
 
