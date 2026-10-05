@@ -592,16 +592,14 @@
 .app-shell > .sidebar .sidebar-footer .signout{
   color:#eadfce;
 }
-.app-shell > .sidebar .sidebar-session-actions .signout,
-.app-shell > .sidebar .sidebar-session-actions .settings-footer-link{
+.app-shell > .sidebar .sidebar-session-actions .sidebar-footer-action{
   color:#eadfce;
   border:0;
   border-radius:0;
   background:transparent;
   box-shadow:none;
 }
-.app-shell > .sidebar .sidebar-session-actions .signout:hover,
-.app-shell > .sidebar .sidebar-session-actions .settings-footer-link:hover{
+.app-shell > .sidebar .sidebar-session-actions .sidebar-footer-action:hover{
   color:#fff8ed;
   background:transparent;
 }
