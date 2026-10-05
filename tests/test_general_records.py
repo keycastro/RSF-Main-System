@@ -147,7 +147,7 @@ class GeneralRecordsTests(unittest.TestCase):
             self.assertIn(color, css)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.218")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.219")
 
 
 if __name__ == "__main__":
