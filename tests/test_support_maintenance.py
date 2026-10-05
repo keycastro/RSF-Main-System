@@ -194,5 +194,29 @@ class SupportMaintenanceTests(unittest.TestCase):
         self.assertIn("layout_json: payloadJson", js)
 
 
+    def test_support_header_client_name_can_grow_without_clipping(self):
+        template = self.read("app/templates/support_maintenance.html")
+        css = self.read("app/static/css/workspace_v20.css")
+        self.assertIn("<strong>{{ deal['client_name'] or '—' }}</strong>", template)
+        self.assertIn("v1.18.218 — Support header text-safe row sizing.", css)
+        self.assertIn("grid-template-rows:repeat(2,minmax(20px,auto));", css)
+        self.assertIn("overflow:visible;", css)
+        self.assertIn("label:first-child>strong", css)
+        self.assertIn("overflow-wrap:anywhere;", css)
+
+    def test_support_header_fix_is_scoped_and_preserves_right_column(self):
+        css = self.read("app/static/css/workspace_v20.css")
+        self.assertIn(
+            ".support-maintenance-page .support-maintenance-card .deal-card-identifiers",
+            css,
+        )
+        self.assertIn(
+            ".support-maintenance-page .support-maintenance-card .deal-card-linked",
+            css,
+        )
+        self.assertIn("grid-template-columns:minmax(0,1fr) auto;", css)
+        self.assertIn("min-width:max-content;", css)
+
+
 if __name__ == "__main__":
     unittest.main()
