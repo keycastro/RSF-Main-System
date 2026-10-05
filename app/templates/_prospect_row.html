@@ -156,11 +156,5 @@
     </div>
   </details>
 
-  <form class="prospect-delete-form prospect-card-delete" method="post" action="{{ url_for('main.prospect_delete', prospect_id=prospect['id']) }}" data-prospect-delete-form>
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <button class="prospect-delete-button" type="submit" aria-label="Permanently delete {{ prospect['name'] }}" title="Delete prospect">
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h10l-1 11H8L7 9Zm3 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z" fill="currentColor"/></svg>
-    </button>
-  </form>
   <span class="prospect-card-log">Added: {{ prospect['created_at']|dt }}</span>
 </article>
