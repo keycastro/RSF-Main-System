@@ -41,6 +41,7 @@
   {% elif name == 'workflow' %}<circle cx="6" cy="6" r="2.1"/><circle cx="18" cy="6" r="2.1"/><circle cx="12" cy="18" r="2.1"/><path d="M8.1 6h7.8M7.5 7.7l3.4 7.7M16.5 7.7l-3.4 7.7"/>
   {% elif name == 'activity' %}<path d="M3.2 12a8.8 8.8 0 1 0 2.1-5.7L3 8.7"/><path d="M3.1 4.4v4.5h4.5M12 7.2v5.1l3.4 2"/>
   {% elif name == 'settings' %}<path d="M12 15.3a3.3 3.3 0 1 0 0-6.6 3.3 3.3 0 0 0 0 6.6Z"/><path d="m19 13.2 1.5 1.2-1.7 3-1.9-.7a7.8 7.8 0 0 1-1.9 1.1l-.3 2h-3.4l-.3-2a7.8 7.8 0 0 1-1.9-1.1l-1.9.7-1.7-3L7 13.2a7 7 0 0 1 0-2.4L5.5 9.6l1.7-3 1.9.7A7.8 7.8 0 0 1 11 6.2l.3-2h3.4l.3 2a7.8 7.8 0 0 1 1.9 1.1l1.9-.7 1.7 3-1.5 1.2a7 7 0 0 1 0 2.4Z"/>
+  {% elif name == 'logout' %}<path d="M10 4H5.8A1.8 1.8 0 0 0 4 5.8v12.4A1.8 1.8 0 0 0 5.8 20H10"/><path d="m13.5 8.2 3.8 3.8-3.8 3.8M17 12H8.5"/>
   {% elif name == 'profile' %}<path d="M12 12.1a4.1 4.1 0 1 0 0-8.2 4.1 4.1 0 0 0 0 8.2Z"/><path d="M4.3 20.2c.7-4.1 3.2-6.2 7.7-6.2s7 2.1 7.7 6.2"/>
   {% endif %}
 </svg>
@@ -94,10 +95,10 @@
       <div class="sidebar-session-actions">
         <form method="post" action="{{ url_for('main.logout') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button class="signout" type="submit">Sign out</button>
+          <button class="signout sidebar-footer-action" type="submit"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("logout") }}</span><span>Sign out</span></button>
         </form>
         {% if g.user.role == 'admin' %}
-        <a class="settings-footer-link" data-settings-entry href="{{ url_for('main.settings', section='workflow') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("settings") }}</span><span>Settings</span></a>
+        <a class="settings-footer-link sidebar-footer-action" data-settings-entry href="{{ url_for('main.settings', section='workflow') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("settings") }}</span><span>Settings</span></a>
         {% endif %}
       </div>
       <small class="version">RSF Workspace · v{{ app_version }}</small>
