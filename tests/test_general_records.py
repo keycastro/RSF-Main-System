@@ -37,26 +37,62 @@ class GeneralRecordsTests(unittest.TestCase):
         self.assertNotIn("<th>Source</th>", template)
         self.assertNotIn("<th>Linked Records</th>", template)
 
-    def test_advanced_filters_and_management_are_secondary(self):
+    def test_filters_remain_secondary_and_row_action_is_direct(self):
         template = self.read("app/templates/records.html")
         css = self.read("app/static/css/general_records.css")
         js = self.read("app/static/js/app.js")
         self.assertIn("data-records-filter-panel hidden", template)
-        self.assertIn("data-records-manage-toggle", template)
-        self.assertIn(".general-records-filter-panel[hidden]{display:none!important}", css)
-        self.assertIn("setFiltersOpen", js)
-        self.assertIn("activeFilterCount", js)
+        self.assertNotIn("data-records-manage-toggle", template)
+        self.assertNotIn("data-record-row-check", template)
+        self.assertIn("data-records-remove-trigger", template)
+        self.assertIn(".general-records-row-actions", css)
+        self.assertIn("data-records-remove-trigger", js)
 
     def test_empty_states_respect_hidden_attribute(self):
         css = self.read("app/static/css/general_records.css")
         self.assertIn(".general-records-empty[hidden]{display:none!important}", css)
 
-    def test_destructive_controls_are_intentional_manage_mode(self):
-        css = self.read("app/static/css/general_records.css")
+    def test_permanent_control_is_centralized_in_general_records(self):
+        prospects = self.read("app/templates/_prospect_row.html")
+        inquiries = self.read("app/templates/inquiries.html")
+        records = self.read("app/templates/records.html")
+        routes = self.read("app/routes.py")
+        self.assertNotIn("data-prospect-delete-form", prospects)
+        self.assertNotIn("website-inquiry-delete-form", inquiries)
+        self.assertIn("general-records-row-remove", records)
+        self.assertIn("def _delete_master_record_tree(db, record: dict)", routes)
+        self.assertIn('"general_records_only"', routes)
+        self.assertIn('request.form.get("confirm_delete"', routes)
+
+    def test_general_records_action_order_is_remove_then_open(self):
+        template = self.read("app/templates/records.html")
+        remove_at = template.index("general-records-row-remove")
+        open_at = template.index('class="general-records-open"')
+        self.assertLess(remove_at, open_at)
+
+    def test_confirmation_has_yes_and_no(self):
+        template = self.read("app/templates/records.html")
         js = self.read("app/static/js/app.js")
-        self.assertIn('data-records-manage-mode="false"', self.read("app/templates/records.html"))
-        self.assertIn('.general-records-page[data-records-manage-mode="true"] .records-select-col', css)
-        self.assertIn("setManageMode", js)
+        self.assertIn("data-records-delete-no", template)
+        self.assertIn("data-records-delete-yes", template)
+        self.assertIn("submitRemoval", js)
+        self.assertIn("confirm_delete: 'yes'", js)
+
+    def test_master_delete_tree_cleans_linked_internal_history(self):
+        routes = self.read("app/routes.py")
+        for marker in (
+            '"communication_notes"',
+            '"whatsapp_messages"',
+            '"manual_client_calls"',
+            '"ai_sales_calls"',
+            "DELETE FROM activity_log",
+            "DELETE FROM client_notifications",
+            'DELETE FROM client_conversations',
+            '_delete_rows_for_ids(db, "deals", "id", deal_ids)',
+            '_delete_rows_for_ids(db, "website_inquiries", "id", inquiry_ids)',
+            '_delete_rows_for_ids(db, "prospects", "id", prospect_ids)',
+        ):
+            self.assertIn(marker, routes)
 
     def test_brand_is_general_records_entry_point(self):
         base = self.read("app/templates/base.html")
@@ -111,7 +147,7 @@ class GeneralRecordsTests(unittest.TestCase):
             self.assertIn(color, css)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.214")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.217")
 
 
 if __name__ == "__main__":
