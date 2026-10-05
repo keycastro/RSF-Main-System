@@ -6,7 +6,6 @@
   data-records-initial-filter="{{ initial_filter }}"
   data-records-initial-source="{{ initial_source }}"
   data-records-initial-group="{{ initial_group }}"
-  data-records-manage-mode="false"
 >
   <header class="general-records-hero">
     <div>
@@ -70,9 +69,6 @@
 
     <div class="general-records-filter-actions">
       <button class="general-records-clear" type="button" data-records-clear>Clear filters</button>
-      {% if g.user and g.user['role'] == 'admin' %}
-      <button class="general-records-manage" type="button" data-records-manage-toggle aria-pressed="false">Manage records</button>
-      {% endif %}
     </div>
   </section>
 
