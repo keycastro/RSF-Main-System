@@ -116,7 +116,14 @@
             </td>
 
             <td class="records-action-col">
-              <a class="general-records-open" href="{{ url_for('main.record_detail', record_key=record.record_key) }}">Open</a>
+              <div class="general-records-row-actions">
+                {% if g.user and g.user['role'] == 'admin' %}
+                <button class="general-records-row-remove" type="button" data-records-remove-trigger data-record-key="{{ record.record_key }}" data-record-client="{{ record.client_title|e }}" aria-label="Remove client record" title="Remove client record">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h10l-1 11H8L7 9Zm3 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z" fill="currentColor"/></svg>
+                </button>
+                {% endif %}
+                <a class="general-records-open" href="{{ url_for('main.record_detail', record_key=record.record_key) }}">Open</a>
+              </div>
             </td>
           </tr>
           {% endfor %}
