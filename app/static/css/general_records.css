@@ -298,3 +298,16 @@ body:not(.page-settings-dedicated) .brand.brand-active{
   background:rgba(224,194,123,.08)!important;
   color:#e0c27b!important;
 }
+
+
+/* RSF v1.18.217 — General Records row action alignment. */
+.records-action-col{width:112px!important;text-align:right!important}
+.general-records-row-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px}
+.general-records-row-remove{
+  width:28px;height:28px;display:inline-grid;place-items:center;flex:0 0 28px;padding:0;
+  border:1px solid rgba(208,123,120,.48);border-radius:7px;background:rgba(208,123,120,.055);
+  color:#e08c87;cursor:pointer
+}
+.general-records-row-remove svg{width:14px;height:14px}
+.general-records-row-remove:hover{border-color:rgba(231,133,127,.78);background:rgba(208,123,120,.13);color:#f0a49f}
+.general-records-row-remove:focus-visible,.general-records-open:focus-visible{outline:2px solid rgba(212,180,95,.55);outline-offset:2px}
