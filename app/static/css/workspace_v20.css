@@ -7646,38 +7646,47 @@ body.card-layout-dragging-global *{cursor:grabbing!important;user-select:none!im
 }
 
 
-/* v1.18.215 — Founder footer actions share one clean treatment */
-.sidebar-session-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.sidebar-session-actions form{margin:0}
-.sidebar-session-actions .signout,
-.settings-footer-link{
+/* v1.18.216 — Sign out and Settings are one shared footer-action component */
+.sidebar-session-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sidebar-session-actions form{margin:0;display:flex}
+.sidebar-footer-action{
   display:inline-flex;
   align-items:center;
+  justify-content:flex-start;
   gap:6px;
-  min-height:auto;
-  padding:7px 4px;
+  min-height:34px;
+  padding:6px 3px;
   border:0;
   border-radius:0;
   background:transparent;
   color:#e9dcc8;
-  font-size:inherit;
-  font-weight:650;
+  font:inherit;
+  font-size:12.5px;
+  font-weight:700;
   line-height:1.2;
   text-decoration:none;
+  cursor:pointer;
+  appearance:none;
+  -webkit-appearance:none;
 }
-.settings-footer-link:hover,
-.sidebar-session-actions .signout:hover{
-  color:#fff8ed;
-  background:transparent;
-}
-.settings-footer-link .nav-symbol{
+.sidebar-footer-action .nav-symbol{
   width:16px;
   height:16px;
+  flex:0 0 16px;
+  display:grid;
+  place-items:center;
   color:currentColor;
   opacity:.9;
 }
-.settings-footer-link:focus-visible,
-.sidebar-session-actions .signout:focus-visible{
+.sidebar-footer-action .nav-symbol .ui-icon{
+  width:16px;
+  height:16px;
+}
+.sidebar-footer-action:hover{
+  color:#fff8ed;
+  background:transparent;
+}
+.sidebar-footer-action:focus-visible{
   outline:2px solid #c9a95e;
   outline-offset:2px;
   border-radius:4px;
