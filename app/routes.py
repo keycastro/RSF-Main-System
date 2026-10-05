@@ -2014,6 +2014,31 @@ def prospect_delete(prospect_id: int):
 
 
 
+@bp.get("/billing-payments")
+@login_required
+def billing_payments():
+    db = get_db()
+    rows = db.execute(
+        """SELECT d.id,d.management_fee,d.next_billing_date,
+                  CASE WHEN d.prospect_id IS NOT NULL THEN COALESCE(NULLIF(p.contact,''),i.name,d.contact_person,'')
+                       ELSE COALESCE(NULLIF(d.contact_person,''),i.name,'') END AS client_name
+           FROM deals d
+           LEFT JOIN prospects p ON p.id=d.prospect_id
+           LEFT JOIN website_inquiries i ON i.id=d.website_inquiry_id
+           WHERE (d.prospect_id IS NOT NULL AND p.status='SUPPORT_MAINTENANCE')
+              OR (d.prospect_id IS NULL
+                  AND d.website_inquiry_id IS NOT NULL
+                  AND i.workflow_status='SUPPORT_MAINTENANCE')
+           ORDER BY CASE WHEN COALESCE(d.next_billing_date,'')='' THEN 1 ELSE 0 END,
+                    d.next_billing_date ASC,d.updated_at DESC,d.id DESC"""
+    ).fetchall()
+    return render_template(
+        "billing_payments.html",
+        title="Billing & Payments",
+        billing_clients=rows,
+    )
+
+
 @bp.get("/support-maintenance")
 @login_required
 def support_maintenance():
