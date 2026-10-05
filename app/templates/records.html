@@ -146,8 +146,8 @@
   {% if g.user and g.user['role'] == 'admin' %}
   <dialog class="deal-status-confirm" data-records-delete-confirm aria-labelledby="records-delete-confirm-title">
     <div class="deal-status-confirm-card">
-      <h2 id="records-delete-confirm-title">Delete selected General Records?</h2>
-      <p data-records-delete-confirm-message>This permanently deletes selected inactive records and linked history. This cannot be undone.</p>
+      <h2 id="records-delete-confirm-title">Confirm client record removal?</h2>
+      <p data-records-delete-confirm-message>Choose Yes to remove this client record from RSF, or No to cancel.</p>
       <div class="deal-status-confirm-actions">
         <button class="button secondary" type="button" data-records-delete-no>No</button>
         <button class="button primary" type="button" data-records-delete-yes>Yes</button>
