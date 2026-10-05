@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="billing-payments-page">
+  <div class="page-head workspace-page-head billing-payments-head">
+    <div>
+      <h1>Billing &amp; Payments</h1>
+      <p>See billing details for current RSF-managed clients.</p>
+    </div>
+  </div>
+
+  {% if billing_clients %}
+  <div class="billing-payments-table-shell">
+    <table class="billing-payments-table">
+      <thead>
+        <tr>
+          <th>CLIENT</th>
+          <th>MANAGEMENT FEE</th>
+          <th>NEXT BILLING DATE</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for client in billing_clients %}
+        <tr>
+          <td data-label="Client"><strong>{{ client['client_name'] or '—' }}</strong></td>
+          <td data-label="Management Fee">{{ client['management_fee'] or '—' }}</td>
+          <td data-label="Next Billing Date">{{ client['next_billing_date'] or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="billing-payments-empty">
+    <strong>No billing records yet.</strong>
+    <span>RSF-managed clients will appear here using the same Management Fee and Next Billing Date data from Support &amp; Maintenance.</span>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}
