@@ -66,14 +66,6 @@
         </label>
       </div>
       <div class="website-inquiry-card-tools">
-        {% if g.user and g.user['role'] == 'admin' %}
-        <form class="website-inquiry-delete-form" method="post" action="{{ url_for('main.inquiry_delete', inquiry_id=inquiry.id) }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button class="prospect-delete-button website-inquiry-delete-button" type="submit" aria-label="Permanently delete Website Inquiry from {{ inquiry.name }}" title="Delete Website Inquiry">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h10l-1 11H8L7 9Zm3 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z" fill="currentColor"/></svg>
-          </button>
-        </form>
-        {% endif %}
         <span class="website-inquiry-received-log">Received: {{ inquiry.created_at|dt }}</span>
       </div>
     </header>
