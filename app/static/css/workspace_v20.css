@@ -7716,3 +7716,24 @@ body.card-layout-dragging-global *{cursor:grabbing!important;user-select:none!im
   white-space:normal;
   overflow-wrap:anywhere;
 }
+.support-maintenance-page .support-maintenance-card .deal-card-linked{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  justify-content:space-between;
+  align-self:stretch;
+  min-height:42px;
+}
+.support-maintenance-page .support-maintenance-card .deal-card-linked .deal-linked-label,
+.support-maintenance-page .support-maintenance-card .deal-became-log{
+  align-self:flex-end;
+}
+@media(max-width:460px){
+  .support-maintenance-page .support-maintenance-card .deal-card-linked{
+    align-items:flex-start;
+  }
+  .support-maintenance-page .support-maintenance-card .deal-card-linked .deal-linked-label,
+  .support-maintenance-page .support-maintenance-card .deal-became-log{
+    align-self:flex-start;
+  }
+}
