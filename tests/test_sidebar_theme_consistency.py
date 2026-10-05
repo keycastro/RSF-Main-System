@@ -30,27 +30,32 @@ class SidebarThemeConsistencyTests(unittest.TestCase):
         template = self.read("app/templates/support_maintenance.html")
         self.assertIn('class="deals-page support-maintenance-page"', template)
 
-    def test_settings_footer_matches_signout_without_box(self):
+    def test_footer_actions_use_one_shared_icon_text_component(self):
+        base = self.read("app/templates/base.html")
         w20 = self.read("app/static/css/workspace_v20.css")
         ambient = self.read("app/static/css/workspace_ambient_gold.css")
-        self.assertIn(".sidebar-session-actions .signout,", w20)
-        self.assertIn(".settings-footer-link{", w20)
-        self.assertIn("border:0;", w20)
-        self.assertIn("border-radius:0;", w20)
-        self.assertIn("background:transparent;", w20)
-        self.assertIn("font-weight:650;", w20)
-        self.assertIn(".app-shell > .sidebar .sidebar-session-actions .signout,", ambient)
-        self.assertIn("box-shadow:none;", ambient)
+        self.assertIn('nav_icon("logout")', base)
+        self.assertIn('class="signout sidebar-footer-action"', base)
+        self.assertIn('class="settings-footer-link sidebar-footer-action"', base)
+        self.assertIn(".sidebar-footer-action{", w20)
+        self.assertIn("min-height:34px;", w20)
+        self.assertIn("font:inherit;", w20)
+        self.assertIn("font-size:12.5px;", w20)
+        self.assertIn("font-weight:700;", w20)
+        self.assertIn(".app-shell > .sidebar .sidebar-session-actions .sidebar-footer-action{", ambient)
 
-    def test_settings_footer_keeps_accessible_focus_and_icon(self):
+    def test_footer_actions_remain_unboxed_and_accessible(self):
         css = self.read("app/static/css/workspace_v20.css")
-        self.assertIn(".settings-footer-link .nav-symbol", css)
-        self.assertIn("color:currentColor;", css)
-        self.assertIn(".settings-footer-link:focus-visible", css)
+        self.assertIn("border:0;", css)
+        self.assertIn("border-radius:0;", css)
+        self.assertIn("background:transparent;", css)
+        self.assertIn(".sidebar-footer-action .nav-symbol{", css)
+        self.assertIn("width:16px;", css)
+        self.assertIn(".sidebar-footer-action:focus-visible{", css)
         self.assertIn("outline:2px solid #c9a95e", css)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.215")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.216")
 
 
 if __name__ == "__main__":
