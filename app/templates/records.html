@@ -76,23 +76,6 @@
     <strong><span data-records-visible-count>{{ records|length }}</span> <span data-records-count-label>{{ 'record' if records|length == 1 else 'records' }}</span></strong>
   </div>
 
-  {% if g.user and g.user['role'] == 'admin' %}
-  <form class="general-records-form" method="post" action="{{ url_for('main.records_bulk_delete') }}" data-records-bulk-form>
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <input type="hidden" name="filter" value="{{ initial_filter }}" data-records-filter-input>
-    <input type="hidden" name="source" value="{{ initial_source }}" data-records-source-input>
-    <input type="hidden" name="group" value="{{ initial_group }}" data-records-group-input>
-
-    <div class="general-records-selection-bar">
-      <label><input type="checkbox" data-records-select-all><span>Select visible</span></label>
-      <span data-records-selected-count>Selected 0</span>
-      <div>
-        <button type="button" class="general-records-selection-cancel" data-records-manage-cancel>Done</button>
-        <button type="button" class="general-records-delete" data-records-delete-trigger disabled>Delete selected</button>
-      </div>
-    </div>
-  {% endif %}
-
     <div class="general-records-table-shell">
       <table class="general-records-table">
         <thead>
