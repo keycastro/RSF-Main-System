@@ -216,6 +216,10 @@ class SupportMaintenanceTests(unittest.TestCase):
         )
         self.assertIn("grid-template-columns:minmax(0,1fr) auto;", css)
         self.assertIn("min-width:max-content;", css)
+        self.assertIn("display:flex;", css)
+        self.assertIn("justify-content:space-between;", css)
+        self.assertIn("align-self:stretch;", css)
+        self.assertIn("align-self:flex-end;", css)
 
 
 if __name__ == "__main__":
