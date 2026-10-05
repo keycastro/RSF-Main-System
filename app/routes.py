@@ -2006,55 +2006,11 @@ def prospect_conversation_open(prospect_id: int):
 @login_required
 def prospect_delete(prospect_id: int):
     validate_csrf()
-    db = get_db()
-    wants_json = "application/json" in request.headers.get("Accept", "")
-    prospect = db.execute("SELECT id FROM prospects WHERE id=?", (prospect_id,)).fetchone()
-
-    if not prospect:
-        if wants_json:
-            return jsonify({"ok": False, "error": "not_found", "message": "Prospect not found."}), 404
-        abort(404)
-
-    merged_deals = db.execute(
-        "SELECT id,website_inquiry_id FROM deals WHERE prospect_id=?",
-        (prospect_id,),
-    ).fetchall()
-    for merged_deal in merged_deals:
-        if merged_deal["website_inquiry_id"] is not None:
-            db.execute(
-                "UPDATE deals SET prospect_id=NULL,updated_at=? WHERE id=?",
-                (utcnow_iso(), merged_deal["id"]),
-            )
-
-    prospect_conversations = db.execute(
-        "SELECT id,inquiry_id FROM client_conversations WHERE prospect_id=?",
-        (prospect_id,),
-    ).fetchall()
-    for conversation in prospect_conversations:
-        shared = conversation["inquiry_id"] is not None or db.execute(
-            "SELECT 1 FROM website_inquiries WHERE client_conversation_id=? LIMIT 1",
-            (conversation["id"],),
-        ).fetchone()
-        if shared:
-            db.execute(
-                "UPDATE client_conversations SET prospect_id=NULL WHERE id=?",
-                (conversation["id"],),
-            )
-        else:
-            db.execute(
-                "DELETE FROM client_notifications WHERE entity_type='conversation' AND entity_id=?",
-                (conversation["id"],),
-            )
-            db.execute("DELETE FROM client_conversations WHERE id=?", (conversation["id"],))
-
-    db.execute("DELETE FROM prospects WHERE id=?", (prospect_id,))
-    db.commit()
-
-    if wants_json:
-        return jsonify({"ok": True, "message": "Prospect deleted."})
-
-    flash("Prospect deleted.", "success")
-    return redirect(url_for("main.prospects"))
+    message = "Permanent client deletion is only available in Records & History Control → General Records."
+    if "application/json" in request.headers.get("Accept", ""):
+        return jsonify({"ok": False, "error": "general_records_only", "message": message}), 409
+    flash(message, "warning")
+    return redirect(url_for("main.records"))
 
 
 
@@ -7359,6 +7315,126 @@ def inquiries_list():
     )
 
 
+def _delete_rows_for_ids(db, table: str, column: str, ids: list[int]) -> None:
+    """Delete rows for trusted internal table/column identifiers only."""
+    allowed = {
+        ("communication_notes", "prospect_id"),
+        ("communication_notes", "website_inquiry_id"),
+        ("communication_notes", "deal_id"),
+        ("whatsapp_messages", "prospect_id"),
+        ("whatsapp_messages", "website_inquiry_id"),
+        ("whatsapp_messages", "deal_id"),
+        ("manual_client_calls", "prospect_id"),
+        ("manual_client_calls", "website_inquiry_id"),
+        ("manual_client_calls", "deal_id"),
+        ("ai_sales_calls", "prospect_id"),
+        ("ai_sales_calls", "deal_id"),
+        ("deals", "id"),
+        ("website_inquiries", "id"),
+        ("prospects", "id"),
+    }
+    if not ids or (table, column) not in allowed:
+        return
+    values = sorted({int(value) for value in ids})
+    placeholders = ",".join("?" for _ in values)
+    db.execute(f'DELETE FROM "{table}" WHERE "{column}" IN ({placeholders})', values)
+
+
+def _delete_master_record_tree(db, record: dict) -> dict:
+    """Permanently remove one General Record from all internal RSF client views/history."""
+    prospect_ids = sorted({int(value) for value in record.get("prospect_ids", [])})
+    inquiry_ids = sorted({int(value) for value in record.get("inquiry_ids", [])})
+    deal_ids = sorted({int(value) for value in record.get("deal_ids", [])})
+    prospect_set = set(prospect_ids)
+    inquiry_set = set(inquiry_ids)
+
+    # Remove communication/history rows that otherwise use ON DELETE SET NULL.
+    for table in ("communication_notes", "whatsapp_messages", "manual_client_calls"):
+        _delete_rows_for_ids(db, table, "prospect_id", prospect_ids)
+        _delete_rows_for_ids(db, table, "website_inquiry_id", inquiry_ids)
+        _delete_rows_for_ids(db, table, "deal_id", deal_ids)
+    _delete_rows_for_ids(db, "ai_sales_calls", "prospect_id", prospect_ids)
+    _delete_rows_for_ids(db, "ai_sales_calls", "deal_id", deal_ids)
+
+    # Remove generic activity/notification history for this client journey.
+    for entity_type, ids in (("prospect", prospect_ids), ("inquiry", inquiry_ids), ("deal", deal_ids)):
+        if not ids:
+            continue
+        placeholders = ",".join("?" for _ in ids)
+        db.execute(
+            f"DELETE FROM activity_log WHERE entity_type=? AND entity_id IN ({placeholders})",
+            [entity_type, *ids],
+        )
+        db.execute(
+            f"DELETE FROM client_notifications WHERE entity_type=? AND entity_id IN ({placeholders})",
+            [entity_type, *ids],
+        )
+
+    # Client conversations can be shared. Delete dedicated conversations completely;
+    # if another source outside this master Record still uses one, detach only this Record.
+    conversation_clauses = []
+    conversation_params: list[int] = []
+    if prospect_ids:
+        placeholders = ",".join("?" for _ in prospect_ids)
+        conversation_clauses.append(f"prospect_id IN ({placeholders})")
+        conversation_params.extend(prospect_ids)
+    if inquiry_ids:
+        placeholders = ",".join("?" for _ in inquiry_ids)
+        conversation_clauses.append(f"inquiry_id IN ({placeholders})")
+        conversation_params.extend(inquiry_ids)
+
+    deleted_conversations = 0
+    shared_conversations_preserved = 0
+    if conversation_clauses:
+        conversations = db.execute(
+            "SELECT id,prospect_id,inquiry_id FROM client_conversations WHERE "
+            + " OR ".join(conversation_clauses),
+            conversation_params,
+        ).fetchall()
+        for conversation in conversations:
+            prospect_id = int(conversation["prospect_id"]) if conversation["prospect_id"] is not None else None
+            inquiry_id = int(conversation["inquiry_id"]) if conversation["inquiry_id"] is not None else None
+            has_outside_source = (
+                (prospect_id is not None and prospect_id not in prospect_set)
+                or (inquiry_id is not None and inquiry_id not in inquiry_set)
+            )
+            if has_outside_source:
+                if prospect_id in prospect_set:
+                    db.execute("UPDATE client_conversations SET prospect_id=NULL WHERE id=?", (conversation["id"],))
+                if inquiry_id in inquiry_set:
+                    db.execute("UPDATE client_conversations SET inquiry_id=NULL WHERE id=?", (conversation["id"],))
+                shared_conversations_preserved += 1
+                continue
+
+            db.execute(
+                "DELETE FROM client_notifications WHERE entity_type='conversation' AND entity_id=?",
+                (conversation["id"],),
+            )
+            if inquiry_ids:
+                placeholders = ",".join("?" for _ in inquiry_ids)
+                db.execute(
+                    f"UPDATE website_inquiries SET client_conversation_id=NULL "
+                    f"WHERE id IN ({placeholders}) AND client_conversation_id=?",
+                    [*inquiry_ids, conversation["id"]],
+                )
+            # client_messages and client_attachments cascade from the conversation/message rows.
+            db.execute("DELETE FROM client_conversations WHERE id=?", (conversation["id"],))
+            deleted_conversations += 1
+
+    # Deals contain Deal Stages + Support & Maintenance state. Deal documents cascade.
+    _delete_rows_for_ids(db, "deals", "id", deal_ids)
+
+    # Source records are deleted last so every page loses the client atomically on commit.
+    _delete_rows_for_ids(db, "website_inquiries", "id", inquiry_ids)
+    _delete_rows_for_ids(db, "prospects", "id", prospect_ids)
+
+    return {
+        "deleted": bool(prospect_ids or inquiry_ids or deal_ids),
+        "deleted_conversations": deleted_conversations,
+        "shared_conversations_preserved": shared_conversations_preserved,
+    }
+
+
 @bp.get("/records")
 @login_required
 def records():
@@ -7529,91 +7605,45 @@ def inquiry_record_detail(inquiry_id: int):
 @admin_required
 def records_bulk_delete():
     validate_csrf()
-    requested_keys = []
-    for raw in request.form.getlist("record_keys"):
-        key = (raw or "").strip()
-        if key and key not in requested_keys:
-            requested_keys.append(key)
+    record_key = (request.form.get("record_key", "") or "").strip()
+    confirmed = (request.form.get("confirm_delete", "") or "").strip().lower() == "yes"
 
-    current_filter = (request.form.get("filter", "") or "").strip().upper()
-    redirect_filter = current_filter if current_filter in PROSPECT_STATUS_LABELS else "ALL"
-    current_source = (request.form.get("source", "") or "").strip().upper()
-    redirect_source = current_source if current_source in ("RESEARCH", "WEBSITE", "MULTI") else "ALL"
-
-    current_group = (request.form.get("group", "") or "").strip().upper()
-    redirect_group = current_group if current_group in ("PRE_DEAL", "DEAL", "SUPPORT", "CLOSED") else "ALL"
-
-    if not requested_keys:
-        flash("Select at least one Record.", "warning")
-        return redirect(url_for("main.records", filter=redirect_filter, source=redirect_source, group=redirect_group))
+    if not record_key:
+        flash("General Record not found.", "warning")
+        return redirect(url_for("main.records"))
+    if not confirmed:
+        flash("Deletion cancelled. Choose Yes before permanently deleting a client Record.", "warning")
+        return redirect(url_for("main.records"))
 
     db = get_db()
-    record_map = {record["record_key"]: record for record in build_master_records(db)}
-    deleted_count = 0
-    protected_count = 0
-    missing_count = 0
-    shared_history_kept = 0
+    record = find_master_record(build_master_records(db), record_key)
+    if not record:
+        flash("This General Record is no longer available.", "warning")
+        return redirect(url_for("main.records"))
 
-    for key in requested_keys:
-        record = record_map.get(key)
-        if not record:
-            missing_count += 1
-            continue
-        if not record["can_delete"]:
-            protected_count += 1
-            continue
-
-        record_deleted = False
-        record_became_protected = False
-
-        for inquiry_id in record["inquiry_ids"]:
-            result = _delete_inbound_record_tree(db, inquiry_id)
-            if result["protected"]:
-                record_became_protected = True
-                break
-            if result["deleted"]:
-                record_deleted = True
-                shared_history_kept += int(result.get("shared_history_kept") or 0)
-
-        if record_became_protected:
-            protected_count += 1
-            continue
-
-        for prospect_id in record["prospect_ids"]:
-            result = _delete_prospect_record_tree(db, prospect_id)
-            if result["protected"]:
-                record_became_protected = True
-                break
-            if result["deleted"]:
-                record_deleted = True
-
-        if record_became_protected:
-            protected_count += 1
-            continue
-
-        if record_deleted:
-            deleted_count += 1
-        else:
-            missing_count += 1
-
-    if deleted_count:
+    client_title = record.get("client_title") or "Client"
+    try:
+        result = _delete_master_record_tree(db, record)
+        if not result["deleted"]:
+            db.rollback()
+            flash("No linked client data was available to delete.", "warning")
+            return redirect(url_for("main.records"))
         db.commit()
-        message = f"Permanently deleted {deleted_count} inactive master Record{'s' if deleted_count != 1 else ''} and their linked source/Deal history."
-        if protected_count:
-            message += f" {protected_count} active pipeline Record{'s were' if protected_count != 1 else ' was'} protected."
-        if shared_history_kept:
-            message += f" {shared_history_kept} shared client conversation{'s were' if shared_history_kept != 1 else ' was'} preserved because other records still use them."
-        if missing_count:
-            message += f" {missing_count} selected Record{'s were' if missing_count != 1 else ' was'} no longer available."
-        flash(message, "success" if not protected_count else "warning")
-    else:
+    except Exception:
         db.rollback()
-        if protected_count:
-            flash("No Records were deleted. Active Deal / Demo / Proposal / Decision / In Support & Maintenance records are protected.", "warning")
-        else:
-            flash("No selected Records were available to delete.", "warning")
+        current_app.logger.exception("General Record permanent deletion failed for %s", record_key)
+        flash("The client Record could not be deleted. No partial deletion was committed.", "error")
+        return redirect(url_for("main.records"))
 
-    return redirect(url_for("main.records", filter=redirect_filter, source=redirect_source, group=redirect_group))
+    message = f"{client_title} was permanently deleted throughout the RSF system."
+    if result["shared_conversations_preserved"]:
+        message += (
+            f" {result['shared_conversations_preserved']} shared conversation"
+            f"{'s were' if result['shared_conversations_preserved'] != 1 else ' was'} preserved because another client source still uses it."
+        )
+    flash(message, "success")
+    return redirect(url_for("main.records"))
+
 
 
 @bp.post("/inquiries/<int:inquiry_id>/workflow-status")
@@ -7710,68 +7740,12 @@ def inquiry_notes_after_conversation_update(inquiry_id: int):
 @admin_required
 def inquiry_delete(inquiry_id: int):
     validate_csrf()
-    inquiry = _authorized_inquiry(inquiry_id)
-    db = get_db()
-    linked_deal = db.execute(
-        "SELECT id,prospect_id,became_deal_at FROM deals WHERE website_inquiry_id=? LIMIT 1",
-        (inquiry_id,),
-    ).fetchone()
-    workflow_status = (inquiry["workflow_status"] or "").strip().upper()
-    linked_shared_source = bool(linked_deal and linked_deal["prospect_id"] is not None)
-    if (
-        inquiry["status"] == "CLAIMED"
-        or inquiry["client_conversation_id"]
-        or workflow_status in DEAL_ACTIVE_STATUSES
-        or linked_shared_source
-    ):
-        flash("This Website Inquiry has linked Deal or client history and cannot be permanently deleted.", "warning")
-        return redirect(url_for("main.inquiries_list"))
-
-    if linked_deal:
-        db.execute("DELETE FROM deals WHERE id=?", (linked_deal["id"],))
-    db.execute(
-        "DELETE FROM client_notifications WHERE entity_type='inquiry' AND entity_id=?",
-        (inquiry_id,),
+    flash(
+        "Permanent client deletion is only available in Records & History Control → General Records.",
+        "warning",
     )
-    db.execute("DELETE FROM website_inquiries WHERE id=?", (inquiry_id,))
-    db.commit()
-    flash("Website Inquiry deleted.", "success")
-    return redirect(url_for("main.inquiries_list"))
+    return redirect(url_for("main.records"))
 
-
-@bp.get("/inquiries/<int:inquiry_id>")
-@login_required
-def inquiry_detail(inquiry_id: int):
-    inquiry = _authorized_inquiry(inquiry_id)
-    if inquiry["status"] == "CLAIMED" and inquiry["client_conversation_id"]:
-        return redirect(url_for("main.client_conversation", conversation_id=inquiry["client_conversation_id"]))
-    partners = []
-    if g.user["role"] == "admin":
-        partners = get_db().execute(
-            "SELECT p.id,u.full_name FROM partners p JOIN users u ON u.id=p.user_id WHERE p.active=1 AND u.active=1 AND p.account_deleted_at IS NULL ORDER BY u.full_name"
-        ).fetchall()
-    matches, _normalized = duplicate_candidates({
-        "company_name": inquiry["company"], "contact_name": inquiry["name"], "email": inquiry["email"],
-        "phone": "", "website": "",
-    })
-    duplicate_leads = []
-    duplicate_warning = bool(matches)
-    # Full duplicate details are Founder-only. Partners only get a simple warning.
-    if g.user["role"] == "admin":
-        for row, reasons in matches[:5]:
-            detail = get_db().execute(
-                """SELECT l.id,l.company_name,l.contact_name,l.status,
-                          COALESCE(u.full_name,NULLIF(p.historical_name,''),'Deleted Partner') owner_name
-                   FROM leads l JOIN partners p ON p.id=l.owner_partner_id LEFT JOIN users u ON u.id=p.user_id WHERE l.id=?""",
-                (row["id"],),
-            ).fetchone()
-            if detail:
-                duplicate_leads.append((detail, reasons))
-    mark_client_notifications_read(entity_type="inquiry", entity_id=inquiry_id)
-    return render_template(
-        "inquiry_detail.html", title="New Inquiry", inquiry=inquiry, partners=partners,
-        duplicate_leads=duplicate_leads, duplicate_warning=duplicate_warning,
-    )
 
 
 @bp.post("/inquiries/<int:inquiry_id>/claim")
