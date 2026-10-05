@@ -40,6 +40,7 @@ class BillingPaymentsTests(unittest.TestCase):
         css = self.read("app/static/css/billing_payments.css")
         self.assertIn("billing_payments.css", base)
         self.assertIn(".billing-payments-table-shell", css)
+        self.assertIn("color:#f5eadc!important;", css)
         self.assertIn("@media(max-width:700px)", css)
         self.assertIn("content:attr(data-label)", css)
 
@@ -50,7 +51,7 @@ class BillingPaymentsTests(unittest.TestCase):
         self.assertNotIn("billing_cycle", template)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.219")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.220")
 
 
 if __name__ == "__main__":
