@@ -1,0 +1,100 @@
+/* RSF v1.18.219 — Billing & Payments workspace page */
+.billing-payments-page{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+.billing-payments-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+}
+.billing-payments-head h1{
+  margin:0;
+}
+.billing-payments-head p{
+  margin:4px 0 0;
+  color:#c9bfb1;
+}
+.billing-payments-table-shell{
+  overflow:hidden;
+  border:1px solid rgba(212,180,95,.24);
+  border-radius:14px;
+  background:rgba(10,8,6,.72);
+}
+.billing-payments-table{
+  width:100%;
+  border-collapse:collapse;
+}
+.billing-payments-table th,
+.billing-payments-table td{
+  padding:14px 16px;
+  text-align:left;
+  vertical-align:middle;
+  border-bottom:1px solid rgba(212,180,95,.14);
+}
+.billing-payments-table th{
+  color:#a9987c;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.06em;
+}
+.billing-payments-table td{
+  color:#efe5d8;
+  font-size:13px;
+}
+.billing-payments-table tbody tr:last-child td{
+  border-bottom:0;
+}
+.billing-payments-table td strong{
+  color:#fff7ec;
+  font-weight:800;
+}
+.billing-payments-empty{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  padding:22px;
+  border:1px solid rgba(212,180,95,.22);
+  border-radius:14px;
+  background:rgba(10,8,6,.68);
+  color:#cfc3b4;
+}
+.billing-payments-empty strong{
+  color:#f5eadc;
+}
+@media(max-width:700px){
+  .billing-payments-table,
+  .billing-payments-table tbody,
+  .billing-payments-table tr,
+  .billing-payments-table td{
+    display:block;
+    width:100%;
+  }
+  .billing-payments-table thead{
+    display:none;
+  }
+  .billing-payments-table tr{
+    padding:10px 14px;
+    border-bottom:1px solid rgba(212,180,95,.18);
+  }
+  .billing-payments-table tr:last-child{
+    border-bottom:0;
+  }
+  .billing-payments-table td{
+    display:grid;
+    grid-template-columns:130px minmax(0,1fr);
+    gap:10px;
+    padding:7px 0;
+    border:0;
+  }
+  .billing-payments-table td::before{
+    content:attr(data-label);
+    color:#9d8e78;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+  }
+}
