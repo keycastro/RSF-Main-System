@@ -224,6 +224,7 @@ def build_integration_billing_dashboard(db, *, gmail_status: dict, calendar_stat
     total_overage = Decimal("0")
     cost_count = 0
     budget_count = 0
+    paired_count = 0
 
     for slug, name in SERVICE_DEFINITIONS:
         prefix = f"integration_billing.{slug}."
@@ -243,6 +244,7 @@ def build_integration_billing_dashboard(db, *, gmail_status: dict, calendar_stat
         if budget_state["remaining"] is not None:
             total_remaining += budget_state["remaining"]
             total_overage += budget_state["overage"]
+            paired_count += 1
 
         rows.append({
             "slug": slug,
@@ -263,8 +265,9 @@ def build_integration_billing_dashboard(db, *, gmail_status: dict, calendar_stat
         "summary": {
             "current_cost": total_cost.quantize(Decimal("0.01")) if cost_count else None,
             "monthly_budget": total_budget.quantize(Decimal("0.01")) if budget_count else None,
-            "remaining": total_remaining.quantize(Decimal("0.01")) if budget_count and cost_count else None,
-            "overage": total_overage.quantize(Decimal("0.01")) if budget_count and cost_count else None,
+            "remaining": total_remaining.quantize(Decimal("0.01")) if paired_count else None,
+            "overage": total_overage.quantize(Decimal("0.01")) if paired_count else None,
+            "paired_count": paired_count,
             "cost_count": cost_count,
             "budget_count": budget_count,
             "service_count": service_count,
