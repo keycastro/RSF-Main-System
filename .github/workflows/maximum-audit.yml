@@ -22,6 +22,10 @@ jobs:
         env:
           RSF_DISABLE_BACKGROUND: "1"
         run: python -m unittest discover -s tests -v
+      - name: Verify current install/bootstrap contract
+        env:
+          RSF_DISABLE_BACKGROUND: "1"
+        run: python scripts/VERIFY_INSTALLED_SYSTEM.py
       - name: Verify release security invariants
         run: |
           python - <<'PY'
