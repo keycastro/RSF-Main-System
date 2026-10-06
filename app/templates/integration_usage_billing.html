@@ -4,7 +4,7 @@
   <div class="page-head workspace-page-head integration-billing-page-head">
     <div>
       <h1>Integration Usage &amp; Billing</h1>
-      <p>Monitor RSF service usage, operating costs, budgets, and overage in one place.</p>
+      <p>See what is connected, what RSF is using, and how much it is costing.</p>
     </div>
     <div class="integration-billing-period">
       <span>Current period</span>
@@ -12,158 +12,171 @@
     </div>
   </div>
 
-  <section class="integration-connections" aria-labelledby="integration-connections-title">
-    <div class="integration-connections-heading">
+  <section class="integration-dashboard-section integration-connections" aria-labelledby="integration-connections-title">
+    <div class="integration-section-heading">
       <div>
         <span>CONNECTIONS</span>
         <h2 id="integration-connections-title">Integration Connections</h2>
-        <p>Connect and verify the services RSF uses. Usage and billing details stay directly below these controls.</p>
       </div>
+      <small>See what is ready and what still needs setup.</small>
     </div>
+
     <div class="integration-connection-grid">
       <article class="integration-connection-card">
         <div class="integration-connection-card-head">
           <div>
             <h3>RSF Gmail</h3>
-            <p>Official client email connection used by Email Conversation.</p>
+            <span class="integration-status integration-status--{% if gmail_status.connected %}connected{% elif gmail_status.oauth_configured %}ready{% else %}off{% endif %}">
+              {% if gmail_status.connected %}Connected{% elif gmail_status.oauth_configured %}Ready to connect{% else %}Setup needed{% endif %}
+            </span>
           </div>
-          <span class="integration-status integration-status--{% if gmail_status.connected %}connected{% elif gmail_status.oauth_configured %}ready{% else %}off{% endif %}">
-            {% if gmail_status.connected %}Connected{% elif gmail_status.oauth_configured %}Ready to connect{% else %}OAuth setup required{% endif %}
-          </span>
+          <div class="integration-connection-action">
+            {% if gmail_status.connected %}
+              <form method="post" action="{{ url_for('main.gmail_verify') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="button secondary" type="submit">Verify</button>
+              </form>
+            {% elif gmail_status.oauth_configured %}
+              <a class="button primary" href="{{ url_for('main.gmail_connect') }}">Connect</a>
+            {% endif %}
+          </div>
         </div>
-        <div class="integration-connection-details">
-          {% if gmail_status.email %}<div><span>Connected account</span><strong>{{ gmail_status.email }}</strong></div>{% endif %}
-          {% if gmail_status.configured_sender %}<div><span>Approved sender</span><strong>{{ gmail_status.configured_sender }}</strong></div>{% endif %}
-        </div>
-        <div class="integration-connection-action">
-          {% if gmail_status.connected %}
-            <form method="post" action="{{ url_for('main.gmail_verify') }}">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button class="button secondary" type="submit">Verify Gmail Connection</button>
-            </form>
-          {% elif gmail_status.oauth_configured %}
-            <a class="button primary" href="{{ url_for('main.gmail_connect') }}">Connect Gmail</a>
-          {% else %}
-            <p class="integration-connection-help">Google OAuth Client ID and Client Secret must be configured in Render before Gmail can be connected.</p>
-          {% endif %}
-        </div>
+
+        {% if not gmail_status.oauth_configured %}
+          <p class="integration-connection-alert">Google OAuth credentials still need to be configured in Render.</p>
+        {% endif %}
+
+        {% if gmail_status.email or gmail_status.configured_sender %}
+        <details class="integration-connection-details">
+          <summary>Connection details</summary>
+          <div>
+            {% if gmail_status.email %}<p><span>Connected account</span><strong>{{ gmail_status.email }}</strong></p>{% endif %}
+            {% if gmail_status.configured_sender %}<p><span>Approved sender</span><strong>{{ gmail_status.configured_sender }}</strong></p>{% endif %}
+          </div>
+        </details>
+        {% endif %}
       </article>
 
       <article class="integration-connection-card">
         <div class="integration-connection-card-head">
           <div>
             <h3>Google Calendar</h3>
-            <p>Used by Deals to schedule demos and automatically create Google Meet links.</p>
+            <span class="integration-status integration-status--{% if calendar_status.connected %}connected{% elif calendar_status.oauth_configured %}ready{% else %}off{% endif %}">
+              {% if calendar_status.connected %}Connected{% elif calendar_status.oauth_configured %}Ready to connect{% else %}Setup needed{% endif %}
+            </span>
           </div>
-          <span class="integration-status integration-status--{% if calendar_status.connected %}connected{% elif calendar_status.oauth_configured %}ready{% else %}off{% endif %}">
-            {% if calendar_status.connected %}Connected{% elif calendar_status.oauth_configured %}Ready to connect{% else %}OAuth setup required{% endif %}
-          </span>
+          <div class="integration-connection-action">
+            {% if calendar_status.connected %}
+              <form method="post" action="{{ url_for('main.calendar_verify') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="button secondary" type="submit">Verify</button>
+              </form>
+            {% elif calendar_status.oauth_configured %}
+              <a class="button primary" href="{{ url_for('main.calendar_connect') }}">Connect</a>
+            {% endif %}
+          </div>
         </div>
-        <div class="integration-connection-details">
-          <div><span>Calendar</span><strong>{{ calendar_status.calendar_id }}</strong></div>
-          <div><span>Timezone</span><strong>{{ calendar_status.timezone }}</strong></div>
-        </div>
-        <div class="integration-connection-action">
-          {% if calendar_status.connected %}
-            <form method="post" action="{{ url_for('main.calendar_verify') }}">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button class="button secondary" type="submit">Verify Google Calendar</button>
-            </form>
-          {% elif calendar_status.oauth_configured %}
-            <a class="button primary" href="{{ url_for('main.calendar_connect') }}">Connect Google Calendar</a>
-          {% else %}
-            <p class="integration-connection-help">Google OAuth Client ID and Client Secret must be configured in Render before Calendar can be connected.</p>
-          {% endif %}
-        </div>
+
+        {% if not calendar_status.oauth_configured %}
+          <p class="integration-connection-alert">Google OAuth credentials still need to be configured in Render.</p>
+        {% endif %}
+
+        <details class="integration-connection-details">
+          <summary>Connection details</summary>
+          <div>
+            <p><span>Calendar</span><strong>{{ calendar_status.calendar_id }}</strong></p>
+            <p><span>Timezone</span><strong>{{ calendar_status.timezone }}</strong></p>
+          </div>
+        </details>
       </article>
     </div>
   </section>
 
-  <div class="integration-billing-section-heading">
-    <div>
-      <span>USAGE &amp; COST CONTROL</span>
-      <h2>Usage &amp; Billing Overview</h2>
-      <p>Review current RSF activity, estimated service costs, budgets, remaining budget, and overage.</p>
+  <section class="integration-dashboard-section" aria-labelledby="monthly-cost-summary-title">
+    <div class="integration-section-heading integration-section-heading--compact">
+      <div>
+        <span>FINANCE</span>
+        <h2 id="monthly-cost-summary-title">Monthly Cost Summary</h2>
+      </div>
     </div>
-  </div>
 
-  <div class="integration-billing-summary" aria-label="RSF monthly integration cost summary">
-    <article>
-      <span>Estimated Monthly RSF Cost</span>
-      <strong>{% if integration_billing.summary.current_cost is not none %}{{ currency_code }} {{ integration_billing.summary.current_cost }}{% else %}Not set{% endif %}</strong>
-      <small>{% if integration_billing.summary.cost_complete %}All listed service costs are entered.{% elif integration_billing.summary.cost_count %}Partial total — {{ integration_billing.summary.service_count - integration_billing.summary.cost_count }} service cost(s) still unset.{% else %}Enter the real or estimated provider costs below.{% endif %}</small>
-    </article>
-    <article>
-      <span>Monthly Budget</span>
-      <strong>{% if integration_billing.summary.monthly_budget is not none %}{{ currency_code }} {{ integration_billing.summary.monthly_budget }}{% else %}Not set{% endif %}</strong>
-      <small>{% if integration_billing.summary.budget_complete %}Budgets are set for all listed services.{% elif integration_billing.summary.budget_count %}Partial budget total.{% else %}No monthly service budgets entered yet.{% endif %}</small>
-    </article>
-    <article>
-      <span>Remaining Budget</span>
-      <strong>{% if integration_billing.summary.remaining is not none %}{{ currency_code }} {{ integration_billing.summary.remaining }}{% else %}Not available{% endif %}</strong>
-      <small>Calculated only where both cost and budget are set.</small>
-    </article>
-    <article>
-      <span>Overage</span>
-      <strong>{% if integration_billing.summary.overage is not none %}{{ currency_code }} {{ integration_billing.summary.overage }}{% else %}Not available{% endif %}</strong>
-      <small>Shows spending above configured monthly budgets.</small>
-    </article>
-  </div>
+    <div class="integration-billing-summary" aria-label="RSF monthly integration cost summary">
+      <article>
+        <span>Monthly Cost</span>
+        <strong>{% if integration_billing.summary.current_cost is not none %}{{ currency_code }} {{ integration_billing.summary.current_cost }}{% else %}Not set{% endif %}</strong>
+        {% if integration_billing.summary.current_cost is not none and not integration_billing.summary.cost_complete %}<small>Partial total</small>{% endif %}
+      </article>
+      <article>
+        <span>Budget</span>
+        <strong>{% if integration_billing.summary.monthly_budget is not none %}{{ currency_code }} {{ integration_billing.summary.monthly_budget }}{% else %}Not set{% endif %}</strong>
+        {% if integration_billing.summary.monthly_budget is not none and not integration_billing.summary.budget_complete %}<small>Partial total</small>{% endif %}
+      </article>
+      <article>
+        <span>Remaining</span>
+        <strong>{% if integration_billing.summary.remaining is not none %}{{ currency_code }} {{ integration_billing.summary.remaining }}{% else %}—{% endif %}</strong>
+      </article>
+      <article>
+        <span>Overage</span>
+        <strong>{% if integration_billing.summary.overage is not none %}{{ currency_code }} {{ integration_billing.summary.overage }}{% else %}—{% endif %}</strong>
+      </article>
+    </div>
+  </section>
 
-  <div class="integration-billing-note" role="note">
-    <strong>How the numbers work:</strong>
-    <span>Usage is taken from real RSF records when available. Provider invoice and quota data is not guessed. Current cost, budget, and billing/reset date stay manual until a trustworthy provider billing API is connected.</span>
-  </div>
+  <section class="integration-dashboard-section" aria-labelledby="integration-usage-costs-title">
+    <div class="integration-section-heading">
+      <div>
+        <span>THIS MONTH</span>
+        <h2 id="integration-usage-costs-title">Integration Usage &amp; Costs</h2>
+      </div>
+      <small>Simple activity and cost view for each RSF service.</small>
+    </div>
 
-  <div class="integration-billing-table-wrap">
-    <table class="integration-billing-table">
-      <thead>
-        <tr>
-          <th>Integration / Service</th>
-          <th>Status</th>
-          <th>Usage</th>
-          <th>Current / Est. Cost</th>
-          <th>Monthly Budget</th>
-          <th>Remaining / Overage</th>
-          <th>Usage Level</th>
-          <th>Billing / Reset</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in integration_billing.rows %}
-        <tr>
-          <td data-label="Integration / Service"><strong>{{ item.name }}</strong></td>
-          <td data-label="Status"><span class="integration-status integration-status--{{ item.status_class }}">{{ item.status }}</span></td>
-          <td data-label="Usage"><strong>{{ item.usage }}</strong><small>{{ item.usage_source }}</small></td>
-          <td data-label="Current / Est. Cost">
-            {% if item.current_cost is not none %}<strong>{{ currency_code }} {{ item.current_cost }}</strong><small>Manually entered</small>{% else %}<span class="integration-value-empty">Not set</span>{% endif %}
-          </td>
-          <td data-label="Monthly Budget">
-            {% if item.monthly_budget is not none %}<strong>{{ currency_code }} {{ item.monthly_budget }}</strong>{% else %}<span class="integration-value-empty">Not set</span>{% endif %}
-          </td>
-          <td data-label="Remaining / Overage">
-            {% if item.budget_state.remaining is not none %}
-              <strong>{{ currency_code }} {{ item.budget_state.remaining }} remaining</strong>
-              {% if item.budget_state.overage > 0 %}<small class="integration-overage-text">{{ currency_code }} {{ item.budget_state.overage }} over</small>{% else %}<small>No overage</small>{% endif %}
-            {% else %}
-              <span class="integration-value-empty">Needs cost + budget</span>
-            {% endif %}
-          </td>
-          <td data-label="Usage Level">
-            <span class="integration-budget-state integration-budget-state--{{ item.budget_state.class_name }}">{{ item.budget_state.label }}</span>
-            {% if item.budget_state.percentage is not none %}<small>{{ item.budget_state.percentage }}% of budget</small>{% endif %}
-          </td>
-          <td data-label="Billing / Reset">{% if item.billing_reset %}<strong>{{ item.billing_reset }}</strong>{% else %}<span class="integration-value-empty">Not set</span>{% endif %}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+    <div class="integration-billing-table-wrap">
+      <table class="integration-billing-table integration-billing-table--simple">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Status</th>
+            <th>This Month</th>
+            <th>Cost</th>
+            <th>Attention</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in integration_billing.rows %}
+          <tr>
+            <td data-label="Service"><strong>{{ item.name }}</strong></td>
+            <td data-label="Status"><span class="integration-status integration-status--{{ item.status_class }}">{{ item.status }}</span></td>
+            <td data-label="This Month"><strong>{{ item.usage }}</strong></td>
+            <td data-label="Cost">
+              {% if item.current_cost is not none %}<strong>{{ currency_code }} {{ item.current_cost }}</strong>{% else %}<span class="integration-value-empty">Not set</span>{% endif %}
+            </td>
+            <td data-label="Attention">
+              {% if item.budget_state.class_name == 'overage' %}
+                <span class="integration-attention integration-attention--high">Over budget</span>
+              {% elif item.budget_state.class_name in ['near','reached'] %}
+                <span class="integration-attention integration-attention--warning">{{ item.budget_state.label|title }}</span>
+              {% elif item.budget_state.class_name == 'warning' %}
+                <span class="integration-attention integration-attention--warning">Watch budget</span>
+              {% elif item.status_class == 'off' %}
+                <span class="integration-attention integration-attention--setup">Setup needed</span>
+              {% elif item.status_class == 'ready' %}
+                <span class="integration-attention integration-attention--setup">Ready to connect</span>
+              {% else %}
+                <span class="integration-attention integration-attention--clear">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
 
   <details class="integration-billing-editor">
     <summary>
-      <span>Update costs, budgets &amp; billing dates</span>
-      <small>Only enter values you know from the provider or your own budget.</small>
+      <span>Edit Costs, Budgets &amp; Billing Dates</span>
+      <small>Open only when you need to update financial values.</small>
     </summary>
     <form method="post" action="{{ url_for('main.integration_billing_update') }}" class="integration-billing-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -173,16 +186,29 @@
       {% for item in integration_billing.rows %}
       <div class="integration-billing-form-row">
         <strong>{{ item.name }}</strong>
-        <label><span>Cost ({{ currency_code }})</span><input type="number" min="0" step="0.01" inputmode="decimal" name="{{ item.slug }}_current_cost" value="{{ item.current_cost_raw }}" placeholder="Leave blank if unknown"></label>
-        <label><span>Budget ({{ currency_code }})</span><input type="number" min="0.01" step="0.01" inputmode="decimal" name="{{ item.slug }}_monthly_budget" value="{{ item.monthly_budget_raw }}" placeholder="Leave blank if not set"></label>
+        <label><span>Cost ({{ currency_code }})</span><input type="number" min="0" step="0.01" inputmode="decimal" name="{{ item.slug }}_current_cost" value="{{ item.current_cost_raw }}" placeholder="Unknown"></label>
+        <label><span>Budget ({{ currency_code }})</span><input type="number" min="0.01" step="0.01" inputmode="decimal" name="{{ item.slug }}_monthly_budget" value="{{ item.monthly_budget_raw }}" placeholder="Not set"></label>
         <label><span>Billing / reset</span><input type="text" maxlength="80" name="{{ item.slug }}_billing_reset" value="{{ item.billing_reset }}" placeholder="e.g. 15th monthly"></label>
       </div>
       {% endfor %}
       <div class="integration-billing-form-actions">
-        <p>These values are for RSF's own operating-cost awareness. Saving them does not change any provider account or billing plan.</p>
-        <button class="button primary" type="submit">Save Usage &amp; Billing Settings</button>
+        <p>These values only affect RSF tracking. They do not change provider accounts or plans.</p>
+        <button class="button primary" type="submit">Save Changes</button>
       </div>
     </form>
+  </details>
+
+  <details class="integration-data-note">
+    <summary>About Usage &amp; Cost Data</summary>
+    <div>
+      <p>Usage comes from real RSF records when available. It is not the same as provider quota or invoice data.</p>
+      <p>Current cost, budget, and billing/reset dates stay manual until a trustworthy provider billing API is connected.</p>
+      <ul>
+        {% for item in integration_billing.rows %}
+        <li><strong>{{ item.name }}:</strong> {{ item.usage_source }}</li>
+        {% endfor %}
+      </ul>
+    </div>
   </details>
 </section>
 {% endblock %}
