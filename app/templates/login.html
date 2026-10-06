@@ -5,7 +5,7 @@
     <div class="login-copy"><h1 id="login-title">Welcome</h1></div>
     <form method="post" class="form-stack">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <label>Name<input type="text" name="name" autocomplete="username" required maxlength="160" autofocus></label>
+      <label>Email<input type="email" name="email" autocomplete="username" required maxlength="254" autofocus></label>
       <label>Password<input type="password" name="password" autocomplete="current-password" required maxlength="200"></label>
       <button class="button primary wide" type="submit">Log In</button>
       <a class="button ghost wide" href="{{ url_for('main.forgot_password') }}">Forgot Password?</a>
