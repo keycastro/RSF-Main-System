@@ -51,7 +51,7 @@ class CardLayoutReorderingTests(unittest.TestCase):
         routes = self.read("app/routes.py")
         self.assertIn("event.ctrlKey", js)
         self.assertIn("applyAll({animate: true", js)
-        self.assertIn("layout_json: JSON.stringify(state)", js)
+        self.assertIn("layout_json: payloadJson", js)
         self.assertIn("MutationObserver", js)
         self.assertIn('@bp.post("/card-layout/<page_name>")', routes)
         self.assertIn("CARD_LAYOUT_SPECS", routes)
