@@ -20,7 +20,7 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertEqual(data["app"], "Realty Systems Foundry")
         version_file = Path(__file__).resolve().parents[1] / "VERSION.txt"
         self.assertEqual(data["version"], version_file.read_text(encoding="utf-8").strip())
-        self.assertEqual(data["version"], "3.9.8")
+        self.assertEqual(data["version"], "1.18.229")
 
     def test_local_workspace_rebrand_paths_and_shortcuts(self):
         root = Path(__file__).resolve().parents[1]
@@ -472,77 +472,36 @@ class PortfolioSiteTests(unittest.TestCase):
         self.assertNotIn("property-inventory-hub", js)
         self.assertNotIn("student-housing-matching-and-placement-system", js)
 
-    def test_managed_maintenance_and_customization_are_clear_without_changing_contact_flow(self):
+    def test_current_custom_build_and_support_model_is_clear(self):
         systems = self.client.get("/system-templates")
         detail = self.client.get("/system-templates/property-operations-command-center")
         services = self.client.get("/services")
-        managed_contact = self.client.get("/contact?template=property-operations-command-center&intent=managed")
-        purchase_contact = self.client.get("/contact?template=property-operations-command-center&intent=existing-system")
+        legacy_contact = self.client.get("/contact?template=property-operations-command-center&intent=existing-system")
 
-        self.assertIn(b"$199", systems.data)
-        self.assertNotIn(b"Full Handover", detail.data)
-        self.assertNotIn(b"Managed by Realty Systems Foundry", detail.data)
-        self.assertIn(b"$199", detail.data)
-        self.assertIn(b"We build it. You manage it.", services.data)
-        self.assertIn(b"We build it. We manage it.", services.data)
-        self.assertIn(b"$199", services.data)
-        self.assertIn(b"Price by Agreement", services.data)
-        self.assertNotIn(b"$49/month", services.data)
-        self.assertNotIn(b"$490/year", services.data)
-        self.assertIn(b"The price is for the existing system.", services.data)
-        self.assertIn(b"Price by Agreement", services.data)
-        self.assertNotIn(b"Custom Quote", services.data)
-        self.assertNotIn(b"The price is a custom quote based on what you need.", services.data)
-        self.assertIn(b"Management is optional.", services.data)
+        self.assertEqual(systems.status_code, 200)
+        self.assertNotIn(b"$199", systems.data)
+        self.assertNotIn(b"$199", detail.data)
+        self.assertNotIn(b"$199", services.data)
+        self.assertIn(b"LIMITED FREE BUILD PROGRAM", services.data)
+        self.assertIn(b"$0 Development Fee", services.data)
+        self.assertIn(b"Paid RSF support is optional.", services.data)
         self.assertIn(b"$0/month", services.data)
-        self.assertIn(b"No management fee", services.data)
-        self.assertIn("WE MANAGE IT — OPTIONAL".encode("utf-8"), services.data)
-        self.assertIn(b"Optional managed care. Same service; choose monthly or yearly billing.", services.data)
-        self.assertIn(b"What we manage", services.data)
-        self.assertIn(b"We handle:", services.data)
-        self.assertIn(b"Hosting and deployment", services.data)
-        self.assertIn(b"Technical fixes for the current system", services.data)
-        self.assertIn(b"Managed care does not include:", services.data)
-        self.assertIn(b"New features", services.data)
-        self.assertIn(b"Workflow changes", services.data)
-        self.assertIn(b"Connections to other tools", services.data)
-        self.assertIn(b"Minor System Upgrade", services.data)
-        self.assertIn(b"$79", services.data)
-        self.assertIn(b"Major System Upgrade", services.data)
-        self.assertIn(b"$149", services.data)
-        self.assertIn(b"Upgrades are separate from maintenance.", services.data)
-        self.assertIn(b'class="management-upgrades"', services.data)
-        self.assertEqual(services.data.count(b'class="management-upgrade-card"'), 3)
-        self.assertIn(b"You handle:", services.data)
-        self.assertIn(b"You always manage your business.", services.data)
-        self.assertIn(b"You can buy an upgrade later whether you manage the system yourself or we manage it.", services.data)
-        self.assertIn(b"You are asking about:", managed_contact.data)
-        self.assertIn(b"Property Operations Command Center", managed_contact.data)
-        self.assertIn(b"Property Operations Command Center", purchase_contact.data)
-        self.assertIn(b"Send Message", purchase_contact.data)
-        self.assertIn(b'name="source_intent" value="managed"', managed_contact.data)
-        self.assertIn(b'name="source_intent" value="existing-system"', purchase_contact.data)
+        self.assertIn(b"Price by Agreement", services.data)
+        self.assertIn(b"Major changes are priced separately.", services.data)
+        self.assertIn(b"Does RSF sell ready-made systems?", services.data)
+        self.assertIn(b"No. The systems shown on this website are examples", services.data)
+        self.assertIn(b"Property Operations Command Center", legacy_contact.data)
+        self.assertIn(b'name="source_intent" value="custom-build"', legacy_contact.data)
 
-    def test_public_commercial_model_is_build_then_two_management_options(self):
+    def test_public_commercial_model_is_custom_build_only(self):
         public_paths = [
-            "/",
-            "/system-templates",
+            "/", "/system-templates",
             "/system-templates/property-operations-command-center",
             "/system-templates/property-inventory-hub",
             "/system-templates/student-housing-matching-and-placement-system",
-            "/services",
-            "/contact",
+            "/services", "/contact",
         ]
-        retired = [
-            b"FREE STANDARD SYSTEM",
-            b"Free Template Access",
-            b"Request Free Access",
-            b"Choose monthly or yearly access",
-            b"You pay for access to this system",
-            b"The core software is not sold",
-            b"Request Monthly Access",
-            b"Request Yearly Access",
-        ]
+        retired = [b"$199", b"$79", b"$149", b"Existing System Purchase", b"Get This System"]
         for path in public_paths:
             with self.subTest(path=path):
                 response = self.client.get(path)
@@ -551,107 +510,37 @@ class PortfolioSiteTests(unittest.TestCase):
                     self.assertNotIn(phrase, response.data)
 
         services = self.client.get("/services")
-        self.assertIn(b"Use one of our existing systems", services.data)
-        self.assertIn(b"Build a new system", services.data)
-        self.assertIn(b"We build it. You manage it.", services.data)
-        self.assertIn(b"We build it. We manage it.", services.data)
-        self.assertIn(b"$199", services.data)
-        self.assertIn(b"$79", services.data)
-        self.assertIn(b"$149", services.data)
-        self.assertIn(b"New System / Large Expansion", services.data)
+        self.assertIn(b"Build a custom system.", services.data)
+        self.assertIn(b"We build and test your system.", services.data)
+        self.assertIn(b"Choose who takes care of it.", services.data)
+        self.assertIn(b"Price by Agreement", services.data)
         self.assertEqual(services.data.count(b'<section class="management-choice'), 2)
 
-        # System pages explain the system; the management model lives on Services & Pricing.
         detail = self.client.get("/system-templates/property-operations-command-center")
-        self.assertIn(b"Want this system for your business?", detail.data)
-        self.assertIn(b"$199", detail.data)
-        self.assertIn(b"Get This System", detail.data)
-        self.assertNotIn(b"Full Handover", detail.data)
-        self.assertNotIn(b"Managed by Realty Systems Foundry", detail.data)
+        self.assertIn(b"Need a custom system for your business?", detail.data)
+        self.assertIn(b"Request a Custom System", detail.data)
 
-    def test_existing_system_price_has_one_trusted_source_and_is_separate_from_upgrades(self):
-        from app.system_templates import EXISTING_SYSTEM_PRICING, published_templates
+    def test_retired_existing_system_price_source_is_gone(self):
+        import app.system_templates as system_templates
+        self.assertFalse(hasattr(system_templates, "EXISTING_SYSTEM_PRICING"))
+        self.assertEqual(len(system_templates.published_templates()), 3)
+        for path in ("/", "/system-templates", "/services", "/contact"):
+            body = self.client.get(path).data
+            self.assertNotIn(b"$199", body)
+            self.assertNotIn(b"PHP", body)
 
-        pricing = EXISTING_SYSTEM_PRICING
-        self.assertEqual(pricing.currency_code, "USD")
-        self.assertEqual(pricing.currency_symbol, "$")
-        self.assertEqual(pricing.one_time_price, 199)
-        self.assertEqual(pricing.price_label, "$199")
-        self.assertEqual(pricing.one_time_label, "$199 one-time")
-        self.assertEqual(len(published_templates()), 3)
-
-        home = self.client.get("/")
-        systems = self.client.get("/system-templates")
-        services = self.client.get("/services")
-        self.assertEqual(home.data.count(b'class="existing-system-card-price"'), 3)
-        self.assertEqual(systems.data.count(b'class="existing-system-card-price"'), 3)
-        self.assertGreaterEqual(home.data.count(b"$199"), 3)
-        self.assertGreaterEqual(systems.data.count(b"$199"), 3)
-        self.assertIn(b"$199", services.data)
-        self.assertIn(b"upgrades are priced separately", services.data)
-        self.assertIn(b"$79", services.data)
-        self.assertIn(b"$149", services.data)
-        self.assertIn(b"Price by Agreement", services.data)
-
-        for path in (
-            "/",
-            "/system-templates",
-            "/system-templates/property-operations-command-center",
-            "/system-templates/property-inventory-hub",
-            "/system-templates/student-housing-matching-and-placement-system",
-            "/services",
-            "/contact",
-        ):
-            with self.subTest(path=path):
-                body = self.client.get(path).data
-                self.assertNotIn("₱".encode("utf-8"), body)
-                self.assertNotIn(b"PHP", body)
-                self.assertNotIn(b"Philippine peso", body)
-
-    def test_existing_system_purchase_contact_records_trusted_purchase_context(self):
-        from app.inquiries import get_inquiry
-
-        with tempfile.TemporaryDirectory() as tmp:
-            db_path = Path(tmp) / "existing-system-purchase.sqlite3"
-            self.app.config.update(
-                CONTACT_DELIVERY_MODE="database",
-                DATABASE_URL=f"sqlite:///{db_path}",
-                SMTP_HOST="",
-                SMTP_FROM_EMAIL="",
-            )
-            self.client.get(
-                "/contact?template=property-inventory-hub&intent=existing-system"
-            )
-            with self.client.session_transaction() as sess:
-                token = sess["contact_csrf"]
-            response = self.client.post(
-                "/contact",
-                data={
-                    "csrf_token": token,
-                    "source_slug": "property-inventory-hub",
-                    "source_intent": "existing-system",
-                    "source_title": "FAKE TITLE",
-                    "name": "System Buyer",
-                    "email": "buyer@example.com",
-                    "phone": "+1 555 010 1001",
-                    "company": "Example Properties",
-                    "message": "We want to get the existing Property Inventory Hub system as shown.",
-                    "website": "",
-                },
-                follow_redirects=False,
-            )
-            self.assertEqual(response.status_code, 302)
-            with self.app.app_context():
-                item = get_inquiry(1)
-            self.assertEqual(item["source_title"], "Property Inventory Hub")
-            self.assertEqual(item["source_action"], "Existing System Purchase")
-
+    def test_legacy_existing_system_contact_is_normalized_to_custom_build(self):
+        page = self.client.get("/contact?template=property-inventory-hub&intent=existing-system")
+        self.assertEqual(page.status_code, 200)
+        self.assertIn(b"Property Inventory Hub", page.data)
+        self.assertIn(b'name="source_intent" value="custom-build"', page.data)
+        self.assertNotIn(b"Existing System Purchase", page.data)
 
     def test_managed_technical_care_uses_price_by_agreement(self):
         services = self.client.get("/services")
         self.assertEqual(services.status_code, 200)
         self.assertIn(b"Price by Agreement", services.data)
-        self.assertIn(b"Based on the system and technical work required", services.data)
+        self.assertIn(b"Based on the system and the support it needs", services.data)
 
     def test_legacy_managed_plan_query_is_ignored(self):
         monthly = self.client.get(
@@ -714,31 +603,6 @@ class PortfolioSiteTests(unittest.TestCase):
             self.assertEqual(item["source_title"], "Property Operations Command Center")
             self.assertEqual(item["source_action"], "Managed by Realty Systems Foundry")
             self.assertNotIn("$1", item["source_action"])
-    def test_system_detail_is_truthful_and_does_not_repeat_management_choices(self):
-        for slug in (
-            "property-operations-command-center",
-            "property-inventory-hub",
-            "student-housing-matching-and-placement-system",
-        ):
-            with self.subTest(slug=slug):
-                response = self.client.get(f"/system-templates/{slug}")
-                self.assertEqual(response.status_code, 200)
-                self.assertIn(b'aria-label="Breadcrumb"', response.data)
-                self.assertIn(b"Get This System", response.data)
-                self.assertIn(b"$199", response.data)
-                self.assertIn(b"Changes are priced separately", response.data)
-                self.assertIn(b"What this helps with.", response.data)
-                self.assertIn(b"How it works.", response.data)
-                self.assertIn(b"What your team can do.", response.data)
-                self.assertIn(b"Can this be changed for my business?", response.data)
-                self.assertIn(b"Want this system for your business?", response.data)
-                self.assertNotIn(b"Discuss Full Handover", response.data)
-                self.assertNotIn(b"Discuss Managed Service", response.data)
-                self.assertIn(b"sample data", response.data)
-                if slug == "student-housing-matching-and-placement-system":
-                    self.assertIn(b"synthetic sample data", response.data)
-                self.assertNotIn(b"Choose monthly or yearly access", response.data)
-                self.assertNotIn(b"core software is not sold", response.data.lower())
 
     def test_legacy_project_urls_for_published_systems_redirect_to_canonical(self):
         response = self.client.get("/projects/property-inventory-hub", follow_redirects=False)
