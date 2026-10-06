@@ -3,6 +3,7 @@ from __future__ import annotations
 import secrets
 import string
 from pathlib import Path
+import os
 
 BASE_DIR = Path(__file__).resolve().parent
 ENV_PATH = BASE_DIR / ".env"
@@ -88,16 +89,18 @@ def main() -> None:
             return
 
         password = generate_password()
+        founder_email = (os.environ.get("FOUNDER_EMAIL") or "founder@rsf.local").strip().lower()
         now = utcnow_iso()
         db.execute(
             """INSERT INTO users(full_name,email,password_hash,role,active,force_password_change,created_at,updated_at)
                VALUES (?,?,?,'admin',1,0,?,?)""",
-            ("RSF Founder", "founder@rsf.local", hash_password(password), now, now),
+            ("RSF Founder", founder_email, hash_password(password), now, now),
         )
         db.commit()
         text = (
             "UNIFIED RSF SYSTEM — FIRST FOUNDER ACCESS\n\n"
             "Name: RSF Founder\n"
+            f"Email: {founder_email}\n"
             f"Password: {password}\n\n"
             "Save this password somewhere secure. RSF stores only its secure hash and cannot reveal it later.\n"
             "Delete this file after you save the login.\n"
