@@ -9,8 +9,24 @@ from app import create_app
 
 class PortfolioSiteTests(unittest.TestCase):
     def setUp(self):
-        self.app = create_app("testing")
+        self._tmp = tempfile.TemporaryDirectory()
+        root = Path(self._tmp.name)
+        self.app = create_app({
+            "TESTING": True,
+            "SECRET_KEY": "site-test-secret",
+            "DATABASE_URL": "",
+            "DATABASE": str(root / "site.db"),
+            "MESSAGE_UPLOAD_DIR": str(root / "message_uploads"),
+            "PROFILE_PICTURE_DIR": str(root / "profile_pictures"),
+            "CLIENT_ATTACHMENT_DIR": str(root / "client_attachments"),
+            "BACKUP_DIR": str(root / "backups"),
+            "TRUSTED_HOSTS": ["localhost", "127.0.0.1"],
+            "SESSION_COOKIE_SECURE": False,
+        })
         self.client = self.app.test_client()
+
+    def tearDown(self):
+        self._tmp.cleanup()
 
     def test_health_endpoint(self):
         response = self.client.get("/system/health")
