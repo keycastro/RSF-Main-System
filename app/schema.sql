@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     full_name TEXT NOT NULL,
-    -- Legacy internal compatibility key only. Private workspace login uses full_name + password.
+    -- Private workspace login and password recovery use this unique email.
     email TEXT NOT NULL COLLATE NOCASE UNIQUE,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('admin','partner')),
@@ -24,6 +24,20 @@ CREATE TABLE IF NOT EXISTS users (
     avatar_mime_type TEXT,
     avatar_updated_at TEXT
 );
+
+
+CREATE TABLE IF NOT EXISTS password_reset_codes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    email TEXT NOT NULL,
+    code_digest TEXT NOT NULL,
+    requested_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    used_at TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS idx_password_reset_codes_user
+    ON password_reset_codes(user_id,requested_at DESC,id DESC);
 
 
 CREATE TABLE IF NOT EXISTS commission_stages (
