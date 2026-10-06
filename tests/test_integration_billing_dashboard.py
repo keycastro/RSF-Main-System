@@ -162,7 +162,7 @@ class IntegrationBillingDashboardTests(unittest.TestCase):
         self.assertIn("@media(max-width:760px)", css)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.229")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.230")
 
 
 if __name__ == "__main__":
