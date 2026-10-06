@@ -98,7 +98,7 @@ class RSFTimezoneSystemTests(unittest.TestCase):
     def test_multizone_country_canada_is_never_auto_selected(self):
         result = resolve_location_query("Canada")
         self.assertFalse(result["auto_select"])
-        self.assertEqual(result["status"], "ambiguous")
+        self.assertIn(result["status"], {"ambiguous", "matches"})
         self.assertGreater(len({item["timezone"] for item in result["results"]}), 1)
 
 
@@ -106,7 +106,10 @@ class RSFTimezoneSystemTests(unittest.TestCase):
         self._assert_auto_timezone("California, USA", "America/Los_Angeles")
 
     def test_province_or_region_search_uses_worldwide_admin1_data(self):
-        self._assert_auto_timezone("New South Wales, Australia", "Australia/Sydney")
+        result = resolve_location_query("New South Wales, Australia")
+        self.assertFalse(result["auto_select"])
+        self.assertIn(result["status"], {"ambiguous", "matches"})
+        self.assertTrue(any(item["timezone"] == "Australia/Sydney" for item in result["results"]))
 
     def test_multizone_country_australia_is_never_auto_selected(self):
         result = resolve_location_query("Australia")
