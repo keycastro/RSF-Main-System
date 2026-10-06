@@ -55,7 +55,7 @@ class SidebarThemeConsistencyTests(unittest.TestCase):
         self.assertIn("outline:2px solid #c9a95e", css)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.221")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.222")
 
 
 if __name__ == "__main__":
