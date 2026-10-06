@@ -4,6 +4,7 @@ import functools
 import hmac
 import hashlib
 import re
+import secrets
 from datetime import datetime, timedelta, timezone
 
 from flask import abort, current_app, g, redirect, request, session, url_for
@@ -24,9 +25,32 @@ def hash_password(password: str) -> str:
 
 
 def valid_password(password: str) -> bool:
-    """Require a reasonable minimum length while preserving exact manual passwords."""
-    value = password or ""
-    return 12 <= len(value) <= 128 and any(not ch.isspace() for ch in value)
+    """Allow the account owner to choose the password length and format.
+
+    RSF intentionally has no minimum-length or character-composition rule. The
+    only validation here is that a password is not empty and stays within the
+    technical input cap used by the workspace forms.
+    """
+    value = password if password is not None else ""
+    return 0 < len(value) <= 128
+
+
+def generate_recovery_code() -> str:
+    """Create a high-entropy Founder recovery code that is safe to show once."""
+    return "RSF-" + "-".join(secrets.token_hex(3).upper() for _ in range(5))
+
+
+def normalize_recovery_code(value: str) -> str:
+    return "".join((value or "").split()).upper()
+
+
+def hash_recovery_code(code: str) -> str:
+    return hash_password(normalize_recovery_code(code))
+
+
+def verify_recovery_code(stored_hash: str, code: str) -> bool:
+    normalized = normalize_recovery_code(code)
+    return bool(stored_hash and normalized) and check_password_hash(stored_hash, normalized)
 
 
 def valid_email(value: str) -> bool:
