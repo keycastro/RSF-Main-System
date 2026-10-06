@@ -1,13 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="page-head workspace-page-head">
-  <div><h1>Create Partner</h1><p>Create workspace access.</p></div>
+  <div><h1>Create Partner</h1><p>Create private workspace access. There is no public signup.</p></div>
   <a class="button secondary" href="{{ url_for('main.partners_list') }}">Cancel</a>
 </div>
 <section class="panel form-panel refined-form-panel">
   <form method="post" class="form-grid">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>Name <span class="required-mark">Required</span><input name="full_name" required maxlength="160" value="{{ request.form.get('full_name','') }}" autocomplete="name"></label>
+    <label>Email <span class="required-mark">Required</span><input name="email" type="email" required maxlength="254" value="{{ request.form.get('email','') }}" autocomplete="email"><small>This email is used for login and password recovery.</small></label>
     <label>Commission level <span class="required-mark">Required</span><select name="commission_stage_id" required><option value="">Choose level</option>{% for s in stages %}<option value="{{ s.id }}" {{ 'selected' if request.form.get('commission_stage_id')==s.id|string else '' }}>{{ s.name }} — {{ s.rate_bp|rate }}</option>{% endfor %}</select></label>
     <label>Phone<input name="phone" maxlength="60" value="{{ request.form.get('phone','') }}" autocomplete="tel"></label>
     <label>Password <span class="required-mark">Required</span><small>Choose any non-empty password. RSF does not require a minimum length.</small>
