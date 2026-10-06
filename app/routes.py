@@ -824,7 +824,9 @@ def _clean_account_name(value: str) -> str:
 
 
 def _account_name_in_use(db, name: str, exclude_user_id: int | None = None) -> bool:
-    sql = "SELECT id FROM users WHERE active=1 AND lower(trim(full_name))=lower(trim(?))"
+    # Login names remain reserved even while an account is inactive. This prevents
+    # two accounts from becoming active with the same name after reactivation.
+    sql = "SELECT id FROM users WHERE lower(trim(full_name))=lower(trim(?))"
     params: list[object] = [name]
     if exclude_user_id is not None:
         sql += " AND id<>?"
@@ -3853,6 +3855,50 @@ def partner_detail(partner_id: int):
     return render_template("partner_detail.html", title=partner["full_name"], partner=partner, stages=stages)
 
 
+@bp.post("/admin/partners/<int:partner_id>/access")
+@admin_required
+def partner_access_toggle(partner_id: int):
+    """Founder-only access switch for a Partner account.
+
+    Deactivation takes effect on the Partner's next request because every
+    authenticated request reloads the user record and rejects inactive users.
+    Reactivation restores the same account and preserved business history.
+    """
+    validate_csrf()
+    requested_active = request.form.get("active", "") == "1"
+    db = get_db()
+    partner = db.execute(
+        """SELECT p.id,p.user_id,p.active AS partner_active,u.full_name,u.active AS user_active
+           FROM partners p JOIN users u ON u.id=p.user_id
+           WHERE p.id=? AND p.account_deleted_at IS NULL""",
+        (partner_id,),
+    ).fetchone()
+    if not partner:
+        abort(404)
+
+    active_value = 1 if requested_active else 0
+    now = utcnow_iso()
+    db.execute(
+        """UPDATE users
+           SET active=?,failed_login_count=0,locked_until=NULL,updated_at=?
+           WHERE id=? AND role='partner'""",
+        (active_value, now, partner["user_id"]),
+    )
+    db.execute("UPDATE partners SET active=? WHERE id=?", (active_value, partner_id))
+    log_activity(
+        "PARTNER_ACCESS_REACTIVATED" if requested_active else "PARTNER_ACCESS_DEACTIVATED",
+        "partner",
+        partner_id,
+        "Partner workspace access reactivated." if requested_active else "Partner workspace access deactivated and active sessions revoked.",
+    )
+    db.commit()
+    if requested_active:
+        flash(f"Access reactivated for {partner['full_name']}.", "success")
+    else:
+        flash(f"Access deactivated for {partner['full_name']}. Their existing sessions can no longer access the workspace.", "success")
+    return redirect(url_for("main.account_security", _anchor=f"partner-{partner_id}"))
+
+
 @bp.post("/admin/partners/<int:partner_id>/reset-password")
 @admin_required
 def partner_reset_password(partner_id: int):
@@ -3869,7 +3915,7 @@ def partner_reset_password(partner_id: int):
     partner = db.execute(
         """SELECT p.id,p.user_id,u.full_name
            FROM partners p JOIN users u ON u.id=p.user_id
-           WHERE p.id=? AND p.account_deleted_at IS NULL AND u.active=1""",
+           WHERE p.id=? AND p.account_deleted_at IS NULL""",
         (partner_id,),
     ).fetchone()
     if not partner:
@@ -4645,7 +4691,8 @@ def _account_security_context(db):
     if not founder:
         abort(403)
     partners = db.execute(
-        """SELECT p.id,p.user_id,u.full_name,u.created_at,
+        """SELECT p.id,p.user_id,u.full_name,u.created_at,u.active AS user_active,
+                  p.active AS partner_active,
                   cs.name commission_stage_name,cs.rate_bp commission_rate_bp,
                   ((SELECT COUNT(*) FROM leads l WHERE l.owner_partner_id=p.id AND l.status NOT IN ('WON','LOST')) +
                    (SELECT COUNT(*) FROM followups f WHERE f.owner_partner_id=p.id AND f.status='OPEN') +
@@ -4654,8 +4701,8 @@ def _account_security_context(db):
            FROM partners p
            JOIN users u ON u.id=p.user_id
            JOIN commission_stages cs ON cs.id=p.commission_stage_id
-           WHERE p.account_deleted_at IS NULL AND u.active=1
-           ORDER BY lower(u.full_name),p.id"""
+           WHERE p.account_deleted_at IS NULL
+           ORDER BY u.active DESC,lower(u.full_name),p.id"""
     ).fetchall()
     return founder, partners
 
