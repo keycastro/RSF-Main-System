@@ -32,8 +32,9 @@ class WorkflowDiagramTests(unittest.TestCase):
 
     def test_dedicated_settings_navigation_contains_real_sections(self):
         template = self.read("app/templates/_settings_navigation.html")
-        for label in ("General", "Appearance", "Account", "Workflow Diagram", "Integrations"):
+        for label in ("General", "Appearance", "Account", "Workflow Diagram"):
             self.assertIn(label, template)
+        self.assertNotIn("Integrations", template)
 
     def test_dedicated_settings_hides_operational_sidebar(self):
         css = self.read("app/static/css/settings_experience.css")
