@@ -46,27 +46,36 @@ class AuditHardeningTests(unittest.TestCase):
         )
         self.assertEqual(transcription.status_code, 403)
 
-    def test_retell_active_call_surface_is_removed(self):
+    def test_retell_ai_call_surface_is_restored_with_signed_webhook(self):
         routes = self.read("app/routes.py")
         config = self.read("config.py")
         requirements = self.read("requirements.txt")
         prospects = self.read("app/templates/prospects.html")
-        inquiries = self.read("app/templates/inquiries.html")
         js = self.read("app/static/js/app.js")
-        for text in (routes, config, requirements, prospects, inquiries, js):
-            self.assertNotIn("RETELL_", text)
-            self.assertNotIn("retell-sdk", text)
-            self.assertNotIn("prospect_ai_call", text)
-            self.assertNotIn("AI Call", text)
-        self.assertEqual(self.client.post("/app/integrations/retell/webhook").status_code, 404)
+        init = self.read("app/__init__.py")
 
-    def test_historical_ai_call_storage_is_preserved_read_only(self):
+        self.assertIn("RETELL_API_KEY", config)
+        self.assertIn("RETELL_AGENT_ID", config)
+        self.assertIn("RETELL_FROM_NUMBER", config)
+        self.assertIn("retell-sdk==6.0.1", requirements)
+        self.assertIn("def prospect_ai_call", routes)
+        self.assertIn("def retell_webhook", routes)
+        self.assertIn("data-prospect-call-action", prospects)
+        self.assertIn("Retell AI", prospects)
+        self.assertIn("[data-prospect-call-action]", js)
+        self.assertIn('"main.retell_webhook"', init)
+
+        # Missing provider signature/credentials should reach Retell auth, not browser CSRF.
+        response = self.client.post("/app/integrations/retell/webhook", data=b"{}")
+        self.assertEqual(response.status_code, 401)
+
+    def test_ai_call_storage_supports_active_and_historical_records(self):
         routes = self.read("app/routes.py")
         db_source = self.read("app/db.py")
         self.assertIn("CREATE TABLE IF NOT EXISTS ai_sales_calls", db_source)
         self.assertIn("FROM ai_sales_calls", routes)
-        self.assertNotIn("INSERT INTO ai_sales_calls", routes)
-        self.assertNotIn("UPDATE ai_sales_calls", routes)
+        self.assertIn("INSERT INTO ai_sales_calls", routes)
+        self.assertIn("UPDATE ai_sales_calls", routes)
         with self.app.app_context():
             db = get_db()
             table = db.execute(
@@ -99,7 +108,7 @@ class AuditHardeningTests(unittest.TestCase):
             self.assertNotIn("one_time_price", text)
 
     def test_release_version(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.229")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.230")
 
 
 if __name__ == "__main__":

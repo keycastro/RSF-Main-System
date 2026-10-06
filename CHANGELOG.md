@@ -1,3 +1,17 @@
+# v1.18.230 — Communication integration mapping and Retell restoration
+
+- Restored Founder-approved Retell AI outbound calling for Prospect AI Call.
+- Kept Retell signed webhook security and browser CSRF separation.
+- Added small muted provider/app names below communication actions:
+  - AI Call — Retell AI
+  - Manual Call — Twilio
+  - Google Meet — Google Meet
+  - Email — Gmail
+  - WhatsApp — WhatsApp Business
+- Fixed Prospect Notes timeline action argument ordering.
+- Added Retell AI to Integration Usage & Billing with automatic RSF-recorded AI-call usage.
+- Preserved v1.18.229 password/security hardening.
+
 # v1.18.229 — Security and maintenance hardening
 
 - Fixed external WhatsApp/Twilio webhook handling so browser CSRF no longer blocks provider callbacks before signature/secret verification.

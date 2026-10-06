@@ -1,7 +1,7 @@
 {
   "project": "RSF_MAIN_SYSTEM",
   "handoff_date": "2026-10-06",
-  "version": "1.18.229",
+  "version": "1.18.230",
   "owner_public_name": "Key Castro",
   "positioning": "Technology built for real estate operations",
   "framework": "Flask",
@@ -253,7 +253,7 @@
     "default": "branch -> tests -> merge -> manual Render deploy -> live verification -> Google documentation update",
     "provider_auto_deploy": false,
     "health_path": "/system/health",
-    "success_condition": "Production reports status ok and version 1.18.229; deployed commit matches GitHub main; startup succeeds; no post-deploy error/warning/critical logs."
+    "success_condition": "Production reports status ok and version 1.18.230; deployed commit matches GitHub main; startup succeeds; no post-deploy error/warning/critical logs."
   },
   "ux_master_refinement_3_7": {
     "document": "docs/product/MASTER_UX_REFINEMENT_3_7.md",
@@ -903,16 +903,24 @@
     "accounts_ids_hashes_vault_history_preserved": true
   },
   "authoritative_current_state": {
-    "version": "1.18.229",
+    "version": "1.18.230",
     "public_offer": "Custom systems only; public systems are portfolio examples, not ready-made products for sale.",
     "free_build_program": "November 1, 2026 through March 31, 2027; accepted projects only.",
     "post_program_development": "Price by Agreement",
     "optional_rsf_support": "Price by Agreement",
     "major_changes": "Price by Agreement",
-    "ai_boundary": "No active AI development/calling. Retell outbound calling retired; historical AI call rows may remain read-only.",
+    "ai_boundary": "Client-facing RSF development remains non-AI by default. The private RSF workspace intentionally includes Founder-approved Retell AI outbound calling for prospect outreach when Retell credentials are configured.",
     "password_security": "Hash-only authentication; recoverable password vault retired by migration 43; new passwords require 12–128 characters.",
-    "webhook_security": "Browser CSRF remains required; WhatsApp/Twilio callbacks are exempt only from browser CSRF and enforce provider signatures/secrets.",
+    "webhook_security": "Browser CSRF remains required for browser actions; WhatsApp, Twilio, and Retell provider callbacks are exempt only from browser CSRF and enforce provider signatures/secrets.",
     "render_auto_deploy": false
   },
-  "historical_sections_notice": "Older 3.x and earlier 1.x UX/pricing/release fields are historical only and must not override authoritative_current_state."
+  "historical_sections_notice": "Older 3.x and earlier 1.x UX/pricing/release fields are historical only and must not override authoritative_current_state.",
+  "communication_integrations": {
+    "ai_call": "Retell AI",
+    "manual_call": "Twilio",
+    "google_meet": "Google Meet",
+    "email": "Gmail",
+    "whatsapp": "WhatsApp Business",
+    "ui_rule": "Provider/app name appears below the primary action label as smaller muted secondary text."
+  }
 }

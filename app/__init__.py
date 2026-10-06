@@ -164,6 +164,7 @@ def create_app(test_config=None):
             # Browser/session POSTs require CSRF. External providers authenticate
             # their own server-to-server callbacks with provider signatures/secrets.
             server_to_server_endpoints = {
+                "main.retell_webhook",
                 "main.whatsapp_webhook_receive",
                 "main.twilio_manual_call_twiml",
                 "main.twilio_manual_call_client_notice",

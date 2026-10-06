@@ -53,6 +53,17 @@ class IntegrationBillingDashboardTests(unittest.TestCase):
         self.assertIn("url_for('main.calendar_verify')", table_markup)
         self.assertIn("integration-row-details", table_markup)
 
+    def test_communication_integrations_use_final_provider_names(self):
+        model = self.read("app/integration_billing.py")
+        self.assertIn('("gmail", "Gmail")', model)
+        self.assertIn('("calendar", "Google Meet")', model)
+        self.assertIn('("whatsapp", "WhatsApp Business")', model)
+        self.assertIn('("twilio", "Twilio")', model)
+        self.assertIn('("retell", "Retell AI")', model)
+        self.assertIn("FROM ai_sales_calls", model)
+        self.assertIn('"usage_source": "Based on Retell AI calls recorded in RSF."', model)
+        self.assertIn('"cost_source": "Retell AI billing is not connected to this dashboard."', model)
+
     def test_manual_cost_and_budget_editing_is_completely_removed(self):
         template = self.read("app/templates/integration_usage_billing.html")
         routes = self.read("app/routes.py")
@@ -162,7 +173,7 @@ class IntegrationBillingDashboardTests(unittest.TestCase):
         self.assertIn("@media(max-width:760px)", css)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.229")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.230")
 
 
 if __name__ == "__main__":

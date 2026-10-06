@@ -1,6 +1,6 @@
 # RSF Main System — Current Authoritative State
 
-**Current version:** 1.18.229
+**Current version:** 1.18.230
 **Repository:** keycastro/RSF-Main-System
 **Production:** https://realtysystemsfoundry.onrender.com
 **Render service:** realtysystemsfoundry
@@ -19,13 +19,13 @@ RSF builds custom business systems for real-estate and property-management busin
 - After the beginning-stage free period, custom development moves toward Price by Agreement.
 - Paid RSF post-delivery support is optional and Price by Agreement.
 - Major changes, large expansions, major features, and major integrations are Price by Agreement.
-- No AI development/calling is part of the current RSF service boundary.
+- Client-facing RSF development remains non-AI by default; the private RSF workspace intentionally uses Retell AI for the Founder-approved AI Call outreach feature.
 
 ## Security rules
 
 - Browser/session POST actions use CSRF protection.
 - External provider callbacks use provider signature/secret validation and are exempt only from browser CSRF.
-- Retell AI outbound calling is retired. Historical AI-call rows may remain read-only for business history.
+- Retell AI outbound calling is active as an internal RSF outreach integration when RETELL_API_KEY, RETELL_AGENT_ID, and RETELL_FROM_NUMBER are configured. Historical and new AI-call records use ai_sales_calls.
 - Password authentication is hash-only. Recoverable encrypted password copies are retired and removed by migration 43.
 - New Founder/Partner passwords must be 12–128 characters.
 - Secrets remain in environment configuration and never in Git.

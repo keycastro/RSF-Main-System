@@ -31,9 +31,10 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           version=Path("VERSION.txt").read_text().strip()
-          assert version == "1.18.229", version
+          assert version == "1.18.230", version
           init=Path("app/__init__.py").read_text()
           for endpoint in (
+              "main.retell_webhook",
               "main.whatsapp_webhook_receive",
               "main.twilio_manual_call_twiml",
               "main.twilio_manual_call_client_notice",
@@ -48,7 +49,10 @@ jobs:
           db_source=Path("app/db.py").read_text()
           assert "CREATE TABLE IF NOT EXISTS ai_sales_calls" in db_source
           routes=Path("app/routes.py").read_text()
-          assert "INSERT INTO ai_sales_calls" not in routes
-          assert "UPDATE ai_sales_calls" not in routes
+          assert "def prospect_ai_call" in routes
+          assert "def retell_webhook" in routes
+          assert "INSERT INTO ai_sales_calls" in routes
+          assert "UPDATE ai_sales_calls" in routes
+          assert "X-Retell-Signature" in routes
           print("MAXIMUM_AUDIT_OK")
           PY
