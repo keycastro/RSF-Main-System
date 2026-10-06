@@ -2051,11 +2051,15 @@ def integration_usage_billing():
     calendar_status = calendar_connection_status()
     dashboard = build_integration_billing_dashboard(
         db,
+        gmail_status=gmail_status,
+        calendar_status=calendar_status,
     )
     return render_template(
         "integration_usage_billing.html",
         title="Integration Usage & Billing",
         currency_code=setting("currency_code", "USD"),
+        gmail_status=gmail_status,
+        calendar_status=calendar_status,
         integration_billing=dashboard,
     )
 
