@@ -38,8 +38,8 @@ jobs:
               print("BODY_START=" + body[:800].replace("\n", " | "))
               if not page.url.startswith("https://realtysystemsfoundry.onrender.com/app/"):
                   raise RuntimeError("Partner alias did not reach the RSF /app/ workspace")
-              if "Sign in" not in body:
-                  raise RuntimeError("RSF Sign in page was not found")
+              if "Log In" not in body:
+                  raise RuntimeError("RSF Log In page was not found")
               print("BROWSER_CHECK_OK")
               browser.close()
           PY
