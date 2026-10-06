@@ -46,6 +46,7 @@ class IntegrationBillingDashboardTests(unittest.TestCase):
         self.assertIn("url_for('main.calendar_verify')", template)
         self.assertIn("gmail_status=gmail_status", routes)
         self.assertIn("calendar_status=calendar_status", routes)
+        self.assertIn("Connection details", template)
 
     def test_oauth_endpoint_urls_are_preserved_but_return_to_finance(self):
         routes = self.read("app/routes.py")
@@ -79,32 +80,55 @@ class IntegrationBillingDashboardTests(unittest.TestCase):
         self.assertIn("INSERT INTO settings(key,value,updated_at,updated_by_user_id)", routes)
         self.assertNotIn("CREATE TABLE IF NOT EXISTS integration_billing", schema)
 
-    def test_dashboard_keeps_unknown_values_explicit(self):
+    def test_main_dashboard_is_simplified_to_four_clear_sections(self):
         template = self.read("app/templates/integration_usage_billing.html")
-        self.assertIn("Not set", template)
-        self.assertIn("Not available", template)
-        self.assertIn("Provider invoice and quota data is not guessed.", template)
-        self.assertIn("Partial total", template)
+        self.assertIn("Integration Connections", template)
+        self.assertIn("Monthly Cost Summary", template)
+        self.assertIn("Integration Usage &amp; Costs", template)
+        self.assertIn("Edit Costs, Budgets &amp; Billing Dates", template)
+        self.assertLess(template.index("Integration Connections"), template.index("Monthly Cost Summary"))
+        self.assertLess(template.index("Monthly Cost Summary"), template.index("Integration Usage &amp; Costs"))
+        self.assertLess(template.index("Integration Usage &amp; Costs"), template.index("Edit Costs, Budgets &amp; Billing Dates"))
+
+    def test_main_usage_table_has_only_simple_scan_columns(self):
+        template = self.read("app/templates/integration_usage_billing.html")
+        for heading in ("Service", "Status", "This Month", "Cost", "Attention"):
+            self.assertIn(f"<th>{heading}</th>", template)
+        self.assertNotIn("<th>Monthly Budget</th>", template)
+        self.assertNotIn("<th>Remaining / Overage</th>", template)
+        self.assertNotIn("<th>Usage Level</th>", template)
+        self.assertNotIn("<th>Billing / Reset</th>", template)
+        self.assertIn("Setup needed", template)
+        self.assertIn("Watch budget", template)
+        self.assertIn("Over budget", template)
+
+    def test_advanced_information_is_collapsed(self):
+        template = self.read("app/templates/integration_usage_billing.html")
+        self.assertIn('<details class="integration-billing-editor">', template)
+        self.assertIn('<details class="integration-data-note">', template)
+        self.assertIn("About Usage &amp; Cost Data", template)
+        self.assertIn("Usage comes from real RSF records when available.", template)
+        self.assertIn("Current cost, budget, and billing/reset dates stay manual", template)
 
     def test_budget_warning_levels_are_supported(self):
         model = self.read("app/integration_billing.py")
         for label in ("NORMAL", "WARNING", "NEAR LIMIT", "BUDGET REACHED", "OVERAGE", "NOT SET"):
             self.assertIn(f'"{label}"', model)
 
-    def test_dashboard_has_connection_and_billing_styles(self):
+    def test_dashboard_has_clean_responsive_styles(self):
         base = self.read("app/templates/base.html")
         css = self.read("app/static/css/integration_usage_billing.css")
         self.assertIn("integration_usage_billing.css", base)
-        self.assertIn(".integration-connections{", css)
+        self.assertIn(".integration-dashboard-section{", css)
         self.assertIn(".integration-connection-grid{", css)
-        self.assertIn(".integration-connection-card{", css)
         self.assertIn(".integration-billing-summary{", css)
-        self.assertIn(".integration-billing-table-wrap{", css)
-        self.assertIn(".integration-billing-editor{", css)
+        self.assertIn(".integration-billing-table--simple", css)
+        self.assertIn(".integration-attention--setup", css)
+        self.assertIn(".integration-data-note", css)
         self.assertIn("@media(max-width:760px)", css)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.224")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.225")
 
 
 if __name__ == "__main__":
