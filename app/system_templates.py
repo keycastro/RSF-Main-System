@@ -8,26 +8,6 @@ TemplateStatus = Literal["draft", "published"]
 _SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
-@dataclass(frozen=True)
-class ExistingSystemPricing:
-    """Single trusted price for every published existing system."""
-
-    currency_code: str = "USD"
-    currency_symbol: str = "$"
-    one_time_price: int = 199
-
-    @property
-    def price_label(self) -> str:
-        return f"{self.currency_symbol}{self.one_time_price}"
-
-    @property
-    def one_time_label(self) -> str:
-        return f"{self.price_label} one-time"
-
-
-EXISTING_SYSTEM_PRICING = ExistingSystemPricing()
-
-
 _MANAGED_SERVICE_ACTION_PREFIX = "Managed by Realty Systems Foundry — "
 _LEGACY_KEY_CASTRO_MANAGED_PREFIX = "Managed by KEY CASTRO — "
 _LEGACY_SUBSCRIPTION_ACTION_PREFIX = "System Subscription — "
