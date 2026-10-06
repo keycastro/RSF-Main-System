@@ -22,12 +22,14 @@ class IntegrationBillingDashboardTests(unittest.TestCase):
         self.assertIn("{% if g.user.role == 'admin' %}", base)
         self.assertIn("<h1>Integration Usage &amp; Billing</h1>", template)
 
-    def test_settings_keeps_connections_and_only_links_to_finance_dashboard(self):
+    def test_settings_keeps_only_connection_controls(self):
         settings = self.read("app/templates/settings.html")
         finance_template = self.read("app/templates/integration_usage_billing.html")
         self.assertIn("RSF Gmail", settings)
         self.assertIn("Google Calendar", settings)
-        self.assertIn("Open Integration Usage &amp; Billing", settings)
+        self.assertNotIn("Usage &amp; billing", settings)
+        self.assertNotIn("Open Integration Usage &amp; Billing", settings)
+        self.assertNotIn("main.integration_usage_billing", settings)
         self.assertNotIn('id="integration-usage-billing"', settings)
         self.assertIn('class="integration-billing-page"', finance_template)
         self.assertIn('id="integration-usage-billing"', finance_template)
@@ -79,7 +81,7 @@ class IntegrationBillingDashboardTests(unittest.TestCase):
         self.assertNotIn("Integration Usage & Billing inside Settings", settings_css)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.222")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.223")
 
 
 if __name__ == "__main__":
