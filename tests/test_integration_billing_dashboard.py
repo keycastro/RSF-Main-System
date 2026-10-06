@@ -53,6 +53,72 @@ class IntegrationBillingDashboardTests(unittest.TestCase):
         self.assertIn("url_for('main.calendar_verify')", table_markup)
         self.assertIn("integration-row-details", table_markup)
 
+    def test_manual_cost_and_budget_editing_is_completely_removed(self):
+        template = self.read("app/templates/integration_usage_billing.html")
+        routes = self.read("app/routes.py")
+        model = self.read("app/integration_billing.py")
+        css = self.read("app/static/css/integration_usage_billing.css")
+
+        self.assertNotIn("Edit Costs", template)
+        self.assertNotIn("Monthly Budget", template)
+        self.assertNotIn("Billing Date", template)
+        self.assertNotIn("type=\"number\"", template)
+        self.assertNotIn("integration_billing_update", routes)
+        self.assertNotIn('/integration-usage-billing/update', routes)
+        self.assertNotIn('/admin/settings/integrations/billing', routes)
+        self.assertNotIn("validate_manual_money", routes)
+        self.assertNotIn("integration_billing.", model)
+        self.assertNotIn("_budget_status", model)
+        self.assertNotIn("_setting_value", model)
+        self.assertNotIn("integration-billing-editor", css)
+        self.assertNotIn("integration-billing-form", css)
+
+    def test_summary_is_automatic_only(self):
+        template = self.read("app/templates/integration_usage_billing.html")
+        model = self.read("app/integration_billing.py")
+        for label in ("Known Cost", "Costs Found", "Active", "Needs Setup"):
+            self.assertIn(f"<span>{label}</span>", template)
+        self.assertIn('"known_cost_text"', model)
+        self.assertIn('"cost_available_count"', model)
+        self.assertIn('"active_count"', model)
+        self.assertIn('"needs_setup_count"', model)
+        self.assertNotIn("<span>Budget</span>", template)
+        self.assertNotIn("<span>Left</span>", template)
+        self.assertNotIn("<span>Over Budget</span>", template)
+
+    def test_twilio_cost_comes_from_twilio_usage_api(self):
+        twilio = self.read("app/twilio_manual_call_ops.py")
+        model = self.read("app/integration_billing.py")
+        self.assertIn("def current_month_usage()", twilio)
+        self.assertIn("Usage/Records/ThisMonth.json?PageSize=1000", twilio)
+        self.assertIn('"totalprice"', twilio)
+        self.assertIn('"calls"', twilio)
+        self.assertIn("twilio_current_month_usage", model)
+        self.assertIn('"Cost comes from Twilio."', model)
+        self.assertIn('"Usage comes from Twilio."', model)
+
+    def test_unavailable_provider_costs_are_not_guessed(self):
+        template = self.read("app/templates/integration_usage_billing.html")
+        model = self.read("app/integration_billing.py")
+        self.assertIn("Not available", model)
+        self.assertIn("Render billing is not connected to this dashboard.", model)
+        self.assertIn("Database billing is not connected to this dashboard.", model)
+        self.assertIn("Google billing is not connected to this dashboard.", model)
+        self.assertIn("WhatsApp billing is not connected to this dashboard.", model)
+        self.assertIn("If a provider does not give RSF billing data, the cost shows as Not available instead of using a guess.", template)
+
+    def test_dashboard_keeps_real_usage_sources(self):
+        model = self.read("app/integration_billing.py")
+        self.assertIn("client_messages WHERE channel='EMAIL'", model)
+        self.assertIn("google_calendar_synced_at", model)
+        self.assertIn("whatsapp_messages", model)
+        self.assertIn("manual_client_calls", model)
+        self.assertIn("pg_database_size(current_database())", model)
+        self.assertIn('"usage_source": "Measured by RSF."', model)
+        self.assertIn('"usage_source": "Based on emails recorded in RSF."', model)
+        self.assertIn('"usage_source": "Based on calendar syncs recorded in RSF."', model)
+        self.assertIn('"usage_source": "Based on WhatsApp messages recorded in RSF."', model)
+
     def test_oauth_endpoint_urls_are_preserved_but_return_to_finance(self):
         routes = self.read("app/routes.py")
         self.assertIn('@bp.get("/admin/settings/gmail/connect")', routes)
@@ -64,96 +130,23 @@ class IntegrationBillingDashboardTests(unittest.TestCase):
         self.assertNotIn('url_for("main.settings", section="integrations")', routes)
         self.assertGreaterEqual(routes.count('url_for("main.integration_usage_billing")'), 10)
 
-    def test_dashboard_uses_real_rsf_usage_sources_with_simple_words(self):
-        model = self.read("app/integration_billing.py")
-        self.assertIn("client_messages WHERE channel='EMAIL'", model)
-        self.assertIn("google_calendar_synced_at", model)
-        self.assertIn("whatsapp_messages", model)
-        self.assertIn("manual_client_calls", model)
-        self.assertIn("pg_database_size(current_database())", model)
-        self.assertIn('"usage": "Usage not available"', model)
-        self.assertIn('"usage_source": "Render usage is not connected yet."', model)
-        self.assertIn('"usage_source": "Measured by RSF."', model)
-        self.assertIn('"usage_source": "Based on emails recorded in RSF."', model)
-        self.assertIn('"usage_source": "Based on calendar syncs recorded in RSF."', model)
-        self.assertIn('"usage_source": "Based on WhatsApp messages recorded in RSF."', model)
-        self.assertIn('"usage_source": "Based on calls recorded in RSF."', model)
-        self.assertNotIn("Provider metrics not connected", model)
-        self.assertNotIn("PostgreSQL active", model)
-        self.assertNotIn("Not configured", model)
-        self.assertNotIn("deal sync(s)", model)
-        self.assertNotIn("message(s)", model)
-        self.assertNotIn("call(s)", model)
-
-    def test_manual_cost_configuration_reuses_existing_settings_table(self):
-        routes = self.read("app/routes.py")
-        schema = self.read("app/schema.sql")
-        self.assertIn('@bp.post("/integration-usage-billing/update")', routes)
-        self.assertIn('@bp.post("/admin/settings/integrations/billing")', routes)
-        self.assertIn("validate_csrf()", routes)
-        self.assertIn("INSERT INTO settings(key,value,updated_at,updated_by_user_id)", routes)
-        self.assertNotIn("CREATE TABLE IF NOT EXISTS integration_billing", schema)
-
-    def test_dashboard_uses_short_clear_labels(self):
-        template = self.read("app/templates/integration_usage_billing.html")
-        self.assertIn("See your services, usage, and monthly costs.", template)
-        self.assertIn("<span>This Month</span>", template)
-        self.assertIn("Monthly Costs", template)
-        self.assertIn("<span>Cost</span>", template)
-        self.assertIn("<span>Budget</span>", template)
-        self.assertIn("<span>Left</span>", template)
-        self.assertIn("<span>Over Budget</span>", template)
-        self.assertIn("Services &amp; Usage", template)
-        self.assertIn("Edit Costs &amp; Budget", template)
-        self.assertIn("About These Numbers", template)
-        self.assertNotIn("Monthly Cost Summary", template)
-        self.assertNotIn("Integration Usage &amp; Costs", template)
-        self.assertNotIn("Edit Costs, Budgets &amp; Billing Dates", template)
-        self.assertNotIn("About Usage &amp; Cost Data", template)
-
     def test_main_usage_table_has_simple_scan_columns(self):
         template = self.read("app/templates/integration_usage_billing.html")
         for heading in ("Service", "Status", "Usage", "Cost", "Action"):
             self.assertIn(f"<th>{heading}</th>", template)
-        self.assertNotIn("<th>This Month</th>", template)
-        self.assertNotIn("<th>Action / Attention</th>", template)
         self.assertNotIn("<th>Monthly Budget</th>", template)
         self.assertNotIn("<th>Remaining / Overage</th>", template)
         self.assertNotIn("<th>Usage Level</th>", template)
         self.assertNotIn("<th>Billing / Reset</th>", template)
         self.assertIn("Needs setup", template)
-        self.assertIn("Watch budget", template)
-        self.assertIn("Almost at budget", template)
-        self.assertIn("Over budget", template)
 
-    def test_technical_details_are_secondary_and_wording_is_simple(self):
+    def test_technical_details_are_secondary(self):
         template = self.read("app/templates/integration_usage_billing.html")
-        self.assertIn('<details class="integration-billing-editor">', template)
         self.assertIn('<details class="integration-data-note">', template)
         self.assertIn('<details class="integration-row-details">', template)
         self.assertIn("View Details", template)
-        self.assertIn("Google setup is not complete yet.", template)
-        self.assertIn("These numbers are only for RSF tracking.", template)
-        self.assertIn("Usage shown here comes from RSF records when available.", template)
-        self.assertIn("Costs and budgets are entered by you unless automatic billing is connected.", template)
-        self.assertNotIn("OAuth credentials", template)
-        self.assertNotIn("provider quota", template)
-        self.assertNotIn("billing/reset", template)
-
-    def test_direct_action_messages_are_simple(self):
-        routes = self.read("app/routes.py")
-        self.assertIn('flash("Costs and budget saved.", "success")', routes)
-        self.assertIn('flash("Gmail setup is not complete yet.", "error")', routes)
-        self.assertIn('flash("Gmail connection was cancelled.", "warning")', routes)
-        self.assertIn("Gmail is working:", routes)
-        self.assertIn('flash("Google Calendar setup is not complete yet.", "error")', routes)
-        self.assertIn('flash("Google Calendar connection was cancelled.", "warning")', routes)
-        self.assertIn('flash("Google Calendar is working.", "success")', routes)
-
-    def test_budget_warning_levels_are_supported(self):
-        model = self.read("app/integration_billing.py")
-        for label in ("NORMAL", "WARNING", "NEAR LIMIT", "BUDGET REACHED", "OVERAGE", "NOT SET"):
-            self.assertIn(f'"{label}"', model)
+        self.assertIn("About These Numbers", template)
+        self.assertIn("Usage and cost are filled automatically when RSF can read them safely.", template)
 
     def test_dashboard_has_unified_responsive_styles(self):
         base = self.read("app/templates/base.html")
@@ -166,12 +159,10 @@ class IntegrationBillingDashboardTests(unittest.TestCase):
         self.assertIn(".integration-row-details{", css)
         self.assertIn(".integration-attention--setup", css)
         self.assertIn(".integration-data-note", css)
-        self.assertNotIn(".integration-connection-grid{", css)
-        self.assertNotIn(".integration-connection-card{", css)
         self.assertIn("@media(max-width:760px)", css)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.227")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.228")
 
 
 if __name__ == "__main__":
