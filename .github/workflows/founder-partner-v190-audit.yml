@@ -39,12 +39,16 @@ jobs:
               "account_security_reveal_password",
               "data-vault-reveal",
               "data-vault-copy",
+          ):
+              assert forbidden not in source, forbidden
+          for required in (
               "RETELL_API_KEY",
               "RETELL_AGENT_ID",
               "RETELL_FROM_NUMBER",
-              "retell-sdk",
-              "AI Call",
+              "retell-sdk==6.0.1",
+              "def prospect_ai_call",
+              "def retell_webhook",
           ):
-              assert forbidden not in source, forbidden
+              assert required in source, required
           print("ACCOUNT_SECURITY_AUDIT_OK")
           PY
