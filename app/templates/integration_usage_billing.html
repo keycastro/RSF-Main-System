@@ -12,86 +12,6 @@
     </div>
   </div>
 
-  <section class="integration-dashboard-section integration-connections" aria-labelledby="integration-connections-title">
-    <div class="integration-section-heading">
-      <div>
-        <span>CONNECTIONS</span>
-        <h2 id="integration-connections-title">Integration Connections</h2>
-      </div>
-      <small>See what is ready and what still needs setup.</small>
-    </div>
-
-    <div class="integration-connection-grid">
-      <article class="integration-connection-card">
-        <div class="integration-connection-card-head">
-          <div>
-            <h3>RSF Gmail</h3>
-            <span class="integration-status integration-status--{% if gmail_status.connected %}connected{% elif gmail_status.oauth_configured %}ready{% else %}off{% endif %}">
-              {% if gmail_status.connected %}Connected{% elif gmail_status.oauth_configured %}Ready to connect{% else %}Setup needed{% endif %}
-            </span>
-          </div>
-          <div class="integration-connection-action">
-            {% if gmail_status.connected %}
-              <form method="post" action="{{ url_for('main.gmail_verify') }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="button secondary" type="submit">Verify</button>
-              </form>
-            {% elif gmail_status.oauth_configured %}
-              <a class="button primary" href="{{ url_for('main.gmail_connect') }}">Connect</a>
-            {% endif %}
-          </div>
-        </div>
-
-        {% if not gmail_status.oauth_configured %}
-          <p class="integration-connection-alert">Google OAuth credentials still need to be configured in Render.</p>
-        {% endif %}
-
-        {% if gmail_status.email or gmail_status.configured_sender %}
-        <details class="integration-connection-details">
-          <summary>Connection details</summary>
-          <div>
-            {% if gmail_status.email %}<p><span>Connected account</span><strong>{{ gmail_status.email }}</strong></p>{% endif %}
-            {% if gmail_status.configured_sender %}<p><span>Approved sender</span><strong>{{ gmail_status.configured_sender }}</strong></p>{% endif %}
-          </div>
-        </details>
-        {% endif %}
-      </article>
-
-      <article class="integration-connection-card">
-        <div class="integration-connection-card-head">
-          <div>
-            <h3>Google Calendar</h3>
-            <span class="integration-status integration-status--{% if calendar_status.connected %}connected{% elif calendar_status.oauth_configured %}ready{% else %}off{% endif %}">
-              {% if calendar_status.connected %}Connected{% elif calendar_status.oauth_configured %}Ready to connect{% else %}Setup needed{% endif %}
-            </span>
-          </div>
-          <div class="integration-connection-action">
-            {% if calendar_status.connected %}
-              <form method="post" action="{{ url_for('main.calendar_verify') }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="button secondary" type="submit">Verify</button>
-              </form>
-            {% elif calendar_status.oauth_configured %}
-              <a class="button primary" href="{{ url_for('main.calendar_connect') }}">Connect</a>
-            {% endif %}
-          </div>
-        </div>
-
-        {% if not calendar_status.oauth_configured %}
-          <p class="integration-connection-alert">Google OAuth credentials still need to be configured in Render.</p>
-        {% endif %}
-
-        <details class="integration-connection-details">
-          <summary>Connection details</summary>
-          <div>
-            <p><span>Calendar</span><strong>{{ calendar_status.calendar_id }}</strong></p>
-            <p><span>Timezone</span><strong>{{ calendar_status.timezone }}</strong></p>
-          </div>
-        </details>
-      </article>
-    </div>
-  </section>
-
   <section class="integration-dashboard-section" aria-labelledby="monthly-cost-summary-title">
     <div class="integration-section-heading integration-section-heading--compact">
       <div>
@@ -128,7 +48,7 @@
         <span>THIS MONTH</span>
         <h2 id="integration-usage-costs-title">Integration Usage &amp; Costs</h2>
       </div>
-      <small>Simple activity and cost view for each RSF service.</small>
+      <small>Connection status, usage, cost, and anything that needs attention.</small>
     </div>
 
     <div class="integration-billing-table-wrap">
@@ -139,32 +59,86 @@
             <th>Status</th>
             <th>This Month</th>
             <th>Cost</th>
-            <th>Attention</th>
+            <th>Action / Attention</th>
           </tr>
         </thead>
         <tbody>
           {% for item in integration_billing.rows %}
           <tr>
-            <td data-label="Service"><strong>{{ item.name }}</strong></td>
-            <td data-label="Status"><span class="integration-status integration-status--{{ item.status_class }}">{{ item.status }}</span></td>
+            <td data-label="Service">
+              <strong>{{ item.name }}</strong>
+
+              {% if item.slug == 'gmail' %}
+              <details class="integration-row-details">
+                <summary>Details</summary>
+                <div>
+                  {% if gmail_status.email %}<p><span>Connected account</span><strong>{{ gmail_status.email }}</strong></p>{% endif %}
+                  {% if gmail_status.configured_sender %}<p><span>Approved sender</span><strong>{{ gmail_status.configured_sender }}</strong></p>{% endif %}
+                  {% if not gmail_status.oauth_configured %}<p><span>Setup</span><strong>Google OAuth credentials still need to be configured in Render.</strong></p>{% endif %}
+                </div>
+              </details>
+              {% elif item.slug == 'calendar' %}
+              <details class="integration-row-details">
+                <summary>Details</summary>
+                <div>
+                  <p><span>Calendar</span><strong>{{ calendar_status.calendar_id }}</strong></p>
+                  <p><span>Timezone</span><strong>{{ calendar_status.timezone }}</strong></p>
+                  {% if not calendar_status.oauth_configured %}<p><span>Setup</span><strong>Google OAuth credentials still need to be configured in Render.</strong></p>{% endif %}
+                </div>
+              </details>
+              {% endif %}
+            </td>
+
+            <td data-label="Status">
+              <span class="integration-status integration-status--{{ item.status_class }}">{{ item.status }}</span>
+            </td>
+
             <td data-label="This Month"><strong>{{ item.usage }}</strong></td>
+
             <td data-label="Cost">
               {% if item.current_cost is not none %}<strong>{{ currency_code }} {{ item.current_cost }}</strong>{% else %}<span class="integration-value-empty">Not set</span>{% endif %}
             </td>
-            <td data-label="Attention">
-              {% if item.budget_state.class_name == 'overage' %}
-                <span class="integration-attention integration-attention--high">Over budget</span>
-              {% elif item.budget_state.class_name in ['near','reached'] %}
-                <span class="integration-attention integration-attention--warning">{{ item.budget_state.label|title }}</span>
-              {% elif item.budget_state.class_name == 'warning' %}
-                <span class="integration-attention integration-attention--warning">Watch budget</span>
-              {% elif item.status_class == 'off' %}
-                <span class="integration-attention integration-attention--setup">Setup needed</span>
-              {% elif item.status_class == 'ready' %}
-                <span class="integration-attention integration-attention--setup">Ready to connect</span>
-              {% else %}
-                <span class="integration-attention integration-attention--clear">—</span>
-              {% endif %}
+
+            <td data-label="Action / Attention">
+              <div class="integration-row-actions">
+                {% if item.slug == 'gmail' %}
+                  {% if gmail_status.connected %}
+                    <form method="post" action="{{ url_for('main.gmail_verify') }}">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button class="button secondary integration-table-action" type="submit">Verify</button>
+                    </form>
+                  {% elif gmail_status.oauth_configured %}
+                    <a class="button primary integration-table-action" href="{{ url_for('main.gmail_connect') }}">Connect</a>
+                  {% else %}
+                    <span class="integration-attention integration-attention--setup">Setup needed</span>
+                  {% endif %}
+                {% elif item.slug == 'calendar' %}
+                  {% if calendar_status.connected %}
+                    <form method="post" action="{{ url_for('main.calendar_verify') }}">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button class="button secondary integration-table-action" type="submit">Verify</button>
+                    </form>
+                  {% elif calendar_status.oauth_configured %}
+                    <a class="button primary integration-table-action" href="{{ url_for('main.calendar_connect') }}">Connect</a>
+                  {% else %}
+                    <span class="integration-attention integration-attention--setup">Setup needed</span>
+                  {% endif %}
+                {% elif item.status_class == 'off' %}
+                  <span class="integration-attention integration-attention--setup">Setup needed</span>
+                {% elif item.status_class == 'ready' %}
+                  <span class="integration-attention integration-attention--setup">Ready</span>
+                {% endif %}
+
+                {% if item.budget_state.class_name == 'overage' %}
+                  <span class="integration-attention integration-attention--high">Over budget</span>
+                {% elif item.budget_state.class_name in ['near','reached'] %}
+                  <span class="integration-attention integration-attention--warning">{{ item.budget_state.label|title }}</span>
+                {% elif item.budget_state.class_name == 'warning' %}
+                  <span class="integration-attention integration-attention--warning">Watch budget</span>
+                {% elif item.slug not in ['gmail','calendar'] and item.status_class not in ['off','ready'] %}
+                  <span class="integration-attention integration-attention--clear">—</span>
+                {% endif %}
+              </div>
             </td>
           </tr>
           {% endfor %}
