@@ -1,7 +1,7 @@
 <aside class="settings-experience-nav" aria-label="Settings navigation">
   <div class="settings-experience-nav-head">
     <span>SETTINGS</span>
-    <p>Manage your workspace preferences, integrations, account access, and system reference tools.</p>
+    <p>Manage your workspace preferences, account access, appearance, and system reference tools.</p>
   </div>
   <nav>
     <a class="{{ 'active' if active_section == 'general' else '' }}" {% if active_section == 'general' %}aria-current="page"{% endif %} href="{{ url_for('main.settings', section='general') }}">
@@ -19,10 +19,6 @@
     <a class="{{ 'active' if active_section == 'workflow' else '' }}" {% if active_section == 'workflow' %}aria-current="page"{% endif %} href="{{ url_for('main.settings', section='workflow') }}">
       <span class="settings-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.1"/><circle cx="18" cy="6" r="2.1"/><circle cx="12" cy="18" r="2.1"/><path d="M8.1 6h7.8M7.5 7.7l3.4 7.7M16.5 7.7l-3.4 7.7"/></svg></span>
       <span><strong>Workflow Diagram</strong><small>View and understand RSF flow</small></span>
-    </a>
-    <a class="{{ 'active' if active_section == 'integrations' else '' }}" {% if active_section == 'integrations' %}aria-current="page"{% endif %} href="{{ url_for('main.settings', section='integrations') }}">
-      <span class="settings-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9.2 14.8 6.8 17.2a3 3 0 0 1-4.2-4.2L7 8.6a3 3 0 0 1 4.2 0M14.8 9.2l2.4-2.4a3 3 0 0 1 4.2 4.2L17 15.4a3 3 0 0 1-4.2 0M8.5 15.5l7-7"/></svg></span>
-      <span><strong>Integrations</strong><small>Connected tools and services</small></span>
     </a>
   </nav>
 </aside>
