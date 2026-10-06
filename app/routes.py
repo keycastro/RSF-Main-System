@@ -20,17 +20,18 @@ from .auth import (
     admin_required,
     authenticate,
     csrf_token,
-    generate_recovery_code,
+    generate_password_reset_code,
     hash_password,
-    hash_recovery_code,
     login_required,
     login_user,
+    password_reset_code_digest,
     safe_next,
     valid_email,
     valid_password,
     validate_csrf,
-    verify_recovery_code,
+    verify_password_reset_code,
 )
+from .auth_email import password_recovery_email_ready, send_password_reset_code
 from .db import get_db, IntegrityError, using_postgres
 from .record_ops import (
     RECORD_DELETE_PROTECTED_STATUSES,
@@ -1354,7 +1355,7 @@ def login():
         return redirect(url_for("main.prospects"))
     if request.method == "POST":
         validate_csrf()
-        user, error = authenticate(request.form.get("name", ""), request.form.get("password", ""))
+        user, error = authenticate(request.form.get("email", ""), request.form.get("password", ""))
         if error:
             flash(error, "error")
         else:
@@ -1367,64 +1368,162 @@ def login():
 def forgot_password():
     if g.user:
         return redirect(url_for("main.prospects"))
+
+    remembered_email = normalize_email(session.get("password_reset_email", ""))
     if request.method == "POST":
         validate_csrf()
-        name = (request.form.get("name", "") or "").strip()
-        recovery_code = request.form.get("recovery_code", "") or ""
-        new_password = request.form.get("new_password", "")
-        confirm_password = request.form.get("confirm_password", "")
+        action = (request.form.get("action", "send_code") or "send_code").strip()
 
-        if not name or not recovery_code:
-            flash("Enter the Founder name and recovery code.", "error")
-            return render_template("forgot_password.html", title="Reset Password")
-        if not valid_password(new_password):
-            flash("Choose a non-empty password. RSF does not require a minimum length.", "error")
-            return render_template("forgot_password.html", title="Reset Password")
-        if new_password != confirm_password:
-            flash("Passwords do not match.", "error")
-            return render_template("forgot_password.html", title="Reset Password")
+        if action == "send_code":
+            email = normalize_email(request.form.get("email", ""))
+            if not valid_email(email):
+                flash("Enter a valid email address.", "error")
+                return render_template("forgot_password.html", title="Reset Password", email=email, code_sent=False)
 
-        db = get_db()
-        founder = db.execute(
-            """SELECT * FROM users
-               WHERE role='admin' AND active=1 AND lower(trim(full_name))=lower(?)
-               LIMIT 1""",
-            (name,),
-        ).fetchone()
-        recovery = db.execute(
-            "SELECT value FROM settings WHERE key='founder_recovery_code_hash' LIMIT 1"
-        ).fetchone()
+            if not password_recovery_email_ready():
+                flash("Password recovery email is not connected yet. The Founder must connect Gmail to RSF first.", "error")
+                return render_template("forgot_password.html", title="Reset Password", email=email, code_sent=False)
 
-        stored_hash = recovery["value"] if recovery else ""
-        if not founder or not verify_recovery_code(stored_hash, recovery_code):
-            flash("Founder name or recovery code is wrong.", "error")
-            return render_template("forgot_password.html", title="Reset Password")
+            db = get_db()
+            user = db.execute(
+                "SELECT * FROM users WHERE active=1 AND lower(trim(email))=lower(?) LIMIT 1",
+                (email,),
+            ).fetchone()
 
-        now = utcnow_iso()
-        db.execute(
-            """UPDATE users
-               SET password_hash=?,force_password_change=0,failed_login_count=0,
-                   locked_until=NULL,updated_at=?
-               WHERE id=? AND role='admin'""",
-            (hash_password(new_password), now, founder["id"]),
-        )
-        # Recovery codes are single-use. A fresh one can be generated after login.
-        db.execute(
-            "DELETE FROM settings WHERE key IN ('founder_recovery_code_hash','founder_recovery_code_created_at')"
-        )
-        log_activity(
-            "FOUNDER_PASSWORD_RECOVERED",
-            "user",
-            founder["id"],
-            "Founder password reset with the one-time recovery code. Existing sessions were invalidated.",
-            actor_user_id=founder["id"],
-        )
-        db.commit()
-        session.clear()
-        flash("Password reset successfully. Log in with your new password, then generate a new recovery code.", "success")
-        return redirect(url_for("main.login"))
+            # Never reveal whether an email belongs to an RSF account.
+            if user:
+                now_dt = datetime.now(timezone.utc).replace(microsecond=0)
+                latest = db.execute(
+                    "SELECT requested_at FROM password_reset_codes WHERE user_id=? ORDER BY id DESC LIMIT 1",
+                    (user["id"],),
+                ).fetchone()
+                too_soon = False
+                if latest and latest["requested_at"]:
+                    try:
+                        too_soon = (now_dt - datetime.fromisoformat(latest["requested_at"])).total_seconds() < 60
+                    except (TypeError, ValueError):
+                        too_soon = False
 
-    return render_template("forgot_password.html", title="Reset Password")
+                if not too_soon:
+                    code = generate_password_reset_code()
+                    requested_at = now_dt.isoformat()
+                    expires_at = (now_dt + timedelta(minutes=10)).isoformat()
+                    db.execute(
+                        "UPDATE password_reset_codes SET used_at=? WHERE user_id=? AND used_at=''",
+                        (requested_at, user["id"]),
+                    )
+                    db.execute(
+                        """INSERT INTO password_reset_codes
+                           (user_id,email,code_digest,requested_at,expires_at,attempts,used_at)
+                           VALUES (?,?,?,?,?,0,'')""",
+                        (user["id"], email, password_reset_code_digest(email, code), requested_at, expires_at),
+                    )
+                    try:
+                        send_password_reset_code(to_email=email, full_name=user["full_name"], code=code)
+                    except Exception as exc:
+                        db.rollback()
+                        current_app.logger.warning("Password recovery email failed: %s", exc)
+                        flash("RSF could not send the reset email right now. Try again later.", "error")
+                        return render_template("forgot_password.html", title="Reset Password", email=email, code_sent=False)
+                    log_activity(
+                        "PASSWORD_RESET_CODE_SENT",
+                        "user",
+                        user["id"],
+                        "A password reset verification code was sent to the account email.",
+                    )
+                    db.commit()
+
+            session["password_reset_email"] = email
+            flash("If this is an active RSF account, a 6-digit reset code was sent to that email.", "success")
+            return render_template("forgot_password.html", title="Reset Password", email=email, code_sent=True)
+
+        if action == "reset":
+            email = normalize_email(request.form.get("email", "") or remembered_email)
+            code = (request.form.get("code", "") or "").strip()
+            new_password = request.form.get("new_password", "")
+            confirm_password = request.form.get("confirm_password", "")
+
+            if not valid_email(email) or not code:
+                flash("Enter your email and the reset code.", "error")
+                return render_template("forgot_password.html", title="Reset Password", email=email, code_sent=True)
+            if not valid_password(new_password):
+                flash("Choose a non-empty password. RSF does not require a minimum length.", "error")
+                return render_template("forgot_password.html", title="Reset Password", email=email, code_sent=True)
+            if new_password != confirm_password:
+                flash("Passwords do not match.", "error")
+                return render_template("forgot_password.html", title="Reset Password", email=email, code_sent=True)
+
+            db = get_db()
+            user = db.execute(
+                "SELECT * FROM users WHERE active=1 AND lower(trim(email))=lower(?) LIMIT 1",
+                (email,),
+            ).fetchone()
+            reset_row = None
+            if user:
+                reset_row = db.execute(
+                    """SELECT * FROM password_reset_codes
+                       WHERE user_id=? AND lower(email)=lower(?) AND used_at=''
+                       ORDER BY id DESC LIMIT 1""",
+                    (user["id"], email),
+                ).fetchone()
+
+            now_dt = datetime.now(timezone.utc).replace(microsecond=0)
+            valid_code = False
+            if user and reset_row:
+                try:
+                    not_expired = datetime.fromisoformat(reset_row["expires_at"]) >= now_dt
+                except (TypeError, ValueError):
+                    not_expired = False
+                valid_code = (
+                    not_expired
+                    and int(reset_row["attempts"] or 0) < 5
+                    and verify_password_reset_code(email, code, reset_row["code_digest"])
+                )
+
+            if not valid_code:
+                if reset_row:
+                    attempts = int(reset_row["attempts"] or 0) + 1
+                    used_at = now_dt.isoformat() if attempts >= 5 else ""
+                    db.execute(
+                        "UPDATE password_reset_codes SET attempts=?,used_at=? WHERE id=?",
+                        (attempts, used_at, reset_row["id"]),
+                    )
+                    db.commit()
+                flash("That reset code is wrong or expired. Request a new code.", "error")
+                return render_template("forgot_password.html", title="Reset Password", email=email, code_sent=True)
+
+            now = now_dt.isoformat()
+            db.execute(
+                """UPDATE users
+                   SET password_hash=?,force_password_change=0,failed_login_count=0,
+                       locked_until=NULL,updated_at=?
+                   WHERE id=?""",
+                (hash_password(new_password), now, user["id"]),
+            )
+            db.execute(
+                "UPDATE password_reset_codes SET used_at=? WHERE user_id=? AND used_at=''",
+                (now, user["id"]),
+            )
+            log_activity(
+                "PASSWORD_RESET_COMPLETED",
+                "user",
+                user["id"],
+                "Password reset completed after email verification. Existing sessions were invalidated.",
+                actor_user_id=user["id"],
+            )
+            db.commit()
+            session.clear()
+            flash("Password reset successfully. Log in with your email and new password.", "success")
+            return redirect(url_for("main.login"))
+
+        abort(400)
+
+    return render_template(
+        "forgot_password.html",
+        title="Reset Password",
+        email=remembered_email,
+        code_sent=bool(remembered_email),
+    )
 
 
 @bp.post("/logout")
