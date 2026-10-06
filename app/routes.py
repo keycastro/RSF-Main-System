@@ -4793,8 +4793,6 @@ def settings():
         stages=stages,
         company_name=setting("company_name","Realty Systems Foundry"),
         currency_code=setting("currency_code","USD"),
-        gmail_status=gmail_status,
-        calendar_status=calendar_status,
         workflow=workflow,
     )
 
