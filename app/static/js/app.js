@@ -1022,38 +1022,6 @@ document.addEventListener('click', async (event) => {
   }
 });
 
-document.addEventListener('click', async (event) => {
-  const action = event.target.closest?.('[data-prospect-call-action]');
-  if (!action || action.getAttribute('aria-disabled') === 'true' || !action.href || action.href.endsWith('#')) return;
-  event.preventDefault();
-  if (action.dataset.callStarting === '1') return;
-  action.dataset.callStarting = '1';
-  const label = action.querySelector('.conversation-action-label');
-  const original = label?.textContent || 'AI Call';
-  if (label) label.textContent = 'Starting…';
-  try {
-    const response = await fetch(action.href, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-      },
-      body: new URLSearchParams({ csrf_token: action.dataset.csrfToken || '' }).toString(),
-      credentials: 'same-origin',
-      cache: 'no-store'
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data.ok) throw new Error(data.message || 'AI sales call could not start.');
-    const timeline = action.closest('dialog')?.querySelector('.conversation-timeline');
-    if (timeline) await RSFConversationTimeline.refresh(timeline);
-  } catch (error) {
-    window.alert(error.message || 'AI sales call could not start.');
-  } finally {
-    delete action.dataset.callStarting;
-    if (label) label.textContent = original;
-  }
-});
-
 window.setTimeout(hydrateEmailBadges, 0);
 
 document.addEventListener('click', (event) => {
@@ -1154,42 +1122,6 @@ document.addEventListener('click', (event) => {
       }
     }
   });
-
-  const accountSecurityShell = document.querySelector('.account-security-shell[data-password-vault-url]');
-  if (accountSecurityShell) {
-    const vaultUrl = accountSecurityShell.dataset.passwordVaultUrl;
-    const vaultCsrf = accountSecurityShell.dataset.passwordVaultCsrf;
-    const loadVaultPassword = async (button) => {
-      const target = document.getElementById(button.dataset.target || '');
-      if (!(target instanceof HTMLInputElement)) return null;
-      if (target.dataset.loaded === '1') return target.value;
-      const body = new URLSearchParams({csrf_token: vaultCsrf || '', user_id: button.dataset.userId || ''});
-      const response = await fetch(vaultUrl, {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}, body, credentials: 'same-origin'});
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok || !payload.ok) { window.alert(payload.error || 'Current password could not be revealed.'); return null; }
-      target.value = payload.password; target.dataset.loaded = '1'; return payload.password;
-    };
-    document.querySelectorAll('[data-vault-reveal]').forEach((button) => {
-      button.addEventListener('click', async () => {
-        const target = document.getElementById(button.dataset.target || '');
-        if (!(target instanceof HTMLInputElement)) return;
-        if (target.dataset.loaded !== '1' && await loadVaultPassword(button) === null) return;
-        const reveal = target.type === 'password';
-        target.type = reveal ? 'text' : 'password';
-        button.textContent = reveal ? 'Hide' : 'Show';
-      });
-    });
-    document.querySelectorAll('[data-vault-copy]').forEach((button) => {
-      button.addEventListener('click', async () => {
-        const target = document.getElementById(button.dataset.target || '');
-        if (!(target instanceof HTMLInputElement)) return;
-        let value = target.dataset.loaded === '1' ? target.value : await loadVaultPassword(button);
-        if (!value) return;
-        try { await navigator.clipboard.writeText(value); const original=button.textContent; button.textContent='Copied'; window.setTimeout(()=>{button.textContent=original;},1400); }
-        catch (_error) { target.type='text'; target.focus(); target.select(); }
-      });
-    });
-  }
 
   document.querySelectorAll('[data-account-disclosure]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -2962,7 +2894,6 @@ document.addEventListener('click', (event) => {
   const prospectNotesViewerClose = page.querySelector('[data-prospect-notes-viewer-close]');
   const prospectNotesSave = page.querySelector('[data-prospect-notes-save]');
   const prospectConversationTimeline = page.querySelector('[data-prospect-conversation-timeline]');
-  const prospectCallAction = page.querySelector('[data-prospect-call-action]');
   const prospectEmailAction = page.querySelector('[data-prospect-email-action]');
   let prospectNotesSource = null;
   let prospectNotesTimelineUrl = '';
@@ -3070,7 +3001,6 @@ document.addEventListener('click', (event) => {
     RSFConversationTimeline.load(
       prospectNotesTimelineUrl,
       prospectConversationTimeline,
-      prospectCallAction,
       prospectEmailAction,
       prospectTimelineOptions
     );
@@ -3098,7 +3028,6 @@ document.addEventListener('click', (event) => {
       await RSFConversationTimeline.load(
         prospectNotesTimelineUrl,
         prospectConversationTimeline,
-        prospectCallAction,
         prospectEmailAction,
         {
           csrfToken: csrfForRow(row),
