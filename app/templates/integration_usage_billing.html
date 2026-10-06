@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="integration-billing-page">
+  <div class="page-head workspace-page-head integration-billing-page-head">
+    <div>
+      <h1>Integration Usage &amp; Billing</h1>
+      <p>Monitor RSF service usage, operating costs, budgets, and overage in one place.</p>
+    </div>
+    <div class="integration-billing-period">
+      <span>Current period</span>
+      <strong>{{ integration_billing.month_label }}</strong>
+    </div>
+  </div>
+
+  <div class="integration-billing-summary" aria-label="RSF monthly integration cost summary">
+    <article>
+      <span>Estimated Monthly RSF Cost</span>
+      <strong>{% if integration_billing.summary.current_cost is not none %}{{ currency_code }} {{ integration_billing.summary.current_cost }}{% else %}Not set{% endif %}</strong>
+      <small>{% if integration_billing.summary.cost_complete %}All listed service costs are entered.{% elif integration_billing.summary.cost_count %}Partial total — {{ integration_billing.summary.service_count - integration_billing.summary.cost_count }} service cost(s) still unset.{% else %}Enter the real or estimated provider costs below.{% endif %}</small>
+    </article>
+    <article>
+      <span>Monthly Budget</span>
+      <strong>{% if integration_billing.summary.monthly_budget is not none %}{{ currency_code }} {{ integration_billing.summary.monthly_budget }}{% else %}Not set{% endif %}</strong>
+      <small>{% if integration_billing.summary.budget_complete %}Budgets are set for all listed services.{% elif integration_billing.summary.budget_count %}Partial budget total.{% else %}No monthly service budgets entered yet.{% endif %}</small>
+    </article>
+    <article>
+      <span>Remaining Budget</span>
+      <strong>{% if integration_billing.summary.remaining is not none %}{{ currency_code }} {{ integration_billing.summary.remaining }}{% else %}Not available{% endif %}</strong>
+      <small>Calculated only where both cost and budget are set.</small>
+    </article>
+    <article>
+      <span>Overage</span>
+      <strong>{% if integration_billing.summary.overage is not none %}{{ currency_code }} {{ integration_billing.summary.overage }}{% else %}Not available{% endif %}</strong>
+      <small>Shows spending above configured monthly budgets.</small>
+    </article>
+  </div>
+
+  <div class="integration-billing-note" role="note">
+    <strong>How the numbers work:</strong>
+    <span>Usage is taken from real RSF records when available. Provider invoice and quota data is not guessed. Current cost, budget, and billing/reset date stay manual until a trustworthy provider billing API is connected.</span>
+  </div>
+
+  <div class="integration-billing-table-wrap">
+    <table class="integration-billing-table">
+      <thead>
+        <tr>
+          <th>Integration / Service</th>
+          <th>Status</th>
+          <th>Usage</th>
+          <th>Current / Est. Cost</th>
+          <th>Monthly Budget</th>
+          <th>Remaining / Overage</th>
+          <th>Usage Level</th>
+          <th>Billing / Reset</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in integration_billing.rows %}
+        <tr>
+          <td data-label="Integration / Service"><strong>{{ item.name }}</strong></td>
+          <td data-label="Status"><span class="integration-status integration-status--{{ item.status_class }}">{{ item.status }}</span></td>
+          <td data-label="Usage"><strong>{{ item.usage }}</strong><small>{{ item.usage_source }}</small></td>
+          <td data-label="Current / Est. Cost">
+            {% if item.current_cost is not none %}<strong>{{ currency_code }} {{ item.current_cost }}</strong><small>Manually entered</small>{% else %}<span class="integration-value-empty">Not set</span>{% endif %}
+          </td>
+          <td data-label="Monthly Budget">
+            {% if item.monthly_budget is not none %}<strong>{{ currency_code }} {{ item.monthly_budget }}</strong>{% else %}<span class="integration-value-empty">Not set</span>{% endif %}
+          </td>
+          <td data-label="Remaining / Overage">
+            {% if item.budget_state.remaining is not none %}
+              <strong>{{ currency_code }} {{ item.budget_state.remaining }} remaining</strong>
+              {% if item.budget_state.overage > 0 %}<small class="integration-overage-text">{{ currency_code }} {{ item.budget_state.overage }} over</small>{% else %}<small>No overage</small>{% endif %}
+            {% else %}
+              <span class="integration-value-empty">Needs cost + budget</span>
+            {% endif %}
+          </td>
+          <td data-label="Usage Level">
+            <span class="integration-budget-state integration-budget-state--{{ item.budget_state.class_name }}">{{ item.budget_state.label }}</span>
+            {% if item.budget_state.percentage is not none %}<small>{{ item.budget_state.percentage }}% of budget</small>{% endif %}
+          </td>
+          <td data-label="Billing / Reset">{% if item.billing_reset %}<strong>{{ item.billing_reset }}</strong>{% else %}<span class="integration-value-empty">Not set</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <details class="integration-billing-editor">
+    <summary>
+      <span>Update costs, budgets &amp; billing dates</span>
+      <small>Only enter values you know from the provider or your own budget.</small>
+    </summary>
+    <form method="post" action="{{ url_for('main.integration_billing_update') }}" class="integration-billing-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="integration-billing-form-head">
+        <span>Service</span><span>Current / estimated monthly cost</span><span>Monthly budget</span><span>Billing / reset date</span>
+      </div>
+      {% for item in integration_billing.rows %}
+      <div class="integration-billing-form-row">
+        <strong>{{ item.name }}</strong>
+        <label><span>Cost ({{ currency_code }})</span><input type="number" min="0" step="0.01" inputmode="decimal" name="{{ item.slug }}_current_cost" value="{{ item.current_cost_raw }}" placeholder="Leave blank if unknown"></label>
+        <label><span>Budget ({{ currency_code }})</span><input type="number" min="0.01" step="0.01" inputmode="decimal" name="{{ item.slug }}_monthly_budget" value="{{ item.monthly_budget_raw }}" placeholder="Leave blank if not set"></label>
+        <label><span>Billing / reset</span><input type="text" maxlength="80" name="{{ item.slug }}_billing_reset" value="{{ item.billing_reset }}" placeholder="e.g. 15th monthly"></label>
+      </div>
+      {% endfor %}
+      <div class="integration-billing-form-actions">
+        <p>These values are for RSF's own operating-cost awareness. Saving them does not change any provider account or billing plan.</p>
+        <button class="button primary" type="submit">Save Usage &amp; Billing Settings</button>
+      </div>
+    </form>
+  </details>
+</section>
+{% endblock %}
