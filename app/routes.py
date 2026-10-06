@@ -3745,8 +3745,8 @@ def partner_new():
             errors.append("Enter the Partner name.")
         elif _account_name_in_use(db, full_name):
             errors.append("This name is already in use.")
-        if password == "":
-            errors.append("Enter the Partner password.")
+        if not valid_password(password):
+            errors.append("Partner password must be 12–128 characters.")
         if not stage:
             errors.append("Choose a commission level.")
         if errors:
@@ -3858,7 +3858,7 @@ def partner_reset_password(partner_id: int):
     password = request.form.get("partner_password", "") or ""
     confirm_password = request.form.get("confirm_partner_password", "") or ""
     if not valid_password(password):
-        flash("Enter the new Partner password you want to use.", "error")
+        flash("Partner password must be 12–128 characters.", "error")
         return redirect(url_for("main.account_security", _anchor=f"partner-{partner_id}"))
     if password != confirm_password:
         flash("Passwords do not match.", "error")
@@ -4678,7 +4678,7 @@ def founder_password_change():
     new_password = request.form.get("new_password", "") or ""
     confirm_password = request.form.get("confirm_password", "") or ""
     if not valid_password(new_password):
-        flash("Enter the new Founder password you want to use.", "error")
+        flash("Founder password must be 12–128 characters.", "error")
         return redirect(url_for("main.account_security"))
     if new_password != confirm_password:
         flash("Passwords do not match.", "error")
