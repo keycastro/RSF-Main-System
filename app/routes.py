@@ -2056,8 +2056,6 @@ def integration_usage_billing():
         "integration_usage_billing.html",
         title="Integration Usage & Billing",
         currency_code=setting("currency_code", "USD"),
-        gmail_status=gmail_status,
-        calendar_status=calendar_status,
         integration_billing=dashboard,
     )
 
