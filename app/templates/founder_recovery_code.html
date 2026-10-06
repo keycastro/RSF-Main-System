@@ -1,0 +1,32 @@
+{% extends 'base.html' %}{% block content %}
+<section class="settings-experience settings-experience--account" data-settings-experience data-settings-fallback="{{ url_for('main.account_security') }}">
+  <header class="settings-experience-topbar">
+    <a class="settings-experience-back" href="{{ url_for('main.account_security') }}" aria-label="Back to Account & Security"><span aria-hidden="true">←</span><span>Back</span></a>
+    <div><span>SETTINGS</span><h1>Founder Recovery Code</h1></div>
+    <small>Save it now</small>
+  </header>
+  <div class="settings-experience-grid">
+    {% set active_section = 'account' %}
+    {% include '_settings_navigation.html' %}
+    <main class="settings-experience-content" aria-label="Founder recovery code">
+      <div class="settings-content-heading"><span>SECURITY</span><h2>Recovery Code Created</h2><p>This code is shown only on this screen. RSF stores only its secure hash.</p></div>
+      <section class="workspace-section security-founder-section">
+        <div class="section-head"><div><span class="role-chip founder-role-chip">Founder Recovery</span><h2>Save this code somewhere private</h2></div></div>
+        <div class="security-credential-row">
+          <div>
+            <strong>One-time recovery code</strong>
+            <p>If you forget the Founder password, choose “Forgot Password?” on the login page and use this code. After a successful reset, this code stops working.</p>
+          </div>
+          <div class="credential-secret">
+            <input id="founder_recovery_code" class="mono" type="text" readonly value="{{ recovery_code }}">
+            <div class="password-actions">
+              <button class="button ghost small" type="button" data-copy-target="founder_recovery_code">Copy</button>
+            </div>
+          </div>
+        </div>
+        <div class="page-actions"><a class="button primary" href="{{ url_for('main.account_security') }}">I Saved It</a></div>
+      </section>
+    </main>
+  </div>
+</section>
+{% endblock %}
