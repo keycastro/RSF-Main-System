@@ -24,6 +24,7 @@ class BillingPaymentsTests(unittest.TestCase):
         self.assertIn("SUPPORT_MAINTENANCE", routes)
         self.assertIn("MANAGEMENT FEE", template)
         self.assertIn("NEXT BILLING DATE", template)
+        self.assertIn("<h1>Client Billing &amp; Payments</h1>", template)
         self.assertIn("client['management_fee']", template)
         self.assertIn("client['next_billing_date']", template)
 
@@ -31,7 +32,7 @@ class BillingPaymentsTests(unittest.TestCase):
         base = self.read("app/templates/base.html")
         self.assertIn('<div class="nav-section-label">FINANCE</div>', base)
         self.assertIn("url_for('main.billing_payments')", base)
-        self.assertIn("Billing &amp; Payments", base)
+        self.assertIn("Client Billing &amp; Payments", base)
         self.assertIn('nav_icon("billing")', base)
         self.assertIn("billing_active", base)
 
@@ -51,7 +52,7 @@ class BillingPaymentsTests(unittest.TestCase):
         self.assertNotIn("billing_cycle", template)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.221")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.222")
 
 
 if __name__ == "__main__":
