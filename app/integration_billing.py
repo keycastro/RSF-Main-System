@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import os
-from decimal import Decimal, InvalidOperation
+from collections import defaultdict
+from decimal import Decimal
 from pathlib import Path
 from datetime import datetime, timezone
 
@@ -9,7 +10,7 @@ from flask import current_app
 
 from .db import using_postgres
 from .whatsapp_ops import whatsapp_messaging_configured
-from .twilio_manual_call_ops import manual_call_configured
+from .twilio_manual_call_ops import current_month_usage as twilio_current_month_usage, manual_call_configured
 
 
 SERVICE_DEFINITIONS = (
@@ -18,41 +19,8 @@ SERVICE_DEFINITIONS = (
     ("gmail", "RSF Gmail"),
     ("calendar", "Google Calendar / Meet"),
     ("whatsapp", "WhatsApp"),
-    ("twilio", "Twilio Voice"),
+    ("twilio", "Twilio"),
 )
-
-
-def _setting_value(db, key: str, default: str = "") -> str:
-    row = db.execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
-    return str(row["value"]) if row else default
-
-
-def _decimal_or_none(value: str):
-    raw = (value or "").strip()
-    if not raw:
-        return None
-    try:
-        amount = Decimal(raw)
-    except InvalidOperation:
-        return None
-    if amount < 0:
-        return None
-    return amount.quantize(Decimal("0.01"))
-
-
-def validate_manual_money(value: str, *, allow_zero: bool = True) -> str:
-    raw = (value or "").strip()
-    if not raw:
-        return ""
-    try:
-        amount = Decimal(raw)
-    except InvalidOperation as exc:
-        raise ValueError("Use numbers only for costs and budgets.") from exc
-    if amount < 0 or (not allow_zero and amount == 0):
-        raise ValueError("Cost must be 0 or more. Budget must be more than 0.")
-    if amount > Decimal("999999999.99"):
-        raise ValueError("That cost or budget is too large.")
-    return f"{amount.quantize(Decimal('0.01'))}"
 
 
 def _format_bytes(size_bytes: int) -> str:
@@ -87,43 +55,12 @@ def _status_label(connected: bool, configured: bool = False) -> tuple[str, str]:
     return "Not connected", "off"
 
 
-def _budget_status(current_cost, monthly_budget):
-    if current_cost is None or monthly_budget is None:
-        return {
-            "label": "NOT SET",
-            "class_name": "unset",
-            "percentage": None,
-            "remaining": None,
-            "overage": None,
-        }
-    if monthly_budget <= 0:
-        return {
-            "label": "NOT SET",
-            "class_name": "unset",
-            "percentage": None,
-            "remaining": None,
-            "overage": None,
-        }
-    percentage = (current_cost / monthly_budget) * Decimal("100")
-    remaining = max(monthly_budget - current_cost, Decimal("0"))
-    overage = max(current_cost - monthly_budget, Decimal("0"))
-    if percentage < 70:
-        label, class_name = "NORMAL", "normal"
-    elif percentage < 85:
-        label, class_name = "WARNING", "warning"
-    elif percentage < 100:
-        label, class_name = "NEAR LIMIT", "near"
-    elif percentage == 100:
-        label, class_name = "BUDGET REACHED", "reached"
-    else:
-        label, class_name = "OVERAGE", "overage"
-    return {
-        "label": label,
-        "class_name": class_name,
-        "percentage": percentage.quantize(Decimal("0.1")),
-        "remaining": remaining.quantize(Decimal("0.01")),
-        "overage": overage.quantize(Decimal("0.01")),
-    }
+def _money_text(amount: Decimal | None, currency: str) -> str:
+    if amount is None:
+        return "Not available"
+    code = (currency or "").upper().strip()
+    value = amount.quantize(Decimal("0.01"))
+    return f"{code} {value}" if code else f"{value}"
 
 
 def build_integration_billing_dashboard(db, *, gmail_status: dict, calendar_status: dict) -> dict:
@@ -176,108 +113,136 @@ def build_integration_billing_dashboard(db, *, gmail_status: dict, calendar_stat
     twilio_label = "Ready" if twilio_ready else "Not set up"
     twilio_class = "connected" if twilio_ready else "off"
 
-    seconds = int(twilio_row["seconds"] or 0)
-    minutes = seconds / 60
     email_count = int(email_row["c"] or 0)
     calendar_count = int(calendar_row["c"] or 0)
     whatsapp_count = int(whatsapp_row["c"] or 0)
-    call_count = int(twilio_row["calls"] or 0)
-    minutes_text = f"{minutes:.1f}".rstrip("0").rstrip(".")
+
+    rsf_twilio_calls = int(twilio_row["calls"] or 0)
+    rsf_twilio_minutes = (int(twilio_row["seconds"] or 0) / 60)
+    twilio_provider = twilio_current_month_usage() if twilio_ready else {"available": False}
+
+    if twilio_provider.get("calls") is not None and twilio_provider.get("minutes") is not None:
+        twilio_calls = int(twilio_provider["calls"])
+        twilio_minutes = float(twilio_provider["minutes"])
+        twilio_usage_source = "Usage comes from Twilio."
+    else:
+        twilio_calls = rsf_twilio_calls
+        twilio_minutes = rsf_twilio_minutes
+        twilio_usage_source = "Usage comes from RSF call records."
+
+    minutes_text = f"{twilio_minutes:.1f}".rstrip("0").rstrip(".")
+
+    twilio_cost = None
+    twilio_currency = ""
+    if twilio_provider.get("available") and twilio_provider.get("cost") is not None:
+        twilio_cost = Decimal(str(twilio_provider["cost"]))
+        twilio_currency = str(twilio_provider.get("currency") or "").upper()
 
     service_runtime = {
         "render": {
             "status": render_label,
             "status_class": render_class,
             "usage": "Usage not available",
-            "usage_source": "Render usage is not connected yet.",
+            "usage_source": "Render usage is not connected to this dashboard.",
+            "cost": None,
+            "cost_currency": "",
+            "cost_source": "Render billing is not connected to this dashboard.",
         },
         "database": {
             "status": database_label,
             "status_class": database_class,
             "usage": _database_usage(db),
             "usage_source": "Measured by RSF.",
+            "cost": None,
+            "cost_currency": "",
+            "cost_source": "Database billing is not connected to this dashboard.",
         },
         "gmail": {
             "status": gmail_label,
             "status_class": gmail_class,
             "usage": f"{email_count} {'email' if email_count == 1 else 'emails'}",
             "usage_source": "Based on emails recorded in RSF.",
+            "cost": None,
+            "cost_currency": "",
+            "cost_source": "Google billing is not connected to this dashboard.",
         },
         "calendar": {
             "status": calendar_label,
             "status_class": calendar_class,
             "usage": f"{calendar_count} {'calendar sync' if calendar_count == 1 else 'calendar syncs'}",
             "usage_source": "Based on calendar syncs recorded in RSF.",
+            "cost": None,
+            "cost_currency": "",
+            "cost_source": "Google billing is not connected to this dashboard.",
         },
         "whatsapp": {
             "status": whatsapp_label,
             "status_class": whatsapp_class,
             "usage": f"{whatsapp_count} {'message' if whatsapp_count == 1 else 'messages'}",
             "usage_source": "Based on WhatsApp messages recorded in RSF.",
+            "cost": None,
+            "cost_currency": "",
+            "cost_source": "WhatsApp billing is not connected to this dashboard.",
         },
         "twilio": {
             "status": twilio_label,
             "status_class": twilio_class,
-            "usage": f"{call_count} {'call' if call_count == 1 else 'calls'} · {minutes_text} min",
-            "usage_source": "Based on calls recorded in RSF.",
+            "usage": f"{twilio_calls} {'call' if twilio_calls == 1 else 'calls'} · {minutes_text} min",
+            "usage_source": twilio_usage_source,
+            "cost": twilio_cost,
+            "cost_currency": twilio_currency,
+            "cost_source": (
+                "Cost comes from Twilio."
+                if twilio_cost is not None
+                else (twilio_provider.get("reason") or "Twilio cost is not available.")
+            ),
         },
     }
 
     rows = []
-    total_cost = Decimal("0")
-    total_budget = Decimal("0")
-    total_remaining = Decimal("0")
-    total_overage = Decimal("0")
-    cost_count = 0
-    budget_count = 0
-    paired_count = 0
+    totals_by_currency: dict[str, Decimal] = defaultdict(lambda: Decimal("0"))
+    cost_available_count = 0
+    active_count = 0
+    needs_setup_count = 0
 
     for slug, name in SERVICE_DEFINITIONS:
-        prefix = f"integration_billing.{slug}."
-        cost_raw = _setting_value(db, prefix + "current_cost")
-        budget_raw = _setting_value(db, prefix + "monthly_budget")
-        reset_raw = _setting_value(db, prefix + "billing_reset")
-        current_cost = _decimal_or_none(cost_raw)
-        monthly_budget = _decimal_or_none(budget_raw)
-        budget_state = _budget_status(current_cost, monthly_budget)
+        item = service_runtime[slug]
+        cost = item["cost"]
+        currency = item["cost_currency"]
 
-        if current_cost is not None:
-            total_cost += current_cost
-            cost_count += 1
-        if monthly_budget is not None:
-            total_budget += monthly_budget
-            budget_count += 1
-        if budget_state["remaining"] is not None:
-            total_remaining += budget_state["remaining"]
-            total_overage += budget_state["overage"]
-            paired_count += 1
+        if cost is not None:
+            totals_by_currency[currency or ""] += cost
+            cost_available_count += 1
+        if item["status_class"] == "connected":
+            active_count += 1
+        else:
+            needs_setup_count += 1
 
         rows.append({
             "slug": slug,
             "name": name,
-            **service_runtime[slug],
-            "current_cost": current_cost,
-            "current_cost_raw": cost_raw,
-            "monthly_budget": monthly_budget,
-            "monthly_budget_raw": budget_raw,
-            "billing_reset": reset_raw,
-            "budget_state": budget_state,
+            **item,
+            "cost_text": _money_text(cost, currency),
         })
+
+    if not totals_by_currency:
+        known_cost_text = "Not available"
+    elif len(totals_by_currency) == 1:
+        currency, amount = next(iter(totals_by_currency.items()))
+        known_cost_text = _money_text(amount, currency)
+    else:
+        known_cost_text = "Multiple currencies"
 
     service_count = len(SERVICE_DEFINITIONS)
     return {
         "rows": rows,
         "month_label": datetime.now(timezone.utc).strftime("%B %Y"),
         "summary": {
-            "current_cost": total_cost.quantize(Decimal("0.01")) if cost_count else None,
-            "monthly_budget": total_budget.quantize(Decimal("0.01")) if budget_count else None,
-            "remaining": total_remaining.quantize(Decimal("0.01")) if paired_count else None,
-            "overage": total_overage.quantize(Decimal("0.01")) if paired_count else None,
-            "paired_count": paired_count,
-            "cost_count": cost_count,
-            "budget_count": budget_count,
+            "known_cost_text": known_cost_text,
+            "cost_available_count": cost_available_count,
+            "cost_missing_count": service_count - cost_available_count,
             "service_count": service_count,
-            "cost_complete": cost_count == service_count,
-            "budget_complete": budget_count == service_count,
+            "active_count": active_count,
+            "needs_setup_count": needs_setup_count,
         },
     }
