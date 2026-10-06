@@ -34,19 +34,24 @@ class IntegrationBillingDashboardTests(unittest.TestCase):
         self.assertIn('return redirect(url_for("main.integration_usage_billing"))', routes)
         self.assertIn('allowed_sections = {"general", "appearance", "workflow"}', routes)
 
-    def test_connection_controls_live_on_finance_dashboard(self):
-        routes = self.read("app/routes.py")
+    def test_connection_controls_are_merged_into_the_single_usage_table(self):
         template = self.read("app/templates/integration_usage_billing.html")
-        self.assertIn("Integration Connections", template)
-        self.assertIn("RSF Gmail", template)
-        self.assertIn("Google Calendar", template)
-        self.assertIn("url_for('main.gmail_connect')", template)
-        self.assertIn("url_for('main.gmail_verify')", template)
-        self.assertIn("url_for('main.calendar_connect')", template)
-        self.assertIn("url_for('main.calendar_verify')", template)
-        self.assertIn("gmail_status=gmail_status", routes)
-        self.assertIn("calendar_status=calendar_status", routes)
-        self.assertIn("Connection details", template)
+        self.assertNotIn("Integration Connections", template)
+        self.assertNotIn("integration-connection-card", template)
+        self.assertNotIn("integration-connection-grid", template)
+        self.assertEqual(template.count("<table"), 1)
+        self.assertIn("<th>Action / Attention</th>", template)
+
+        table_start = template.index('<table class="integration-billing-table integration-billing-table--simple">')
+        table_end = template.index("</table>", table_start)
+        table_markup = template[table_start:table_end]
+        self.assertIn("item.slug == 'gmail'", table_markup)
+        self.assertIn("item.slug == 'calendar'", table_markup)
+        self.assertIn("url_for('main.gmail_connect')", table_markup)
+        self.assertIn("url_for('main.gmail_verify')", table_markup)
+        self.assertIn("url_for('main.calendar_connect')", table_markup)
+        self.assertIn("url_for('main.calendar_verify')", table_markup)
+        self.assertIn("integration-row-details", table_markup)
 
     def test_oauth_endpoint_urls_are_preserved_but_return_to_finance(self):
         routes = self.read("app/routes.py")
@@ -80,19 +85,18 @@ class IntegrationBillingDashboardTests(unittest.TestCase):
         self.assertIn("INSERT INTO settings(key,value,updated_at,updated_by_user_id)", routes)
         self.assertNotIn("CREATE TABLE IF NOT EXISTS integration_billing", schema)
 
-    def test_main_dashboard_is_simplified_to_four_clear_sections(self):
+    def test_dashboard_has_no_duplicate_service_sections(self):
         template = self.read("app/templates/integration_usage_billing.html")
-        self.assertIn("Integration Connections", template)
         self.assertIn("Monthly Cost Summary", template)
         self.assertIn("Integration Usage &amp; Costs", template)
         self.assertIn("Edit Costs, Budgets &amp; Billing Dates", template)
-        self.assertLess(template.index("Integration Connections"), template.index("Monthly Cost Summary"))
+        self.assertNotIn("Integration Connections", template)
         self.assertLess(template.index("Monthly Cost Summary"), template.index("Integration Usage &amp; Costs"))
         self.assertLess(template.index("Integration Usage &amp; Costs"), template.index("Edit Costs, Budgets &amp; Billing Dates"))
 
     def test_main_usage_table_has_only_simple_scan_columns(self):
         template = self.read("app/templates/integration_usage_billing.html")
-        for heading in ("Service", "Status", "This Month", "Cost", "Attention"):
+        for heading in ("Service", "Status", "This Month", "Cost", "Action / Attention"):
             self.assertIn(f"<th>{heading}</th>", template)
         self.assertNotIn("<th>Monthly Budget</th>", template)
         self.assertNotIn("<th>Remaining / Overage</th>", template)
@@ -106,6 +110,7 @@ class IntegrationBillingDashboardTests(unittest.TestCase):
         template = self.read("app/templates/integration_usage_billing.html")
         self.assertIn('<details class="integration-billing-editor">', template)
         self.assertIn('<details class="integration-data-note">', template)
+        self.assertIn('<details class="integration-row-details">', template)
         self.assertIn("About Usage &amp; Cost Data", template)
         self.assertIn("Usage comes from real RSF records when available.", template)
         self.assertIn("Current cost, budget, and billing/reset dates stay manual", template)
@@ -115,20 +120,23 @@ class IntegrationBillingDashboardTests(unittest.TestCase):
         for label in ("NORMAL", "WARNING", "NEAR LIMIT", "BUDGET REACHED", "OVERAGE", "NOT SET"):
             self.assertIn(f'"{label}"', model)
 
-    def test_dashboard_has_clean_responsive_styles(self):
+    def test_dashboard_has_unified_responsive_styles(self):
         base = self.read("app/templates/base.html")
         css = self.read("app/static/css/integration_usage_billing.css")
         self.assertIn("integration_usage_billing.css", base)
         self.assertIn(".integration-dashboard-section{", css)
-        self.assertIn(".integration-connection-grid{", css)
         self.assertIn(".integration-billing-summary{", css)
         self.assertIn(".integration-billing-table--simple", css)
+        self.assertIn(".integration-row-actions{", css)
+        self.assertIn(".integration-row-details{", css)
         self.assertIn(".integration-attention--setup", css)
         self.assertIn(".integration-data-note", css)
+        self.assertNotIn(".integration-connection-grid{", css)
+        self.assertNotIn(".integration-connection-card{", css)
         self.assertIn("@media(max-width:760px)", css)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.225")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.226")
 
 
 if __name__ == "__main__":
