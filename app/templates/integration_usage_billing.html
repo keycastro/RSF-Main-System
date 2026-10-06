@@ -15,29 +15,28 @@
   <section class="integration-dashboard-section" aria-labelledby="monthly-cost-summary-title">
     <div class="integration-section-heading integration-section-heading--compact">
       <div>
-        <span>COSTS</span>
-        <h2 id="monthly-cost-summary-title">Monthly Costs</h2>
+        <span>OVERVIEW</span>
+        <h2 id="monthly-cost-summary-title">This Month</h2>
       </div>
     </div>
 
-    <div class="integration-billing-summary" aria-label="RSF monthly cost summary">
+    <div class="integration-billing-summary" aria-label="RSF integration summary">
       <article>
-        <span>Cost</span>
-        <strong>{% if integration_billing.summary.current_cost is not none %}{{ currency_code }} {{ integration_billing.summary.current_cost }}{% else %}Not set{% endif %}</strong>
-        {% if integration_billing.summary.current_cost is not none and not integration_billing.summary.cost_complete %}<small>Some costs are missing</small>{% endif %}
+        <span>Known Cost</span>
+        <strong>{{ integration_billing.summary.known_cost_text }}</strong>
+        {% if integration_billing.summary.cost_missing_count %}<small>Some provider costs are not available</small>{% endif %}
       </article>
       <article>
-        <span>Budget</span>
-        <strong>{% if integration_billing.summary.monthly_budget is not none %}{{ currency_code }} {{ integration_billing.summary.monthly_budget }}{% else %}Not set{% endif %}</strong>
-        {% if integration_billing.summary.monthly_budget is not none and not integration_billing.summary.budget_complete %}<small>Some budgets are missing</small>{% endif %}
+        <span>Costs Found</span>
+        <strong>{{ integration_billing.summary.cost_available_count }} of {{ integration_billing.summary.service_count }}</strong>
       </article>
       <article>
-        <span>Left</span>
-        <strong>{% if integration_billing.summary.remaining is not none %}{{ currency_code }} {{ integration_billing.summary.remaining }}{% else %}—{% endif %}</strong>
+        <span>Active</span>
+        <strong>{{ integration_billing.summary.active_count }}</strong>
       </article>
       <article>
-        <span>Over Budget</span>
-        <strong>{% if integration_billing.summary.overage is not none %}{{ currency_code }} {{ integration_billing.summary.overage }}{% else %}—{% endif %}</strong>
+        <span>Needs Setup</span>
+        <strong>{{ integration_billing.summary.needs_setup_count }}</strong>
       </article>
     </div>
   </section>
@@ -96,7 +95,7 @@
             <td data-label="Usage"><strong>{{ item.usage }}</strong></td>
 
             <td data-label="Cost">
-              {% if item.current_cost is not none %}<strong>{{ currency_code }} {{ item.current_cost }}</strong>{% else %}<span class="integration-value-empty">Not set</span>{% endif %}
+              {% if item.cost == none %}<span class="integration-value-empty">{{ item.cost_text }}</span>{% else %}<strong>{{ item.cost_text }}</strong>{% endif %}
             </td>
 
             <td data-label="Action">
@@ -149,39 +148,14 @@
     </div>
   </section>
 
-  <details class="integration-billing-editor">
-    <summary>
-      <span>Edit Costs &amp; Budget</span>
-      <small>Change costs, budgets, or billing dates.</small>
-    </summary>
-    <form method="post" action="{{ url_for('main.integration_billing_update') }}" class="integration-billing-form">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div class="integration-billing-form-head">
-        <span>Service</span><span>Monthly Cost</span><span>Budget</span><span>Billing Date</span>
-      </div>
-      {% for item in integration_billing.rows %}
-      <div class="integration-billing-form-row">
-        <strong>{{ item.name }}</strong>
-        <label><span>Cost ({{ currency_code }})</span><input type="number" min="0" step="0.01" inputmode="decimal" name="{{ item.slug }}_current_cost" value="{{ item.current_cost_raw }}" placeholder="Not known"></label>
-        <label><span>Budget ({{ currency_code }})</span><input type="number" min="0.01" step="0.01" inputmode="decimal" name="{{ item.slug }}_monthly_budget" value="{{ item.monthly_budget_raw }}" placeholder="Not set"></label>
-        <label><span>Billing Date</span><input type="text" maxlength="80" name="{{ item.slug }}_billing_reset" value="{{ item.billing_reset }}" placeholder="e.g. 15th of each month"></label>
-      </div>
-      {% endfor %}
-      <div class="integration-billing-form-actions">
-        <p>These numbers are only for RSF tracking. They do not change your service plans.</p>
-        <button class="button primary" type="submit">Save</button>
-      </div>
-    </form>
-  </details>
-
   <details class="integration-data-note">
     <summary>About These Numbers</summary>
     <div>
-      <p>Usage shown here comes from RSF records when available. Your actual service bill or limits may be different.</p>
-      <p>Costs and budgets are entered by you unless automatic billing is connected.</p>
+      <p>Usage and cost are filled automatically when RSF can read them safely.</p>
+      <p>If a provider does not give RSF billing data, the cost shows as Not available instead of using a guess.</p>
       <ul>
         {% for item in integration_billing.rows %}
-        <li><strong>{{ item.name }}:</strong> {{ item.usage_source }}</li>
+        <li><strong>{{ item.name }}:</strong> {{ item.usage_source }} {{ item.cost_source }}</li>
         {% endfor %}
       </ul>
     </div>
