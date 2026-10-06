@@ -828,10 +828,17 @@ def _clean_account_name(value: str) -> str:
 
 
 def _account_name_in_use(db, name: str, exclude_user_id: int | None = None) -> bool:
-    # Login names remain reserved even while an account is inactive. This prevents
-    # two accounts from becoming active with the same name after reactivation.
     sql = "SELECT id FROM users WHERE lower(trim(full_name))=lower(trim(?))"
     params: list[object] = [name]
+    if exclude_user_id is not None:
+        sql += " AND id<>?"
+        params.append(exclude_user_id)
+    return db.execute(sql + " LIMIT 1", params).fetchone() is not None
+
+
+def _account_email_in_use(db, email: str, exclude_user_id: int | None = None) -> bool:
+    sql = "SELECT id FROM users WHERE lower(trim(email))=lower(trim(?))"
+    params: list[object] = [email]
     if exclude_user_id is not None:
         sql += " AND id<>?"
         params.append(exclude_user_id)
@@ -3887,7 +3894,7 @@ def partners_list():
     db = get_db()
     rows = db.execute(
         """SELECT p.id,p.user_id,p.commission_stage_id,p.phone,p.notes,p.joined_at,p.account_deleted_at,
-                  u.full_name,u.created_at,cs.name commission_stage_name,cs.rate_bp commission_rate_bp
+                  u.full_name,u.email,u.created_at,cs.name commission_stage_name,cs.rate_bp commission_rate_bp
            FROM partners p
            JOIN users u ON u.id=p.user_id
            JOIN commission_stages cs ON cs.id=p.commission_stage_id
@@ -3905,6 +3912,7 @@ def partner_new():
     if request.method == "POST":
         validate_csrf()
         full_name = _clean_account_name(request.form.get("full_name", ""))
+        email = normalize_email(request.form.get("email", ""))
         password = request.form.get("partner_password", "") or ""
         phone = (request.form.get("phone", "") or "").strip()
         notes = (request.form.get("notes", "") or "").strip()
@@ -3915,8 +3923,16 @@ def partner_new():
             errors.append("Enter the Partner name.")
         elif _account_name_in_use(db, full_name):
             errors.append("This name is already in use.")
+        if not valid_email(email):
+            errors.append("Enter a valid Partner email.")
+        elif _account_email_in_use(db, email):
+            errors.append("This email is already in use.")
         if not valid_password(password):
             errors.append("Choose a non-empty Partner password. RSF does not require a minimum length.")
+        if not valid_email(email):
+            errors.append("Enter a valid Partner email.")
+        elif _account_email_in_use(db, email, int(partner["user_id"])):
+            errors.append("This email is already in use.")
         if not stage:
             errors.append("Choose a commission level.")
         if errors:
@@ -3924,12 +3940,11 @@ def partner_new():
                 flash(error, "error")
             return render_template("partner_form.html", title="Create Partner", stages=stages)
         now = utcnow_iso()
-        internal_email = _new_internal_account_email(db)
         try:
             cur = db.execute(
                 """INSERT INTO users(full_name,email,password_hash,role,active,force_password_change,created_at,updated_at)
                    VALUES (?,?,?,'partner',1,0,?,?)""",
-                (full_name, internal_email, hash_password(password), now, now),
+                (full_name, email, hash_password(password), now, now),
             )
             user_id = cur.lastrowid
             cur = db.execute(
@@ -3953,7 +3968,7 @@ def partner_new():
         return render_template(
             "partner_created.html",
             title="Partner Created",
-            partner={"id": partner_id, "full_name": full_name},
+            partner={"id": partner_id, "full_name": full_name, "email": email},
             chosen_password=password,
         )
     return render_template("partner_form.html", title="Create Partner", stages=stages)
@@ -3964,7 +3979,7 @@ def partner_new():
 def partner_detail(partner_id: int):
     db = get_db()
     partner = db.execute(
-        """SELECT p.*,u.full_name,u.created_at,cs.name commission_stage_name,cs.rate_bp commission_rate_bp
+        """SELECT p.*,u.full_name,u.email,u.created_at,cs.name commission_stage_name,cs.rate_bp commission_rate_bp
            FROM partners p
            JOIN users u ON u.id=p.user_id
            JOIN commission_stages cs ON cs.id=p.commission_stage_id
@@ -3977,6 +3992,7 @@ def partner_detail(partner_id: int):
     if request.method == "POST":
         validate_csrf()
         full_name = _clean_account_name(request.form.get("full_name", ""))
+        email = normalize_email(request.form.get("email", ""))
         phone = (request.form.get("phone", "") or "").strip()
         notes = (request.form.get("notes", "") or "").strip()
         stage_id = request.form.get("commission_stage_id", type=int)
@@ -4000,12 +4016,12 @@ def partner_detail(partner_id: int):
                 "Partner commission level changed.",
                 {"from": partner["commission_stage_name"], "from_rate_bp": partner["commission_rate_bp"], "to": stage["name"], "to_rate_bp": stage["rate_bp"]},
             )
-        if full_name != partner["full_name"] or phone[:60] != partner["phone"] or notes[:2000] != partner["notes"]:
+        if full_name != partner["full_name"] or email != normalize_email(partner["email"]) or phone[:60] != partner["phone"] or notes[:2000] != partner["notes"]:
             log_activity("PARTNER_UPDATED", "partner", partner_id, "Partner details updated.")
         try:
             db.execute(
-                "UPDATE users SET full_name=?,updated_at=? WHERE id=?",
-                (full_name, utcnow_iso(), partner["user_id"]),
+                "UPDATE users SET full_name=?,email=?,updated_at=? WHERE id=?",
+                (full_name, email, utcnow_iso(), partner["user_id"]),
             )
             db.execute(
                 "UPDATE partners SET commission_stage_id=?,phone=?,notes=?,historical_name=? WHERE id=?",
@@ -4850,14 +4866,14 @@ def activity():
 
 def _account_security_context(db):
     founder = db.execute(
-        """SELECT id,full_name,created_at,updated_at
+        """SELECT id,full_name,email,created_at,updated_at
            FROM users WHERE id=? AND role='admin' AND active=1""",
         (g.user["id"],),
     ).fetchone()
     if not founder:
         abort(403)
     partners = db.execute(
-        """SELECT p.id,p.user_id,u.full_name,u.created_at,u.active AS user_active,
+        """SELECT p.id,p.user_id,u.full_name,u.email,u.created_at,u.active AS user_active,
                   p.active AS partner_active,
                   cs.name commission_stage_name,cs.rate_bp commission_rate_bp,
                   ((SELECT COUNT(*) FROM leads l WHERE l.owner_partner_id=p.id AND l.status NOT IN ('WON','LOST')) +
@@ -4878,50 +4894,36 @@ def _account_security_context(db):
 def account_security():
     db = get_db()
     founder, partners = _account_security_context(db)
-    recovery_row = db.execute(
-        "SELECT value FROM settings WHERE key='founder_recovery_code_hash' LIMIT 1"
-    ).fetchone()
+    from .gmail_ops import connection_status as gmail_connection_status
     return render_template(
         "account_security.html",
         title="Account & Security",
         founder=founder,
         partners=partners,
-        recovery_configured=bool(recovery_row and recovery_row["value"]),
+        password_recovery_email_status=gmail_connection_status(),
     )
 
 
-@bp.post("/admin/settings/account-security/founder-recovery-code")
+@bp.post("/admin/settings/account-security/founder-email")
 @admin_required
-def founder_recovery_code_generate():
+def founder_email_change():
     validate_csrf()
-    code = generate_recovery_code()
-    now = utcnow_iso()
+    email = normalize_email(request.form.get("email", ""))
+    if not valid_email(email):
+        flash("Enter a valid Founder email.", "error")
+        return redirect(url_for("main.account_security"))
     db = get_db()
-    for key, value in (
-        ("founder_recovery_code_hash", hash_recovery_code(code)),
-        ("founder_recovery_code_created_at", now),
-    ):
-        db.execute(
-            """INSERT INTO settings(key,value,updated_at,updated_by_user_id)
-               VALUES (?,?,?,?)
-               ON CONFLICT(key) DO UPDATE SET
-                   value=excluded.value,
-                   updated_at=excluded.updated_at,
-                   updated_by_user_id=excluded.updated_by_user_id""",
-            (key, value, now, g.user["id"]),
-        )
-    log_activity(
-        "FOUNDER_RECOVERY_CODE_ROTATED",
-        "user",
-        g.user["id"],
-        "Founder recovery code generated or replaced. Only its secure hash was stored.",
+    if _account_email_in_use(db, email, int(g.user["id"])):
+        flash("This email is already in use.", "error")
+        return redirect(url_for("main.account_security"))
+    db.execute(
+        "UPDATE users SET email=?,updated_at=? WHERE id=? AND role='admin'",
+        (email, utcnow_iso(), g.user["id"]),
     )
+    log_activity("FOUNDER_EMAIL_CHANGED", "user", g.user["id"], "Founder login and recovery email changed.")
     db.commit()
-    return render_template(
-        "founder_recovery_code.html",
-        title="Founder Recovery Code",
-        recovery_code=code,
-    )
+    flash("Founder login and recovery email updated.", "success")
+    return redirect(url_for("main.account_security"))
 
 
 @bp.post("/admin/settings/account-security/founder-password")
