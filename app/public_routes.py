@@ -28,7 +28,6 @@ from .seo import (
     software_template_structured_data,
 )
 from .system_templates import (
-    EXISTING_SYSTEM_PRICING,
     get_system_template,
     published_templates,
     template_library_enabled,
@@ -143,7 +142,6 @@ def _common_context(
         "technologies": TECHNOLOGIES,
         "published_system_templates": published_templates(),
         "template_library_enabled": template_library_enabled(),
-        "existing_system_pricing": EXISTING_SYSTEM_PRICING,
         "free_build_program": _free_build_program(),
         "contact_email": current_app.config.get("CONTACT_EMAIL"),
         "socials": socials,
