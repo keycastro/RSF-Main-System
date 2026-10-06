@@ -25,11 +25,6 @@ CREATE TABLE IF NOT EXISTS users (
     avatar_updated_at TEXT
 );
 
-CREATE TABLE IF NOT EXISTS account_password_vault (
-    user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-    encrypted_password TEXT NOT NULL,
-    updated_at TEXT NOT NULL
-);
 
 CREATE TABLE IF NOT EXISTS commission_stages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
