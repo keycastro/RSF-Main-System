@@ -4840,7 +4840,7 @@ def integration_billing_update():
         "Integration Usage & Billing manual costs, budgets, or billing/reset dates updated.",
     )
     db.commit()
-    flash("Integration usage & billing settings updated.", "success")
+    flash("Costs and budget saved.", "success")
     return redirect(url_for("main.integration_usage_billing") + "#integration-usage-billing")
 
 
@@ -4850,7 +4850,7 @@ def gmail_connect():
     from .gmail_ops import build_authorization_url
     redirect_uri = current_app.config.get("GMAIL_OAUTH_REDIRECT_URI", "").strip()
     if not redirect_uri:
-        flash("Gmail OAuth redirect URI is not configured yet.", "error")
+        flash("Gmail setup is not complete yet.", "error")
         return redirect(url_for("main.integration_usage_billing"))
     try:
         authorization_url = build_authorization_url(redirect_uri)
@@ -4865,7 +4865,7 @@ def gmail_connect():
 def gmail_callback():
     from .gmail_ops import complete_authorization, validate_oauth_state
     if request.args.get("error"):
-        flash("Google Gmail authorization was cancelled or denied.", "warning")
+        flash("Gmail connection was cancelled.", "warning")
         return redirect(url_for("main.integration_usage_billing"))
     redirect_uri = current_app.config.get("GMAIL_OAUTH_REDIRECT_URI", "").strip()
     try:
@@ -4890,7 +4890,7 @@ def gmail_verify():
     except RuntimeError as exc:
         flash(str(exc), "error")
     else:
-        flash(f"Gmail connection verified: {profile.get('emailAddress','')}", "success")
+        flash(f"Gmail is working: {profile.get('emailAddress','')}", "success")
     return redirect(url_for("main.integration_usage_billing"))
 
 
@@ -4900,7 +4900,7 @@ def calendar_connect():
     from .calendar_ops import build_authorization_url
     redirect_uri = current_app.config.get("GOOGLE_CALENDAR_OAUTH_REDIRECT_URI", "").strip()
     if not redirect_uri:
-        flash("Google Calendar OAuth redirect URI is not configured yet.", "error")
+        flash("Google Calendar setup is not complete yet.", "error")
         return redirect(url_for("main.integration_usage_billing"))
     try:
         authorization_url = build_authorization_url(redirect_uri)
@@ -4915,7 +4915,7 @@ def calendar_connect():
 def calendar_callback():
     from .calendar_ops import complete_authorization, validate_oauth_state
     if request.args.get("error"):
-        flash("Google Calendar authorization was cancelled or denied.", "warning")
+        flash("Google Calendar connection was cancelled.", "warning")
         return redirect(url_for("main.integration_usage_billing"))
     redirect_uri = current_app.config.get("GOOGLE_CALENDAR_OAUTH_REDIRECT_URI", "").strip()
     try:
@@ -4940,7 +4940,7 @@ def calendar_verify():
     except RuntimeError as exc:
         flash(str(exc), "error")
     else:
-        flash("Google Calendar connection verified.", "success")
+        flash("Google Calendar is working.", "success")
     return redirect(url_for("main.integration_usage_billing"))
 
 
