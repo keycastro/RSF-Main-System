@@ -12,6 +12,81 @@
     </div>
   </div>
 
+  <section class="integration-connections" aria-labelledby="integration-connections-title">
+    <div class="integration-connections-heading">
+      <div>
+        <span>CONNECTIONS</span>
+        <h2 id="integration-connections-title">Integration Connections</h2>
+        <p>Connect and verify the services RSF uses. Usage and billing details stay directly below these controls.</p>
+      </div>
+    </div>
+    <div class="integration-connection-grid">
+      <article class="integration-connection-card">
+        <div class="integration-connection-card-head">
+          <div>
+            <h3>RSF Gmail</h3>
+            <p>Official client email connection used by Email Conversation.</p>
+          </div>
+          <span class="integration-status integration-status--{% if gmail_status.connected %}connected{% elif gmail_status.oauth_configured %}ready{% else %}off{% endif %}">
+            {% if gmail_status.connected %}Connected{% elif gmail_status.oauth_configured %}Ready to connect{% else %}OAuth setup required{% endif %}
+          </span>
+        </div>
+        <div class="integration-connection-details">
+          {% if gmail_status.email %}<div><span>Connected account</span><strong>{{ gmail_status.email }}</strong></div>{% endif %}
+          {% if gmail_status.configured_sender %}<div><span>Approved sender</span><strong>{{ gmail_status.configured_sender }}</strong></div>{% endif %}
+        </div>
+        <div class="integration-connection-action">
+          {% if gmail_status.connected %}
+            <form method="post" action="{{ url_for('main.gmail_verify') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="button secondary" type="submit">Verify Gmail Connection</button>
+            </form>
+          {% elif gmail_status.oauth_configured %}
+            <a class="button primary" href="{{ url_for('main.gmail_connect') }}">Connect Gmail</a>
+          {% else %}
+            <p class="integration-connection-help">Google OAuth Client ID and Client Secret must be configured in Render before Gmail can be connected.</p>
+          {% endif %}
+        </div>
+      </article>
+
+      <article class="integration-connection-card">
+        <div class="integration-connection-card-head">
+          <div>
+            <h3>Google Calendar</h3>
+            <p>Used by Deals to schedule demos and automatically create Google Meet links.</p>
+          </div>
+          <span class="integration-status integration-status--{% if calendar_status.connected %}connected{% elif calendar_status.oauth_configured %}ready{% else %}off{% endif %}">
+            {% if calendar_status.connected %}Connected{% elif calendar_status.oauth_configured %}Ready to connect{% else %}OAuth setup required{% endif %}
+          </span>
+        </div>
+        <div class="integration-connection-details">
+          <div><span>Calendar</span><strong>{{ calendar_status.calendar_id }}</strong></div>
+          <div><span>Timezone</span><strong>{{ calendar_status.timezone }}</strong></div>
+        </div>
+        <div class="integration-connection-action">
+          {% if calendar_status.connected %}
+            <form method="post" action="{{ url_for('main.calendar_verify') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="button secondary" type="submit">Verify Google Calendar</button>
+            </form>
+          {% elif calendar_status.oauth_configured %}
+            <a class="button primary" href="{{ url_for('main.calendar_connect') }}">Connect Google Calendar</a>
+          {% else %}
+            <p class="integration-connection-help">Google OAuth Client ID and Client Secret must be configured in Render before Calendar can be connected.</p>
+          {% endif %}
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <div class="integration-billing-section-heading">
+    <div>
+      <span>USAGE &amp; COST CONTROL</span>
+      <h2>Usage &amp; Billing Overview</h2>
+      <p>Review current RSF activity, estimated service costs, budgets, remaining budget, and overage.</p>
+    </div>
+  </div>
+
   <div class="integration-billing-summary" aria-label="RSF monthly integration cost summary">
     <article>
       <span>Estimated Monthly RSF Cost</span>
