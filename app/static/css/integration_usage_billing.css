@@ -1,4 +1,4 @@
-/* RSF v1.18.226 — unified Integration Usage & Billing dashboard */
+/* RSF v1.18.228 — automatic-only Integration Usage & Billing dashboard */
 
 .integration-billing-page{
   display:flex;
@@ -255,14 +255,12 @@
   overflow-wrap:anywhere;
 }
 
-.integration-billing-editor,
 .integration-data-note{
   border:1px solid rgba(201,169,94,.16);
   border-radius:11px;
   background:rgba(255,248,238,.02);
   overflow:hidden;
 }
-.integration-billing-editor>summary,
 .integration-data-note>summary{
   display:flex;
   align-items:center;
@@ -273,85 +271,13 @@
   cursor:pointer;
   list-style:none;
   color:#eee2d2;
-}
-.integration-billing-editor>summary::-webkit-details-marker,
-.integration-data-note>summary::-webkit-details-marker{display:none}
-.integration-billing-editor>summary span,
-.integration-data-note>summary{
   font-size:11px;
   font-weight:800;
 }
-.integration-billing-editor>summary small{
-  color:#847b70;
-  font-size:9.5px;
-  text-align:right;
-}
-.integration-billing-editor[open]>summary,
+.integration-data-note>summary::-webkit-details-marker{display:none}
 .integration-data-note[open]>summary{
   border-bottom:1px solid rgba(201,169,94,.12);
   background:rgba(201,169,94,.025);
-}
-
-.integration-billing-form{padding:12px}
-.integration-billing-form-head,
-.integration-billing-form-row{
-  display:grid;
-  grid-template-columns:minmax(135px,1fr) repeat(3,minmax(150px,1fr));
-  gap:9px;
-  align-items:end;
-}
-.integration-billing-form-head{
-  padding:0 2px 7px;
-  color:#8f867a;
-  font-size:8.5px;
-  font-weight:900;
-  letter-spacing:.05em;
-  text-transform:uppercase;
-}
-.integration-billing-form-row{
-  padding:9px 2px;
-  border-top:1px solid rgba(255,255,255,.05);
-}
-.integration-billing-form-row>strong{
-  align-self:center;
-  color:#e9ddcd;
-  font-size:10.5px;
-}
-.integration-billing-form-row label{display:block}
-.integration-billing-form-row label>span{
-  display:none;
-  margin-bottom:4px;
-  color:#91877a;
-  font-size:8.5px;
-  font-weight:800;
-}
-.integration-billing-form-row input{
-  width:100%;
-  box-sizing:border-box;
-  min-height:34px;
-  padding:7px 8px;
-  border:1px solid #4b3d2c;
-  border-radius:7px;
-  background:#0c0b09;
-  color:#f0e5d6;
-  font:inherit;
-  font-size:10px;
-}
-.integration-billing-form-row input::placeholder{color:#655f57}
-.integration-billing-form-actions{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:14px;
-  padding-top:12px;
-  border-top:1px solid rgba(255,255,255,.06);
-}
-.integration-billing-form-actions p{
-  max-width:720px;
-  margin:0;
-  color:#8f867a;
-  font-size:9.5px;
-  line-height:1.4;
 }
 
 .integration-data-note>div{
@@ -415,18 +341,4 @@
     text-transform:uppercase;
   }
   .integration-row-actions{align-items:flex-start}
-  .integration-billing-form-head{display:none}
-  .integration-billing-form-row{grid-template-columns:1fr}
-  .integration-billing-form-row label>span{display:block}
-  .integration-billing-form-actions{
-    align-items:stretch;
-    flex-direction:column;
-  }
-  .integration-billing-form-actions .button{width:100%}
-  .integration-billing-editor>summary{
-    align-items:flex-start;
-    flex-direction:column;
-    gap:3px;
-  }
-  .integration-billing-editor>summary small{text-align:left}
 }
