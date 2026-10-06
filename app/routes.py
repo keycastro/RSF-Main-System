@@ -20,13 +20,16 @@ from .auth import (
     admin_required,
     authenticate,
     csrf_token,
+    generate_recovery_code,
     hash_password,
+    hash_recovery_code,
     login_required,
     login_user,
     safe_next,
     valid_email,
     valid_password,
     validate_csrf,
+    verify_recovery_code,
 )
 from .db import get_db, IntegrityError, using_postgres
 from .record_ops import (
@@ -1358,6 +1361,70 @@ def login():
             login_user(user)
             return redirect(safe_next(request.args.get("next")) or url_for("main.prospects"))
     return render_template("login.html", title="Log In")
+
+
+@bp.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    if g.user:
+        return redirect(url_for("main.prospects"))
+    if request.method == "POST":
+        validate_csrf()
+        name = (request.form.get("name", "") or "").strip()
+        recovery_code = request.form.get("recovery_code", "") or ""
+        new_password = request.form.get("new_password", "")
+        confirm_password = request.form.get("confirm_password", "")
+
+        if not name or not recovery_code:
+            flash("Enter the Founder name and recovery code.", "error")
+            return render_template("forgot_password.html", title="Reset Password")
+        if not valid_password(new_password):
+            flash("Choose a non-empty password. RSF does not require a minimum length.", "error")
+            return render_template("forgot_password.html", title="Reset Password")
+        if new_password != confirm_password:
+            flash("Passwords do not match.", "error")
+            return render_template("forgot_password.html", title="Reset Password")
+
+        db = get_db()
+        founder = db.execute(
+            """SELECT * FROM users
+               WHERE role='admin' AND active=1 AND lower(trim(full_name))=lower(?)
+               LIMIT 1""",
+            (name,),
+        ).fetchone()
+        recovery = db.execute(
+            "SELECT value FROM settings WHERE key='founder_recovery_code_hash' LIMIT 1"
+        ).fetchone()
+
+        stored_hash = recovery["value"] if recovery else ""
+        if not founder or not verify_recovery_code(stored_hash, recovery_code):
+            flash("Founder name or recovery code is wrong.", "error")
+            return render_template("forgot_password.html", title="Reset Password")
+
+        now = utcnow_iso()
+        db.execute(
+            """UPDATE users
+               SET password_hash=?,force_password_change=0,failed_login_count=0,
+                   locked_until=NULL,updated_at=?
+               WHERE id=? AND role='admin'""",
+            (hash_password(new_password), now, founder["id"]),
+        )
+        # Recovery codes are single-use. A fresh one can be generated after login.
+        db.execute(
+            "DELETE FROM settings WHERE key IN ('founder_recovery_code_hash','founder_recovery_code_created_at')"
+        )
+        log_activity(
+            "FOUNDER_PASSWORD_RECOVERED",
+            "user",
+            founder["id"],
+            "Founder password reset with the one-time recovery code. Existing sessions were invalidated.",
+            actor_user_id=founder["id"],
+        )
+        db.commit()
+        session.clear()
+        flash("Password reset successfully. Log in with your new password, then generate a new recovery code.", "success")
+        return redirect(url_for("main.login"))
+
+    return render_template("forgot_password.html", title="Reset Password")
 
 
 @bp.post("/logout")
@@ -3750,7 +3817,7 @@ def partner_new():
         elif _account_name_in_use(db, full_name):
             errors.append("This name is already in use.")
         if not valid_password(password):
-            errors.append("Partner password must be 12–128 characters.")
+            errors.append("Choose a non-empty Partner password. RSF does not require a minimum length.")
         if not stage:
             errors.append("Choose a commission level.")
         if errors:
@@ -3906,7 +3973,7 @@ def partner_reset_password(partner_id: int):
     password = request.form.get("partner_password", "") or ""
     confirm_password = request.form.get("confirm_partner_password", "") or ""
     if not valid_password(password):
-        flash("Partner password must be 12–128 characters.", "error")
+        flash("Choose a non-empty Partner password. RSF does not require a minimum length.", "error")
         return redirect(url_for("main.account_security", _anchor=f"partner-{partner_id}"))
     if password != confirm_password:
         flash("Passwords do not match.", "error")
@@ -4712,11 +4779,49 @@ def _account_security_context(db):
 def account_security():
     db = get_db()
     founder, partners = _account_security_context(db)
+    recovery_row = db.execute(
+        "SELECT value FROM settings WHERE key='founder_recovery_code_hash' LIMIT 1"
+    ).fetchone()
     return render_template(
         "account_security.html",
         title="Account & Security",
         founder=founder,
         partners=partners,
+        recovery_configured=bool(recovery_row and recovery_row["value"]),
+    )
+
+
+@bp.post("/admin/settings/account-security/founder-recovery-code")
+@admin_required
+def founder_recovery_code_generate():
+    validate_csrf()
+    code = generate_recovery_code()
+    now = utcnow_iso()
+    db = get_db()
+    for key, value in (
+        ("founder_recovery_code_hash", hash_recovery_code(code)),
+        ("founder_recovery_code_created_at", now),
+    ):
+        db.execute(
+            """INSERT INTO settings(key,value,updated_at,updated_by_user_id)
+               VALUES (?,?,?,?)
+               ON CONFLICT(key) DO UPDATE SET
+                   value=excluded.value,
+                   updated_at=excluded.updated_at,
+                   updated_by_user_id=excluded.updated_by_user_id""",
+            (key, value, now, g.user["id"]),
+        )
+    log_activity(
+        "FOUNDER_RECOVERY_CODE_ROTATED",
+        "user",
+        g.user["id"],
+        "Founder recovery code generated or replaced. Only its secure hash was stored.",
+    )
+    db.commit()
+    return render_template(
+        "founder_recovery_code.html",
+        title="Founder Recovery Code",
+        recovery_code=code,
     )
 
 
@@ -4727,7 +4832,7 @@ def founder_password_change():
     new_password = request.form.get("new_password", "") or ""
     confirm_password = request.form.get("confirm_password", "") or ""
     if not valid_password(new_password):
-        flash("Founder password must be 12–128 characters.", "error")
+        flash("Choose a non-empty Founder password. RSF does not require a minimum length.", "error")
         return redirect(url_for("main.account_security"))
     if new_password != confirm_password:
         flash("Passwords do not match.", "error")
