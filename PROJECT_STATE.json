@@ -1,7 +1,7 @@
 {
   "project": "RSF_MAIN_SYSTEM",
-  "handoff_date": "2026-09-21",
-  "version": "1.12.0",
+  "handoff_date": "2026-10-06",
+  "version": "1.18.229",
   "owner_public_name": "Key Castro",
   "positioning": "Technology built for real estate operations",
   "framework": "Flask",
@@ -164,53 +164,20 @@
   },
   "commercial_model": {
     "system_creation": [
-      "Buy Existing System",
       "Custom System Build"
     ],
-    "existing_system_purchase": {
-      "currency": "USD",
-      "price": 199,
-      "billing": "one-time",
-      "meaning": "Purchase of the published existing system as shown; customization and maintenance are not included.",
-      "single_source": "app/system_templates.py::EXISTING_SYSTEM_PRICING"
+    "ready_made_system_sales": false,
+    "public_systems_role": "Portfolio/examples only",
+    "limited_free_build_program": {
+      "start": "2026-11-01",
+      "end": "2027-03-31",
+      "development_fee": 0,
+      "acceptance_required": true
     },
-    "new_custom_system_pricing": "Price by Agreement",
-    "post_build_options": [
-      "Full Handover",
-      "Managed by Realty Systems Foundry"
-    ],
-    "full_handover": "We build it. You manage it. Client or someone they hire handles hosting/deployment, security/updates, backups, and technical fixes after handover; no monthly management fee is charged by Realty Systems Foundry.",
-    "pricing_public": true,
-    "pricing_currency_public": "USD only",
-    "maintenance_pricing": {
-      "currency": "USD",
-      "monthly_per_system": 39,
-      "yearly_per_system": 390,
-      "twelve_monthly_total": 468,
-      "annual_savings": 78,
-      "single_source": "app/system_templates.py::MANAGED_MAINTENANCE_PRICING"
-    },
-    "plan_selection": "monthly/yearly plan keys are resolved server-side; official managed-maintenance price text is generated from trusted pricing metadata; no checkout is implied",
-    "legacy_compatibility": "legacy subscribe/free-access URLs and old customization links are accepted only for compatibility; new public existing-system CTAs use the Existing System Purchase intent",
-    "maintenance_boundary": "Managed care is optional. $39/month or $390/year keeps the current system running and does not include new features, workflow changes, new modules, integrations, or other improvements.",
-    "system_upgrades": {
-      "minor": {
-        "price": 79,
-        "meaning": "Focused improvement to an existing Realty Systems Foundry system."
-      },
-      "major": {
-        "price": 149,
-        "meaning": "Larger improvement to an existing Realty Systems Foundry system."
-      },
-      "new_system_or_large_expansion": {
-        "price": "Price by Agreement",
-        "meaning": "Work beyond a normal system upgrade."
-      },
-      "separate_from_system_purchase": true,
-      "separate_from_maintenance": true,
-      "available_to_self_managed_or_key_managed_clients": true
-    },
-    "managed_by_realty_systems_foundry": "We build it. We manage it. Optional managed care remains $39/month or $390/year; Realty Systems Foundry handles hosting/deployment, routine technical checks, backups when used, and technical fixes for the current system."
+    "after_free_period": "Price by Agreement",
+    "optional_post_delivery_support": "Price by Agreement",
+    "self_managed": "No RSF support fee",
+    "major_change_or_expansion": "Price by Agreement"
   },
   "ux_refinement_3_4": {
     "document": "docs/product/UX_ORGANIZATION_AND_VISUAL_REFINEMENT_3_4.md",
@@ -283,16 +250,10 @@
     "managed_maintenance_price_meaning": "ongoing managed technical service only; development/customization is separately quoted"
   },
   "release_workflow": {
-    "default": "one-command update + tests + Git pushes + Render deploy + live verification",
-    "launcher": "deployment/PUBLISH_RSF_ONLINE.bat",
-    "script": "scripts/UPDATE_AND_DEPLOY_RENDER.ps1",
+    "default": "branch -> tests -> merge -> manual Render deploy -> live verification -> Google documentation update",
     "provider_auto_deploy": false,
-    "success_condition": "production health reports version 3.9.4; public branding is Realty Systems Foundry; Home headline reads We Build Custom Systems for Real Estate Businesses.; Key Castro is presented as Founder, Realty Systems Foundry; Home hero secondary CTA remains Create a New System and links to /contact; Home keeps exactly 3 featured systems and the approved Explore All Systems / Services & Pricing CTA band; Home, Systems, system detail, and Services & Pricing show the approved $199 existing-system purchase price; new custom systems use Price by Agreement; management remains optional at $0/month self-managed or $39/month / $390/year managed care; upgrades remain $79 / $149 / Price by Agreement; no PHP/peso pricing is publicly displayed; existing design and exactly 3 published systems remain preserved.",
-    "installer": "installers/SETUP_RSF_MAIN_SYSTEM.bat",
-    "verification": [
-      "scripts/SMOKE_CHECK.py",
-      "scripts/VERIFY_INSTALLED_SYSTEM.py"
-    ]
+    "health_path": "/system/health",
+    "success_condition": "Production reports status ok and version 1.18.229; deployed commit matches GitHub main; startup succeeds; no post-deploy error/warning/critical logs."
   },
   "ux_master_refinement_3_7": {
     "document": "docs/product/MASTER_UX_REFINEMENT_3_7.md",
@@ -940,5 +901,18 @@
     "public_website_changed": false,
     "database_schema_changed": false,
     "accounts_ids_hashes_vault_history_preserved": true
-  }
+  },
+  "authoritative_current_state": {
+    "version": "1.18.229",
+    "public_offer": "Custom systems only; public systems are portfolio examples, not ready-made products for sale.",
+    "free_build_program": "November 1, 2026 through March 31, 2027; accepted projects only.",
+    "post_program_development": "Price by Agreement",
+    "optional_rsf_support": "Price by Agreement",
+    "major_changes": "Price by Agreement",
+    "ai_boundary": "No active AI development/calling. Retell outbound calling retired; historical AI call rows may remain read-only.",
+    "password_security": "Hash-only authentication; recoverable password vault retired by migration 43; new passwords require 12–128 characters.",
+    "webhook_security": "Browser CSRF remains required; WhatsApp/Twilio callbacks are exempt only from browser CSRF and enforce provider signatures/secrets.",
+    "render_auto_deploy": false
+  },
+  "historical_sections_notice": "Older 3.x and earlier 1.x UX/pricing/release fields are historical only and must not override authoritative_current_state."
 }

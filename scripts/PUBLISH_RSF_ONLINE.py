@@ -1,12 +1,9 @@
-"""Safe source-publish entry point.
+"""Source publishing is intentionally disabled.
 
-Private-workspace releases must never overwrite the current public website source.
-The real implementation lives in deploy_render_unified.py so publish and live deploy
-share exactly the same source-protection rules.
+RSF source changes must go through a branch, GitHub checks, and merge to main.
+Use deployment/DEPLOY_RSF_LIVE.bat only after the verified PR is merged.
 """
-from __future__ import annotations
-
-from deploy_render_unified import main
-
-if __name__ == "__main__":
-    raise SystemExit(main(["--publish-only"]))
+raise SystemExit(
+    "SAFE STOP: direct source publishing to main is disabled. "
+    "Use branch -> GitHub CI -> merge, then deploy the exact merged main commit."
+)

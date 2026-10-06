@@ -24,12 +24,9 @@ def hash_password(password: str) -> str:
 
 
 def valid_password(password: str) -> bool:
-    """Accept the exact non-empty password intentionally chosen by the Founder.
-
-    RSF does not enforce composition, strength, symbol, case, or generated-password
-    rules. Passwords are still stored only as secure hashes.
-    """
-    return bool(password)
+    """Require a reasonable minimum length while preserving exact manual passwords."""
+    value = password or ""
+    return 12 <= len(value) <= 128 and any(not ch.isspace() for ch in value)
 
 
 def valid_email(value: str) -> bool:

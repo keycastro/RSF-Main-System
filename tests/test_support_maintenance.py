@@ -29,7 +29,7 @@ class SupportMaintenanceTests(unittest.TestCase):
     def test_v42_preserves_existing_managed_won_clients_as_new_status(self):
         db = self.read("app/db.py")
         schema = self.read("app/schema.sql")
-        self.assertIn("SCHEMA_VERSION = 42", db)
+        self.assertIn("SCHEMA_VERSION = 43", db)
         self.assertIn("rsf-v1.18.202-support-maintenance-workflow-status", db)
         self.assertIn("SET status='SUPPORT_MAINTENANCE',management_type='RSF_MANAGED'", db)
         self.assertIn("SET status='SUPPORT_MAINTENANCE'", db)
@@ -97,7 +97,7 @@ class SupportMaintenanceTests(unittest.TestCase):
         self.assertIn("{{ deal['agreement_notes'] }}", template)
         self.assertIn('"management_notes": fld("management_notes", 3000)', routes)
         self.assertIn("client_request=?,agreement_notes=?,updated_at=?", routes)
-        self.assertIn("SCHEMA_VERSION = 42", db)
+        self.assertIn("SCHEMA_VERSION = 43", db)
 
     def test_support_update_only_writes_approved_support_fields(self):
         routes = self.read("app/routes.py")

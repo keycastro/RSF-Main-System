@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 42
-SCHEMA_NAME = "rsf-main-system-v1.18.202-support-maintenance-workflow-status"
+SCHEMA_VERSION = 43
+SCHEMA_NAME = "rsf-main-system-v1.18.229-security-hardening"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents","communication_notes","ai_sales_calls","whatsapp_messages","manual_client_calls"}
 
 
@@ -1579,6 +1579,16 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
         )
 
 
+    # V43 retires the recoverable password vault. Authentication remains hash-only.
+    # This intentionally deletes encrypted password copies, not users or business data.
+    if 43 not in applied:
+        db.execute("DROP TABLE IF EXISTS account_password_vault")
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (43, "rsf-v1.18.229-security-hardening"),
+        )
+
+
 def _table_exists_postgres(db, table: str) -> bool:
     row = db.execute(
         "SELECT 1 AS ok FROM information_schema.tables WHERE table_schema='public' AND table_name=? LIMIT 1",
@@ -1627,7 +1637,7 @@ def _import_seed_payload(db) -> None:
     payload = json.loads(base64.b64decode(raw).decode("utf-8"))
     tables = payload.get("tables", {})
     order = [
-        "users", "account_password_vault", "commission_stages", "partners", "leads", "lead_notes", "followups", "sales", "commissions", "sale_corrections",
+        "users", "commission_stages", "partners", "leads", "lead_notes", "followups", "sales", "commissions", "sale_corrections",
         "resources", "duplicate_claims", "activity_log", "messages", "message_attachments", "voice_calls",
         "voice_call_signals", "settings", "website_inquiries", "client_conversations", "client_messages",
         "client_attachments", "client_notifications", "prospects", "deals", "deal_documents", "communication_notes", "ai_sales_calls", "whatsapp_messages", "manual_client_calls", "gmail_oauth_credentials", "google_calendar_oauth_credentials"

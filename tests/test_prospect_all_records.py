@@ -26,11 +26,11 @@ class ProspectAllRecordsWorkflowTests(unittest.TestCase):
             "prospect-date-nav",
             "data-prospect-date-trigger",
             "data-prospect-date-input",
-            "data-prospect-filter",
             "data-prospect-selected-date",
             "data-prospect-is-today",
         ):
             self.assertNotIn(removed, template)
+        self.assertIn("data-prospect-filter", template)
         self.assertIn("data-prospect-quick-add", template)
         self.assertIn("{% for prospect in prospects %}", template)
 

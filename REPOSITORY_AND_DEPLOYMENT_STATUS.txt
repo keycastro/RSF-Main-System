@@ -1,19 +1,23 @@
-RSF MAIN SYSTEM v1.8.3 — CURRENT SOURCE/DEPLOYMENT STATUS
-
-Canonical local folder:
-C:\Users\Admin\Documents\RSF Main System
+RSF MAIN SYSTEM v1.18.229 — CURRENT SOURCE/DEPLOYMENT STATUS
 
 Canonical GitHub repository:
 https://github.com/keycastro/RSF-Main-System
 
+Canonical branch:
+main
+
 Live Render service:
+realtysystemsfoundry
 https://realtysystemsfoundry.onrender.com
 
-Public website:
-https://realtysystemsfoundry.onrender.com/
+Render service ID:
+srv-das7540jo6nc73age4fg
 
-Private Founder/Partner workspace:
-https://partner-rsf.onrender.com/
+Render region:
+Singapore
 
-Render has been verified to deploy successfully after the GitHub repository rename.
-Render may continue to display the pre-rename repository URL in service metadata; GitHub redirects that legacy URL to the renamed canonical repository.
+Render Auto Deploy:
+OFF
+
+Deployment rule:
+Merge verified source -> manually trigger Render -> verify exact commit and /system/health -> inspect production logs -> update RSF SYSTEM DEVELOPMENT DOCUMENTATION.

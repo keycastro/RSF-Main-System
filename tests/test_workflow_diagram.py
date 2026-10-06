@@ -32,8 +32,9 @@ class WorkflowDiagramTests(unittest.TestCase):
 
     def test_dedicated_settings_navigation_contains_real_sections(self):
         template = self.read("app/templates/_settings_navigation.html")
-        for label in ("General", "Appearance", "Account", "Workflow Diagram", "Integrations"):
+        for label in ("General", "Appearance", "Account", "Workflow Diagram"):
             self.assertIn(label, template)
+        self.assertNotIn("Integrations", template)
 
     def test_dedicated_settings_hides_operational_sidebar(self):
         css = self.read("app/static/css/settings_experience.css")
@@ -148,7 +149,7 @@ class WorkflowDiagramTests(unittest.TestCase):
         self.assertIn("setExpanded(!expanded)", js)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.228")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.229")
 
 
 if __name__ == "__main__":

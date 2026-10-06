@@ -1,71 +1,42 @@
-## v1.9.3 Account & Security UX redesign
+# RSF Main System — Current Authoritative State
 
-- Redesigns **Settings → Account & Security** into a compact account-control dashboard with a single grouped Founder card and compact Partner rows.
-- Keeps current passwords securely hashed and never pretends an existing plaintext password can be recovered.
-- Founder New Password and Confirm New Password both have Show/Hide controls; after a successful change the exact new current Founder password is shown once with Show/Hide and Copy Password.
-- Partner password controls expand only when requested; successful Partner changes show the exact new password once with Show/Hide and Copy Password.
-- Preserves Founder-only authorization, CSRF, exact manual passwords, session invalidation, old-password rejection, Partner self-change blocking, and permanent Partner deletion safeguards.
+**Current version:** 1.18.229
+**Repository:** keycastro/RSF-Main-System
+**Production:** https://realtysystemsfoundry.onrender.com
+**Render service:** realtysystemsfoundry
+**Render branch:** main
+**Auto Deploy:** OFF
+**Framework:** Flask
+**Production database:** PostgreSQL on Render
 
-## v1.9.2 Account & Security
+## Current business model
 
-- Adds a centralized Founder-only **Settings → Account & Security** workspace for Founder password control and all current Partner account/password controls.
-- Founder password changes use the exact entered password, invalidate older Founder sessions, and keep only the current browser session signed in.
-- Partner password changes use the exact entered password, invalidate existing Partner sessions, reject the old password, and show the new plaintext only once with a Copy Password action.
-- Partner permanent deletion remains Founder-only, CSRF-protected, explicitly confirmed, and preserves historical business records.
-- Removes password controls from Profile and Partner detail pages so credential management is not scattered around the workspace.
+RSF builds custom business systems for real-estate and property-management businesses.
 
-## v1.9.1 Founder Partner account-management verification patch
+- Public website does not sell ready-made systems.
+- Existing public systems are portfolio/examples only.
+- Limited Free Custom System Build program: November 1, 2026 through March 31, 2027, subject to RSF project acceptance.
+- After the beginning-stage free period, custom development moves toward Price by Agreement.
+- Paid RSF post-delivery support is optional and Price by Agreement.
+- Major changes, large expansions, major features, and major integrations are Price by Agreement.
+- No AI development/calling is part of the current RSF service boundary.
 
-- Official people titles are **Founder** and **Partner** only.
-- Removed the last setup-console `Founder/Admin` wording.
-- Installed-system verification now explicitly reports Founder-only create/view/edit/password/delete checks, permanent-delete safety, privacy, CSRF, sessions, trusted hosts, and security headers.
-- No database wipe, business-workflow change, commission change, or production-data reset is part of this patch.
+## Security rules
 
-## v1.8.7 Maximum audit hardening
+- Browser/session POST actions use CSRF protection.
+- External provider callbacks use provider signature/secret validation and are exempt only from browser CSRF.
+- Retell AI outbound calling is retired. Historical AI-call rows may remain read-only for business history.
+- Password authentication is hash-only. Recoverable encrypted password copies are retired and removed by migration 43.
+- New Founder/Partner passwords must be 12–128 characters.
+- Secrets remain in environment configuration and never in Git.
 
-- Hardened the existing-lead inquiry claim path with an atomic row-count check and rollback so a concurrent claim cannot continue after losing the queue race.
-- Hardened untrusted Host handling so rejected Host headers return a clean HTTP 400 instead of entering the normal templated error path.
-- `https://partner-rsf.onrender.com/` includes real `public/index.html` and `public/404.html` redirect entries to the existing RSF `/app/` Workspace.
-- The clean FINAL release excludes `.env`, runtime databases/backups/uploads, logs, caches, and repository metadata. Existing installed private data is preserved by the installer and is never replaced by release contents.
-- No account, password, client-data, commission-rule, or core business-flow reset is part of this release.
+## Release workflow
 
-# RSF Main System — v1.9.3
+1. Change source on a controlled branch.
+2. Run compile plus full regression tests.
+3. Merge only after checks pass.
+4. Manually trigger Render deployment because Auto Deploy is OFF.
+5. Verify exact deployed commit, /system/health, startup, and logs.
+6. Update RSF SYSTEM DEVELOPMENT DOCUMENTATION after verified production release.
 
-Unified Realty Systems Foundry public website + private Founder/Partner workspace.
-
-## Live URLs
-- Website: https://realtysystemsfoundry.onrender.com/
-- Partner Workspace: https://partner-rsf.onrender.com/
-
-## Locked domain structure
-
-### Now — free on Render
-- Website: https://realtysystemsfoundry.onrender.com/
-- Partner Workspace: https://partner-rsf.onrender.com/
-
-### Later — own domain
-- Website: https://rsf.com/
-- Partner Workspace: https://partner.rsf.com/
-
-## Clean project layout
-- `app/` — Flask application, templates, static UI, business logic
-- `scripts/` — Python maintenance, verification, publishing and backup tools
-- `installers/` — Windows setup and online launchers
-- `deployment/` — deployment commands and migration payloads
-- `docs/` — current documentation plus archived historical notes/tools
-- `assets/` — desktop/application icons
-- `instance/` — protected local database/uploads/runtime data (preserved, not shipped in clean release)
-- `runtime/logs/` — local launcher logs
-
-Production-critical root files remain at the root intentionally: `wsgi.py`, `run.py`, `config.py`, `bootstrap.py`, requirements files, `Dockerfile`, `Procfile`, `.env.example`, `PROJECT_STATE.json`, and `VERSION.txt`.
-
-## Data safety
-The installer preserves `.env`, the local database, accounts, password hashes, uploads, profile pictures, client attachments, `.git`, and `.venv`. It reorganizes only known RSF project files and does not delete unknown user files.
-
-## Setup / update
-Use `installers\SETUP_RSF_MAIN_SYSTEM.bat`, or the one-CMD command supplied with the release. The installer recreates two online Desktop shortcuts: the public website and the private Partner Workspace. Normal use does not start localhost or require a local Python server.
-
-## Deployment
-Use `deployment\PUBLISH_RSF_ONLINE.bat` only when you intentionally want to publish the verified source.
-
-Historical release notes and legacy tooling are retained under `docs/archive/`.
+Historical release notes are not authoritative when they conflict with this current state.

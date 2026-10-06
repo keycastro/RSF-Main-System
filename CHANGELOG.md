@@ -1,3 +1,13 @@
+# v1.18.229 — Security and maintenance hardening
+
+- Fixed external WhatsApp/Twilio webhook handling so browser CSRF no longer blocks provider callbacks before signature/secret verification.
+- Retired active Retell AI outbound calling while preserving historical AI-call records read-only.
+- Removed Retell SDK/config/UI/routes.
+- Retired recoverable encrypted password storage; migration 43 deletes the password-vault table without deleting accounts or business data.
+- New Founder/Partner passwords require 12–128 characters.
+- Removed retired existing-system USD 199 pricing source/context.
+- Modernized tests, CI workflows, and authoritative repository documentation.
+
 # CHANGELOG
 
 ## 3.9.8 - Resume After Healthy Render Migration

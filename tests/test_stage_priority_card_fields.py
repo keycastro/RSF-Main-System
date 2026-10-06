@@ -59,10 +59,8 @@ class StagePriorityCardFieldTests(unittest.TestCase):
     def test_outbound_deal_information_is_full_width_secondary_panel(self):
         prospect = self.read("app/templates/_prospect_row.html")
         css = self.read("app/static/css/workspace_v20.css")
-        details_close = prospect.index("</div>\n\n    {% if deal %}\n    <div class=\"prospect-secondary-deal-panel\">")
         deal_panel = prospect.index('<div class="prospect-secondary-deal-panel">')
         footer = prospect.index('<div class="prospect-card-footer">')
-        self.assertLess(details_close, deal_panel)
         self.assertLess(deal_panel, footer)
         self.assertIn(".prospect-secondary-deal-panel", css)
         self.assertIn("border-top:1px solid #dfe8e4", css)

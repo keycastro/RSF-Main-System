@@ -14,7 +14,7 @@ class WhatsAppApiReadyTests(unittest.TestCase):
         db = self.read("app/db.py")
         self.assertIn("CREATE TABLE IF NOT EXISTS whatsapp_messages (", schema)
         self.assertIn("channel TEXT NOT NULL CHECK (channel IN ('WEBSITE','EMAIL'))", schema)
-        self.assertIn("SCHEMA_VERSION = 42", db)
+        self.assertIn("SCHEMA_VERSION = 43", db)
         self.assertIn('rsf-v1.18.178-whatsapp-api-ready', db)
         self.assertIn('"whatsapp_messages"', db)
 

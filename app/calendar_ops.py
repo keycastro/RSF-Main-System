@@ -55,9 +55,11 @@ def validate_demo_timezone(value: str) -> str:
     timezone_name = (value or "").strip()[:120]
     if not timezone_name:
         return ""
+    if timezone_name not in available_timezones():
+        raise ValueError("Select a valid client time zone.")
     try:
         ZoneInfo(timezone_name)
-    except (ZoneInfoNotFoundError, ValueError) as exc:
+    except (ZoneInfoNotFoundError, ValueError, OSError) as exc:
         raise ValueError("Select a valid client time zone.") from exc
     return timezone_name
 

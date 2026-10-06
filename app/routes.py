@@ -29,7 +29,6 @@ from .auth import (
     validate_csrf,
 )
 from .db import get_db, IntegrityError, using_postgres
-from .credential_vault import current_password as vault_current_password, store_password as vault_store_password
 from .record_ops import (
     RECORD_DELETE_PROTECTED_STATUSES,
     build_master_records,
@@ -1354,12 +1353,6 @@ def login():
         if error:
             flash(error, "error")
         else:
-            # Authentication has already verified the exact submitted password.
-            # Keep the Founder-visible credential vault synchronized without
-            # weakening normal Werkzeug password-hash authentication.
-            db = get_db()
-            vault_store_password(db, int(user["id"]), request.form.get("password", "") or "")
-            db.commit()
             login_user(user)
             return redirect(safe_next(request.args.get("next")) or url_for("main.prospects"))
     return render_template("login.html", title="Log In")
@@ -3752,8 +3745,8 @@ def partner_new():
             errors.append("Enter the Partner name.")
         elif _account_name_in_use(db, full_name):
             errors.append("This name is already in use.")
-        if password == "":
-            errors.append("Enter the Partner password.")
+        if not valid_password(password):
+            errors.append("Partner password must be 12–128 characters.")
         if not stage:
             errors.append("Choose a commission level.")
         if errors:
@@ -3769,7 +3762,6 @@ def partner_new():
                 (full_name, internal_email, hash_password(password), now, now),
             )
             user_id = cur.lastrowid
-            vault_store_password(db, user_id, password)
             cur = db.execute(
                 """INSERT INTO partners(user_id,commission_stage_id,phone,notes,joined_at,active,account_deleted_at,historical_name)
                    VALUES (?,?,?,?,?,1,NULL,?)""",
@@ -3866,7 +3858,7 @@ def partner_reset_password(partner_id: int):
     password = request.form.get("partner_password", "") or ""
     confirm_password = request.form.get("confirm_partner_password", "") or ""
     if not valid_password(password):
-        flash("Enter the new Partner password you want to use.", "error")
+        flash("Partner password must be 12–128 characters.", "error")
         return redirect(url_for("main.account_security", _anchor=f"partner-{partner_id}"))
     if password != confirm_password:
         flash("Passwords do not match.", "error")
@@ -3886,7 +3878,6 @@ def partner_reset_password(partner_id: int):
            WHERE id=?""",
         (hash_password(password), utcnow_iso(), partner["user_id"]),
     )
-    vault_store_password(db, partner["user_id"], password)
     log_activity("PARTNER_PASSWORD_RESET", "partner", partner_id, "Partner password changed from Account & Security.")
     db.commit()
     flash(f"Password changed for {partner['full_name']}.", "success")
@@ -4680,39 +4671,6 @@ def account_security():
     )
 
 
-@bp.post("/admin/settings/account-security/reveal-password")
-@admin_required
-def account_security_reveal_password():
-    validate_csrf()
-    try:
-        user_id = int(request.form.get("user_id", "0"))
-    except (TypeError, ValueError):
-        abort(400)
-    db = get_db()
-    target = db.execute(
-        """SELECT u.id,u.full_name,u.role
-           FROM users u
-           LEFT JOIN partners p ON p.user_id=u.id
-           WHERE u.id=? AND u.active=1
-             AND (u.role='admin' OR (u.role='partner' AND p.account_deleted_at IS NULL))
-           LIMIT 1""",
-        (user_id,),
-    ).fetchone()
-    if not target or target["role"] not in {"admin", "partner"}:
-        abort(404)
-    if target["role"] == "admin" and target["id"] != g.user["id"]:
-        abort(403)
-    password = vault_current_password(db, user_id)
-    if password is None:
-        return jsonify({"ok": False, "error": "This account is not initialized for Founder password visibility yet. Change/reset its password once, or run the password visibility initializer."}), 404
-    log_activity("ACCOUNT_PASSWORD_REVEALED", "user", user_id, f"Founder revealed current {target['role']} account password from Account & Security.")
-    db.commit()
-    response = jsonify({"ok": True, "password": password})
-    response.headers["Cache-Control"] = "no-store, max-age=0"
-    response.headers["Pragma"] = "no-cache"
-    return response
-
-
 @bp.post("/admin/settings/account-security/founder-password")
 @admin_required
 def founder_password_change():
@@ -4720,7 +4678,7 @@ def founder_password_change():
     new_password = request.form.get("new_password", "") or ""
     confirm_password = request.form.get("confirm_password", "") or ""
     if not valid_password(new_password):
-        flash("Enter the new Founder password you want to use.", "error")
+        flash("Founder password must be 12–128 characters.", "error")
         return redirect(url_for("main.account_security"))
     if new_password != confirm_password:
         flash("Passwords do not match.", "error")
@@ -4732,7 +4690,6 @@ def founder_password_change():
            WHERE id=? AND role='admin'""",
         (hash_password(new_password), utcnow_iso(), g.user["id"]),
     )
-    vault_store_password(db, g.user["id"], new_password)
     log_activity("FOUNDER_PASSWORD_CHANGED", "user", g.user["id"], "Founder password changed from Account & Security.")
     db.commit()
     refreshed = db.execute("SELECT * FROM users WHERE id=? AND role='admin'", (g.user["id"],)).fetchone()
@@ -6615,278 +6572,6 @@ def twilio_manual_call_transcription_webhook(secret: str):
 
 
 
-def _retell_e164(value: str) -> str:
-    raw = (value or "").strip()
-    if raw.startswith("00"):
-        raw = "+" + raw[2:]
-    if not raw.startswith("+"):
-        return ""
-    digits = "".join(ch for ch in raw[1:] if ch.isdigit())
-    return f"+{digits}" if 8 <= len(digits) <= 15 else ""
-
-
-def _retell_timestamp(value) -> str:
-    try:
-        stamp = int(value or 0)
-    except (TypeError, ValueError):
-        return ""
-    if stamp <= 0:
-        return ""
-    # Retell timestamps are milliseconds in call payloads.
-    return datetime.fromtimestamp(stamp / 1000, tz=timezone.utc).replace(microsecond=0).isoformat()
-
-
-def _retell_result_code(call: dict) -> tuple[str, str]:
-    analysis = call.get("call_analysis") or {}
-    custom = analysis.get("custom_analysis_data") or {}
-    raw = (
-        custom.get("call_result")
-        or custom.get("result")
-        or custom.get("sales_result")
-        or ""
-    )
-    normalized = str(raw).strip().upper().replace(" ", "_").replace("-", "_")
-    next_step = str(custom.get("next_step") or "").strip()
-    if "REJECT" in normalized or normalized in {"NOT_INTERESTED", "DECLINED"}:
-        return "REJECTED", next_step
-    if "DEMO" in normalized:
-        return "DEMO", next_step
-    if normalized in {"INTERESTED", "DEAL", "QUALIFIED", "WANTS_DEMO"}:
-        return "DEAL", next_step
-    if normalized in {"NO_ANSWER", "BUSY", "VOICEMAIL"}:
-        return "NO_ANSWER", next_step
-
-    reason = str(call.get("disconnection_reason") or "").strip().lower()
-    if reason in {"dial_no_answer", "dial_busy", "user_declined", "voicemail_reached"}:
-        return "NO_ANSWER", next_step
-    if reason in {"dial_failed", "invalid_destination"}:
-        return "CALL_FAILED", next_step
-    return (normalized or "COMPLETED"), next_step
-
-
-def _apply_ai_sales_result(db, ai_call, result: str, next_step: str, now: str) -> int | None:
-    prospect_id = int(ai_call["prospect_id"])
-    prospect = db.execute("SELECT status FROM prospects WHERE id=?", (prospect_id,)).fetchone()
-    if not prospect:
-        return None
-    current = (prospect["status"] or "").upper()
-    if current in DEAL_ACTIVE_STATUSES:
-        deal = db.execute("SELECT id FROM deals WHERE prospect_id=? LIMIT 1", (prospect_id,)).fetchone()
-        return int(deal["id"]) if deal else None
-
-    if result == "NO_ANSWER":
-        db.execute("UPDATE prospects SET status='NO_ANSWER',updated_at=? WHERE id=?", (now, prospect_id))
-        return None
-    if result == "REJECTED":
-        db.execute("UPDATE prospects SET status='REJECTED',updated_at=? WHERE id=?", (now, prospect_id))
-        return None
-    if result in {"DEAL", "DEMO"}:
-        founder = db.execute(
-            "SELECT id FROM users WHERE role='admin' AND active=1 ORDER BY id LIMIT 1"
-        ).fetchone()
-        actor_id = int(founder["id"]) if founder else None
-        deal_id, _created = _ensure_deal_for_prospect(db, prospect_id, actor_id, now)
-        status = result
-        db.execute(
-            "UPDATE deals SET status=?,next_step=CASE WHEN ?<>'' THEN ? ELSE next_step END,updated_at=? WHERE id=?",
-            (status, next_step, next_step[:500], now, deal_id),
-        )
-        _sync_deal_source_statuses(db, deal_id, status, now)
-        return deal_id
-    return None
-
-
-@bp.post("/prospects/<int:prospect_id>/ai-call")
-@login_required
-def prospect_ai_call(prospect_id: int):
-    validate_csrf()
-    db = get_db()
-    prospect = db.execute(
-        """SELECT id,name,contact,email,phone,business_type,problem,platform_wanted,
-                  system_wanted,budget,location,website,status,contact_attempt
-           FROM prospects WHERE id=?""",
-        (prospect_id,),
-    ).fetchone()
-    if not prospect:
-        abort(404)
-    if (prospect["status"] or "").upper() in DEAL_ACTIVE_STATUSES:
-        return jsonify({"ok": False, "message": "AI Call stops once the Prospect enters Deals."}), 409
-
-    api_key = current_app.config.get("RETELL_API_KEY", "")
-    agent_id = current_app.config.get("RETELL_AGENT_ID", "")
-    from_number = _retell_e164(current_app.config.get("RETELL_FROM_NUMBER", ""))
-    to_number = _retell_e164(prospect["phone"] or "")
-    if not api_key or not agent_id or not from_number:
-        return jsonify({"ok": False, "message": "Retell AI is not configured yet. Add the API key, sales agent ID, and Retell phone number."}), 503
-    if not to_number:
-        return jsonify({"ok": False, "message": "Prospect phone must use international E.164 format, for example +15551234567."}), 400
-
-    attempt = int(db.execute(
-        "SELECT COALESCE(MAX(attempt_number),0)+1 n FROM ai_sales_calls WHERE prospect_id=?",
-        (prospect_id,),
-    ).fetchone()["n"])
-    now = utcnow_iso()
-    cur = db.execute(
-        """INSERT INTO ai_sales_calls(
-               prospect_id,attempt_number,status,phone,created_at,updated_at
-           ) VALUES (?,?,?,?,?,?)""",
-        (prospect_id, attempt, "STARTING", to_number, now, now),
-    )
-    ai_call_id = int(cur.lastrowid)
-    db.commit()
-
-    variables = {
-        "client_name": str(prospect["contact"] or prospect["name"] or ""),
-        "company": str(prospect["name"] or ""),
-        "business_type": str(prospect["business_type"] or ""),
-        "problem": str(prospect["problem"] or ""),
-        "system_wanted": str(prospect["system_wanted"] or ""),
-        "platform_wanted": str(prospect["platform_wanted"] or ""),
-        "budget": str(prospect["budget"] or ""),
-        "location": str(prospect["location"] or ""),
-        "website": str(prospect["website"] or ""),
-        "email": str(prospect["email"] or ""),
-    }
-    metadata = {
-        "rsf_ai_call_id": ai_call_id,
-        "rsf_prospect_id": prospect_id,
-        "rsf_source": "researched_prospect",
-    }
-    try:
-        from retell import Retell
-        client = Retell(api_key=api_key)
-        response = client.call.create_phone_call(
-            from_number=from_number,
-            to_number=to_number,
-            override_agent_id=agent_id,
-            metadata=metadata,
-            retell_llm_dynamic_variables=variables,
-        )
-        call_id = getattr(response, "call_id", "") or ""
-        if not call_id and hasattr(response, "model_dump"):
-            call_id = str(response.model_dump().get("call_id") or "")
-        if not call_id:
-            raise RuntimeError("Retell did not return a call ID.")
-    except Exception as exc:
-        current_app.logger.exception("Retell AI outbound call failed")
-        db.execute(
-            "UPDATE ai_sales_calls SET status='FAILED',result='CALL_FAILED',updated_at=? WHERE id=?",
-            (utcnow_iso(), ai_call_id),
-        )
-        db.commit()
-        return jsonify({"ok": False, "message": f"Retell could not start the call: {str(exc)[:240]}"}), 502
-
-    now = utcnow_iso()
-    db.execute(
-        """UPDATE ai_sales_calls
-           SET retell_call_id=?,status='INITIATED',updated_at=?
-           WHERE id=?""",
-        (call_id, now, ai_call_id),
-    )
-    db.execute(
-        "UPDATE prospects SET contact_attempt=contact_attempt+1,updated_at=? WHERE id=?",
-        (now, prospect_id),
-    )
-    db.commit()
-    return jsonify({
-        "ok": True,
-        "message": "AI sales call started.",
-        "call_id": call_id,
-        "ai_call_id": ai_call_id,
-        "attempt_number": attempt,
-    })
-
-
-@bp.post("/integrations/retell/webhook")
-def retell_webhook():
-    api_key = current_app.config.get("RETELL_API_KEY", "")
-    signature = request.headers.get("X-Retell-Signature", "")
-    raw = request.get_data(as_text=True)
-    if not api_key or not signature:
-        return "", 401
-    try:
-        from retell import Retell
-        if not Retell.verify(raw, api_key, signature):
-            return "", 401
-    except Exception:
-        current_app.logger.exception("Retell webhook verification failed")
-        return "", 401
-
-    payload = request.get_json(silent=True) or {}
-    event = str(payload.get("event") or "")
-    call = payload.get("call") or {}
-    call_id = str(call.get("call_id") or "")
-    metadata = call.get("metadata") or {}
-    ai_call_id = metadata.get("rsf_ai_call_id")
-    db = get_db()
-    ai_call = None
-    if call_id:
-        ai_call = db.execute("SELECT * FROM ai_sales_calls WHERE retell_call_id=?", (call_id,)).fetchone()
-    if not ai_call and ai_call_id:
-        ai_call = db.execute("SELECT * FROM ai_sales_calls WHERE id=?", (int(ai_call_id),)).fetchone()
-    if not ai_call:
-        return "", 204
-
-    now = utcnow_iso()
-    started_at = _retell_timestamp(call.get("start_timestamp"))
-    ended_at = _retell_timestamp(call.get("end_timestamp"))
-    duration = 0
-    try:
-        start_ms = int(call.get("start_timestamp") or 0)
-        end_ms = int(call.get("end_timestamp") or 0)
-        if end_ms > start_ms > 0:
-            duration = max(0, int((end_ms - start_ms) / 1000))
-    except (TypeError, ValueError):
-        duration = 0
-
-    if event == "call_started":
-        db.execute(
-            """UPDATE ai_sales_calls SET status='IN_PROGRESS',
-               started_at=CASE WHEN ?<>'' THEN ? ELSE started_at END,updated_at=?
-               WHERE id=?""",
-            (started_at, started_at, now, ai_call["id"]),
-        )
-    elif event in {"call_ended", "call_analyzed"}:
-        result, next_step = _retell_result_code(call)
-        analysis = call.get("call_analysis") or {}
-        summary = str(analysis.get("call_summary") or analysis.get("summary") or "")
-        transcript = str(call.get("transcript") or "")
-        recording_url = str(call.get("recording_url") or "")
-        deal_id = _apply_ai_sales_result(db, ai_call, result, next_step, now)
-        db.execute(
-            """UPDATE ai_sales_calls
-               SET retell_call_id=COALESCE(NULLIF(?,''),retell_call_id),
-                   deal_id=COALESCE(?,deal_id),status=?,result=?,
-                   duration_seconds=CASE WHEN ?>0 THEN ? ELSE duration_seconds END,
-                   recording_url=CASE WHEN ?<>'' THEN ? ELSE recording_url END,
-                   transcript=CASE WHEN ?<>'' THEN ? ELSE transcript END,
-                   summary=CASE WHEN ?<>'' THEN ? ELSE summary END,
-                   next_step=CASE WHEN ?<>'' THEN ? ELSE next_step END,
-                   disconnection_reason=?,
-                   started_at=CASE WHEN ?<>'' THEN ? ELSE started_at END,
-                   ended_at=CASE WHEN ?<>'' THEN ? ELSE ended_at END,
-                   updated_at=?
-               WHERE id=?""",
-            (
-                call_id, deal_id,
-                "ANALYZED" if event == "call_analyzed" else "ENDED",
-                result,
-                duration, duration,
-                recording_url, recording_url,
-                transcript, transcript,
-                summary, summary,
-                next_step, next_step,
-                str(call.get("disconnection_reason") or ""),
-                started_at, started_at,
-                ended_at, ended_at,
-                now,
-                ai_call["id"],
-            ),
-        )
-    db.commit()
-    return "", 204
-
-
 @bp.get("/communications/timeline")
 @login_required
 def communication_timeline():
@@ -7234,28 +6919,15 @@ def communication_timeline():
             whatsapp_params,
         ).fetchone()["c"])
 
-    retell_ready = bool(
-        prospect_id
-        and phone
-        and current_app.config.get("RETELL_API_KEY")
-        and current_app.config.get("RETELL_AGENT_ID")
-        and current_app.config.get("RETELL_FROM_NUMBER")
-        and (prospect["status"] or "").upper() not in DEAL_ACTIVE_STATUSES
-    ) if prospect else False
-    call_url = url_for("main.prospect_ai_call", prospect_id=prospect_id) if retell_ready else ""
-
     return jsonify({
         "ok": True,
         "entries": entries,
-        "call_url": call_url,
         "manual_call_url": manual_call_url,
         "email_url": email_url,
         "whatsapp_url": whatsapp_url,
         "email": email,
         "phone": phone,
         "whatsapp_number": whatsapp_number,
-        "dialer_ready": retell_ready,
-        "retell_ready": retell_ready,
         "email_unread": email_unread,
         "email_message_count": email_message_count,
         "whatsapp_message_count": whatsapp_message_count,
