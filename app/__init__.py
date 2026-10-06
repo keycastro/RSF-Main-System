@@ -161,8 +161,18 @@ def create_app(test_config=None):
         # Lock before reading authorization or business state. SQLite otherwise
         # starts its write transaction only after these checks have already run.
         if request.method == "POST" and request.blueprint == "main":
-            # Retell signs its server-to-server webhook; browser CSRF does not apply.
-            if request.endpoint != "main.retell_webhook":
+            # Browser/session POSTs require CSRF. External providers authenticate
+            # their own server-to-server callbacks with provider signatures/secrets.
+            server_to_server_endpoints = {
+                "main.whatsapp_webhook_receive",
+                "main.twilio_manual_call_twiml",
+                "main.twilio_manual_call_client_notice",
+                "main.twilio_manual_call_conference_webhook",
+                "main.twilio_manual_call_status_webhook",
+                "main.twilio_manual_call_recording_webhook",
+                "main.twilio_manual_call_transcription_webhook",
+            }
+            if request.endpoint not in server_to_server_endpoints:
                 validate_csrf()
             try:
                 db.get_db().execute("BEGIN IMMEDIATE")
