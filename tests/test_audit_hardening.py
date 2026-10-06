@@ -61,12 +61,18 @@ class AuditHardeningTests(unittest.TestCase):
         self.assertEqual(self.client.post("/app/integrations/retell/webhook").status_code, 404)
 
     def test_historical_ai_call_storage_is_preserved_read_only(self):
-        schema = self.read("app/schema.sql")
         routes = self.read("app/routes.py")
-        self.assertIn("CREATE TABLE IF NOT EXISTS ai_sales_calls", schema)
+        db_source = self.read("app/db.py")
+        self.assertIn("CREATE TABLE IF NOT EXISTS ai_sales_calls", db_source)
         self.assertIn("FROM ai_sales_calls", routes)
         self.assertNotIn("INSERT INTO ai_sales_calls", routes)
         self.assertNotIn("UPDATE ai_sales_calls", routes)
+        with self.app.app_context():
+            db = get_db()
+            table = db.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='ai_sales_calls'"
+            ).fetchone()
+            self.assertIsNotNone(table)
 
     def test_passwords_are_hash_only_and_new_passwords_need_12_characters(self):
         self.assertFalse(valid_password("short"))
