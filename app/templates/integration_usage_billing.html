@@ -128,15 +128,7 @@
                   <span class="integration-attention integration-attention--setup">Ready</span>
                 {% endif %}
 
-                {% if item.budget_state.class_name == 'overage' %}
-                  <span class="integration-attention integration-attention--high">Over budget</span>
-                {% elif item.budget_state.class_name == 'near' %}
-                  <span class="integration-attention integration-attention--warning">Almost at budget</span>
-                {% elif item.budget_state.class_name == 'reached' %}
-                  <span class="integration-attention integration-attention--warning">Budget reached</span>
-                {% elif item.budget_state.class_name == 'warning' %}
-                  <span class="integration-attention integration-attention--warning">Watch budget</span>
-                {% elif item.slug not in ['gmail','calendar'] and item.status_class not in ['off','ready'] %}
+                {% if item.slug not in ['gmail','calendar'] and item.status_class not in ['off','ready'] %}
                   <span class="integration-attention integration-attention--clear">—</span>
                 {% endif %}
               </div>
