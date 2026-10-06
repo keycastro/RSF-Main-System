@@ -1,3 +1,4 @@
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -10,8 +11,24 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class AuditHardeningTests(unittest.TestCase):
     def setUp(self):
-        self.app = create_app("testing")
+        self._tmp = tempfile.TemporaryDirectory()
+        root = Path(self._tmp.name)
+        self.app = create_app({
+            "TESTING": True,
+            "SECRET_KEY": "hardening-test-secret",
+            "DATABASE_URL": "",
+            "DATABASE": str(root / "hardening.db"),
+            "MESSAGE_UPLOAD_DIR": str(root / "message_uploads"),
+            "PROFILE_PICTURE_DIR": str(root / "profile_pictures"),
+            "CLIENT_ATTACHMENT_DIR": str(root / "client_attachments"),
+            "BACKUP_DIR": str(root / "backups"),
+            "TRUSTED_HOSTS": ["localhost", "127.0.0.1"],
+            "SESSION_COOKIE_SECURE": False,
+        })
         self.client = self.app.test_client()
+
+    def tearDown(self):
+        self._tmp.cleanup()
 
     def read(self, relative):
         return (ROOT / relative).read_text(encoding="utf-8")
