@@ -64,7 +64,7 @@ from .services import (
     utcnow_iso,
 )
 from .workflow_diagram import build_workflow_diagram, build_workflow_layout_css
-from .integration_billing import SERVICE_DEFINITIONS, build_integration_billing_dashboard, validate_manual_money
+from .integration_billing import build_integration_billing_dashboard
 
 bp = Blueprint("main", __name__)
 
@@ -2057,7 +2057,6 @@ def integration_usage_billing():
     return render_template(
         "integration_usage_billing.html",
         title="Integration Usage & Billing",
-        currency_code=setting("currency_code", "USD"),
         gmail_status=gmail_status,
         calendar_status=calendar_status,
         integration_billing=dashboard,
@@ -4799,49 +4798,6 @@ def settings():
         currency_code=setting("currency_code","USD"),
         workflow=workflow,
     )
-
-
-@bp.post("/admin/settings/integrations/billing")
-@bp.post("/integration-usage-billing/update")
-@admin_required
-def integration_billing_update():
-    validate_csrf()
-    db = get_db()
-    values = []
-    try:
-        for slug, _name in SERVICE_DEFINITIONS:
-            cost = validate_manual_money(request.form.get(f"{slug}_current_cost", ""), allow_zero=True)
-            budget = validate_manual_money(request.form.get(f"{slug}_monthly_budget", ""), allow_zero=False)
-            reset = (request.form.get(f"{slug}_billing_reset", "") or "").strip()[:80]
-            values.extend([
-                (f"integration_billing.{slug}.current_cost", cost),
-                (f"integration_billing.{slug}.monthly_budget", budget),
-                (f"integration_billing.{slug}.billing_reset", reset),
-            ])
-    except ValueError as exc:
-        flash(str(exc), "error")
-        return redirect(url_for("main.integration_usage_billing") + "#integration-usage-billing")
-
-    now = utcnow_iso()
-    for key, value in values:
-        db.execute(
-            """INSERT INTO settings(key,value,updated_at,updated_by_user_id)
-               VALUES (?,?,?,?)
-               ON CONFLICT(key) DO UPDATE SET
-                 value=excluded.value,
-                 updated_at=excluded.updated_at,
-                 updated_by_user_id=excluded.updated_by_user_id""",
-            (key, value, now, g.user["id"]),
-        )
-    log_activity(
-        "INTEGRATION_BILLING_UPDATED",
-        "settings",
-        None,
-        "Integration Usage & Billing manual costs, budgets, or billing/reset dates updated.",
-    )
-    db.commit()
-    flash("Costs and budget saved.", "success")
-    return redirect(url_for("main.integration_usage_billing") + "#integration-usage-billing")
 
 
 @bp.get("/admin/settings/gmail/connect")
