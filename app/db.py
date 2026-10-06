@@ -25,8 +25,8 @@ except Exception:  # local install can still bootstrap SQLite before production 
 IntegrityError = PGIntegrityError
 OperationalError = PGOperationalError
 
-SCHEMA_VERSION = 43
-SCHEMA_NAME = "rsf-main-system-v1.18.229-security-hardening"
+SCHEMA_VERSION = 44
+SCHEMA_NAME = "rsf-main-system-v1.18.233-email-auth-password-reset"
 SERIAL_ID_TABLES = {"users","commission_stages","partners","leads","lead_notes","followups","sales","commissions","sale_corrections","resources","duplicate_claims","activity_log","messages","message_attachments","voice_calls","voice_call_signals","website_inquiries","client_conversations","client_messages","client_attachments","client_notifications","prospects","deals","deal_documents","communication_notes","ai_sales_calls","whatsapp_messages","manual_client_calls"}
 
 
@@ -1586,6 +1586,31 @@ def _apply_migrations(db: sqlite3.Connection) -> None:
         db.execute(
             "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
             (43, "rsf-v1.18.229-security-hardening"),
+        )
+
+
+    # V44 adds short-lived, one-time email password reset codes. Only HMAC
+    # digests are stored; the readable code exists only in the outgoing email.
+    if 44 not in applied:
+        db.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS password_reset_codes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                email TEXT NOT NULL,
+                code_digest TEXT NOT NULL,
+                requested_at TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                attempts INTEGER NOT NULL DEFAULT 0,
+                used_at TEXT NOT NULL DEFAULT ''
+            );
+            CREATE INDEX IF NOT EXISTS idx_password_reset_codes_user
+                ON password_reset_codes(user_id,requested_at DESC,id DESC);
+            """
+        )
+        db.execute(
+            "INSERT INTO schema_migrations(version,name) VALUES (?,?)",
+            (44, "rsf-v1.18.233-email-auth-password-reset"),
         )
 
 
