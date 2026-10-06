@@ -26,7 +26,6 @@ _load_env_file(BASE_DIR / ".env")
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "")
-    CREDENTIAL_VAULT_KEY = os.environ.get("RSF_CREDENTIAL_VAULT_KEY", "").strip()
     DATABASE = os.environ.get("DATABASE_PATH", str(BASE_DIR / "instance" / "rsf_sales_partner.db"))
     DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
     # ONLINE_MODE means database-backed file storage (PostgreSQL), not whether HTTPS is used.
@@ -111,11 +110,6 @@ class Config:
     CLIENT_MAX_FILE_MB = max(1, min(25, int(os.environ.get("CLIENT_MAX_FILE_MB", "15"))))
     CLIENT_MAX_TOTAL_MB = max(1, min(50, int(os.environ.get("CLIENT_MAX_TOTAL_MB", "25"))))
     AUTO_BACKUP_INTERVAL_HOURS = max(1, min(168, int(os.environ.get("AUTO_BACKUP_INTERVAL_HOURS", "24"))))
-
-    # Retell AI outbound sales calling. Secrets stay in environment variables.
-    RETELL_API_KEY = os.environ.get("RETELL_API_KEY", "").strip()
-    RETELL_AGENT_ID = os.environ.get("RETELL_AGENT_ID", "").strip()
-    RETELL_FROM_NUMBER = os.environ.get("RETELL_FROM_NUMBER", "").strip()
 
     # Twilio manual international client calling. The feature stays dormant until
     # these values are supplied; storing Contact Number alone never creates usage.
