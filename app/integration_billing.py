@@ -49,7 +49,7 @@ def validate_manual_money(value: str, *, allow_zero: bool = True) -> str:
     except InvalidOperation as exc:
         raise ValueError("Use numbers only for costs and budgets.") from exc
     if amount < 0 or (not allow_zero and amount == 0):
-        raise ValueError("Costs cannot be negative and budgets must be greater than zero.")
+        raise ValueError("Cost must be 0 or more. Budget must be more than 0.")
     if amount > Decimal("999999999.99"):
         raise ValueError("That cost or budget is too large.")
     return f"{amount.quantize(Decimal('0.01'))}"
@@ -72,18 +72,18 @@ def _database_usage(db) -> str:
     try:
         if using_postgres():
             row = db.execute("SELECT pg_database_size(current_database()) AS size_bytes").fetchone()
-            return f"{_format_bytes(int(row['size_bytes'] or 0))} database size"
+            return f"{_format_bytes(int(row['size_bytes'] or 0))} used"
         path = Path(current_app.config["DATABASE"])
-        return f"{_format_bytes(path.stat().st_size if path.exists() else 0)} local database"
+        return f"{_format_bytes(path.stat().st_size if path.exists() else 0)} used"
     except Exception:
-        return "Usage unavailable"
+        return "Not available"
 
 
 def _status_label(connected: bool, configured: bool = False) -> tuple[str, str]:
     if connected:
         return "Connected", "connected"
     if configured:
-        return "Ready to connect", "ready"
+        return "Ready", "ready"
     return "Not connected", "off"
 
 
@@ -162,58 +162,64 @@ def build_integration_billing_dashboard(db, *, gmail_status: dict, calendar_stat
         or os.environ.get("RENDER_SERVICE_ID")
         or current_app.config.get("RENDER_SERVICE_ID")
     )
-    render_label = "Active" if render_active else "Not detected"
+    render_label = "Active" if render_active else "Not active"
     render_class = "connected" if render_active else "off"
 
-    database_label = "PostgreSQL active" if using_postgres() else "Local SQLite"
+    database_label = "Active" if using_postgres() else "Local"
     database_class = "connected" if using_postgres() else "ready"
 
     whatsapp_ready = whatsapp_messaging_configured()
-    whatsapp_label = "Configured" if whatsapp_ready else "Not configured"
+    whatsapp_label = "Ready" if whatsapp_ready else "Not set up"
     whatsapp_class = "connected" if whatsapp_ready else "off"
 
     twilio_ready = manual_call_configured()
-    twilio_label = "Configured" if twilio_ready else "Not configured"
+    twilio_label = "Ready" if twilio_ready else "Not set up"
     twilio_class = "connected" if twilio_ready else "off"
 
     seconds = int(twilio_row["seconds"] or 0)
     minutes = seconds / 60
+    email_count = int(email_row["c"] or 0)
+    calendar_count = int(calendar_row["c"] or 0)
+    whatsapp_count = int(whatsapp_row["c"] or 0)
+    call_count = int(twilio_row["calls"] or 0)
+    minutes_text = f"{minutes:.1f}".rstrip("0").rstrip(".")
+
     service_runtime = {
         "render": {
             "status": render_label,
             "status_class": render_class,
-            "usage": "Provider metrics not connected",
-            "usage_source": "Render billing/usage API is not connected to RSF.",
+            "usage": "Usage not available",
+            "usage_source": "Render usage is not connected yet.",
         },
         "database": {
             "status": database_label,
             "status_class": database_class,
             "usage": _database_usage(db),
-            "usage_source": "Measured automatically by RSF.",
+            "usage_source": "Measured by RSF.",
         },
         "gmail": {
             "status": gmail_label,
             "status_class": gmail_class,
-            "usage": f"{int(email_row['c'] or 0)} email message(s) this month",
-            "usage_source": "RSF-tracked email records, not Google quota usage.",
+            "usage": f"{email_count} {'email' if email_count == 1 else 'emails'}",
+            "usage_source": "Based on emails recorded in RSF.",
         },
         "calendar": {
             "status": calendar_label,
             "status_class": calendar_class,
-            "usage": f"{int(calendar_row['c'] or 0)} deal sync(s) this month",
-            "usage_source": "RSF-tracked Deal syncs, not Google API quota usage.",
+            "usage": f"{calendar_count} {'calendar sync' if calendar_count == 1 else 'calendar syncs'}",
+            "usage_source": "Based on calendar syncs recorded in RSF.",
         },
         "whatsapp": {
             "status": whatsapp_label,
             "status_class": whatsapp_class,
-            "usage": f"{int(whatsapp_row['c'] or 0)} message(s) this month",
-            "usage_source": "RSF-tracked WhatsApp messages, not Meta billing usage.",
+            "usage": f"{whatsapp_count} {'message' if whatsapp_count == 1 else 'messages'}",
+            "usage_source": "Based on WhatsApp messages recorded in RSF.",
         },
         "twilio": {
             "status": twilio_label,
             "status_class": twilio_class,
-            "usage": f"{int(twilio_row['calls'] or 0)} call(s) · {minutes:.1f} min this month",
-            "usage_source": "RSF-tracked call records, not Twilio invoice data.",
+            "usage": f"{call_count} {'call' if call_count == 1 else 'calls'} · {minutes_text} min",
+            "usage_source": "Based on calls recorded in RSF.",
         },
     }
 
