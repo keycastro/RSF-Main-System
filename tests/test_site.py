@@ -32,7 +32,7 @@ class CurrentPublicSiteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.get_json()
         self.assertEqual(data["status"], "ok")
-        self.assertEqual(data["version"], "1.18.229")
+        self.assertEqual(data["version"], "1.18.230")
 
     def test_public_routes_load(self):
         for path in ("/", "/system-templates", "/services", "/about", "/contact"):
