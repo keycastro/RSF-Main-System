@@ -7,7 +7,7 @@
     <div><span>Name</span><strong>{{ partner.full_name }}</strong></div>
     <div><span>Password</span><div class="credential-secret"><input id="created_password" class="mono" type="password" readonly value="{{ chosen_password }}"><div class="password-actions"><button class="button ghost small" type="button" data-password-toggle data-target="created_password">Show</button><button class="button ghost small" type="button" data-copy-target="created_password">Copy</button></div></div></div>
   </div>
-  <p class="credential-note">The Founder can view or copy this password later in Account &amp; Security.</p>
+  <p class="credential-note">Save or send this password securely now. Existing passwords cannot be revealed later; the Founder can reset it from Account &amp; Security.</p>
   <div class="page-actions"><a class="button primary" href="{{ url_for('main.partner_detail',partner_id=partner.id) }}">View Partner</a><a class="button secondary" href="{{ url_for('main.partners_list') }}">Partners</a></div>
 </section>
 {% endblock %}
