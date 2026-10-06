@@ -148,7 +148,7 @@ class WorkflowDiagramTests(unittest.TestCase):
         self.assertIn("setExpanded(!expanded)", js)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.228")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.229")
 
 
 if __name__ == "__main__":
