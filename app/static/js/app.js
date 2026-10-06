@@ -1022,6 +1022,38 @@ document.addEventListener('click', async (event) => {
   }
 });
 
+document.addEventListener('click', async (event) => {
+  const action = event.target.closest?.('[data-prospect-call-action]');
+  if (!action || action.getAttribute('aria-disabled') === 'true' || !action.href || action.href.endsWith('#')) return;
+  event.preventDefault();
+  if (action.dataset.callStarting === '1') return;
+  action.dataset.callStarting = '1';
+  const label = action.querySelector('.conversation-action-label');
+  const original = label?.textContent || 'AI Call';
+  if (label) label.textContent = 'Starting…';
+  try {
+    const response = await fetch(action.href, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+      },
+      body: new URLSearchParams({ csrf_token: action.dataset.csrfToken || '' }).toString(),
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) throw new Error(data.message || 'AI sales call could not start.');
+    const timeline = action.closest('dialog')?.querySelector('.conversation-timeline');
+    if (timeline) await RSFConversationTimeline.refresh(timeline);
+  } catch (error) {
+    window.alert(error.message || 'AI sales call could not start.');
+  } finally {
+    delete action.dataset.callStarting;
+    if (label) label.textContent = original;
+  }
+});
+
 window.setTimeout(hydrateEmailBadges, 0);
 
 document.addEventListener('click', (event) => {
@@ -2894,6 +2926,7 @@ document.addEventListener('click', (event) => {
   const prospectNotesViewerClose = page.querySelector('[data-prospect-notes-viewer-close]');
   const prospectNotesSave = page.querySelector('[data-prospect-notes-save]');
   const prospectConversationTimeline = page.querySelector('[data-prospect-conversation-timeline]');
+  const prospectCallAction = page.querySelector('[data-prospect-call-action]');
   const prospectEmailAction = page.querySelector('[data-prospect-email-action]');
   let prospectNotesSource = null;
   let prospectNotesTimelineUrl = '';
@@ -3001,6 +3034,7 @@ document.addEventListener('click', (event) => {
     RSFConversationTimeline.load(
       prospectNotesTimelineUrl,
       prospectConversationTimeline,
+      prospectCallAction,
       prospectEmailAction,
       prospectTimelineOptions
     );
@@ -3028,6 +3062,7 @@ document.addEventListener('click', (event) => {
       await RSFConversationTimeline.load(
         prospectNotesTimelineUrl,
         prospectConversationTimeline,
+        prospectCallAction,
         prospectEmailAction,
         {
           csrfToken: csrfForRow(row),
