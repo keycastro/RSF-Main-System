@@ -60,6 +60,65 @@ def _http_error_message(exc: HTTPError, fallback: str) -> str:
     return fallback
 
 
+def current_month_usage() -> dict:
+    """Return Twilio's own current-month usage/cost when account credentials exist."""
+    sid = (current_app.config.get("TWILIO_ACCOUNT_SID") or "").strip()
+    token = (current_app.config.get("TWILIO_AUTH_TOKEN") or "").strip()
+    if not sid or not token:
+        return {"available": False, "reason": "Twilio is not set up."}
+
+    req = Request(
+        f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Usage/Records/ThisMonth.json?PageSize=1000",
+        headers={
+            "Authorization": _basic_auth(sid, token),
+            "Accept": "application/json",
+        },
+        method="GET",
+    )
+    try:
+        with urlopen(req, timeout=6) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except (HTTPError, URLError, TimeoutError, ValueError) as exc:
+        current_app.logger.warning("Twilio monthly usage could not be read: %s", exc)
+        return {"available": False, "reason": "Twilio cost is not available right now."}
+
+    records = payload.get("usage_records") or []
+    total = next((item for item in records if str(item.get("category") or "").lower() == "totalprice"), None)
+    calls = next((item for item in records if str(item.get("category") or "").lower() == "calls"), None)
+
+    result = {
+        "available": bool(total),
+        "reason": "" if total else "Twilio cost is not available right now.",
+        "cost": None,
+        "currency": "",
+        "calls": None,
+        "minutes": None,
+    }
+
+    if total:
+        raw_cost = total.get("price")
+        if raw_cost in (None, ""):
+            raw_cost = total.get("usage")
+        try:
+            result["cost"] = float(raw_cost)
+        except (TypeError, ValueError):
+            result["available"] = False
+            result["reason"] = "Twilio cost is not available right now."
+        result["currency"] = str(total.get("price_unit") or total.get("usage_unit") or "").upper()
+
+    if calls:
+        try:
+            result["calls"] = int(float(calls.get("count") or 0))
+        except (TypeError, ValueError):
+            result["calls"] = None
+        try:
+            result["minutes"] = float(calls.get("usage") or 0)
+        except (TypeError, ValueError):
+            result["minutes"] = None
+
+    return result
+
+
 def _twilio_post(path: str, payload: list[tuple[str, str]], fallback: str, timeout: int = 25) -> dict:
     sid = (current_app.config.get("TWILIO_ACCOUNT_SID") or "").strip()
     token = (current_app.config.get("TWILIO_AUTH_TOKEN") or "").strip()
