@@ -9,14 +9,28 @@ class IntegrationBillingDashboardTests(unittest.TestCase):
     def read(self, relative: str) -> str:
         return (ROOT / relative).read_text(encoding="utf-8")
 
-    def test_dashboard_is_inside_existing_integrations_settings_page(self):
-        template = self.read("app/templates/settings.html")
-        self.assertIn("RSF Gmail", template)
-        self.assertIn("Google Calendar", template)
-        self.assertIn('id="integration-usage-billing"', template)
-        self.assertLess(template.index("RSF Gmail"), template.index('id="integration-usage-billing"'))
-        self.assertLess(template.index("Google Calendar"), template.index('id="integration-usage-billing"'))
-        self.assertIn("Integration Usage &amp; Billing", template)
+    def test_dashboard_is_a_founder_only_finance_page(self):
+        routes = self.read("app/routes.py")
+        base = self.read("app/templates/base.html")
+        template = self.read("app/templates/integration_usage_billing.html")
+        self.assertIn('@bp.get("/integration-usage-billing")', routes)
+        self.assertIn("def integration_usage_billing():", routes)
+        self.assertIn("@admin_required", routes)
+        self.assertIn('"integration_usage_billing.html"', routes)
+        self.assertIn("url_for('main.integration_usage_billing')", base)
+        self.assertIn("Integration Usage &amp; Billing", base)
+        self.assertIn("{% if g.user.role == 'admin' %}", base)
+        self.assertIn("<h1>Integration Usage &amp; Billing</h1>", template)
+
+    def test_settings_keeps_connections_and_only_links_to_finance_dashboard(self):
+        settings = self.read("app/templates/settings.html")
+        finance_template = self.read("app/templates/integration_usage_billing.html")
+        self.assertIn("RSF Gmail", settings)
+        self.assertIn("Google Calendar", settings)
+        self.assertIn("Open Integration Usage &amp; Billing", settings)
+        self.assertNotIn('id="integration-usage-billing"', settings)
+        self.assertIn('class="integration-billing-page"', finance_template)
+        self.assertIn('id="integration-usage-billing"', finance_template)
 
     def test_dashboard_uses_real_rsf_usage_sources(self):
         model = self.read("app/integration_billing.py")
@@ -33,14 +47,15 @@ class IntegrationBillingDashboardTests(unittest.TestCase):
     def test_manual_cost_configuration_reuses_existing_settings_table(self):
         routes = self.read("app/routes.py")
         schema = self.read("app/schema.sql")
+        self.assertIn('@bp.post("/integration-usage-billing/update")', routes)
         self.assertIn('@bp.post("/admin/settings/integrations/billing")', routes)
-        self.assertIn("@admin_required", routes)
         self.assertIn("validate_csrf()", routes)
         self.assertIn("INSERT INTO settings(key,value,updated_at,updated_by_user_id)", routes)
+        self.assertIn('url_for("main.integration_usage_billing")', routes)
         self.assertNotIn("CREATE TABLE IF NOT EXISTS integration_billing", schema)
 
     def test_dashboard_keeps_unknown_values_explicit(self):
-        template = self.read("app/templates/settings.html")
+        template = self.read("app/templates/integration_usage_billing.html")
         self.assertIn("Not set", template)
         self.assertIn("Not available", template)
         self.assertIn("Provider invoice and quota data is not guessed.", template)
@@ -51,16 +66,20 @@ class IntegrationBillingDashboardTests(unittest.TestCase):
         for label in ("NORMAL", "WARNING", "NEAR LIMIT", "BUDGET REACHED", "OVERAGE", "NOT SET"):
             self.assertIn(f'"{label}"', model)
 
-    def test_dashboard_has_scoped_responsive_styles(self):
-        css = self.read("app/static/css/settings_experience.css")
-        self.assertIn(".integration-billing-section{", css)
+    def test_dashboard_has_dedicated_responsive_finance_styles(self):
+        base = self.read("app/templates/base.html")
+        css = self.read("app/static/css/integration_usage_billing.css")
+        settings_css = self.read("app/static/css/settings_experience.css")
+        self.assertIn("integration_usage_billing.css", base)
+        self.assertIn(".integration-billing-page{", css)
         self.assertIn(".integration-billing-summary{", css)
         self.assertIn(".integration-billing-table-wrap{", css)
         self.assertIn(".integration-billing-editor{", css)
         self.assertIn("@media(max-width:760px)", css)
+        self.assertNotIn("Integration Usage & Billing inside Settings", settings_css)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.221")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.222")
 
 
 if __name__ == "__main__":
