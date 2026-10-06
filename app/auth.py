@@ -35,22 +35,20 @@ def valid_password(password: str) -> bool:
     return 0 < len(value) <= 128
 
 
-def generate_recovery_code() -> str:
-    """Create a high-entropy Founder recovery code that is safe to show once."""
-    return "RSF-" + "-".join(secrets.token_hex(3).upper() for _ in range(5))
+def generate_password_reset_code() -> str:
+    """Return a six-digit one-time code for email password recovery."""
+    return f"{secrets.randbelow(1_000_000):06d}"
 
 
-def normalize_recovery_code(value: str) -> str:
-    return "".join((value or "").split()).upper()
+def password_reset_code_digest(email: str, code: str) -> str:
+    material = f"rsf-password-reset-v1:{(email or '').strip().lower()}:{(code or '').strip()}".encode()
+    return hmac.new(current_app.secret_key.encode(), material, hashlib.sha256).hexdigest()
 
 
-def hash_recovery_code(code: str) -> str:
-    return hash_password(normalize_recovery_code(code))
-
-
-def verify_recovery_code(stored_hash: str, code: str) -> bool:
-    normalized = normalize_recovery_code(code)
-    return bool(stored_hash and normalized) and check_password_hash(stored_hash, normalized)
+def verify_password_reset_code(email: str, code: str, expected_digest: str) -> bool:
+    if not expected_digest or not code:
+        return False
+    return hmac.compare_digest(password_reset_code_digest(email, code), expected_digest)
 
 
 def valid_email(value: str) -> bool:
@@ -127,18 +125,18 @@ def validate_csrf() -> None:
         abort(400, description="This form expired. Refresh the page and try again.")
 
 
-def authenticate(name: str, password: str):
+def authenticate(email: str, password: str):
     db = get_db()
-    name = (name or "").strip()
-    if not name:
-        return None, "Enter your name."
+    email = (email or "").strip().lower()
+    if not email:
+        return None, "Enter your email."
     user = db.execute(
-        "SELECT * FROM users WHERE active=1 AND lower(trim(full_name))=lower(?) LIMIT 1",
-        (name,),
+        "SELECT * FROM users WHERE active=1 AND lower(trim(email))=lower(?) LIMIT 1",
+        (email,),
     ).fetchone()
     now = datetime.now(timezone.utc)
     if user is None:
-        return None, "Name or password is wrong."
+        return None, "Email or password is wrong."
     if user["locked_until"]:
         try:
             locked_until = datetime.fromisoformat(user["locked_until"])
@@ -157,7 +155,7 @@ def authenticate(name: str, password: str):
             (failures, locked_until, utcnow_iso(), user["id"]),
         )
         db.commit()
-        return None, "Name or password is wrong."
+        return None, "Email or password is wrong."
     db.execute(
         "UPDATE users SET failed_login_count=0, locked_until=NULL, last_login_at=?, updated_at=? WHERE id=?",
         (utcnow_iso(), utcnow_iso(), user["id"]),
