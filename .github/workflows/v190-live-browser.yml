@@ -46,7 +46,7 @@ jobs:
               page2.wait_for_timeout(2500)
               assert r and r.status==200
               assert page2.url.startswith(MAIN+"/app/login")
-              assert "Sign in" in page2.locator("body").inner_text()
+              assert "Log In" in page2.locator("body").inner_text()
               print("LIVE_BROWSER_OK")
               print("HEALTH_VERSION="+payload.get("version",""))
               browser.close()
