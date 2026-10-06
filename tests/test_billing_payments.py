@@ -52,7 +52,7 @@ class BillingPaymentsTests(unittest.TestCase):
         self.assertNotIn("billing_cycle", template)
 
     def test_version_advanced(self):
-        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.223")
+        self.assertEqual(self.read("VERSION.txt").strip(), "1.18.224")
 
 
 if __name__ == "__main__":
