@@ -23,8 +23,8 @@ def fail(message: str) -> None:
 
 def main() -> int:
     version = (ROOT / "VERSION.txt").read_text(encoding="utf-8").strip()
-    if version != "1.18.229":
-        fail(f"Expected version 1.18.229, found {version or 'empty'}.")
+    if version != "1.18.230":
+        fail(f"Expected version 1.18.230, found {version or 'empty'}.")
 
     source_files = [
         ROOT / "config.py",
@@ -35,16 +35,23 @@ def main() -> int:
     ]
     source = "\n".join(p.read_text(encoding="utf-8", errors="replace") for p in source_files)
     for forbidden in (
-        "RETELL_API_KEY",
-        "RETELL_AGENT_ID",
-        "RETELL_FROM_NUMBER",
-        "retell-sdk",
         "account_security_reveal_password",
         "data-vault-reveal",
         "data-vault-copy",
     ):
         if forbidden in source:
             fail(f"Retired security/integration artifact remains: {forbidden}")
+
+    for required in (
+        "RETELL_API_KEY",
+        "RETELL_AGENT_ID",
+        "RETELL_FROM_NUMBER",
+        "retell-sdk==6.0.1",
+        "def prospect_ai_call",
+        "def retell_webhook",
+    ):
+        if required not in source:
+            fail(f"Required Retell integration artifact is missing: {required}")
 
     if not valid_password("twelve-chars!"):
         fail("12+ character password validation is not active.")
@@ -79,7 +86,7 @@ def main() -> int:
             if "account_password_vault" in tables:
                 fail("Recoverable password-vault table still exists.")
             if "ai_sales_calls" not in tables:
-                fail("Historical AI-call audit table was not preserved.")
+                fail("AI-call storage table is missing.")
             migration = db.execute(
                 "SELECT name FROM schema_migrations WHERE version=43"
             ).fetchone()
@@ -90,8 +97,8 @@ def main() -> int:
             fail("WhatsApp provider callback is still blocked by browser CSRF.")
         if client.post("/app/webhooks/twilio/manual-call/not-real/twiml").status_code == 400:
             fail("Twilio provider callback is still blocked by browser CSRF.")
-        if client.post("/app/integrations/retell/webhook").status_code != 404:
-            fail("Retell webhook is still active.")
+        if client.post("/app/integrations/retell/webhook", data=b"{}").status_code != 401:
+            fail("Retell signed webhook did not reach provider authentication.")
 
         services = client.get("/services")
         if services.status_code != 200:
