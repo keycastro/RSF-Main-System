@@ -12,6 +12,7 @@ class MasterLifecycleCardTests(unittest.TestCase):
     def test_master_deal_section_contains_full_deal_workspace_fields(self):
         template = self.read("app/templates/_master_deal_information.html")
         documents = self.read("app/templates/_master_deal_documents.html")
+        city_country = self.read("app/templates/_master_deal_city_country.html")
         for field in (
             'name="followup_date"',
             'name="email"',
@@ -22,8 +23,6 @@ class MasterLifecycleCardTests(unittest.TestCase):
             'name="location"',
             'name="demo_date"',
             'name="demo_time"',
-            'name="demo_timezone"',
-            'name="demo_timezone_location"',
             'name="next_step"',
             'name="notes_after_conversation"',
             "Google Meet",
@@ -31,6 +30,8 @@ class MasterLifecycleCardTests(unittest.TestCase):
         ):
             with self.subTest(field=field):
                 self.assertIn(field, template)
+        self.assertIn('name="demo_timezone"', city_country)
+        self.assertIn('name="demo_timezone_location"', city_country)
         self.assertIn("Documents / Files", documents)
 
     def test_outbound_card_puts_outbound_information_before_deal_information(self):
