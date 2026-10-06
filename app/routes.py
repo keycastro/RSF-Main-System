@@ -3929,10 +3929,6 @@ def partner_new():
             errors.append("This email is already in use.")
         if not valid_password(password):
             errors.append("Choose a non-empty Partner password. RSF does not require a minimum length.")
-        if not valid_email(email):
-            errors.append("Enter a valid Partner email.")
-        elif _account_email_in_use(db, email, int(partner["user_id"])):
-            errors.append("This email is already in use.")
         if not stage:
             errors.append("Choose a commission level.")
         if errors:
@@ -4002,6 +3998,10 @@ def partner_detail(partner_id: int):
             errors.append("Enter the Partner name.")
         elif _account_name_in_use(db, full_name, int(partner["user_id"])):
             errors.append("This name is already in use.")
+        if not valid_email(email):
+            errors.append("Enter a valid Partner email.")
+        elif _account_email_in_use(db, email, int(partner["user_id"])):
+            errors.append("This email is already in use.")
         if not stage:
             errors.append("Choose a commission level.")
         if errors:
@@ -4023,6 +4023,11 @@ def partner_detail(partner_id: int):
                 "UPDATE users SET full_name=?,email=?,updated_at=? WHERE id=?",
                 (full_name, email, utcnow_iso(), partner["user_id"]),
             )
+            if email != normalize_email(partner["email"]):
+                db.execute(
+                    "UPDATE password_reset_codes SET used_at=? WHERE user_id=? AND used_at=''",
+                    (utcnow_iso(), partner["user_id"]),
+                )
             db.execute(
                 "UPDATE partners SET commission_stage_id=?,phone=?,notes=?,historical_name=? WHERE id=?",
                 (stage_id, phone[:60], notes[:2000], full_name, partner_id),
@@ -4067,6 +4072,11 @@ def partner_access_toggle(partner_id: int):
         (active_value, now, partner["user_id"]),
     )
     db.execute("UPDATE partners SET active=? WHERE id=?", (active_value, partner_id))
+    if not requested_active:
+        db.execute(
+            "UPDATE password_reset_codes SET used_at=? WHERE user_id=? AND used_at=''",
+            (now, partner["user_id"]),
+        )
     log_activity(
         "PARTNER_ACCESS_REACTIVATED" if requested_active else "PARTNER_ACCESS_DEACTIVATED",
         "partner",
@@ -4107,6 +4117,10 @@ def partner_reset_password(partner_id: int):
            SET password_hash=?,force_password_change=0,failed_login_count=0,locked_until=NULL,updated_at=?
            WHERE id=?""",
         (hash_password(password), utcnow_iso(), partner["user_id"]),
+    )
+    db.execute(
+        "UPDATE password_reset_codes SET used_at=? WHERE user_id=? AND used_at=''",
+        (utcnow_iso(), partner["user_id"]),
     )
     log_activity("PARTNER_PASSWORD_RESET", "partner", partner_id, "Partner password changed from Account & Security.")
     db.commit()
@@ -4920,6 +4934,10 @@ def founder_email_change():
         "UPDATE users SET email=?,updated_at=? WHERE id=? AND role='admin'",
         (email, utcnow_iso(), g.user["id"]),
     )
+    db.execute(
+        "UPDATE password_reset_codes SET used_at=? WHERE user_id=? AND used_at=''",
+        (utcnow_iso(), g.user["id"]),
+    )
     log_activity("FOUNDER_EMAIL_CHANGED", "user", g.user["id"], "Founder login and recovery email changed.")
     db.commit()
     flash("Founder login and recovery email updated.", "success")
@@ -4944,6 +4962,10 @@ def founder_password_change():
            SET password_hash=?,force_password_change=0,failed_login_count=0,locked_until=NULL,updated_at=?
            WHERE id=? AND role='admin'""",
         (hash_password(new_password), utcnow_iso(), g.user["id"]),
+    )
+    db.execute(
+        "UPDATE password_reset_codes SET used_at=? WHERE user_id=? AND used_at=''",
+        (utcnow_iso(), g.user["id"]),
     )
     log_activity("FOUNDER_PASSWORD_CHANGED", "user", g.user["id"], "Founder password changed from Account & Security.")
     db.commit()
