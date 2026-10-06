@@ -22,19 +22,6 @@
           <div class="settings-reference-icon" aria-hidden="true">Aa</div>
           <div><h3>Content Display</h3><p>On normal RSF operational pages, press <kbd>Alt</kbd> + <kbd>Z</kbd> to open the existing display controls for text clarity, field / box lines, and card definition.</p><small>The dedicated Settings screen intentionally does not duplicate those page-specific sliders.</small></div>
         </section>
-      {% elif active_section == 'integrations' %}
-        <div class="settings-content-heading"><span>SETTINGS</span><h2>Integrations</h2><p>Existing live connection controls for RSF communication and scheduling.</p></div>
-        <div class="settings-content-columns">
-          <section class="settings-card">
-            <div class="section-head"><div><h3>RSF Gmail</h3><p>Official client email connection used by Email Conversation.</p></div></div>
-            <div class="form-stack"><div><strong>Status:</strong> {% if gmail_status.connected %}Connected{% elif gmail_status.oauth_configured %}Ready to connect{% else %}OAuth setup required{% endif %}</div>{% if gmail_status.email %}<div><strong>Connected account:</strong> {{ gmail_status.email }}</div>{% endif %}{% if gmail_status.configured_sender %}<div><strong>Approved sender:</strong> {{ gmail_status.configured_sender }}</div>{% endif %}{% if gmail_status.connected %}<form method="post" action="{{ url_for('main.gmail_verify') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button secondary" type="submit">Verify Gmail Connection</button></form>{% elif gmail_status.oauth_configured %}<a class="button primary" href="{{ url_for('main.gmail_connect') }}">Connect Gmail</a>{% else %}<small class="help">Google OAuth Client ID and Client Secret must be configured in Render before Gmail can be connected.</small>{% endif %}</div>
-          </section>
-          <section class="settings-card">
-            <div class="section-head"><div><h3>Google Calendar</h3><p>Used by Deals to schedule demos and automatically create Google Meet links.</p></div></div>
-            <div class="form-stack"><div><strong>Status:</strong> {% if calendar_status.connected %}Connected{% elif calendar_status.oauth_configured %}Ready to connect{% else %}OAuth setup required{% endif %}</div><div><strong>Calendar:</strong> {{ calendar_status.calendar_id }}</div><div><strong>Timezone:</strong> {{ calendar_status.timezone }}</div>{% if calendar_status.connected %}<form method="post" action="{{ url_for('main.calendar_verify') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button secondary" type="submit">Verify Google Calendar</button></form>{% elif calendar_status.oauth_configured %}<a class="button primary" href="{{ url_for('main.calendar_connect') }}">Connect Google Calendar</a>{% else %}<small class="help">Google OAuth Client ID and Client Secret must be configured in Render before Calendar can be connected.</small>{% endif %}</div>
-          </section>
-        </div>
-
       {% endif %}
     </main>
   </div>
