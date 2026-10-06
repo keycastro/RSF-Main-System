@@ -2035,8 +2035,28 @@ def billing_payments():
     ).fetchall()
     return render_template(
         "billing_payments.html",
-        title="Billing & Payments",
+        title="Client Billing & Payments",
         billing_clients=rows,
+    )
+
+
+@bp.get("/integration-usage-billing")
+@admin_required
+def integration_usage_billing():
+    db = get_db()
+    from .gmail_ops import connection_status as gmail_connection_status
+    from .calendar_ops import connection_status as calendar_connection_status
+
+    dashboard = build_integration_billing_dashboard(
+        db,
+        gmail_status=gmail_connection_status(),
+        calendar_status=calendar_connection_status(),
+    )
+    return render_template(
+        "integration_usage_billing.html",
+        title="Integration Usage & Billing",
+        currency_code=setting("currency_code", "USD"),
+        integration_billing=dashboard,
     )
 
 
@@ -4758,13 +4778,6 @@ def settings():
 
     gmail_status = gmail_connection_status()
     calendar_status = calendar_connection_status()
-    integration_billing = None
-    if section == "integrations":
-        integration_billing = build_integration_billing_dashboard(
-            db,
-            gmail_status=gmail_status,
-            calendar_status=calendar_status,
-        )
 
     workflow = None
     if section == "workflow":
@@ -4786,12 +4799,12 @@ def settings():
         currency_code=setting("currency_code","USD"),
         gmail_status=gmail_status,
         calendar_status=calendar_status,
-        integration_billing=integration_billing,
         workflow=workflow,
     )
 
 
 @bp.post("/admin/settings/integrations/billing")
+@bp.post("/integration-usage-billing/update")
 @admin_required
 def integration_billing_update():
     validate_csrf()
@@ -4809,7 +4822,7 @@ def integration_billing_update():
             ])
     except ValueError as exc:
         flash(str(exc), "error")
-        return redirect(url_for("main.settings", section="integrations") + "#integration-usage-billing")
+        return redirect(url_for("main.integration_usage_billing") + "#integration-usage-billing")
 
     now = utcnow_iso()
     for key, value in values:
