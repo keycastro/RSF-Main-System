@@ -10,8 +10,8 @@
     <label>Name <span class="required-mark">Required</span><input name="full_name" required maxlength="160" value="{{ request.form.get('full_name','') }}" autocomplete="name"></label>
     <label>Commission level <span class="required-mark">Required</span><select name="commission_stage_id" required><option value="">Choose level</option>{% for s in stages %}<option value="{{ s.id }}" {{ 'selected' if request.form.get('commission_stage_id')==s.id|string else '' }}>{{ s.name }} — {{ s.rate_bp|rate }}</option>{% endfor %}</select></label>
     <label>Phone<input name="phone" maxlength="60" value="{{ request.form.get('phone','') }}" autocomplete="tel"></label>
-    <label>Password <span class="required-mark">Required</span>
-      <div class="password-control"><input id="partner_password" name="partner_password" type="password" required minlength="12" maxlength="128" autocomplete="new-password" value="{{ request.form.get('partner_password','') }}"><div class="password-actions"><button class="button ghost" type="button" data-password-toggle data-target="partner_password">Show</button><button class="button ghost" type="button" data-copy-target="partner_password">Copy</button></div></div>
+    <label>Password <span class="required-mark">Required</span><small>Choose any non-empty password. RSF does not require a minimum length.</small>
+      <div class="password-control"><input id="partner_password" name="partner_password" type="password" required maxlength="128" autocomplete="new-password" value="{{ request.form.get('partner_password','') }}"><div class="password-actions"><button class="button ghost" type="button" data-password-toggle data-target="partner_password">Show</button><button class="button ghost" type="button" data-copy-target="partner_password">Copy</button></div></div>
     </label>
     <label class="span-2">Private notes<textarea name="notes" rows="4" maxlength="2000" placeholder="Optional Founder note">{{ request.form.get('notes','') }}</textarea></label>
     <div class="form-actions span-2"><button class="button primary" type="submit">Create Partner</button></div>
