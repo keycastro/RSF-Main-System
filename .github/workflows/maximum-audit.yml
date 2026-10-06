@@ -41,7 +41,8 @@ jobs:
               assert endpoint in init, endpoint
           schema=Path("app/schema.sql").read_text()
           assert "account_password_vault" not in schema
-          assert "CREATE TABLE IF NOT EXISTS ai_sales_calls" in schema
+          db_source=Path("app/db.py").read_text()
+          assert "CREATE TABLE IF NOT EXISTS ai_sales_calls" in db_source
           routes=Path("app/routes.py").read_text()
           assert "INSERT INTO ai_sales_calls" not in routes
           assert "UPDATE ai_sales_calls" not in routes
