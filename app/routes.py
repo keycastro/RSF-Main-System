@@ -4843,7 +4843,7 @@ def integration_billing_update():
     )
     db.commit()
     flash("Integration usage & billing settings updated.", "success")
-    return redirect(url_for("main.settings", section="integrations") + "#integration-usage-billing")
+    return redirect(url_for("main.integration_usage_billing") + "#integration-usage-billing")
 
 
 @bp.get("/admin/settings/gmail/connect")
