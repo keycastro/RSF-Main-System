@@ -24,6 +24,9 @@
   {% if request.endpoint == 'main.billing_payments' %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/billing_payments.css') }}?v={{ app_version }}">
   {% endif %}
+  {% if request.endpoint == 'main.integration_usage_billing' %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/integration_usage_billing.css') }}?v={{ app_version }}">
+  {% endif %}
   {% if request.endpoint == 'main.settings' and request.args.get('section','general') == 'workflow' %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/workflow_diagram.css') }}?v={{ app_version }}">
   <link rel="stylesheet" href="{{ url_for('main.workflow_diagram_layout_css') }}?v={{ app_version }}">
@@ -41,6 +44,7 @@
   {% elif name == 'sales' %}<path d="M12 2.8v18.4M16.7 6.2c-.9-.8-2.3-1.3-4-1.3-2.4 0-4.2 1.2-4.2 3s1.5 2.5 4.1 3.1c2.8.6 4.6 1.5 4.6 3.7 0 2-2 3.4-4.8 3.4-2 0-3.8-.6-5-1.8"/>
   {% elif name == 'commissions' %}<path d="m7 17 10-10M7.2 8.3a2.1 2.1 0 1 0 0-4.2 2.1 2.1 0 0 0 0 4.2Zm9.6 11.6a2.1 2.1 0 1 0 0-4.2 2.1 2.1 0 0 0 0 4.2Z"/>
   {% elif name == 'billing' %}<rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="M3.5 9h17M7 14h3M14 14h3"/>
+  {% elif name == 'usage' %}<path d="M4 19V10M10 19V5M16 19v-7M22 19H2"/><path d="m4 8 6-5 6 6 5-4"/>
   {% elif name == 'resources' %}<path d="M4.2 5.2A2.2 2.2 0 0 1 6.4 3h11.2a2.2 2.2 0 0 1 2.2 2.2v13.6A2.2 2.2 0 0 1 17.6 21H6.4a2.2 2.2 0 0 1-2.2-2.2V5.2Z"/><path d="M8 7h8M8 11h8M8 15h5"/>
   {% elif name == 'workflow' %}<circle cx="6" cy="6" r="2.1"/><circle cx="18" cy="6" r="2.1"/><circle cx="12" cy="18" r="2.1"/><path d="M8.1 6h7.8M7.5 7.7l3.4 7.7M16.5 7.7l-3.4 7.7"/>
   {% elif name == 'activity' %}<path d="M3.2 12a8.8 8.8 0 1 0 2.1-5.7L3 8.7"/><path d="M3.1 4.4v4.5h4.5M12 7.2v5.1l3.4 2"/>
@@ -81,6 +85,7 @@
       {% set deals_active = request.endpoint in ['main.deals','main.deal_create_from_prospect','main.deal_update'] %}
       {% set support_active = request.endpoint in ['main.support_maintenance','main.support_maintenance_update'] %}
       {% set billing_active = request.endpoint == 'main.billing_payments' %}
+      {% set integration_billing_active = request.endpoint == 'main.integration_usage_billing' %}
       <div class="nav-section-label">OUTBOUND</div>
       <a class="{{ 'active' if prospects_active else '' }}" {% if prospects_active %}aria-current="page"{% endif %} href="{{ url_for('main.prospects') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("leads") }}</span><span class="nav-text">Prospects</span></a>
 
@@ -93,7 +98,10 @@
       <a class="{{ 'active' if support_active else '' }}" {% if support_active %}aria-current="page"{% endif %} href="{{ url_for('main.support_maintenance') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("resources") }}</span><span class="nav-text">Support &amp; Maintenance</span></a>
 
       <div class="nav-section-label">FINANCE</div>
-      <a class="{{ 'active' if billing_active else '' }}" {% if billing_active %}aria-current="page"{% endif %} href="{{ url_for('main.billing_payments') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("billing") }}</span><span class="nav-text">Billing &amp; Payments</span></a>
+      <a class="{{ 'active' if billing_active else '' }}" {% if billing_active %}aria-current="page"{% endif %} href="{{ url_for('main.billing_payments') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("billing") }}</span><span class="nav-text">Client Billing &amp; Payments</span></a>
+      {% if g.user.role == 'admin' %}
+      <a class="{{ 'active' if integration_billing_active else '' }}" {% if integration_billing_active %}aria-current="page"{% endif %} href="{{ url_for('main.integration_usage_billing') }}"><span class="nav-symbol" aria-hidden="true">{{ nav_icon("usage") }}</span><span class="nav-text">Integration Usage &amp; Billing</span></a>
+      {% endif %}
 
     </nav>
 
@@ -114,7 +122,7 @@
   </aside>
 
   <main class="main-area" id="main-content" tabindex="-1">
-    {% if request.endpoint not in ['main.prospects','main.deals','main.inquiries_list','main.support_maintenance','main.billing_payments','main.settings','main.account_security','main.records','main.record_detail','main.inquiry_records'] %}
+    {% if request.endpoint not in ['main.prospects','main.deals','main.inquiries_list','main.support_maintenance','main.billing_payments','main.integration_usage_billing','main.settings','main.account_security','main.records','main.record_detail','main.inquiry_records'] %}
     <header class="topbar">
       <div class="topbar-left">
         <button class="menu-button" type="button" data-menu aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">☰</button>
