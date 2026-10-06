@@ -27,7 +27,7 @@ class SharedDeveloperFieldTests(unittest.TestCase):
 
     def test_schema_migration_adds_developer_once(self):
         db = self.read("app/db.py")
-        self.assertIn("SCHEMA_VERSION = 42", db)
+        self.assertIn("SCHEMA_VERSION = 43", db)
         self.assertIn('if "developer" not in deal_columns:', db)
         self.assertIn('ALTER TABLE deals ADD COLUMN developer TEXT NOT NULL DEFAULT', db)
         self.assertIn('(36, "rsf-v1.18.155-shared-developer-field")', db)
