@@ -16,10 +16,11 @@ from .twilio_manual_call_ops import current_month_usage as twilio_current_month_
 SERVICE_DEFINITIONS = (
     ("render", "Render Hosting"),
     ("database", "Database"),
-    ("gmail", "RSF Gmail"),
-    ("calendar", "Google Calendar / Meet"),
-    ("whatsapp", "WhatsApp"),
+    ("gmail", "Gmail"),
+    ("calendar", "Google Meet"),
+    ("whatsapp", "WhatsApp Business"),
     ("twilio", "Twilio"),
+    ("retell", "Retell AI"),
 )
 
 
@@ -84,6 +85,12 @@ def build_integration_billing_dashboard(db, *, gmail_status: dict, calendar_stat
            WHERE provider='TWILIO' AND substr(created_at,1,7)=?""",
         (month_key,),
     ).fetchone()
+    retell_row = db.execute(
+        """SELECT COUNT(*) AS calls
+           FROM ai_sales_calls
+           WHERE substr(created_at,1,7)=?""",
+        (month_key,),
+    ).fetchone()
 
     gmail_label, gmail_class = _status_label(
         bool(gmail_status.get("connected")),
@@ -113,9 +120,18 @@ def build_integration_billing_dashboard(db, *, gmail_status: dict, calendar_stat
     twilio_label = "Ready" if twilio_ready else "Not set up"
     twilio_class = "connected" if twilio_ready else "off"
 
+    retell_ready = bool(
+        current_app.config.get("RETELL_API_KEY")
+        and current_app.config.get("RETELL_AGENT_ID")
+        and current_app.config.get("RETELL_FROM_NUMBER")
+    )
+    retell_label = "Ready" if retell_ready else "Not set up"
+    retell_class = "connected" if retell_ready else "off"
+
     email_count = int(email_row["c"] or 0)
     calendar_count = int(calendar_row["c"] or 0)
     whatsapp_count = int(whatsapp_row["c"] or 0)
+    retell_count = int(retell_row["calls"] or 0)
 
     rsf_twilio_calls = int(twilio_row["calls"] or 0)
     rsf_twilio_minutes = (int(twilio_row["seconds"] or 0) / 60)
@@ -196,6 +212,15 @@ def build_integration_billing_dashboard(db, *, gmail_status: dict, calendar_stat
                 if twilio_cost is not None
                 else (twilio_provider.get("reason") or "Twilio cost is not available.")
             ),
+        },
+        "retell": {
+            "status": retell_label,
+            "status_class": retell_class,
+            "usage": f"{retell_count} {'AI call' if retell_count == 1 else 'AI calls'}",
+            "usage_source": "Based on Retell AI calls recorded in RSF.",
+            "cost": None,
+            "cost_currency": "",
+            "cost_source": "Retell AI billing is not connected to this dashboard.",
         },
     }
 
